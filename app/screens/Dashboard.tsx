@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useDashboardStore } from '../store/dashboardStore';
 import DashboardContent from './DashboardContent';
 import OrdersContent from './OrdersContent';
 import MenuContent from './MenuContent';
@@ -25,7 +26,7 @@ const TabButton: React.FC<TabButtonProps> = ({ title, icon, isActive, onPress })
 );
 
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const { activeTab, setActiveTab } = useDashboardStore();
 
   const renderContent = () => {
     switch (activeTab) {

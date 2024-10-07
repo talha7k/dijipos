@@ -1,10 +1,11 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useDashboardStore } from '../store/dashboardStore';
 
 interface DashboardCardProps {
   title: string;
-  value: string;
+  value: string | number;
   icon: keyof typeof Ionicons.glyphMap;
 }
 
@@ -17,12 +18,14 @@ const DashboardCard: React.FC<DashboardCardProps> = ({ title, value, icon }) => 
 );
 
 export default function DashboardContent() {
+  const { totalRevenue, totalOrders, activeTables, newCustomers } = useDashboardStore();
+
   return (
     <View style={styles.dashboardContent}>
-      <DashboardCard title="Total Revenue" value="$45,231.89" icon="cash" />
-      <DashboardCard title="Orders" value="+2350" icon="cart" />
-      <DashboardCard title="Active Tables" value="15" icon="restaurant" />
-      <DashboardCard title="New Customers" value="+573" icon="people" />
+      <DashboardCard title="Total Revenue" value={`$${totalRevenue.toFixed(2)}`} icon="cash" />
+      <DashboardCard title="Orders" value={totalOrders} icon="cart" />
+      <DashboardCard title="Active Tables" value={activeTables} icon="restaurant" />
+      <DashboardCard title="New Customers" value={newCustomers} icon="people" />
     </View>
   );
 }
