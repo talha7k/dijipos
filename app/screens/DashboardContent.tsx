@@ -1,0 +1,54 @@
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+
+interface DashboardCardProps {
+  title: string;
+  value: string;
+  icon: keyof typeof Ionicons.glyphMap;
+}
+
+const DashboardCard: React.FC<DashboardCardProps> = ({ title, value, icon }) => (
+  <View style={styles.card}>
+    <Ionicons name={icon} size={24} color="#007AFF" />
+    <Text style={styles.cardTitle}>{title}</Text>
+    <Text style={styles.cardValue}>{value}</Text>
+  </View>
+);
+
+export default function DashboardContent() {
+  return (
+    <View style={styles.dashboardContent}>
+      <DashboardCard title="Total Revenue" value="$45,231.89" icon="cash" />
+      <DashboardCard title="Orders" value="+2350" icon="cart" />
+      <DashboardCard title="Active Tables" value="15" icon="restaurant" />
+      <DashboardCard title="New Customers" value="+573" icon="people" />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  dashboardContent: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    padding: 16,
+  },
+  card: {
+    width: '48%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+  },
+  cardTitle: {
+    fontSize: 14,
+    color: '#8E8E93',
+    marginTop: 8,
+  },
+  cardValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginTop: 4,
+  },
+});
