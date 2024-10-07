@@ -1,78 +1,57 @@
 import React from 'react';
 import { View, StyleSheet, useWindowDimensions, ScrollView } from 'react-native';
+import { ColumnContent } from './ScreenContent';
 
 interface ThreeColumnLayoutProps {
-  left?: React.ReactNode;
-  center: React.ReactNode;
-  right?: React.ReactNode;
+  leftContent: ColumnContent;
+  middleContent: ColumnContent;
+  rightContent: ColumnContent;
 }
 
-export const ThreeColumnLayout: React.FC<ThreeColumnLayoutProps> = ({ left, center, right }) => {
-  const { width } = useWindowDimensions();
-  const isLargeScreen = width > 1024; // Large screens (3 columns)
-  const isMediumScreen = width > 768 && width <= 1024; // Medium screens (2 columns)
+export function ThreeColumnLayout({ leftContent, middleContent, rightContent }: ThreeColumnLayoutProps) {
+  const { width, height } = useWindowDimensions();
+  const isSmallScreen = width < 768;
+  const isMediumScreen = width >= 768 && width < 1024;
 
-  const ScrollableColumn = ({ children }: { children: React.ReactNode }) => (
-    <ScrollView 
-      style={styles.scrollableColumn}
-      showsVerticalScrollIndicator={false}
-    >
-      <View style={styles.columnContent}>{children}</View>
-    </ScrollView>
-  );
+  const columnStyle = [
+    styles.column,
+    isSmallScreen && styles.fullWidthColumn,
+    isMediumScreen && styles.halfWidthColumn,
+    { height: height - 20 }, // Subtract any necessary padding or margins
+  ];
 
-  if (isLargeScreen) {
-    return (
-      <View style={styles.container}>
-        <ScrollableColumn>{left}</ScrollableColumn>
-        <ScrollableColumn>{center}</ScrollableColumn>
-        <ScrollableColumn>{right}</ScrollableColumn>
-      </View>
-    );
-  } else if (isMediumScreen) {
-    return (
-      <View style={styles.containerMedium}>
-        <ScrollableColumn>
-          {left}
-          {center}
-        </ScrollableColumn>
-        <ScrollableColumn>{right}</ScrollableColumn>
-      </View>
-    );
-  } else {
-    // Small screens (1 column)
-    return (
-      <ScrollView 
-        style={styles.mobileContainer}
-        showsVerticalScrollIndicator={false}
-      >
-        {left && <View style={styles.mobileSection}>{left}</View>}
-        <View style={styles.mobileSection}>{center}</View>
-        {right && <View style={styles.mobileSection}>{right}</View>}
+  return (
+    <View style={styles.container}>
+      <ScrollView style={columnStyle} contentContainerStyle={styles.scrollContent}>
+        {leftContent.content}
       </ScrollView>
-    );
-  }
-};
+      <ScrollView style={columnStyle} contentContainerStyle={styles.scrollContent}>
+        {middleContent.content}
+      </ScrollView>
+      <ScrollView style={columnStyle} contentContainerStyle={styles.scrollContent}>
+        {rightContent.content}
+      </ScrollView>
+    </View>
+  );
+}
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  column: {
     flex: 1,
+    minWidth: '33%',
   },
-  containerMedium: {
-    flexDirection: 'row',
-    flex: 1,
+  fullWidthColumn: {
+    width: '100%',
   },
-  scrollableColumn: {
-    flex: 1,
+  halfWidthColumn: {
+    width: '50%',
   },
-  columnContent: {
-    padding: 10,
-  },
-  mobileContainer: {
-    flex: 1,
-  },
-  mobileSection: {
+  scrollContent: {
     padding: 10,
   },
 });

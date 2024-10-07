@@ -53,4 +53,14 @@ export const sharedStyles = StyleSheet.create({
     color: '#007AFF',
     marginLeft: 16,
   },
+  itemValue: {  // Add this new style
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#007AFF',
+  },
+  itemPrice: {  // Add this new style
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#28a745',
+  },
 });

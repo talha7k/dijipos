@@ -1,9 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { sharedStyles } from '../styles/sharedStyles';
-import { ThreeColumnLayout } from '../components/ThreeColumnLayout';
+import { View, Text } from 'react-native';
+import { ScreenContent, PageContent } from '../components/ScreenContent';
 import { CardGrid } from '../components/CardGrid';
 import { Card } from '../components/Card';
+import { sharedStyles } from '../styles/sharedStyles';
 
 interface ProductCategory {
   id: string;
@@ -16,12 +16,7 @@ const dummyProductCategories: ProductCategory[] = [
   { id: '2', name: 'Main Courses', description: 'Primary dishes' },
   { id: '3', name: 'Desserts', description: 'Sweet treats' },
   { id: '4', name: 'Beverages', description: 'Drinks and refreshments' },
-  { id: '5', name: 'Salads', description: 'Fresh and healthy options' },
-  { id: '6', name: 'Soups', description: 'Warm and comforting bowls' },
-  { id: '7', name: 'Sandwiches', description: 'Handheld delights' },
-  { id: '8', name: 'Pasta', description: 'Italian-inspired dishes' },
-  { id: '9', name: 'Seafood', description: 'Fresh catches and ocean delicacies' },
-  { id: '10', name: 'Vegetarian', description: 'Meat-free options' },
+  { id: '5', name: 'Sides', description: 'Complementary dishes' },
 ];
 
 const ProductCategoryCard = ({ item }: { item: ProductCategory }) => (
@@ -31,22 +26,33 @@ const ProductCategoryCard = ({ item }: { item: ProductCategory }) => (
   </Card>
 );
 
-export default function ProductCategoryManagement() {
-  const MainContent = (
-    <View style={sharedStyles.container}>
-      <Text style={sharedStyles.title}>Product Category Management</Text>
-      <CardGrid
-        data={dummyProductCategories}
-        renderItem={(item) => <ProductCategoryCard item={item} />}
-      />
-    </View>
-  );
+const generateProductCategoryManagementContent = (): PageContent => ({
+  leftColumn: {
+    title: "Product Categories",
+    content: <Text style={sharedStyles.title}>Product Categories</Text>
+  },
+  middleColumn: {
+    title: "Product Category Management",
+    content: (
+      <View style={sharedStyles.container}>
+        <Text style={sharedStyles.title}>Product Category Management</Text>
+        <CardGrid
+          data={dummyProductCategories.map(item => ({
+            content: <ProductCategoryCard item={item} />
+          }))}
+          renderItem={(item) => item.content}
+        />
+      </View>
+    )
+  },
+  rightColumn: {
+    title: "Category Stats",
+    content: <Text style={sharedStyles.title}>Category Stats</Text>
+  }
+});
 
-  return (
-    <ThreeColumnLayout
-      left={<Text style={sharedStyles.title}>Category List</Text>}
-      center={MainContent}
-      right={<Text style={sharedStyles.title}>Category Stats</Text>}
-    />
-  );
-}
+const ProductCategoryManagement: React.FC = () => {
+  return <ScreenContent generatePageContent={generateProductCategoryManagementContent} />;
+};
+
+export default ProductCategoryManagement;

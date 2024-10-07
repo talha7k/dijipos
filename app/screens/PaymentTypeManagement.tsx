@@ -1,9 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { sharedStyles } from '../styles/sharedStyles';
-import { ThreeColumnLayout } from '../components/ThreeColumnLayout';
+import { View, Text } from 'react-native';
+import { ScreenContent, PageContent } from '../components/ScreenContent';
 import { CardGrid } from '../components/CardGrid';
 import { Card } from '../components/Card';
+import { sharedStyles } from '../styles/sharedStyles';
 
 interface PaymentType {
   id: string;
@@ -31,22 +31,33 @@ const PaymentTypeCard = ({ item }: { item: PaymentType }) => (
   </Card>
 );
 
-export default function PaymentTypeManagement() {
-  const MainContent = (
-    <View style={sharedStyles.container}>
-      <Text style={sharedStyles.title}>Payment Type Management</Text>
-      <CardGrid
-        data={dummyPaymentTypes}
-        renderItem={(item) => <PaymentTypeCard item={item} />}
-      />
-    </View>
-  );
+const generatePaymentTypeManagementContent = (): PageContent => ({
+  leftColumn: {
+    title: "Payment Types",
+    content: <Text style={sharedStyles.title}>Payment Types</Text>
+  },
+  middleColumn: {
+    title: "Payment Type Management",
+    content: (
+      <View style={sharedStyles.container}>
+        <Text style={sharedStyles.title}>Payment Type Management</Text>
+        <CardGrid
+          data={dummyPaymentTypes.map(item => ({
+            content: <PaymentTypeCard item={item} />
+          }))}
+          renderItem={(item) => item.content}
+        />
+      </View>
+    )
+  },
+  rightColumn: {
+    title: "Payment Stats",
+    content: <Text style={sharedStyles.title}>Payment Stats</Text>
+  }
+});
 
-  return (
-    <ThreeColumnLayout
-      left={<Text style={sharedStyles.title}>Payment Types</Text>}
-      center={MainContent}
-      right={<Text style={sharedStyles.title}>Payment Stats</Text>}
-    />
-  );
-}
+const PaymentTypeManagement: React.FC = () => {
+  return <ScreenContent generatePageContent={generatePaymentTypeManagementContent} />;
+};
+
+export default PaymentTypeManagement;

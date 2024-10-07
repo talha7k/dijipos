@@ -1,72 +1,68 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { View, Text } from 'react-native';
+import { ScreenContent, PageContent } from '../components/ScreenContent';
+import { CardGrid } from '../components/CardGrid';
+import { Card } from '../components/Card';
 import { sharedStyles } from '../styles/sharedStyles';
-import { ThreeColumnLayout } from '../components/ThreeColumnLayout';
 
-type RootStackParamList = {
-  ProductManagement: undefined;
-  RestaurantManagement: undefined;
-  PaymentTypeManagement: undefined;
-  Reports: undefined;
-  ProductCategoryManagement: undefined;
-  OrderCategoryManagement: undefined;
-};
-
-type ManagementScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
-
-interface ManagementOptionProps {
-  title: string;
-  onPress: () => void;
+interface ManagementOption {
+  id: string;
+  name: string;
+  description: string;
 }
 
-const ManagementOption: React.FC<ManagementOptionProps> = ({ title, onPress }) => (
-  <TouchableOpacity style={styles.optionButton} onPress={onPress}>
-    <Text style={styles.optionButtonText}>{title}</Text>
-  </TouchableOpacity>
+const managementOptions: ManagementOption[] = [
+  { id: '1', name: 'Product Management', description: 'Manage products and categories' },
+  { id: '2', name: 'Order Management', description: 'View and manage orders' },
+  { id: '3', name: 'Customer Management', description: 'Manage customer information' },
+  { id: '4', name: 'Employee Management', description: 'Manage staff and roles' },
+  { id: '5', name: 'Reports', description: 'View sales and performance reports' },
+];
+
+const ManagementOptionCard = ({ item }: { item: ManagementOption }) => (
+  <Card>
+    <Text style={sharedStyles.itemName}>{item.name}</Text>
+    <Text style={sharedStyles.itemDetail}>{item.description}</Text>
+  </Card>
 );
 
-export default function ManagementContent() {
-  const navigation = useNavigation<ManagementScreenNavigationProp>();
-
-  const handleOptionPress = (screen: keyof RootStackParamList) => {
-    navigation.navigate(screen);
-  };
-
-  const MainContent = (
-    <View style={styles.optionsContainer}>
-      <ManagementOption title="Manage Products" onPress={() => handleOptionPress('ProductManagement')} />
-      <ManagementOption title="Manage Restaurants" onPress={() => handleOptionPress('RestaurantManagement')} />
-      <ManagementOption title="Payment Types" onPress={() => handleOptionPress('PaymentTypeManagement')} />
-      <ManagementOption title="Reports" onPress={() => handleOptionPress('Reports')} />
-      <ManagementOption title="Product Categories" onPress={() => handleOptionPress('ProductCategoryManagement')} />
-      <ManagementOption title="Order Categories" onPress={() => handleOptionPress('OrderCategoryManagement')} />
-    </View>
-  );
-
-  return (
-    <ThreeColumnLayout
-      left={<Text style={sharedStyles.title}>Quick Actions</Text>}
-      center={MainContent}
-      right={<Text style={sharedStyles.title}>Management Stats</Text>}
-    />
-  );
-}
-
-const styles = StyleSheet.create({
-  optionsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+const generateManagementContent = (): PageContent => ({
+  leftColumn: {
+    title: "Management Options",
+    content: (
+      <View style={sharedStyles.container}>
+        <Text style={sharedStyles.title}>Management Options</Text>
+        <CardGrid
+          data={managementOptions.map(item => ({
+            content: <ManagementOptionCard item={item} />
+          }))}
+          renderItem={(item) => item.content}
+        />
+      </View>
+    )
   },
-  optionButton: {
-    ...sharedStyles.button,
-    ...sharedStyles.primaryButton,
-    width: '48%',
-    marginBottom: 16,
+  middleColumn: {
+    title: "Selected Option Details",
+    content: (
+      <View style={sharedStyles.container}>
+        <Text style={sharedStyles.title}>Selected Option Details</Text>
+        <Text>Select an option to view details</Text>
+      </View>
+    )
   },
-  optionButtonText: {
-    ...sharedStyles.buttonText,
-  },
+  rightColumn: {
+    title: "Actions",
+    content: (
+      <View style={sharedStyles.container}>
+        <Text style={sharedStyles.title}>Actions</Text>
+        <Text>Actions for selected management option</Text>
+      </View>
+    )
+  }
 });
+
+const ManagementContent: React.FC = () => {
+  return <ScreenContent generatePageContent={generateManagementContent} />;
+};
+
+export default ManagementContent;

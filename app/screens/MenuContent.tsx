@@ -1,82 +1,77 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { useDashboardStore, MenuItem } from '../store/dashboardStore';
-import { sharedStyles } from '../styles/sharedStyles';
-import { Card } from '../components/Card';
-import { ThreeColumnLayout } from '../components/ThreeColumnLayout';
+import { View, Text } from 'react-native';
+import { ScreenContent, PageContent } from '../components/ScreenContent';
 import { CardGrid } from '../components/CardGrid';
+import { Card } from '../components/Card';
+import { sharedStyles } from '../styles/sharedStyles';
+
+interface MenuItem {
+  id: string;
+  name: string;
+  description: string;
+  price: string;
+}
+
+const dummyMenuItems: MenuItem[] = [
+  { id: '1', name: 'Classic Burger', description: 'Beef patty with lettuce, tomato, and cheese', price: '$9.99' },
+  { id: '2', name: 'Margherita Pizza', description: 'Tomato sauce, mozzarella, and basil', price: '$12.99' },
+  { id: '3', name: 'Caesar Salad', description: 'Romaine lettuce, croutons, and Caesar dressing', price: '$7.99' },
+  { id: '4', name: 'Grilled Chicken Sandwich', description: 'Grilled chicken breast with avocado and bacon', price: '$10.99' },
+  { id: '5', name: 'Vegetarian Pasta', description: 'Penne with mixed vegetables and tomato sauce', price: '$11.99' },
+  { id: '6', name: 'Fish and Chips', description: 'Battered cod with crispy fries', price: '$13.99' },
+  { id: '7', name: 'Steak Frites', description: 'Grilled sirloin steak with french fries', price: '$18.99' },
+  { id: '8', name: 'Sushi Roll Platter', description: 'Assorted sushi rolls with wasabi and ginger', price: '$22.99' },
+  { id: '9', name: 'Mushroom Risotto', description: 'Creamy risotto with wild mushrooms', price: '$14.99' },
+  { id: '10', name: 'BBQ Ribs', description: 'Slow-cooked pork ribs with BBQ sauce', price: '$16.99' },
+  { id: '11', name: 'Seafood Paella', description: 'Spanish rice dish with mixed seafood', price: '$20.99' },
+  { id: '12', name: 'Chocolate Lava Cake', description: 'Warm chocolate cake with a gooey center', price: '$6.99' },
+];
 
 const MenuItemCard = ({ item }: { item: MenuItem }) => (
-  <Card style={styles.menuItemCard}>
-    <Text style={styles.itemName}>{item.name}</Text>
-    <Text style={styles.itemPrice}>
-      ${typeof item.price === 'number' ? item.price.toFixed(2) : 'N/A'}
-    </Text>
-    <Text style={styles.itemCategory}>{item.category}</Text>
+  <Card>
+    <Text style={sharedStyles.itemName}>{item.name}</Text>
+    <Text style={sharedStyles.itemDetail}>{item.description}</Text>
+    <Text style={sharedStyles.itemPrice}>{item.price}</Text>
   </Card>
 );
 
-export default function MenuContent() {
-  const { menuItems } = useDashboardStore();
-
-  const MainContent = (
-    <View style={styles.container}>
-      <Text style={sharedStyles.title}>Menu Items</Text>
-      <CardGrid
-        data={menuItems}
-        renderItem={(item) => <MenuItemCard item={item} />}
-      />
-    </View>
-  );
-
-  const LeftColumn = (
-    <View>
-      <Text style={sharedStyles.title}>Categories</Text>
-      {/* Add a list of categories here */}
-    </View>
-  );
-
-  const RightColumn = (
-    <View>
-      <Text style={sharedStyles.title}>Menu Stats</Text>
-      {/* Add menu statistics here */}
-    </View>
-  );
-
-  return (
-    <ThreeColumnLayout
-      left={LeftColumn}
-      center={MainContent}
-      right={RightColumn}
-    />
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
+const generateMenuContent = (): PageContent => ({
+  leftColumn: {
+    title: "Menu Categories",
+    content: (
+      <View style={sharedStyles.container}>
+        <Text style={sharedStyles.title}>Menu Categories</Text>
+        <Text>List of menu categories</Text>
+      </View>
+    )
   },
-  menuItemCard: {
-    flex: 1,
-    aspectRatio: 1,
-    justifyContent: 'space-between',
-    padding: 12,
-    margin: 8,
+  middleColumn: {
+    title: "Menu Items",
+    content: (
+      <View style={sharedStyles.container}>
+        <Text style={sharedStyles.title}>Menu Items</Text>
+        <CardGrid
+          data={dummyMenuItems.map(item => ({
+            content: <MenuItemCard item={item} />
+          }))}
+          renderItem={(item) => item.content}
+        />
+      </View>
+    )
   },
-  itemName: {
-    ...sharedStyles.itemName,
-    fontSize: 16,
-    marginBottom: 8,
-  },
-  itemPrice: {
-    ...sharedStyles.itemDetail,
-    fontSize: 14,
-    color: '#007AFF',
-    marginBottom: 4,
-  },
-  itemCategory: {
-    ...sharedStyles.itemDetail,
-    fontSize: 12,
-  },
+  rightColumn: {
+    title: "Item Details",
+    content: (
+      <View style={sharedStyles.container}>
+        <Text style={sharedStyles.title}>Item Details</Text>
+        <Text>Details of selected menu item</Text>
+      </View>
+    )
+  }
 });
+
+const MenuContent: React.FC = () => {
+  return <ScreenContent generatePageContent={generateMenuContent} />;
+};
+
+export default MenuContent;

@@ -1,74 +1,76 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useDashboardStore } from '../store/dashboardStore';
-import { sharedStyles } from '../styles/sharedStyles';
+import { View, Text } from 'react-native';
+import { ScreenContent, PageContent } from '../components/ScreenContent';
+import { CardGrid } from '../components/CardGrid';
 import { Card } from '../components/Card';
-import { ThreeColumnLayout } from '../components/ThreeColumnLayout';
+import { sharedStyles } from '../styles/sharedStyles';
 
-interface DashboardCardProps {
+interface DashboardItem {
+  id: string;
   title: string;
-  value: string | number;
-  icon: keyof typeof Ionicons.glyphMap;
+  value: string;
 }
 
-const DashboardCard: React.FC<DashboardCardProps> = ({ title, value, icon }) => (
-  <Card style={styles.dashboardCard}>
-    <Ionicons name={icon} size={24} color="#007AFF" />
-    <Text style={sharedStyles.itemDetail}>{title}</Text>
-    <Text style={styles.cardValue}>{value}</Text>
+const dummyDashboardItems: DashboardItem[] = [
+  { id: '1', title: 'Total Sales', value: '$10,234' },
+  { id: '2', title: 'Orders Today', value: '45' },
+  { id: '3', title: 'Active Tables', value: '8' },
+  { id: '4', title: 'Avg. Order Value', value: '$56' },
+  { id: '5', title: 'Weekly Revenue', value: '$72,150' },
+  { id: '6', title: 'Monthly Profit', value: '$25,600' },
+  { id: '7', title: 'Customer Satisfaction', value: '4.7/5' },
+  { id: '8', title: 'Inventory Turnover', value: '3.2' },
+  { id: '9', title: 'Employee Productivity', value: '92%' },
+  { id: '10', title: 'Table Turnover Rate', value: '1.8/hour' },
+  { id: '11', title: 'Online Orders', value: '32%' },
+  { id: '12', title: 'Loyalty Program Members', value: '1,250' },
+];
+
+const DashboardCard = ({ item }: { item: DashboardItem }) => (
+  <Card>
+    <Text style={sharedStyles.itemName}>{item.title}</Text>
+    <Text style={sharedStyles.itemValue}>{item.value}</Text>
   </Card>
 );
 
-export default function DashboardContent() {
-  const { totalRevenue, totalOrders, activeTables, newCustomers } = useDashboardStore();
-
-  const MainContent = (
-    <View style={styles.dashboardContent}>
-      <DashboardCard title="Total Revenue" value={`$${totalRevenue.toFixed(2)}`} icon="cash" />
-      <DashboardCard title="Orders" value={totalOrders} icon="cart" />
-      <DashboardCard title="Active Tables" value={activeTables} icon="restaurant" />
-      <DashboardCard title="New Customers" value={newCustomers} icon="people" />
-    </View>
-  );
-
-  const LeftColumn = (
-    <View>
-      <Text style={sharedStyles.title}>Quick Actions</Text>
-      {/* Add quick action buttons or links here */}
-    </View>
-  );
-
-  const RightColumn = (
-    <View>
-      <Text style={sharedStyles.title}>Recent Activity</Text>
-      {/* Add a list of recent activities here */}
-    </View>
-  );
-
-  return (
-    <ThreeColumnLayout
-      left={LeftColumn}
-      center={MainContent}
-      right={RightColumn}
-    />
-  );
-}
-
-const styles = StyleSheet.create({
-  dashboardContent: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    padding: 8,
+const generateDashboardContent = (): PageContent => ({
+  leftColumn: {
+    title: "Dashboard Overview",
+    content: (
+      <View style={sharedStyles.container}>
+        <Text style={sharedStyles.title}>Dashboard Overview</Text>
+        <CardGrid
+          data={dummyDashboardItems.map(item => ({
+            content: <DashboardCard item={item} />
+          }))}
+          renderItem={(item) => item.content}
+          defaultColumnConfig={{ small: 1, medium: 2, large: 3 }}
+        />
+      </View>
+    )
   },
-  dashboardCard: {
-    width: '48%',
-    marginBottom: 16,
+  middleColumn: {
+    title: "Recent Activity",
+    content: (
+      <View style={sharedStyles.container}>
+        <Text style={sharedStyles.title}>Recent Activity</Text>
+        <Text>List of recent orders or actions</Text>
+      </View>
+    )
   },
-  cardValue: {
-    ...sharedStyles.itemName,
-    fontSize: 24,
-    marginTop: 4,
-  },
+  rightColumn: {
+    title: "Quick Actions",
+    content: (
+      <View style={sharedStyles.container}>
+        <Text style={sharedStyles.title}>Quick Actions</Text>
+        <Text>Buttons for common tasks</Text>
+      </View>
+    )
+  }
 });
+
+const DashboardContent: React.FC = () => {
+  return <ScreenContent generatePageContent={generateDashboardContent} />;
+};
+
+export default DashboardContent;

@@ -1,9 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { sharedStyles } from '../styles/sharedStyles';
-import { ThreeColumnLayout } from '../components/ThreeColumnLayout';
+import { View, Text } from 'react-native';
+import { ScreenContent, PageContent } from '../components/ScreenContent';
 import { CardGrid } from '../components/CardGrid';
 import { Card } from '../components/Card';
+import { sharedStyles } from '../styles/sharedStyles';
 
 interface Report {
   id: string;
@@ -31,22 +31,43 @@ const ReportCard = ({ item }: { item: Report }) => (
   </Card>
 );
 
-export default function Reports() {
-  const MainContent = (
-    <View style={sharedStyles.container}>
-      <Text style={sharedStyles.title}>Reports</Text>
-      <CardGrid
-        data={dummyReports}
-        renderItem={(item) => <ReportCard item={item} />}
-      />
-    </View>
-  );
+const generateReportsContent = (): PageContent => ({
+  leftColumn: {
+    title: "Report Types",
+    content: (
+      <View>
+        <Text style={sharedStyles.title}>Report Types</Text>
+        {/* Add a list of report types here */}
+      </View>
+    )
+  },
+  middleColumn: {
+    title: "Reports",
+    content: (
+      <View style={sharedStyles.container}>
+        <Text style={sharedStyles.title}>Reports</Text>
+        <CardGrid
+          data={dummyReports.map(item => ({
+            content: <ReportCard item={item} />
+          }))}
+          renderItem={(item) => item.content}
+        />
+      </View>
+    )
+  },
+  rightColumn: {
+    title: "Report Summary",
+    content: (
+      <View>
+        <Text style={sharedStyles.title}>Report Summary</Text>
+        {/* Add report summary or details here */}
+      </View>
+    )
+  }
+});
 
-  return (
-    <ThreeColumnLayout
-      left={<Text style={sharedStyles.title}>Report Types</Text>}
-      center={MainContent}
-      right={<Text style={sharedStyles.title}>Report Summary</Text>}
-    />
-  );
-}
+const Reports: React.FC = () => {
+  return <ScreenContent generatePageContent={generateReportsContent} />;
+};
+
+export default Reports;
