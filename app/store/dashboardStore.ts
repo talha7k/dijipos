@@ -1,10 +1,11 @@
 import { create } from 'zustand';
 
-export type Tab = 'dashboard' | 'orders' | 'menu' | 'customers';
+export type Tab = 'dashboard' | 'orders' | 'menu' | 'customers' | 'management';
 
 export interface Order {
   id: string;
   customerName: string;
+  products: Array<{ name: string; price: number; quantity: number }>;
   total: number;
   status: 'pending' | 'completed' | 'cancelled';
 }

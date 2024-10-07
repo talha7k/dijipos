@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useDashboardStore } from '../store/dashboardStore';
+import { sharedStyles } from '../styles/sharedStyles';
 
 interface DashboardCardProps {
   title: string;
@@ -21,7 +22,7 @@ export default function DashboardContent() {
   const { totalRevenue, totalOrders, activeTables, newCustomers } = useDashboardStore();
 
   return (
-    <View style={styles.dashboardContent}>
+    <View style={[sharedStyles.container, styles.dashboardContent]}>
       <DashboardCard title="Total Revenue" value={`$${totalRevenue.toFixed(2)}`} icon="cash" />
       <DashboardCard title="Orders" value={totalOrders} icon="cart" />
       <DashboardCard title="Active Tables" value={activeTables} icon="restaurant" />
@@ -32,10 +33,10 @@ export default function DashboardContent() {
 
 const styles = StyleSheet.create({
   dashboardContent: {
+    ...sharedStyles.content,
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    padding: 16,
   },
   card: {
     width: '48%',
@@ -45,8 +46,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   cardTitle: {
-    fontSize: 14,
-    color: '#8E8E93',
+    ...sharedStyles.itemDetail,
     marginTop: 8,
   },
   cardValue: {
