@@ -22,7 +22,6 @@ function MainTabs() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        headerShown: false,
         tabBarIcon: ({ focused, color, size }) => {
           let iconName: keyof typeof Ionicons.glyphMap = 'home';
 
@@ -42,89 +41,33 @@ function MainTabs() {
         },
       })}
     >
-      <Tab.Screen name="Dashboard" component={Dashboard} />
-      <Tab.Screen name="Orders" component={OrdersContent} />
-      <Tab.Screen name="Menu" component={MenuContent} />
-      <Tab.Screen name="Customers" component={CustomersContent} />
-      <Tab.Screen name="Management" component={ManagementStack} />
+      <Tab.Screen name="Dashboard" component={Dashboard} options={{ title: 'Dashboard' }} />
+      <Tab.Screen name="Orders" component={OrdersContent} options={{ title: 'Orders' }} />
+      <Tab.Screen name="Menu" component={MenuContent} options={{ title: 'Menu' }} />
+      <Tab.Screen name="Customers" component={CustomersContent} options={{ title: 'Customers' }} />
+      <Tab.Screen name="Management" component={ManagementStack} options={{ headerShown: false }} />
     </Tab.Navigator>
   );
 }
 
 function ManagementStack() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="ManagementOverview" component={ManagementContent} />
-      <Stack.Screen name="ProductManagement" component={ProductManagement} />
-      <Stack.Screen name="RestaurantManagement" component={RestaurantManagement} />
-      <Stack.Screen name="PaymentTypeManagement" component={PaymentTypeManagement} />
-      <Stack.Screen name="Reports" component={Reports} />
-      <Stack.Screen name="ProductCategoryManagement" component={ProductCategoryManagement} />
-      <Stack.Screen name="OrderCategoryManagement" component={OrderCategoryManagement} />
+    <Stack.Navigator>
+      <Stack.Screen name="ManagementOverview" component={ManagementContent} options={{ title: 'Management' }} />
+      <Stack.Screen name="ProductManagement" component={ProductManagement} options={{ title: 'Manage Products' }} />
+      <Stack.Screen name="RestaurantManagement" component={RestaurantManagement} options={{ title: 'Manage Restaurants' }} />
+      <Stack.Screen name="PaymentTypeManagement" component={PaymentTypeManagement} options={{ title: 'Payment Types' }} />
+      <Stack.Screen name="Reports" component={Reports} options={{ title: 'Reports' }} />
+      <Stack.Screen name="ProductCategoryManagement" component={ProductCategoryManagement} options={{ title: 'Product Categories' }} />
+      <Stack.Screen name="OrderCategoryManagement" component={OrderCategoryManagement} options={{ title: 'Order Categories' }} />
     </Stack.Navigator>
   );
 }
 
 export default function AppNavigator() {
   return (
-    <Stack.Navigator
-      screenOptions={{
-        headerShown: true,
-      }}
-    >
-      <Stack.Screen 
-        name="Main" 
-        component={MainTabs} 
-        options={({ route }) => ({
-          headerTitle: getHeaderTitle(route),
-        })}
-      />
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Main" component={MainTabs} />
     </Stack.Navigator>
   );
-}
-
-function getHeaderTitle(route: any) {
-  // Get the active route name
-  const routeName = route.state
-    ? route.state.routes[route.state.index].name
-    : route.params?.screen || 'Dashboard';
-
-  // Check if we're in the Management tab
-  if (routeName === 'Management') {
-    // Get the active management screen
-    const managementRoute = route.state?.routes[4].state?.routes[route.state.routes[4].state.index];
-    if (managementRoute) {
-      switch (managementRoute.name) {
-        case 'ManagementOverview':
-          return 'Management';
-        case 'ProductManagement':
-          return 'Manage Products';
-        case 'RestaurantManagement':
-          return 'Manage Restaurants';
-        case 'PaymentTypeManagement':
-          return 'Payment Types';
-        case 'Reports':
-          return 'Reports';
-        case 'ProductCategoryManagement':
-          return 'Product Categories';
-        case 'OrderCategoryManagement':
-          return 'Order Categories';
-      }
-    }
-    return 'Management';
-  }
-
-  // For other tabs
-  switch (routeName) {
-    case 'Dashboard':
-      return 'Dashboard';
-    case 'Orders':
-      return 'Orders';
-    case 'Menu':
-      return 'Menu';
-    case 'Customers':
-      return 'Customers';
-    default:
-      return routeName;
-  }
 }

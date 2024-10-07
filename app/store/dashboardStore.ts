@@ -66,9 +66,27 @@ export const useDashboardStore = create<DashboardState>((set) => ({
 
   // Orders
   orders: [
-    { id: '1', customerName: 'John Doe', total: 50.99, status: 'completed' },
-    { id: '2', customerName: 'Jane Smith', total: 35.50, status: 'pending' },
-    { id: '3', customerName: 'Bob Johnson', total: 75.25, status: 'cancelled' },
+    { 
+      id: '1', 
+      customerName: 'John Doe', 
+      products: [{ name: 'Product 1', price: 25.99, quantity: 2 }],
+      total: 51.98, 
+      status: 'completed' 
+    },
+    { 
+      id: '2', 
+      customerName: 'Jane Smith', 
+      products: [{ name: 'Product 2', price: 35.50, quantity: 1 }],
+      total: 35.50, 
+      status: 'pending' 
+    },
+    { 
+      id: '3', 
+      customerName: 'Bob Johnson', 
+      products: [{ name: 'Product 3', price: 37.25, quantity: 2 }],
+      total: 74.50, 
+      status: 'cancelled' 
+    },
   ],
   addOrder: (order) => set((state) => ({
     orders: [...state.orders, { ...order, id: Date.now().toString() }]

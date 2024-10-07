@@ -1,8 +1,10 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useDashboardStore } from '../store/dashboardStore';
 import { sharedStyles } from '../styles/sharedStyles';
+import { Card } from '../components/Card';
+import { ThreeColumnLayout } from '../components/ThreeColumnLayout';
 
 interface DashboardCardProps {
   title: string;
@@ -11,47 +13,62 @@ interface DashboardCardProps {
 }
 
 const DashboardCard: React.FC<DashboardCardProps> = ({ title, value, icon }) => (
-  <View style={styles.card}>
+  <Card style={styles.dashboardCard}>
     <Ionicons name={icon} size={24} color="#007AFF" />
-    <Text style={styles.cardTitle}>{title}</Text>
+    <Text style={sharedStyles.itemDetail}>{title}</Text>
     <Text style={styles.cardValue}>{value}</Text>
-  </View>
+  </Card>
 );
 
 export default function DashboardContent() {
   const { totalRevenue, totalOrders, activeTables, newCustomers } = useDashboardStore();
 
-  return (
-    <View style={[sharedStyles.container, styles.dashboardContent]}>
+  const MainContent = (
+    <View style={styles.dashboardContent}>
       <DashboardCard title="Total Revenue" value={`$${totalRevenue.toFixed(2)}`} icon="cash" />
       <DashboardCard title="Orders" value={totalOrders} icon="cart" />
       <DashboardCard title="Active Tables" value={activeTables} icon="restaurant" />
       <DashboardCard title="New Customers" value={newCustomers} icon="people" />
     </View>
   );
+
+  const LeftColumn = (
+    <View>
+      <Text style={sharedStyles.title}>Quick Actions</Text>
+      {/* Add quick action buttons or links here */}
+    </View>
+  );
+
+  const RightColumn = (
+    <View>
+      <Text style={sharedStyles.title}>Recent Activity</Text>
+      {/* Add a list of recent activities here */}
+    </View>
+  );
+
+  return (
+    <ThreeColumnLayout
+      left={LeftColumn}
+      center={MainContent}
+      right={RightColumn}
+    />
+  );
 }
 
 const styles = StyleSheet.create({
   dashboardContent: {
-    ...sharedStyles.content,
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
+    padding: 8,
   },
-  card: {
+  dashboardCard: {
     width: '48%',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    padding: 16,
     marginBottom: 16,
   },
-  cardTitle: {
-    ...sharedStyles.itemDetail,
-    marginTop: 8,
-  },
   cardValue: {
+    ...sharedStyles.itemName,
     fontSize: 24,
-    fontWeight: 'bold',
     marginTop: 4,
   },
 });

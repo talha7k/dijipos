@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput } from 'react-native';
 import { useDashboardStore, Order } from '../store/dashboardStore';
 import { sharedStyles } from '../styles/sharedStyles';
+import { Card } from '../components/Card';
+import { ThreeColumnLayout } from '../components/ThreeColumnLayout';
 
 interface Product {
   name: string;
@@ -9,7 +11,50 @@ interface Product {
   quantity: number;
 }
 
-const initialOrderState = { customerName: '', products: [] as Product[] };
+const initialOrderState = { customerName: '', products: [] as Product[], total: 0 };
+
+const OrderCard = ({ item, onEdit, onUpdateStatus }: { item: Order; onEdit: () => void; onUpdateStatus: (status: Order['status']) => void }) => (
+  <Card>
+    <Text style={sharedStyles.itemName}>{item.customerName}</Text>
+    <Text style={sharedStyles.itemDetail}>${item.total.toFixed(2)}</Text>
+    <Text style={sharedStyles.itemDetail}>{item.status}</Text>
+    <Text style={sharedStyles.itemDetail}>Products:</Text>
+    {item.products && item.products.map((product, index) => (
+      <Text key={index} style={sharedStyles.itemDetail}>
+        {product.name} - ${product.price.toFixed(2)} x {product.quantity}
+      </Text>
+    ))}
+    <View style={styles.orderActions}>
+      <TouchableOpacity style={[sharedStyles.button, styles.actionButton]} onPress={onEdit}>
+        <Text style={sharedStyles.buttonText}>Edit</Text>
+      </TouchableOpacity>
+      {item.status !== 'pending' && (
+        <TouchableOpacity 
+          style={[sharedStyles.button, styles.actionButton, { backgroundColor: '#FFA500' }]}
+          onPress={() => onUpdateStatus('pending')}
+        >
+          <Text style={sharedStyles.buttonText}>Pending</Text>
+        </TouchableOpacity>
+      )}
+      {item.status !== 'completed' && (
+        <TouchableOpacity 
+          style={[sharedStyles.button, styles.actionButton, { backgroundColor: '#007AFF' }]}
+          onPress={() => onUpdateStatus('completed')}
+        >
+          <Text style={sharedStyles.buttonText}>Complete</Text>
+        </TouchableOpacity>
+      )}
+      {item.status !== 'cancelled' && (
+        <TouchableOpacity 
+          style={[sharedStyles.button, styles.actionButton, { backgroundColor: '#FF3B30' }]}
+          onPress={() => onUpdateStatus('cancelled')}
+        >
+          <Text style={sharedStyles.buttonText}>Cancel</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  </Card>
+);
 
 export default function OrdersContent() {
   const { orders, addOrder, updateOrderStatus, updateOrder } = useDashboardStore();
@@ -22,48 +67,17 @@ export default function OrdersContent() {
       setNewOrder({
         customerName: editingOrder.customerName,
         products: editingOrder.products || [],
+        total: editingOrder.total,
       });
     }
   }, [editingOrder]);
 
   const renderOrderItem = ({ item }: { item: Order }) => (
-    <View style={styles.orderItem}>
-      <Text style={styles.orderName}>{item.customerName}</Text>
-      <Text style={styles.orderTotal}>${item.total.toFixed(2)}</Text>
-      <Text style={styles.orderStatus}>{item.status}</Text>
-      <View style={styles.orderActions}>
-        <TouchableOpacity 
-          style={styles.actionButton} 
-          onPress={() => setEditingOrder(item)}
-        >
-          <Text style={styles.actionButtonText}>Edit</Text>
-        </TouchableOpacity>
-        {item.status !== 'pending' && (
-          <TouchableOpacity 
-            style={[styles.actionButton, { backgroundColor: '#FFA500' }]}
-            onPress={() => updateOrderStatus(item.id, 'pending')}
-          >
-            <Text style={styles.actionButtonText}>Pending</Text>
-          </TouchableOpacity>
-        )}
-        {item.status !== 'completed' && (
-          <TouchableOpacity 
-            style={[styles.actionButton, { backgroundColor: '#007AFF' }]}
-            onPress={() => updateOrderStatus(item.id, 'completed')}
-          >
-            <Text style={styles.actionButtonText}>Complete</Text>
-          </TouchableOpacity>
-        )}
-        {item.status !== 'cancelled' && (
-          <TouchableOpacity 
-            style={[styles.actionButton, { backgroundColor: '#FF3B30' }]}
-            onPress={() => updateOrderStatus(item.id, 'cancelled')}
-          >
-            <Text style={styles.actionButtonText}>Cancel</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-    </View>
+    <OrderCard 
+      item={item} 
+      onEdit={() => setEditingOrder(item)}
+      onUpdateStatus={(status) => updateOrderStatus(item.id, status)}
+    />
   );
 
   const handleAddProduct = () => {
@@ -73,36 +87,39 @@ export default function OrdersContent() {
         price: parseFloat(newProduct.price),
         quantity: parseInt(newProduct.quantity) || 1,
       };
-      setNewOrder(prev => ({
-        ...prev,
-        products: [...prev.products, product],
-      }));
+      setNewOrder(prev => {
+        const updatedProducts = [...prev.products, product];
+        const newTotal = updatedProducts.reduce((sum, p) => sum + p.price * p.quantity, 0);
+        return {
+          ...prev,
+          products: updatedProducts,
+          total: newTotal,
+        };
+      });
       setNewProduct({ name: '', price: '', quantity: '1' });
     }
   };
 
   const handleRemoveProduct = (index: number) => {
-    setNewOrder(prev => ({
-      ...prev,
-      products: prev.products.filter((_, i) => i !== index),
-    }));
+    setNewOrder(prev => {
+      const updatedProducts = prev.products.filter((_, i) => i !== index);
+      const newTotal = updatedProducts.reduce((sum, p) => sum + p.price * p.quantity, 0);
+      return {
+        ...prev,
+        products: updatedProducts,
+        total: newTotal,
+      };
+    });
   };
 
   const handleAddOrUpdateOrder = () => {
     if (newOrder.customerName && newOrder.products.length > 0) {
-      const total = newOrder.products.reduce((sum, product) => sum + product.price * product.quantity, 0);
       if (editingOrder) {
-        updateOrder(editingOrder.id, {
-          customerName: newOrder.customerName,
-          products: newOrder.products,
-          total,
-        });
+        updateOrder(editingOrder.id, newOrder);
         setEditingOrder(null);
       } else {
         addOrder({
-          customerName: newOrder.customerName,
-          products: newOrder.products,
-          total,
+          ...newOrder,
           status: 'pending'
         });
       }
@@ -110,108 +127,95 @@ export default function OrdersContent() {
     }
   };
 
-  return (
-    <ScrollView style={sharedStyles.container}>
-      <View style={styles.content}>
-        <View style={styles.leftSection}>
-          <Text style={sharedStyles.title}>Recent Orders</Text>
-          <FlatList
-            data={orders}
-            renderItem={renderOrderItem}
-            keyExtractor={item => item.id}
-            scrollEnabled={false}
-          />
-        </View>
-        <View style={styles.rightSection}>
-          <Text style={sharedStyles.title}>{editingOrder ? 'Edit Order' : 'Add New Order'}</Text>
-          <TextInput
-            style={sharedStyles.input}
-            placeholder="Customer Name"
-            value={newOrder.customerName}
-            onChangeText={(text) => setNewOrder(prev => ({ ...prev, customerName: text }))}
-          />
-          <View style={styles.productInputContainer}>
-            <TextInput
-              style={styles.productInput}
-              placeholder="Product Name"
-              value={newProduct.name}
-              onChangeText={(text) => setNewProduct(prev => ({ ...prev, name: text }))}
-            />
-            <TextInput
-              style={styles.productInput}
-              placeholder="Price"
-              value={newProduct.price}
-              onChangeText={(text) => setNewProduct(prev => ({ ...prev, price: text }))}
-              keyboardType="numeric"
-            />
-            <TextInput
-              style={styles.productInput}
-              placeholder="Quantity"
-              value={newProduct.quantity}
-              onChangeText={(text) => setNewProduct(prev => ({ ...prev, quantity: text }))}
-              keyboardType="numeric"
-            />
-            <TouchableOpacity style={styles.addProductButton} onPress={handleAddProduct}>
-              <Text style={sharedStyles.buttonText}>Add</Text>
+  const MainContent = (
+    <View style={styles.content}>
+      <Text style={sharedStyles.title}>Recent Orders</Text>
+      <FlatList
+        data={orders}
+        renderItem={renderOrderItem}
+        keyExtractor={item => item.id}
+      />
+    </View>
+  );
+
+  const RightColumn = (
+    <Card>
+      <Text style={sharedStyles.title}>{editingOrder ? 'Edit Order' : 'Add New Order'}</Text>
+      <TextInput
+        style={sharedStyles.input}
+        placeholder="Customer Name"
+        value={newOrder.customerName}
+        onChangeText={(text) => setNewOrder(prev => ({ ...prev, customerName: text }))}
+      />
+      <View style={styles.productInputContainer}>
+        <TextInput
+          style={[sharedStyles.input, styles.productInput]}
+          placeholder="Product Name"
+          value={newProduct.name}
+          onChangeText={(text) => setNewProduct(prev => ({ ...prev, name: text }))}
+        />
+        <TextInput
+          style={[sharedStyles.input, styles.productInput]}
+          placeholder="Price"
+          value={newProduct.price}
+          onChangeText={(text) => setNewProduct(prev => ({ ...prev, price: text }))}
+          keyboardType="numeric"
+        />
+        <TextInput
+          style={[sharedStyles.input, styles.productInput]}
+          placeholder="Quantity"
+          value={newProduct.quantity}
+          onChangeText={(text) => setNewProduct(prev => ({ ...prev, quantity: text }))}
+          keyboardType="numeric"
+        />
+        <TouchableOpacity style={[sharedStyles.button, styles.addProductButton]} onPress={handleAddProduct}>
+          <Text style={sharedStyles.buttonText}>Add</Text>
+        </TouchableOpacity>
+      </View>
+      <FlatList
+        data={newOrder.products}
+        renderItem={({ item, index }) => (
+          <View style={styles.productItem}>
+            <Text>{item.name} - ${item.price.toFixed(2)} x {item.quantity}</Text>
+            <TouchableOpacity onPress={() => handleRemoveProduct(index)}>
+              <Text style={styles.removeProductText}>Remove</Text>
             </TouchableOpacity>
           </View>
-          <FlatList
-            data={newOrder.products}
-            renderItem={({ item, index }) => (
-              <View style={styles.productItem}>
-                <Text>{item.name} - ${item.price.toFixed(2)} x {item.quantity}</Text>
-                <TouchableOpacity onPress={() => handleRemoveProduct(index)}>
-                  <Text style={styles.removeProductText}>Remove</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-            keyExtractor={(item, index) => index.toString()}
-            scrollEnabled={false}
-          />
-          <TouchableOpacity style={styles.submitButton} onPress={handleAddOrUpdateOrder}>
-            <Text style={sharedStyles.buttonText}>{editingOrder ? 'Update Order' : 'Add Order'}</Text>
-          </TouchableOpacity>
-          {editingOrder && (
-            <TouchableOpacity 
-              style={[styles.submitButton, { backgroundColor: '#FF3B30', marginTop: 10 }]}
-              onPress={() => {
-                setNewOrder(initialOrderState);
-                setEditingOrder(null);
-              }}
-            >
-              <Text style={sharedStyles.buttonText}>Cancel Edit</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      </View>
-    </ScrollView>
+        )}
+        keyExtractor={(item, index) => index.toString()}
+        scrollEnabled={false}
+      />
+      <Text style={sharedStyles.itemDetail}>Total: ${newOrder.total.toFixed(2)}</Text>
+      <TouchableOpacity style={[sharedStyles.button, sharedStyles.primaryButton]} onPress={handleAddOrUpdateOrder}>
+        <Text style={sharedStyles.buttonText}>{editingOrder ? 'Update Order' : 'Add Order'}</Text>
+      </TouchableOpacity>
+      {editingOrder && (
+        <TouchableOpacity 
+          style={[sharedStyles.button, { backgroundColor: '#FF3B30', marginTop: 10 }]}
+          onPress={() => {
+            setNewOrder(initialOrderState);
+            setEditingOrder(null);
+          }}
+        >
+          <Text style={sharedStyles.buttonText}>Cancel Edit</Text>
+        </TouchableOpacity>
+      )}
+    </Card>
+  );
+
+  return (
+    <ThreeColumnLayout
+      left={<Text>Quick Actions</Text>}
+      center={MainContent}
+      right={RightColumn}
+    />
   );
 }
 
 const styles = StyleSheet.create({
   content: {
-    ...sharedStyles.content,
     flexDirection: 'row',
-  },
-  leftSection: {
-    flex: 1,
-    marginRight: 16,
-  },
-  rightSection: {
-    flex: 1,
-  },
-  orderItem: {
-    ...sharedStyles.listItem,
-  },
-  orderName: {
-    ...sharedStyles.itemName,
-  },
-  orderTotal: {
-    ...sharedStyles.itemDetail,
-    color: '#007AFF',
-  },
-  orderStatus: {
-    ...sharedStyles.itemDetail,
+    padding: 8,
   },
   orderActions: {
     flexDirection: 'row',
@@ -219,13 +223,8 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   actionButton: {
-    ...sharedStyles.button,
     padding: 8,
     marginLeft: 8,
-  },
-  actionButtonText: {
-    ...sharedStyles.buttonText,
-    fontSize: 12,
   },
   productInputContainer: {
     flexDirection: 'row',
@@ -233,28 +232,22 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   productInput: {
-    ...sharedStyles.input,
     flex: 1,
     marginRight: 8,
   },
   addProductButton: {
-    ...sharedStyles.button,
-    ...sharedStyles.primaryButton,
     justifyContent: 'center',
     padding: 8,
   },
   productItem: {
-    ...sharedStyles.listItem,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5EA',
   },
   removeProductText: {
     color: '#FF3B30',
-  },
-  submitButton: {
-    ...sharedStyles.button,
-    ...sharedStyles.primaryButton,
-    marginTop: 16,
   },
 });

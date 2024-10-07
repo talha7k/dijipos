@@ -1,33 +1,32 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Modal } from 'react-native';
-import { useDashboardStore } from '../store/dashboardStore';
-import { Customer } from '../store/dashboardStore'; // Import the Customer type
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Modal } from 'react-native';
+import { useDashboardStore, Customer } from '../store/dashboardStore';
+import { sharedStyles } from '../styles/sharedStyles';
+import { Card } from '../components/Card';
+import { ThreeColumnLayout } from '../components/ThreeColumnLayout';
+import { CardGrid } from '../components/CardGrid';
+
+const CustomerCard = ({ item, onEdit, onDelete }: { item: Customer; onEdit: () => void; onDelete: () => void }) => (
+  <Card>
+    <Text style={sharedStyles.itemName}>{item.name}</Text>
+    <Text style={sharedStyles.itemDetail}>{item.email}</Text>
+    <Text style={sharedStyles.itemDetail}>Total Orders: {item.totalOrders}</Text>
+    <View style={styles.customerActions}>
+      <TouchableOpacity onPress={onEdit} style={[sharedStyles.button, styles.actionButton]}>
+        <Text style={sharedStyles.buttonText}>Edit</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={onDelete} style={[sharedStyles.button, styles.actionButton, styles.deleteButton]}>
+        <Text style={sharedStyles.buttonText}>Delete</Text>
+      </TouchableOpacity>
+    </View>
+  </Card>
+);
 
 export default function CustomersContent() {
   const { customers, addCustomer, updateCustomer, deleteCustomer } = useDashboardStore();
   const [modalVisible, setModalVisible] = useState(false);
   const [newCustomer, setNewCustomer] = useState({ name: '', email: '', totalOrders: '' });
-  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null); // Add type annotation
-
-  const renderCustomerItem = ({ item }: { item: Customer }) => ( // Add type annotation
-    <View style={styles.customerItem}>
-      <Text style={styles.customerName}>{item.name}</Text>
-      <Text style={styles.customerEmail}>{item.email}</Text>
-      <Text style={styles.customerOrders}>Total Orders: {item.totalOrders}</Text>
-      <View style={styles.customerActions}>
-        <TouchableOpacity onPress={() => {
-          setEditingCustomer(item);
-          setNewCustomer({ name: item.name, email: item.email, totalOrders: item.totalOrders.toString() });
-          setModalVisible(true);
-        }}>
-          <Text style={styles.actionButton}>Edit</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => deleteCustomer(item.id)}>
-          <Text style={styles.actionButton}>Delete</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
 
   const handleAddOrUpdateCustomer = () => {
     if (newCustomer.name && newCustomer.email) {
@@ -50,20 +49,29 @@ export default function CustomersContent() {
     }
   };
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Customers</Text>
-      <TouchableOpacity style={styles.addButton} onPress={() => {
+  const MainContent = (
+    <View style={sharedStyles.container}>
+      <Text style={sharedStyles.title}>Customers</Text>
+      <TouchableOpacity style={[sharedStyles.button, sharedStyles.primaryButton]} onPress={() => {
         setEditingCustomer(null);
         setNewCustomer({ name: '', email: '', totalOrders: '' });
         setModalVisible(true);
       }}>
-        <Text style={styles.addButtonText}>Add New Customer</Text>
+        <Text style={sharedStyles.buttonText}>Add New Customer</Text>
       </TouchableOpacity>
-      <FlatList
+      <CardGrid
         data={customers}
-        renderItem={renderCustomerItem}
-        keyExtractor={item => item.id}
+        renderItem={(item) => (
+          <CustomerCard
+            item={item}
+            onEdit={() => {
+              setEditingCustomer(item);
+              setNewCustomer({ name: item.name, email: item.email, totalOrders: item.totalOrders.toString() });
+              setModalVisible(true);
+            }}
+            onDelete={() => deleteCustomer(item.id)}
+          />
+        )}
       />
       <Modal
         animationType="slide"
@@ -73,82 +81,55 @@ export default function CustomersContent() {
       >
         <View style={styles.modalView}>
           <TextInput
-            style={styles.input}
+            style={sharedStyles.input}
             placeholder="Customer Name"
             value={newCustomer.name}
             onChangeText={(text) => setNewCustomer({ ...newCustomer, name: text })}
           />
           <TextInput
-            style={styles.input}
+            style={sharedStyles.input}
             placeholder="Email"
             value={newCustomer.email}
             onChangeText={(text) => setNewCustomer({ ...newCustomer, email: text })}
           />
           <TextInput
-            style={styles.input}
+            style={sharedStyles.input}
             placeholder="Total Orders"
             value={newCustomer.totalOrders}
             onChangeText={(text) => setNewCustomer({ ...newCustomer, totalOrders: text })}
             keyboardType="numeric"
           />
-          <TouchableOpacity style={styles.submitButton} onPress={handleAddOrUpdateCustomer}>
-            <Text style={styles.submitButtonText}>{editingCustomer ? 'Update Customer' : 'Add Customer'}</Text>
+          <TouchableOpacity style={[sharedStyles.button, sharedStyles.primaryButton]} onPress={handleAddOrUpdateCustomer}>
+            <Text style={sharedStyles.buttonText}>{editingCustomer ? 'Update Customer' : 'Add Customer'}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.cancelButton} onPress={() => setModalVisible(false)}>
-            <Text style={styles.cancelButtonText}>Cancel</Text>
+          <TouchableOpacity style={[sharedStyles.button, styles.cancelButton]} onPress={() => setModalVisible(false)}>
+            <Text style={sharedStyles.buttonText}>Cancel</Text>
           </TouchableOpacity>
         </View>
       </Modal>
     </View>
   );
+
+  return (
+    <ThreeColumnLayout
+      left={<Text style={sharedStyles.title}>Customer Groups</Text>}
+      center={MainContent}
+      right={<Text style={sharedStyles.title}>Customer Stats</Text>}
+    />
+  );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: '#FFFFFF',
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 16,
-  },
-  addButton: {
-    backgroundColor: '#007AFF',
-    padding: 10,
-    borderRadius: 5,
-    marginBottom: 16,
-  },
-  addButtonText: {
-    color: '#FFFFFF',
-    textAlign: 'center',
-  },
-  customerItem: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
-    paddingVertical: 12,
-  },
-  customerName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  customerEmail: {
-    fontSize: 14,
-    color: '#007AFF',
-  },
-  customerOrders: {
-    fontSize: 14,
-    color: '#8E8E93',
-  },
   customerActions: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
     marginTop: 8,
   },
   actionButton: {
-    color: '#007AFF',
-    marginLeft: 16,
+    marginLeft: 8,
+  },
+  deleteButton: {
+    backgroundColor: '#FF3B30',
   },
   modalView: {
     margin: 20,
@@ -165,31 +146,8 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5
   },
-  input: {
-    height: 40,
-    width: '100%',
-    margin: 12,
-    borderWidth: 1,
-    padding: 10,
-  },
-  submitButton: {
-    backgroundColor: '#007AFF',
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 10,
-  },
-  submitButtonText: {
-    color: '#FFFFFF',
-    textAlign: 'center',
-  },
   cancelButton: {
     backgroundColor: '#FF3B30',
-    padding: 10,
-    borderRadius: 5,
     marginTop: 10,
-  },
-  cancelButtonText: {
-    color: '#FFFFFF',
-    textAlign: 'center',
   },
 });

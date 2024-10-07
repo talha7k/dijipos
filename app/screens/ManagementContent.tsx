@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { sharedStyles } from '../styles/sharedStyles';
+import { ThreeColumnLayout } from '../components/ThreeColumnLayout';
 
 type RootStackParamList = {
   ProductManagement: undefined;
@@ -33,17 +34,23 @@ export default function ManagementContent() {
     navigation.navigate(screen);
   };
 
+  const MainContent = (
+    <View style={styles.optionsContainer}>
+      <ManagementOption title="Manage Products" onPress={() => handleOptionPress('ProductManagement')} />
+      <ManagementOption title="Manage Restaurants" onPress={() => handleOptionPress('RestaurantManagement')} />
+      <ManagementOption title="Payment Types" onPress={() => handleOptionPress('PaymentTypeManagement')} />
+      <ManagementOption title="Reports" onPress={() => handleOptionPress('Reports')} />
+      <ManagementOption title="Product Categories" onPress={() => handleOptionPress('ProductCategoryManagement')} />
+      <ManagementOption title="Order Categories" onPress={() => handleOptionPress('OrderCategoryManagement')} />
+    </View>
+  );
+
   return (
-    <ScrollView style={sharedStyles.container}>
-      <View style={styles.optionsContainer}>
-        <ManagementOption title="Manage Products" onPress={() => handleOptionPress('ProductManagement')} />
-        <ManagementOption title="Manage Restaurants" onPress={() => handleOptionPress('RestaurantManagement')} />
-        <ManagementOption title="Payment Types" onPress={() => handleOptionPress('PaymentTypeManagement')} />
-        <ManagementOption title="Reports" onPress={() => handleOptionPress('Reports')} />
-        <ManagementOption title="Product Categories" onPress={() => handleOptionPress('ProductCategoryManagement')} />
-        <ManagementOption title="Order Categories" onPress={() => handleOptionPress('OrderCategoryManagement')} />
-      </View>
-    </ScrollView>
+    <ThreeColumnLayout
+      left={<Text style={sharedStyles.title}>Quick Actions</Text>}
+      center={MainContent}
+      right={<Text style={sharedStyles.title}>Management Stats</Text>}
+    />
   );
 }
 

@@ -1,56 +1,82 @@
 import React from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useDashboardStore, MenuItem } from '../store/dashboardStore';
 import { sharedStyles } from '../styles/sharedStyles';
+import { Card } from '../components/Card';
+import { ThreeColumnLayout } from '../components/ThreeColumnLayout';
+import { CardGrid } from '../components/CardGrid';
 
 const MenuItemCard = ({ item }: { item: MenuItem }) => (
-  <View style={styles.card}>
+  <Card style={styles.menuItemCard}>
     <Text style={styles.itemName}>{item.name}</Text>
-    <Text style={styles.itemPrice}>${item.price.toFixed(2)}</Text>
+    <Text style={styles.itemPrice}>
+      ${typeof item.price === 'number' ? item.price.toFixed(2) : 'N/A'}
+    </Text>
     <Text style={styles.itemCategory}>{item.category}</Text>
-  </View>
+  </Card>
 );
 
 export default function MenuContent() {
   const { menuItems } = useDashboardStore();
 
-  return (
-    <View style={sharedStyles.container}>
+  const MainContent = (
+    <View style={styles.container}>
       <Text style={sharedStyles.title}>Menu Items</Text>
-      <FlatList
+      <CardGrid
         data={menuItems}
-        renderItem={({ item }) => <MenuItemCard item={item} />}
-        keyExtractor={item => item.id}
-        numColumns={2}
-        columnWrapperStyle={styles.columnWrapper}
+        renderItem={(item) => <MenuItemCard item={item} />}
       />
     </View>
+  );
+
+  const LeftColumn = (
+    <View>
+      <Text style={sharedStyles.title}>Categories</Text>
+      {/* Add a list of categories here */}
+    </View>
+  );
+
+  const RightColumn = (
+    <View>
+      <Text style={sharedStyles.title}>Menu Stats</Text>
+      {/* Add menu statistics here */}
+    </View>
+  );
+
+  return (
+    <ThreeColumnLayout
+      left={LeftColumn}
+      center={MainContent}
+      right={RightColumn}
+    />
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    ...sharedStyles.listItem,
-    width: '48%',
+  container: {
+    flex: 1,
     padding: 16,
-    marginBottom: 16,
-    backgroundColor: '#F8F8F8',
-    borderRadius: 8,
-    elevation: 2,
+  },
+  menuItemCard: {
+    flex: 1,
+    aspectRatio: 1,
+    justifyContent: 'space-between',
+    padding: 12,
+    margin: 8,
   },
   itemName: {
     ...sharedStyles.itemName,
+    fontSize: 16,
     marginBottom: 8,
   },
   itemPrice: {
     ...sharedStyles.itemDetail,
+    fontSize: 14,
     color: '#007AFF',
     marginBottom: 4,
   },
   itemCategory: {
     ...sharedStyles.itemDetail,
-  },
-  columnWrapper: {
-    justifyContent: 'space-between',
+    fontSize: 12,
   },
 });

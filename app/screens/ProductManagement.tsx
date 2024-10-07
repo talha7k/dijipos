@@ -1,28 +1,38 @@
-import React, { useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, TextInput, Modal } from 'react-native';
+import React, { useState, useLayoutEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, TextInput, Modal } from 'react-native';
 import { useDashboardStore, MenuItem } from '../store/dashboardStore';
 import { sharedStyles } from '../styles/sharedStyles';
+import { useNavigation } from '@react-navigation/native';
+import { ThreeColumnLayout } from '../components/ThreeColumnLayout';
+import { CardGrid } from '../components/CardGrid';
+import { Card } from '../components/Card';
 
 export default function ProductManagement() {
+  const navigation = useNavigation();
+
+  useLayoutEffect(() => {
+    navigation.setOptions({ headerTitle: 'Manage Products' });
+  }, [navigation]);
+
   const { menuItems, addMenuItem, updateMenuItem, deleteMenuItem } = useDashboardStore();
   const [modalVisible, setModalVisible] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [newItem, setNewItem] = useState({ name: '', price: '', category: '' });
 
-  const renderItem = ({ item }: { item: MenuItem }) => (
-    <View style={styles.item}>
-      <Text style={styles.itemName}>{item.name}</Text>
-      <Text style={styles.itemPrice}>${item.price.toFixed(2)}</Text>
-      <Text style={styles.itemCategory}>{item.category}</Text>
+  const renderItem = (item: MenuItem) => (
+    <Card style={styles.item}>
+      <Text style={sharedStyles.itemName}>{item.name}</Text>
+      <Text style={sharedStyles.itemDetail}>${item.price.toFixed(2)}</Text>
+      <Text style={sharedStyles.itemDetail}>{item.category}</Text>
       <View style={styles.itemActions}>
-        <TouchableOpacity onPress={() => handleEdit(item)} style={styles.editButton}>
-          <Text style={styles.buttonText}>Edit</Text>
+        <TouchableOpacity onPress={() => handleEdit(item)} style={[sharedStyles.button, styles.editButton]}>
+          <Text style={sharedStyles.buttonText}>Edit</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => deleteMenuItem(item.id)} style={styles.deleteButton}>
-          <Text style={styles.buttonText}>Delete</Text>
+        <TouchableOpacity onPress={() => deleteMenuItem(item.id)} style={[sharedStyles.button, styles.deleteButton]}>
+          <Text style={sharedStyles.buttonText}>Delete</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </Card>
   );
 
   const handleEdit = (item: MenuItem) => {
@@ -51,16 +61,15 @@ export default function ProductManagement() {
     }
   };
 
-  return (
+  const MainContent = (
     <View style={sharedStyles.container}>
       <Text style={sharedStyles.title}>Product Management</Text>
-      <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
-        <Text style={styles.buttonText}>Add New Product</Text>
+      <TouchableOpacity style={[sharedStyles.button, sharedStyles.primaryButton]} onPress={() => setModalVisible(true)}>
+        <Text style={sharedStyles.buttonText}>Add New Product</Text>
       </TouchableOpacity>
-      <FlatList
+      <CardGrid
         data={menuItems}
         renderItem={renderItem}
-        keyExtractor={item => item.id}
       />
       <Modal
         animationType="slide"
@@ -70,33 +79,41 @@ export default function ProductManagement() {
       >
         <View style={styles.modalView}>
           <TextInput
-            style={styles.input}
+            style={sharedStyles.input}
             placeholder="Product Name"
             value={newItem.name}
             onChangeText={(text) => setNewItem({ ...newItem, name: text })}
           />
           <TextInput
-            style={styles.input}
+            style={sharedStyles.input}
             placeholder="Price"
             value={newItem.price}
             onChangeText={(text) => setNewItem({ ...newItem, price: text })}
             keyboardType="numeric"
           />
           <TextInput
-            style={styles.input}
+            style={sharedStyles.input}
             placeholder="Category"
             value={newItem.category}
             onChangeText={(text) => setNewItem({ ...newItem, category: text })}
           />
-          <TouchableOpacity style={styles.submitButton} onPress={handleAddOrUpdate}>
-            <Text style={styles.buttonText}>{editingItem ? 'Update Product' : 'Add Product'}</Text>
+          <TouchableOpacity style={[sharedStyles.button, sharedStyles.primaryButton]} onPress={handleAddOrUpdate}>
+            <Text style={sharedStyles.buttonText}>{editingItem ? 'Update Product' : 'Add Product'}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.cancelButton} onPress={() => setModalVisible(false)}>
-            <Text style={styles.buttonText}>Cancel</Text>
+          <TouchableOpacity style={[sharedStyles.button, styles.cancelButton]} onPress={() => setModalVisible(false)}>
+            <Text style={sharedStyles.buttonText}>Cancel</Text>
           </TouchableOpacity>
         </View>
       </Modal>
     </View>
+  );
+
+  return (
+    <ThreeColumnLayout
+      left={<Text style={sharedStyles.title}>Product Categories</Text>}
+      center={MainContent}
+      right={<Text style={sharedStyles.title}>Product Stats</Text>}
+    />
   );
 }
 
@@ -105,20 +122,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'space-between',
     padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-  },
-  itemName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  itemPrice: {
-    fontSize: 14,
-    color: '#007AFF',
-  },
-  itemCategory: {
-    fontSize: 14,
-    color: '#8E8E93',
+    marginBottom: 16,
   },
   itemActions: {
     flexDirection: 'row',
@@ -127,24 +131,10 @@ const styles = StyleSheet.create({
   },
   editButton: {
     backgroundColor: '#007AFF',
-    padding: 5,
-    borderRadius: 5,
     marginRight: 10,
   },
   deleteButton: {
     backgroundColor: '#FF3B30',
-    padding: 5,
-    borderRadius: 5,
-  },
-  buttonText: {
-    color: 'white',
-  },
-  addButton: {
-    backgroundColor: '#4CD964',
-    padding: 10,
-    borderRadius: 5,
-    marginBottom: 10,
-    alignItems: 'center',
   },
   modalView: {
     margin: 20,
@@ -161,24 +151,8 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5
   },
-  input: {
-    height: 40,
-    width: '100%',
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginBottom: 10,
-    paddingHorizontal: 10,
-  },
-  submitButton: {
-    backgroundColor: '#007AFF',
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 10,
-  },
   cancelButton: {
     backgroundColor: '#FF3B30',
-    padding: 10,
-    borderRadius: 5,
     marginTop: 10,
   },
 });
