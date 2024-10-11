@@ -1,0 +1,410 @@
+{
+  "restaurants": [
+    {
+      "id": 1,
+      "name": "Tasty Bites",
+      "address": "123 Main St, Cityville",
+      "phone_number": "555-1234",
+      "created_at": "2023-01-01T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "name": "Spice Haven",
+      "address": "456 Oak Ave, Townsburg",
+      "phone_number": "555-5678",
+      "created_at": "2023-01-02T00:00:00Z"
+    },
+    {
+      "id": 3,
+      "name": "Gourmet Galaxy",
+      "address": "789 Pine Rd, Villageton",
+      "phone_number": "555-9012",
+      "created_at": "2023-01-03T00:00:00Z"
+    }
+  ],
+  "users": [
+    {
+      "id": 1,
+      "email": "admin@tastybites.com",
+      "password_hash": "hashed_password_here",
+      "full_name": "Admin User",
+      "role": "admin",
+      "restaurant_id": 1,
+      "created_at": "2023-01-01T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "email": "manager@spicehaven.com",
+      "password_hash": "hashed_password_here",
+      "full_name": "Manager User",
+      "role": "manager",
+      "restaurant_id": 2,
+      "created_at": "2023-01-02T00:00:00Z"
+    },
+    {
+      "id": 3,
+      "email": "waiter@gourmetgalaxy.com",
+      "password_hash": "hashed_password_here",
+      "full_name": "Waiter User",
+      "role": "waiter",
+      "restaurant_id": 3,
+      "created_at": "2023-01-03T00:00:00Z"
+    }
+  ],
+  "tables": [
+    {
+      "id": 1,
+      "table_number": "A1",
+      "restaurant_id": 1,
+      "is_occupied": false,
+      "created_at": "2023-01-01T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "table_number": "B2",
+      "restaurant_id": 2,
+      "is_occupied": true,
+      "created_at": "2023-01-02T00:00:00Z"
+    },
+    {
+      "id": 3,
+      "table_number": "C3",
+      "restaurant_id": 3,
+      "is_occupied": false,
+      "created_at": "2023-01-03T00:00:00Z"
+    }
+  ],
+  "productCategories": [
+    {
+      "id": 1,
+      "name": "Main Course",
+      "description": "Primary dishes",
+      "restaurant_id": 1,
+      "created_at": "2023-01-01T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "name": "Appetizers",
+      "description": "Starters and small plates",
+      "restaurant_id": 2,
+      "created_at": "2023-01-02T00:00:00Z"
+    },
+    {
+      "id": 3,
+      "name": "Desserts",
+      "description": "Sweet treats to end your meal",
+      "restaurant_id": 3,
+      "created_at": "2023-01-03T00:00:00Z"
+    }
+  ],
+  "products": [
+    {
+      "id": 1,
+      "name_en": "Spaghetti Bolognese",
+      "name_other": "スパゲッティ・ボロネーゼ",
+      "description": "Classic Italian pasta dish",
+      "price": 12.99,
+      "category_id": 1,
+      "restaurant_id": 1,
+      "is_available": true,
+      "created_at": "2023-01-01T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "name_en": "Chicken Tikka Masala",
+      "name_other": "チキンティッカマサラ",
+      "description": "Creamy and spicy Indian curry",
+      "price": 14.99,
+      "category_id": 1,
+      "restaurant_id": 2,
+      "is_available": true,
+      "created_at": "2023-01-02T00:00:00Z"
+    },
+    {
+      "id": 3,
+      "name_en": "Caesar Salad",
+      "name_other": "シーザーサラダ",
+      "description": "Classic romaine lettuce salad",
+      "price": 8.99,
+      "category_id": 2,
+      "restaurant_id": 3,
+      "is_available": true,
+      "created_at": "2023-01-03T00:00:00Z"
+    },
+    {
+      "id": 4,
+      "name_en": "Margherita Pizza",
+      "name_other": "マルゲリータピザ",
+      "description": "Classic Italian pizza",
+      "price": 11.99,
+      "category_id": 1,
+      "restaurant_id": 1,
+      "is_available": true,
+      "created_at": "2023-01-04T00:00:00Z"
+    },
+    {
+      "id": 5,
+      "name_en": "Beef Burger",
+      "name_other": "ビーフバーガー",
+      "description": "Juicy beef patty with fresh toppings",
+      "price": 10.99,
+      "category_id": 1,
+      "restaurant_id": 2,
+      "is_available": true,
+      "created_at": "2023-01-05T00:00:00Z"
+    },
+    {
+      "id": 6,
+      "name_en": "Chocolate Mousse",
+      "name_other": "チョコレートムース",
+      "description": "Rich and creamy chocolate dessert",
+      "price": 6.99,
+      "category_id": 3,
+      "restaurant_id": 3,
+      "is_available": true,
+      "created_at": "2023-01-06T00:00:00Z"
+    },
+    {
+      "id": 7,
+      "name_en": "Grilled Salmon",
+      "name_other": "グリルドサーモン",
+      "description": "Fresh salmon fillet with lemon butter sauce",
+      "price": 16.99,
+      "category_id": 1,
+      "restaurant_id": 1,
+      "is_available": true,
+      "created_at": "2023-01-07T00:00:00Z"
+    },
+    {
+      "id": 8,
+      "name_en": "Vegetable Stir Fry",
+      "name_other": "野菜炒め",
+      "description": "Assorted vegetables in a savory sauce",
+      "price": 9.99,
+      "category_id": 1,
+      "restaurant_id": 2,
+      "is_available": true,
+      "created_at": "2023-01-08T00:00:00Z"
+    },
+    {
+      "id": 9,
+      "name_en": "Tiramisu",
+      "name_other": "ティラミス",
+      "description": "Italian coffee-flavored dessert",
+      "price": 7.99,
+      "category_id": 3,
+      "restaurant_id": 3,
+      "is_available": true,
+      "created_at": "2023-01-09T00:00:00Z"
+    },
+    {
+      "id": 10,
+      "name_en": "Greek Salad",
+      "name_other": "ギリシャサラダ",
+      "description": "Fresh vegetables with feta cheese",
+      "price": 8.99,
+      "category_id": 2,
+      "restaurant_id": 1,
+      "is_available": true,
+      "created_at": "2023-01-10T00:00:00Z"
+    },
+    {
+      "id": 11,
+      "name_en": "Chicken Wings",
+      "name_other": "チキンウィング",
+      "description": "Crispy wings with your choice of sauce",
+      "price": 9.99,
+      "category_id": 2,
+      "restaurant_id": 2,
+      "is_available": true,
+      "created_at": "2023-01-11T00:00:00Z"
+    },
+    {
+      "id": 12,
+      "name_en": "Fruit Tart",
+      "name_other": "フルーツタルト",
+      "description": "Buttery tart shell filled with fresh fruits",
+      "price": 5.99,
+      "category_id": 3,
+      "restaurant_id": 3,
+      "is_available": true,
+      "created_at": "2023-01-12T00:00:00Z"
+    },
+    {
+      "id": 13,
+      "name_en": "Beef Stroganoff",
+      "name_other": "ビーフストロガノフ",
+      "description": "Tender beef in a creamy mushroom sauce",
+      "price": 15.99,
+      "category_id": 1,
+      "restaurant_id": 1,
+      "is_available": true,
+      "created_at": "2023-01-13T00:00:00Z"
+    },
+    {
+      "id": 14,
+      "name_en": "Caprese Salad",
+      "name_other": "カプレーゼサラダ",
+      "description": "Fresh mozzarella, tomatoes, and basil",
+      "price": 7.99,
+      "category_id": 2,
+      "restaurant_id": 2,
+      "is_available": true,
+      "created_at": "2023-01-14T00:00:00Z"
+    },
+    {
+      "id": 15,
+      "name_en": "Crème Brûlée",
+      "name_other": "クレームブリュレ",
+      "description": "Classic French custard dessert",
+      "price": 6.99,
+      "category_id": 3,
+      "restaurant_id": 3,
+      "is_available": true,
+      "created_at": "2023-01-15T00:00:00Z"
+    }
+  ],
+  "customers": [
+    {
+      "id": 1,
+      "name": "John Doe",
+      "email": "john@example.com",
+      "phone_number": "555-5678",
+      "created_at": "2023-01-01T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "name": "Jane Smith",
+      "email": "jane@example.com",
+      "phone_number": "555-8765",
+      "created_at": "2023-01-02T00:00:00Z"
+    },
+    {
+      "id": 3,
+      "name": "Bob Johnson",
+      "email": "bob@example.com",
+      "phone_number": "555-4321",
+      "created_at": "2023-01-03T00:00:00Z"
+    }
+  ],
+  "orders": [
+    {
+      "id": 1,
+      "table_id": 1,
+      "customer_id": 1,
+      "user_id": 1,
+      "restaurant_id": 1,
+      "status": "pending",
+      "total_amount": 12.99,
+      "created_at": "2023-01-01T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "table_id": 2,
+      "customer_id": 2,
+      "user_id": 2,
+      "restaurant_id": 2,
+      "status": "completed",
+      "total_amount": 25.98,
+      "created_at": "2023-01-02T00:00:00Z"
+    },
+    {
+      "id": 3,
+      "table_id": 3,
+      "customer_id": 3,
+      "user_id": 3,
+      "restaurant_id": 3,
+      "status": "canceled",
+      "total_amount": 8.99,
+      "created_at": "2023-01-03T00:00:00Z"
+    }
+  ],
+  "orderItems": [
+    {
+      "id": 1,
+      "order_id": 1,
+      "product_id": 1,
+      "quantity": 1,
+      "price": 12.99,
+      "total_price": 12.99,
+      "created_at": "2023-01-01T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "order_id": 2,
+      "product_id": 2,
+      "quantity": 2,
+      "price": 14.99,
+      "total_price": 29.98,
+      "created_at": "2023-01-02T00:00:00Z"
+    },
+    {
+      "id": 3,
+      "order_id": 3,
+      "product_id": 3,
+      "quantity": 1,
+      "price": 8.99,
+      "total_price": 8.99,
+      "created_at": "2023-01-03T00:00:00Z"
+    }
+  ],
+  "paymentTypes": [
+    {
+      "id": 1,
+      "name": "Credit Card",
+      "created_at": "2023-01-01T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "name": "Cash",
+      "created_at": "2023-01-02T00:00:00Z"
+    },
+    {
+      "id": 3,
+      "name": "Mobile Payment",
+      "created_at": "2023-01-03T00:00:00Z"
+    }
+  ],
+  "payments": [
+    {
+      "id": 1,
+      "order_id": 1,
+      "payment_type_id": 1,
+      "amount": 12.99,
+      "created_at": "2023-01-01T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "order_id": 2,
+      "payment_type_id": 2,
+      "amount": 25.98,
+      "created_at": "2023-01-02T00:00:00Z"
+    },
+    {
+      "id": 3,
+      "order_id": 3,
+      "payment_type_id": 3,
+      "amount": 8.99,
+      "created_at": "2023-01-03T00:00:00Z"
+    }
+  ],
+  "orderTypes": [
+    {
+      "id": 1,
+      "name": "Dine-in",
+      "restaurant_id": 1,
+      "created_at": "2023-01-01T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "name": "Takeaway",
+      "created_at": "2023-01-02T00:00:00Z"
+    },
+    {
+      "id": 3,
+      "name": "Delivery",
+      "restaurant_id": 3,
+      "created_at": "2023-01-03T00:00:00Z"
+    }
+  ]
+}
