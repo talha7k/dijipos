@@ -98,7 +98,7 @@ const useStore = create<StoreState>((set, get) => ({
   orderItems: convertDates(mockData.orderItems),
   paymentTypes: convertDates(mockData.paymentTypes),
   payments: convertDates(mockData.payments),
-  orderTypes: convertDates(mockData.orderTypes),
+  orderTypes: convertDates(mockData.orderTypes) as OrderType[],
 
   // Restaurant actions
   addRestaurant: (restaurant) =>
