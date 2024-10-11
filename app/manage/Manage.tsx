@@ -1,8 +1,7 @@
 import React from 'react';
 import { useRouter } from 'next/router';
-import Navbar from '../components/Navbar';
-import useStore from '../store';
-import { StoreState } from '../store'; 
+import Navbar from '@/components/navbar';
+import useStore from '@/app/store';
 
 const Manage: React.FC = () => {
   const router = useRouter();

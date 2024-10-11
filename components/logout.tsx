@@ -1,4 +1,4 @@
-import useStore from '../store';
+import useStore from '@/app/store';
 
 const LogoutButton = () => {
   const logout = useStore(state => state.logout);

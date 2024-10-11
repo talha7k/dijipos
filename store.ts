@@ -1,9 +1,9 @@
 import { create } from 'zustand';
-import mockData from './mockData.json';
+import mockData from '@/mockData.json';
 import {
   Restaurant, User, Table, ProductCategory, Product,
   Customer, Order, OrderItem, PaymentType, Payment, OrderType, UserCredentials
-} from '../types';
+} from '@/types';
 
 // Define the store state
 interface StoreState {
@@ -18,9 +18,6 @@ interface StoreState {
   paymentTypes: PaymentType[];
   payments: Payment[];
   orderTypes: OrderType[];
-
-  currentUser: User | null;
-  token: string | null;
 
   // Add actions
   addRestaurant: (restaurant: Omit<Restaurant, 'id' | 'created_at'>) => void;
@@ -78,9 +75,6 @@ interface StoreState {
   getOrderType: (id: number) => OrderType | undefined;
   updateOrderType: (id: number, updates: Partial<Omit<OrderType, 'id' | 'created_at'>>) => void;
   deleteOrderType: (id: number) => void;
-
-  login: (credentials: UserCredentials) => Promise<void>;
-  logout: () => void;
 }
 
 // Add this helper function at the top of the file, after the imports

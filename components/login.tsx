@@ -1,5 +1,5 @@
 import { FormEvent } from 'react';
-import useStore from '../store';
+import useStore from '@/app/store';
 
 const LoginForm = () => {
   const login = useStore(state => state.login);
