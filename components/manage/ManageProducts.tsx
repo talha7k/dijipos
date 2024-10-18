@@ -14,7 +14,8 @@ export default function ManageProducts() {
     fetchProducts, 
     addProduct, 
     updateProduct, 
-    deleteProduct
+    deleteProduct,
+    addSampleProducts
   } = useAppStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -25,14 +26,14 @@ export default function ManageProducts() {
   }, [fetchProducts]);
 
   const columns = [
-    { accessorKey: 'name', header: 'Name' },
-    { accessorKey: 'description', header: 'Description' },
+    { accessorKey: 'name_en', header: 'Name (EN)' },
+    { accessorKey: 'name_other', header: 'Name (Other)' },
     { 
       accessorKey: 'price', 
       header: 'Price', 
       cell: ({ row }: { row: { original: Product } }) => `$${row.original.price.toFixed(2)}` 
     },
-    { accessorKey: 'category_id', header: 'Category ID' },
+    { accessorKey: 'category_product', header: 'Category ID' },
     { 
       accessorKey: 'is_available', 
       header: 'Available', 
@@ -61,7 +62,7 @@ export default function ManageProducts() {
     }
   };
 
-  const handleSave = async (product: Omit<Product, 'id' | 'created_at' | 'business_id' | 'created_by'>) => {
+  const handleSave = async (product: Omit<Product, 'id' | 'created_at' | 'created_by' | 'business_id'>) => {
     if (selectedProduct) {
       await updateProduct({ ...selectedProduct, ...product });
     } else {
@@ -72,42 +73,17 @@ export default function ManageProducts() {
     toast({ title: `Product ${selectedProduct ? 'updated' : 'added'} successfully` });
   };
 
-  const addSampleProducts = async () => {
-    const sampleProducts: Omit<Product, 'id' | 'created_at' | 'business_id' | 'created_by'>[] = [
-      {
-        name: 'Margherita Pizza',
-        description: 'Classic pizza with tomato sauce, mozzarella, and basil',
-        price: 12.99,
-        category_id: '1',
-        is_available: true,
-      },
-      {
-        name: 'Chicken Shawarma',
-        description: 'Grilled chicken wrapped in pita bread with vegetables and sauce',
-        price: 8.99,
-        category_id: '2',
-        is_available: true,
-      },
-      {
-        name: 'Falafel Plate',
-        description: 'Deep-fried chickpea balls served with hummus and salad',
-        price: 10.99,
-        category_id: '3',
-        is_available: true,
-      },
-    ];
-
-    for (const product of sampleProducts) {
-      await addProduct(product);
-    }
-
+  const handleAddSampleProducts = async () => {
+    await addSampleProducts();
     toast({ title: 'Sample products added successfully' });
   };
 
   return (
     <div>
       <div className="mb-4 flex justify-between">
-        <Button onClick={addSampleProducts}>Add Sample Products</Button>
+        {products.length === 0 && (
+          <Button onClick={handleAddSampleProducts}>Add Sample Products</Button>
+        )}
         <Button onClick={() => { setSelectedProduct(null); setIsModalOpen(true); }}>Add New Product</Button>
       </div>
       

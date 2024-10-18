@@ -103,15 +103,12 @@ export interface Order {
 }
 
 export interface OrderItem {
-  business_id: string; // Associated business
   id: string;
   order_id: string;
   product: Product;
   quantity: number;
-  special_instructions?: string; // Special instructions for the kitchen
-  created_at: Timestamp;
-  product_name_en?: string; // Denormalized product name
-  product_name_other?: string; // Denormalized product name
+  price: number;
+  special_instructions?: string;
 }
 
 export interface DiscountType {

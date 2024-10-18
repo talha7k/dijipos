@@ -8,8 +8,15 @@ import { ProductCategory } from '@/lib/types';
 import DataTable from '@/components/DataTable';
 import ProductCategoryModal from '@/components/modals/ProductCategoryModal';
 
-export default function ManageCategories() {
-  const { productCategories, fetchProductCategories, addProductCategory, updateProductCategory, deleteProductCategory } = useAppStore();
+export default function ManageProductCategories() {
+  const { 
+    productCategories, 
+    fetchProductCategories, 
+    addProductCategory, 
+    updateProductCategory, 
+    deleteProductCategory,
+    addSampleProductCategories
+  } = useAppStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<ProductCategory | null>(null);
   const { toast } = useToast();
@@ -55,9 +62,17 @@ export default function ManageCategories() {
     toast({ title: `Category ${category.id ? 'updated' : 'added'} successfully` });
   };
 
+  const handleAddSampleCategories = async () => {
+    await addSampleProductCategories();
+    toast({ title: 'Sample product categories added successfully' });
+  };
+
   return (
     <div>
-      <div className="mb-4 flex justify-end">
+      <div className="mb-4 flex justify-between">
+        {productCategories.length === 0 && (
+          <Button onClick={handleAddSampleCategories}>Add Sample Categories</Button>
+        )}
         <Button onClick={() => { setSelectedCategory(null); setIsModalOpen(true); }}>Add New Category</Button>
       </div>
       

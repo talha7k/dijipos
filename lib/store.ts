@@ -73,7 +73,63 @@ interface AppState {
   updateStockMovement: (movement: StockMovement) => Promise<void>;
   deleteStockMovement: (id: string) => Promise<void>;
 
+  addSampleProducts: () => Promise<void>;
+  addSampleProductCategories: () => Promise<void>;
 }
+
+const sampleProducts: Omit<Product, 'id' | 'created_at' | 'business_id' | 'created_by'>[] = [
+  {
+    name_en: 'Margherita Pizza',
+    name_other: 'بيتزا مارجريتا',
+    description: 'Classic pizza with tomato sauce, mozzarella, and basil',
+    price: 12.99,
+    category_product: { id: '1', name: 'Pizza' } as ProductCategory,
+    is_available: true,
+    image: 'https://example.com/images/margherita-pizza.jpg',
+  },
+  {
+    name_en: 'Chicken Shawarma',
+    name_other: 'شاورما دجاج',
+    description: 'Grilled chicken wrapped in pita bread with vegetables and sauce',
+    price: 8.99,
+    category_product: { id: '2', name: 'Wraps' } as ProductCategory,
+    is_available: true,
+    image: 'https://example.com/images/chicken-shawarma.jpg',
+  },
+  {
+    name_en: 'Falafel Plate',
+    name_other: 'طبق فلافل',
+    description: 'Deep-fried chickpea balls served with hummus and salad',
+    price: 10.99,
+    category_product: { id: '3', name: 'Plates' } as ProductCategory,
+    is_available: true,
+    image: 'https://example.com/images/falafel-plate.jpg',
+  },
+];
+
+const sampleProductCategories: Omit<ProductCategory, 'id' | 'created_at' | 'created_by' | 'business_id'>[] = [
+  {
+    name: 'Pizza',
+    description: 'Various types of pizzas',
+    image: 'https://example.com/images/pizza-category.jpg',
+    is_visible: true,
+    sort_order: 1,
+  },
+  {
+    name: 'Wraps',
+    description: 'Delicious wrapped sandwiches',
+    image: 'https://example.com/images/wraps-category.jpg',
+    is_visible: true,
+    sort_order: 2,
+  },
+  {
+    name: 'Plates',
+    description: 'Full meal plates',
+    image: 'https://example.com/images/plates-category.jpg',
+    is_visible: true,
+    sort_order: 3,
+  },
+];
 
 export const useAppStore = create<AppState>((set, get) => ({
   productCategories: [],
@@ -94,7 +150,18 @@ export const useAppStore = create<AppState>((set, get) => ({
   fetchProductCategories: async () => {
     const querySnapshot = await getDocs(collection(db, 'productCategories'));
     const productCategories = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as ProductCategory));
-    set({ productCategories });
+    if (productCategories.length === 0) {
+      // If no product categories are fetched, use sample categories
+      set({ productCategories: sampleProductCategories.map((category, index) => ({
+        ...category,
+        id: `sample-${index}`,
+        business_id: 'sample',
+        created_at: Timestamp.fromDate(new Date()),
+        created_by: { id: 'sample', email: 'sample@example.com', business_id: 'sample' } as User
+      })) });
+    } else {
+      set({ productCategories });
+    }
   },
 
   addProductCategory: async (productCategory: Omit<ProductCategory, 'id' | 'created_at' | 'created_by' | 'business_id'>) => {
@@ -233,7 +300,18 @@ export const useAppStore = create<AppState>((set, get) => ({
   fetchProducts: async () => {
     const querySnapshot = await getDocs(collection(db, 'products'));
     const products = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Product));
-    set({ products });
+    if (products.length === 0) {
+      // If no products are fetched, use sample products
+      set({ products: sampleProducts.map((product, index) => ({
+        ...product,
+        id: `sample-${index}`,
+        business_id: 'sample',
+        created_at: Timestamp.fromDate(new Date()),
+        created_by: { id: 'sample', email: 'sample@example.com', business_id: 'sample' } as User
+      })) });
+    } else {
+      set({ products });
+    }
   },
 
   addProduct: async (product: Omit<Product, 'id' | 'created_at' | 'created_by' | 'business_id'>) => {
@@ -498,5 +576,51 @@ export const useAppStore = create<AppState>((set, get) => ({
     set((state) => ({
       stockMovements: state.stockMovements.filter((m) => m.id !== id),
     }));
+  },
+
+  addSampleProducts: async () => {
+    const currentUser = get().currentUser;
+    if (!currentUser) throw new Error("No user logged in");
+
+    const addedProducts: Product[] = [];
+    for (const product of sampleProducts) {
+      const docRef = await addDoc(collection(db, 'products'), {
+        ...product,
+        business_id: currentUser.business_id,
+        created_by: currentUser,
+        created_at: Timestamp.fromDate(new Date())
+      });
+      addedProducts.push({
+        ...product,
+        id: docRef.id,
+        business_id: currentUser.business_id,
+        created_by: currentUser,
+        created_at: Timestamp.fromDate(new Date())
+      });
+    }
+    set((state) => ({ products: [...state.products, ...addedProducts] }));
+  },
+
+  addSampleProductCategories: async () => {
+    const currentUser = get().currentUser;
+    if (!currentUser) throw new Error("No user logged in");
+
+    const addedCategories: ProductCategory[] = [];
+    for (const category of sampleProductCategories) {
+      const docRef = await addDoc(collection(db, 'productCategories'), {
+        ...category,
+        business_id: currentUser.business_id,
+        created_by: currentUser,
+        created_at: Timestamp.fromDate(new Date())
+      });
+      addedCategories.push({
+        ...category,
+        id: docRef.id,
+        business_id: currentUser.business_id,
+        created_by: currentUser,
+        created_at: Timestamp.fromDate(new Date())
+      });
+    }
+    set((state) => ({ productCategories: [...state.productCategories, ...addedCategories] }));
   },
 }));
