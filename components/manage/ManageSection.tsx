@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import ManageProducts from './ManageProducts';
 import ManageCustomers from './ManageCustomers';
-import ManageCategories from './ManageCategories';
+import ManageCategories from './ManageProductCategories';
 import ManagePaymentTypes from './ManagePaymentTypes';
 import ManageInventory from './ManageInventory';
 import ManagePurchaseOrders from './ManagePurchaseOrders';

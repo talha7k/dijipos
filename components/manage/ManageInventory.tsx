@@ -7,6 +7,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { Inventory } from '@/lib/types';
 import DataTable from '@/components/DataTable';
 import InventoryModal from '@/components/modals/InventoryModal';
+import { Timestamp } from 'firebase/firestore';
 
 export default function ManageInventory() {
   const { inventory, fetchInventory, addInventoryItem, updateInventoryItem, deleteInventoryItem } = useAppStore();
@@ -26,13 +27,20 @@ export default function ManageInventory() {
     { 
       accessorKey: 'last_restocked_at', 
       header: 'Last Restocked', 
-      cell: ({ row }: { row: { original: Inventory } }) => row.original.last_restocked_at.toDate().toLocaleDateString()
+      cell: ({ row }: { row: { original: Inventory } }) => 
+        row.original.last_restocked_at instanceof Timestamp
+          ? row.original.last_restocked_at.toDate().toLocaleDateString()
+          : 'N/A'
     },
     { 
       accessorKey: 'expiry_date', 
       header: 'Expiry Date', 
       cell: ({ row }: { row: { original: Inventory } }) => 
-        row.original.expiry_date === 'non-perishable' ? 'Non-perishable' : row.original.expiry_date.toDate().toLocaleDateString() 
+        row.original.expiry_date === 'non-perishable' 
+          ? 'Non-perishable' 
+          : row.original.expiry_date instanceof Timestamp
+            ? row.original.expiry_date.toDate().toLocaleDateString()
+            : 'N/A'
     },
     {
       id: 'actions',
