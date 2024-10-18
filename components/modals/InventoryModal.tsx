@@ -8,16 +8,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox"
 import { Inventory, Product } from '@/lib/types'
 import { Timestamp } from 'firebase/firestore';
+import { useAppStore } from '@/lib/store';
 
 interface InventoryModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (inventory: Omit<Inventory, 'id' | 'created_at' | 'created_by' | 'business_id'>) => void;
   inventory: Inventory | null;
-  products: Product[];
 }
 
-export default function InventoryModal({ isOpen, onClose, onSave, inventory, products }: InventoryModalProps) {
+export default function InventoryModal({ isOpen, onClose, onSave, inventory }: InventoryModalProps) {
   const [isExistingProduct, setIsExistingProduct] = useState(true);
   const [productId, setProductId] = useState('');
   const [customName, setCustomName] = useState('');
@@ -26,6 +26,12 @@ export default function InventoryModal({ isOpen, onClose, onSave, inventory, pro
   const [reorderLevel, setReorderLevel] = useState('');
   const [lastRestockedAt, setLastRestockedAt] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
+
+  const { products, fetchProducts } = useAppStore();
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   useEffect(() => {
     if (inventory) {

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAppStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-import { Inventory, Product } from '@/lib/types';
+import { Inventory } from '@/lib/types';
 import DataTable from '@/components/DataTable';
 import InventoryModal from '@/components/modals/InventoryModal';
 import { Timestamp } from 'firebase/firestore';
@@ -15,9 +15,7 @@ export default function ManageInventory() {
     fetchInventory, 
     addInventoryItem, 
     updateInventoryItem, 
-    deleteInventoryItem,
-    products,
-    fetchProducts
+    deleteInventoryItem
   } = useAppStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<Inventory | null>(null);
@@ -25,8 +23,7 @@ export default function ManageInventory() {
 
   useEffect(() => {
     fetchInventory();
-    fetchProducts();
-  }, [fetchInventory, fetchProducts]);
+  }, [fetchInventory]);
 
   const columns = [
     { 
@@ -103,7 +100,6 @@ export default function ManageInventory() {
         onClose={() => { setIsModalOpen(false); setSelectedItem(null); }}
         onSave={handleSave}
         inventory={selectedItem}
-        products={products}
       />
     </div>
   );
