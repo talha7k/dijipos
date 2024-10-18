@@ -54,7 +54,7 @@ interface AppState {
   deleteCustomer: (id: string) => Promise<void>;
 
   fetchInventory: () => Promise<void>;
-  addInventoryItem: (item: Omit<Inventory, 'id' | 'created_at' | 'created_by'>) => Promise<void>;
+  addInventoryItem: (item: Omit<Inventory, 'id' | 'created_at' | 'created_by' | 'business_id'>) => Promise<void>;
   updateInventoryItem: (item: Inventory) => Promise<void>;
   deleteInventoryItem: (id: string) => Promise<void>;
 
@@ -348,7 +348,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     set({ inventory });
   },
 
-  addInventoryItem: async (item: Omit<Inventory, 'id' | 'created_at' | 'created_by'>) => {
+  addInventoryItem: async (item: Omit<Inventory, 'id' | 'created_at' | 'created_by' | 'business_id'>) => {
     const currentUser = get().currentUser;
     if (!currentUser) throw new Error("No user logged in");
     const docRef = await addDoc(collection(db, 'inventory'), {
@@ -361,6 +361,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         ...item, 
         id: docRef.id, 
         created_by: currentUser, 
+        business_id: currentUser.business_id,
         created_at: Timestamp.fromDate(new Date()) 
       }] 
     }));

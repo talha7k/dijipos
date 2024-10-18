@@ -4,23 +4,37 @@ import { useState, useEffect } from 'react';
 import { useAppStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-import { Inventory } from '@/lib/types';
+import { Inventory, Product } from '@/lib/types';
 import DataTable from '@/components/DataTable';
 import InventoryModal from '@/components/modals/InventoryModal';
 import { Timestamp } from 'firebase/firestore';
 
 export default function ManageInventory() {
-  const { inventory, fetchInventory, addInventoryItem, updateInventoryItem, deleteInventoryItem } = useAppStore();
+  const { 
+    inventory, 
+    fetchInventory, 
+    addInventoryItem, 
+    updateInventoryItem, 
+    deleteInventoryItem,
+    products,
+    fetchProducts
+  } = useAppStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<Inventory | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     fetchInventory();
-  }, [fetchInventory]);
+    fetchProducts();
+  }, [fetchInventory, fetchProducts]);
 
   const columns = [
-    { accessorKey: 'product.name_en', header: 'Product' },
+    { 
+      accessorKey: 'name', 
+      header: 'Product',
+      cell: ({ row }: { row: { original: Inventory } }) => 
+        row.original.product ? row.original.product.name_en : row.original.name
+    },
     { accessorKey: 'quantity_in_stock', header: 'Quantity in Stock' },
     { accessorKey: 'unit_of_measure', header: 'Unit of Measure' },
     { accessorKey: 'reorder_level', header: 'Reorder Level' },
@@ -65,9 +79,9 @@ export default function ManageInventory() {
     }
   };
 
-  const handleSave = async (item: Omit<Inventory, 'id' | 'created_at' | 'created_by'>) => {
+  const handleSave = async (item: Omit<Inventory, 'id' | 'created_at' | 'created_by' | 'business_id'>) => {
     if (selectedItem) {
-      await updateInventoryItem({ ...selectedItem, ...item });
+      await updateInventoryItem({ ...selectedItem, ...item } as Inventory);
     } else {
       await addInventoryItem(item);
     }
@@ -89,6 +103,7 @@ export default function ManageInventory() {
         onClose={() => { setIsModalOpen(false); setSelectedItem(null); }}
         onSave={handleSave}
         inventory={selectedItem}
+        products={products}
       />
     </div>
   );

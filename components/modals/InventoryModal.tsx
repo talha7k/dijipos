@@ -5,85 +5,65 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Inventory } from '@/lib/types'
-import { useAppStore } from '@/lib/store';
-import { Timestamp } from '@firebase/firestore';
+import { Checkbox } from "@/components/ui/checkbox"
+import { Inventory, Product } from '@/lib/types'
+import { Timestamp } from 'firebase/firestore';
 
 interface InventoryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (inventory: Omit<Inventory, 'id' | 'created_at' | 'created_by'>) => void;
+  onSave: (inventory: Omit<Inventory, 'id' | 'created_at' | 'created_by' | 'business_id'>) => void;
   inventory: Inventory | null;
+  products: Product[];
 }
 
-export default function InventoryModal({ isOpen, onClose, onSave, inventory }: InventoryModalProps) {
-  const [productId, setProductId] = useState<string | undefined>(undefined);
-  const [name, setName] = useState('');
-  const [quantity, setQuantity] = useState('');
+export default function InventoryModal({ isOpen, onClose, onSave, inventory, products }: InventoryModalProps) {
+  const [isExistingProduct, setIsExistingProduct] = useState(true);
+  const [productId, setProductId] = useState('');
+  const [customName, setCustomName] = useState('');
+  const [quantityInStock, setQuantityInStock] = useState('');
+  const [unitOfMeasure, setUnitOfMeasure] = useState<'grams' | 'ml' | 'pieces'>('pieces');
+  const [reorderLevel, setReorderLevel] = useState('');
   const [lastRestockedAt, setLastRestockedAt] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
-  const [isPerishable, setIsPerishable] = useState(true);
-
-  const { products, fetchProducts, currentUser } = useAppStore();
-
-  useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
 
   useEffect(() => {
     if (inventory) {
-      setProductId(inventory.product_id);
-      setName(inventory.name);
-      setQuantity(inventory.quantity.toString());
-      setLastRestockedAt(inventory.last_restocked_at.toDate().toISOString().split('T')[0]);
-      if (inventory.expiry_date !== 'non-perishable') {
-        setExpiryDate(inventory.expiry_date.toDate().toISOString().split('T')[0]);
-        setIsPerishable(true);
+      setIsExistingProduct(!!inventory.product);
+      if (inventory.product) {
+        setProductId(inventory.product.id);
+        setCustomName(inventory.product.name_en);
       } else {
-        setExpiryDate('');
-        setIsPerishable(false);
+        setCustomName(inventory.name);
       }
+      setQuantityInStock(inventory.quantity_in_stock.toString());
+      setUnitOfMeasure(inventory.unit_of_measure || 'pieces');
+      setReorderLevel(inventory.reorder_level?.toString() || '');
+      setLastRestockedAt(inventory.last_restocked_at instanceof Timestamp ? inventory.last_restocked_at.toDate().toISOString().split('T')[0] : '');
+      setExpiryDate(inventory.expiry_date instanceof Timestamp ? inventory.expiry_date.toDate().toISOString().split('T')[0] : '');
     } else {
-      setProductId(undefined);
-      setName('');
-      setQuantity('');
+      setIsExistingProduct(true);
+      setProductId('');
+      setCustomName('');
+      setQuantityInStock('');
+      setUnitOfMeasure('pieces');
+      setReorderLevel('');
       setLastRestockedAt('');
       setExpiryDate('');
-      setIsPerishable(true);
     }
   }, [inventory]);
 
-  const handleProductChange = (value: string) => {
-    if (value === '') {
-      setProductId(undefined);
-      setName('');
-    } else {
-      setProductId(value);
-      const selectedProduct = products.find(p => p.id === value);
-      setName(selectedProduct ? selectedProduct.name : '');
-    }
-  };
-
-  const handleNameChange = (value: string) => {
-    setName(value);
-    if (value !== '') {
-      setProductId(undefined);
-    }
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!currentUser) {
-      console.error("No user logged in");
-      return;
-    }
+    const selectedProduct = isExistingProduct ? products.find(p => p.id === productId) : undefined;
     onSave({
-      product_id: productId,
-      name: name,
-      quantity: parseInt(quantity),
-      business_id: currentUser.business_id,
-      last_restocked_at: Timestamp.fromDate(new Date(lastRestockedAt)),
-      expiry_date: isPerishable ? Timestamp.fromDate(new Date(expiryDate)) : 'non-perishable',
+      product: selectedProduct,
+      name: selectedProduct ? selectedProduct.name_en : customName,
+      quantity_in_stock: parseInt(quantityInStock),
+      unit_of_measure: unitOfMeasure,
+      reorder_level: parseInt(reorderLevel) || undefined,
+      last_restocked_at: lastRestockedAt ? Timestamp.fromDate(new Date(lastRestockedAt)) : undefined,
+      expiry_date: expiryDate ? Timestamp.fromDate(new Date(expiryDate)) : 'non-perishable',
     });
   };
 
@@ -95,61 +75,74 @@ export default function InventoryModal({ isOpen, onClose, onSave, inventory }: I
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
-            <Select value={productId || ''} onValueChange={handleProductChange}>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="isExistingProduct"
+                checked={isExistingProduct}
+                onCheckedChange={(checked) => setIsExistingProduct(checked as boolean)}
+              />
+              <label htmlFor="isExistingProduct">Existing Product</label>
+            </div>
+            {isExistingProduct ? (
+              <Select value={productId} onValueChange={(value) => {
+                setProductId(value);
+                const selectedProduct = products.find(p => p.id === value);
+                if (selectedProduct) {
+                  setCustomName(selectedProduct.name_en);
+                }
+              }}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a product" />
+                </SelectTrigger>
+                <SelectContent>
+                  {products.map((product) => (
+                    <SelectItem key={product.id} value={product.id}>{product.name_en}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <Input
+                value={customName}
+                onChange={(e) => setCustomName(e.target.value)}
+                placeholder="Custom Item Name"
+                required
+              />
+            )}
+            <Input
+              type="number"
+              value={quantityInStock}
+              onChange={(e) => setQuantityInStock(e.target.value)}
+              placeholder="Quantity in Stock"
+              required
+            />
+            <Select value={unitOfMeasure} onValueChange={(value: 'grams' | 'ml' | 'pieces') => setUnitOfMeasure(value)}>
               <SelectTrigger>
-                <SelectValue placeholder="Select a product" />
+                <SelectValue placeholder="Unit of Measure" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Custom Item</SelectItem>
-                {products.map((product) => (
-                  <SelectItem key={product.id} value={product.id}>
-                    {product.name}
-                  </SelectItem>
-                ))}
+                <SelectItem value="grams">Grams</SelectItem>
+                <SelectItem value="ml">Milliliters</SelectItem>
+                <SelectItem value="pieces">Pieces</SelectItem>
               </SelectContent>
             </Select>
             <Input
-              id="name"
-              value={name}
-              onChange={(e) => handleNameChange(e.target.value)}
-              placeholder="Item Name"
-              required
-            />
-            <Input
-              id="quantity"
               type="number"
-              value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
-              placeholder="Quantity"
-              required
+              value={reorderLevel}
+              onChange={(e) => setReorderLevel(e.target.value)}
+              placeholder="Reorder Level"
             />
             <Input
-              id="lastRestockedAt"
               type="date"
               value={lastRestockedAt}
               onChange={(e) => setLastRestockedAt(e.target.value)}
               placeholder="Last Restocked At"
-              required
             />
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="isPerishable"
-                checked={isPerishable}
-                onChange={(e) => setIsPerishable(e.target.checked)}
-              />
-              <label htmlFor="isPerishable">Is Perishable</label>
-            </div>
-            {isPerishable && (
-              <Input
-                id="expiryDate"
-                type="date"
-                value={expiryDate}
-                onChange={(e) => setExpiryDate(e.target.value)}
-                placeholder="Expiry Date"
-                required={isPerishable}
-              />
-            )}
+            <Input
+              type="date"
+              value={expiryDate}
+              onChange={(e) => setExpiryDate(e.target.value)}
+              placeholder="Expiry Date"
+            />
           </div>
           <DialogFooter>
             <Button type="submit">{inventory ? 'Update' : 'Add'} Inventory Item</Button>

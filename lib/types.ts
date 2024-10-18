@@ -157,17 +157,17 @@ export interface OrderType {
 }
 
 export interface Inventory {
-  business_id: string; // Associated business
-  id: string; // Unique identifier for the inventory record
+  id: string;
+  business_id: string;
   product?: Product;
-  name: string; // Optional: Reference to an existing product (for retail)
-  quantity_in_stock: number; // Current stock level
-  unit_of_measure?: 'grams' | 'ml' | 'pieces'; // Unit of measure (e.g., "kg", "liters", "pieces")
-  reorder_level?: number; // Optional: Stock level to trigger reorder alert
-  last_restocked_at?: Timestamp; // Optional: Date when the item was last restocked
-  expiry_date?: Timestamp | 'non-perishable'; // Optional: Expiry date for perishable items
-  created_by: User;
+  name: string;
+  quantity_in_stock: number;
+  unit_of_measure: 'grams' | 'ml' | 'pieces';
+  reorder_level?: number;
+  last_restocked_at?: Timestamp;
+  expiry_date: Timestamp | 'non-perishable';
   created_at: Timestamp;
+  created_by: User;
 }
 
 export interface PurchaseOrder {
