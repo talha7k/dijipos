@@ -1,5 +1,6 @@
 "use client"
 
+import React from 'react';
 import { useState, useRef, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -13,7 +14,11 @@ import ManagePurchaseOrders from './ManagePurchaseOrders';
 import ManageSuppliers from './ManageSuppliers';
 import ManageStockMovements from './ManageStockMovements';
 
-export default function ManageSection() {
+interface ManageSectionProps {
+  // ... your props
+}
+
+const ManageSection: React.FC<ManageSectionProps> = ({ /* your props */ }) => {
   const [activeTab, setActiveTab] = useState("products");
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -137,4 +142,6 @@ export default function ManageSection() {
       </TabsContent>
     </Tabs>
   )
-}
+};
+
+export default ManageSection;

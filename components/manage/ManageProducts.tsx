@@ -1,5 +1,6 @@
 "use client"
 
+import React from 'react';
 import { useState, useEffect } from 'react';
 import { useAppStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
@@ -8,7 +9,7 @@ import DataTable from '@/components/DataTable';
 import ProductModal from '@/components/modals/ProductModal';
 import { Product } from '@/lib/types';
 
-export default function ManageProducts() {
+const ManageProducts: React.FC = () => {
   const { 
     products, 
     fetchProducts, 
@@ -97,4 +98,6 @@ export default function ManageProducts() {
       />
     </div>
   );
-}
+};
+
+export default ManageProducts;

@@ -1,4 +1,4 @@
-import ManageSection from '@/components/ManageSection';
+import ManageSection from '@/components/manage/ManageSection';
 
 export default function ManagePage() {
   return (

@@ -15,12 +15,13 @@ export interface Business {
 export interface User {
   id: string;
   email: string;
+  business_id: string;
   password_hash: string;
   full_name?: string;
   role_user: 'admin' | 'manager' | 'cashier';
   is_active?: boolean;
   created_at: Timestamp;
-  business_id: string; // Changed from business_ids: number[]
+   // Changed from business_ids: number[]
 }
 
 export interface UserCredentials {
@@ -34,7 +35,7 @@ export interface AuthResponse {
 }
 
 export interface Table {
-  business_id: string; // Associated business
+   
 
   id: string;
   table_number: string;
@@ -45,7 +46,7 @@ export interface Table {
 }
 
 export interface ProductCategory {
-  business_id: string; // Associated business
+   
 
   id: string;
   name: string;
@@ -58,7 +59,7 @@ export interface ProductCategory {
 }
 
 export interface Product {
-  business_id: string; // Associated business
+   
   id: string;
   name_en: string;
   name_other?: string;
@@ -75,7 +76,7 @@ export interface Product {
 }
 
 export interface Customer {
-  business_id: string; // Associated business
+   
   id: string;
   name: string;
   contact?: ContactInfo;
@@ -86,7 +87,7 @@ export interface Customer {
 }
 
 export interface Order {
-  business_id: string;
+  
   id: string;
   table?: Table;
   customer?: Customer;
@@ -112,7 +113,7 @@ export interface OrderItem {
 }
 
 export interface DiscountType {
-  business_id: string; // Associated business
+   
   id: string;
   name: string;
   created_at: Timestamp;
@@ -120,7 +121,7 @@ export interface DiscountType {
 }
 
 export interface TaxRate {
-  business_id: string; // Associated business
+   
   id: string;
   name: string;
   created_at: Timestamp;
@@ -128,7 +129,7 @@ export interface TaxRate {
 }
 
 export interface PaymentType {
-  business_id: string; // Associated business
+   
   id: string;
   name: string;
   created_at: Timestamp;
@@ -136,7 +137,7 @@ export interface PaymentType {
 }
 
 export interface Payment {
-  business_id: string; // Associated business
+   
   id: string;
   order_id: string;
   payment_type_id: string; // type attribute in snake_case
@@ -146,7 +147,7 @@ export interface Payment {
 }
 
 export interface OrderType {
-  business_id: string; // Associated business
+   
   id: string;
   name: string;
   created_at: Timestamp;
@@ -155,7 +156,7 @@ export interface OrderType {
 
 export interface Inventory {
   id: string;
-  business_id: string;
+  
   product?: Product;
   name: string;
   quantity_in_stock: number;
@@ -168,13 +169,13 @@ export interface Inventory {
 }
 
 export interface PurchaseOrder {
-  business_id: string; // Associated business
+   
   id: string; // Unique identifier
   supplier: Supplier; // Reference to Supplier
   items: PurchaseOrderItem[]; // List of items purchased
   total_amount: number; // Total cost of the order
   order_status: 'waiting' | 'received' | 'canceled'; // Status of the order
-  ordered_at: Timestamp; // Date when the order was placed
+  created_at: Timestamp; // Date when the order was placed
   received_at?: Timestamp; // Date when the order was received (if applicable)
   created_by: User;
 }
@@ -188,7 +189,7 @@ export interface PurchaseOrderItem {
 }
 
 export interface Supplier {
-  business_id: string; // Associated business
+   
   id: string; // Unique identifier
   name: string; // Supplier name
   contact: ContactInfo; // Supplier contact details (phone, email)
@@ -198,7 +199,7 @@ export interface Supplier {
 }
 
 export interface StockMovement {
-  business_id: string; // Associated business
+   
   id: string; // Unique identifier for the stock movement record
   inventory: Inventory; // Optional: Reference to the Product (for retail)
   movement_type: 'adjustment' | 'sale' | 'return' | 'transfer'; // Type of stock movement
@@ -217,7 +218,7 @@ export interface ContactInfo {
 
 export interface SASSubscription {
   id: string; // Unique identifier for the subscription
-  business: Business; // Associated business
+  business: Business; 
   plan_id: string; // Reference to the pricing plan
   start_date: Timestamp; // Date when the subscription starts
   end_date?: Timestamp; // Date when the subscription ends (optional for ongoing)
@@ -247,7 +248,7 @@ export interface SASPaymentType {
 // Represents a transaction record
 export interface SASTransaction {
   id: string; // Unique identifier for the transaction
-  business: Business; // Associated business
+  business: Business; 
   amount: number; // Amount of the transaction
   payment_type: SASPaymentType; // Reference to the payment method used
   status_transaction: 'completed' | 'failed' | 'pending'; // Transaction status

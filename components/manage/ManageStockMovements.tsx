@@ -19,7 +19,7 @@ export default function ManageStockMovements() {
   }, [fetchStockMovements]);
 
   const columns = [
-    { accessorKey: 'inventory_id', header: 'Inventory ID' },
+    { accessorKey: 'inventory', header: 'Inventory' },
     { accessorKey: 'quantity', header: 'Quantity' },
     { accessorKey: 'movement_type', header: 'Movement Type' },
     { accessorKey: 'reason', header: 'Reason' },
