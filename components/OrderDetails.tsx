@@ -1,65 +1,120 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Order, OrderItem, TaxRate, OrderType, Product, Customer } from '@/lib/types';
 import { useAppStore } from '@/lib/store';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useToast } from '@/components/ui/use-toast';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/use-toast";
 
-export default function OrderDetails() {
-  const { currentOrder, products, removeFromOrder, clearOrder, completeOrder } =
-    useAppStore();
-  const [customerName, setCustomerName] = useState('');
-  const [customerPhone, setCustomerPhone] = useState('');
+interface OrderDetailsProps {
+  order: Order;
+}
+
+const OrderDetails: React.FC<OrderDetailsProps> = ({ order }) => {
+  const { 
+    products,
+    taxRates,
+    orderTypes,
+    currentUser,
+    customers,
+    addOrder, 
+    addToOrder,
+    removeFromOrder, 
+    clearOrder,
+  } = useAppStore();
+
   const { toast } = useToast();
 
-  const orderItems = currentOrder.map((item) => {
-    const product = products.find((p) => p.id === item.product_id);
-    return { ...item, name_en: product?.name_en, price: product?.price };
+  const [selectedTaxRate, setSelectedTaxRate] = useState<TaxRate>(Object);
+  const [selectedOrderType, setSelectedOrderType] = useState<OrderType>(Object);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer>(Object);
+
+  useEffect(() => {
+
+  }, [taxRates, orderTypes, customers]);
+
+  const orderItems = order.items.map((item) => {
+    const product = products.find((p) => p.id === item.product.id);
+    return { ...item, name: product?.name_en, price: product?.price };
   });
 
-  const subtotal = orderItems.reduce(
-    (sum, item) => sum + (item.price || 0) * item.quantity,
-    0
-  );
-  const tax = subtotal * 0.1; // 10% tax
+  const subtotal = orderItems.reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0);
+  const taxRate = taxRates.find((rate: TaxRate) => rate.id === selectedTaxRate)?.percentage || 0;
+  const tax = subtotal * taxRate;
   const total = subtotal + tax;
 
-  const handleCompleteOrder = () => {
+  const handleRemoveFromOrder = (id: string) => {
+    removeFromOrder(id);
+  };
+
+  const handleAddToOrder = (product: Product) => {
+    const orderItem: Omit<OrderItem, 'id' | 'order_id'> = {
+      product: product,
+      quantity: 1,
+      price: product.price,
+      name: product.name_en,
+      product_name_en: product.name_en,
+      product_name_other: product.name_other,
+      created_at: new Date()
+    };
+    addOrder(orderItem);
+  };
+
+  const handlePlaceOrder = () => {
     if (orderItems.length === 0) {
       toast({
-        title: 'Error',
-        description: 'Cannot complete an empty order.',
-        variant: 'destructive',
+        title: "Error",
+        description: "Cannot place an empty order.",
+        variant: "destructive",
       });
       return;
     }
 
-    if (!customerName || !customerPhone) {
+    if (!selectedTaxRate || !selectedOrderType) {
       toast({
-        title: 'Error',
-        description: 'Please provide customer name and phone number.',
-        variant: 'destructive',
+        title: "Error",
+        description: "Please select a tax rate and order type.",
+        variant: "destructive",
       });
       return;
     }
 
-    completeOrder({
-      items: currentOrder,
-      discount: 0,
-      tax,
-      restaurant_id: 1,
-      status: 'pending',
-    });
+    const selectedCustomerObj = customers.find((c) => c.id === selectedCustomer);
+    let customer: Customer | undefined = selectedCustomerObj;
 
+    if (!selectedCustomerObj && (newCustomerName || newCustomerPhone)) {
+      customer = {
+        id: 'new',
+        name: newCustomerName,
+        phone: newCustomerPhone,
+        email: '',
+        created_at: new Date(),
+        created_by: currentUser!
+      };
+    }
+
+    const newOrder: Omit<Order, 'id' | 'created_at' | 'created_by'> = {
+      items: orderItems,
+      customer: customer,
+      status_order: 'waiting',
+      total_amount: total,
+      tax_rate: taxRates.find((rate) => rate.id === selectedTaxRate)!,
+      order_type: orderTypes.find((type) => type.id === selectedOrderType)!,
+      payment_status: 'unpaid',
+      discount_type: 'none',
+      discount_amount: 0,
+      tax_amount: tax,
+    };
+
+    addOrder(newOrder);
+    clearOrder();
     toast({
-      title: 'Order Completed',
-      description: 'The order has been successfully processed.',
+      title: "Success",
+      description: "Order placed successfully.",
     });
-
-    setCustomerName('');
-    setCustomerPhone('');
   };
 
   return (
@@ -68,62 +123,79 @@ export default function OrderDetails() {
         <CardTitle>Order Details</CardTitle>
       </CardHeader>
       <CardContent>
-        {orderItems.length === 0 ? (
-          <p>No items in the order.</p>
-        ) : (
-          <div className="space-y-4">
+        <div className="space-y-4">
+          <Select value={selectedTaxRate} onValueChange={setSelectedTaxRate}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select Tax Rate" />
+            </SelectTrigger>
+            <SelectContent>
+              {taxRates.map((rate) => (
+                <SelectItem key={rate.id} value={rate.id}>{rate.name} ({rate.percentage * 100}%)</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={selectedOrderType} onValueChange={setSelectedOrderType}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select Order Type" />
+            </SelectTrigger>
+            <SelectContent>
+              {orderTypes.map((type) => (
+                <SelectItem key={type.id} value={type.id}>{type.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={selectedCustomer} onValueChange={setSelectedCustomer}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select Customer" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">Unassigned</SelectItem>
+              {customers.map((customer) => (
+                <SelectItem key={customer.id} value={customer.id}>{customer.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {!selectedCustomer && (
+            <>
+              <Input
+                placeholder="New Customer Name"
+                value={newCustomerName}
+                onChange={(e) => setNewCustomerName(e.target.value)}
+              />
+              <Input
+                placeholder="New Customer Phone"
+                value={newCustomerPhone}
+                onChange={(e) => setNewCustomerPhone(e.target.value)}
+              />
+            </>
+          )}
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Order Items</h3>
             {orderItems.map((item) => (
-              <Card key={item.id}>
-                <CardContent className="flex justify-between items-center p-4">
-                  <div>
-                    <h4 className="font-semibold">{item.name_en}</h4>
-                    <p>Qty: {item.quantity}</p>
-                    <p>${((item.price || 0) * item.quantity).toFixed(2)}</p>
-                  </div>
-                  <Button
-                    variant="destructive"
-                    onClick={() => removeFromOrder(item.id)}
-                  >
-                    Remove
-                  </Button>
-                </CardContent>
-              </Card>
+              <div key={item.id} className="flex justify-between items-center mb-2">
+                <span>{item.name} (x{item.quantity})</span>
+                <span>${((item.price || 0) * item.quantity).toFixed(2)}</span>
+                <Button variant="destructive" onClick={() => handleRemoveFromOrder(item.id)}>Remove</Button>
+              </div>
             ))}
           </div>
-        )}
-        <div className="mt-4 space-y-2">
-          <p>Subtotal: ${subtotal.toFixed(2)}</p>
-          <p>Tax: ${tax.toFixed(2)}</p>
-          <p className="font-bold">Total: ${total.toFixed(2)}</p>
-        </div>
-        <div className="mt-4 space-y-2">
-          <Input
-            placeholder="Customer Name"
-            value={customerName}
-            onChange={(e) => setCustomerName(e.target.value)}
-          />
-          <Input
-            placeholder="Customer Phone"
-            value={customerPhone}
-            onChange={(e) => setCustomerPhone(e.target.value)}
-          />
-        </div>
-        <div className="mt-4 space-x-2">
-          <Button
-            onClick={handleCompleteOrder}
-            disabled={orderItems.length === 0}
-          >
-            Complete Order
-          </Button>
-          <Button
-            variant="outline"
-            onClick={clearOrder}
-            disabled={orderItems.length === 0}
-          >
-            Clear Order
-          </Button>
+          <div>
+            <p><strong>Subtotal:</strong> ${subtotal.toFixed(2)}</p>
+            <p><strong>Tax ({taxRate * 100}%):</strong> ${tax.toFixed(2)}</p>
+            <p><strong>Total:</strong> ${total.toFixed(2)}</p>
+          </div>
+          <div className="flex justify-between">
+            <Button variant="outline" onClick={clearOrder} disabled={orderItems.length === 0}>
+              Clear Order
+            </Button>
+            <Button onClick={handlePlaceOrder} disabled={orderItems.length === 0}>
+              Place Order
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
   );
-}
+};
+
+export default OrderDetails;

@@ -63,7 +63,7 @@ const ManageProducts: React.FC = () => {
     }
   };
 
-  const handleSave = async (product: Omit<Product, 'id' | 'created_at' | 'created_by' | 'business_id'>) => {
+  const handleSave = async (product: Omit<Product, 'id' | 'created_at' | 'created_by'>) => {
     if (selectedProduct) {
       await updateProduct({ ...selectedProduct, ...product });
     } else {

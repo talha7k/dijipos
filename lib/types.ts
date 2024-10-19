@@ -114,7 +114,7 @@ export interface DiscountType {
 
 export interface TaxRate {
   id: string;
-  name: string;
+  percentage: number;
   created_at: Timestamp;
   created_by: User;
 }

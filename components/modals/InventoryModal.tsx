@@ -13,7 +13,7 @@ import { useAppStore } from '@/lib/store';
 interface InventoryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (inventory: Omit<Inventory, 'id' | 'created_at' | 'created_by' | 'business_id'>) => void;
+  onSave: (inventory: Omit<Inventory, 'id' | 'created_at' | 'created_by'>) => void;
   inventory: Inventory | null;
 }
 

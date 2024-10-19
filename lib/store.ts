@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, Timestamp } from 'firebase/firestore';
 import { db } from './firebase';
-import { Product, Order, OrderType, OrderItem, ProductCategory, Customer, PaymentType, Inventory, PurchaseOrder, Supplier, StockMovement, User } from './types';
+import { Product, Order, OrderType, OrderItem, ProductCategory, Customer, PaymentType, Inventory, PurchaseOrder, Supplier, StockMovement, User, TaxRate } from './types';
 
 interface AppState {
   productCategories: ProductCategory[];
@@ -10,6 +10,7 @@ interface AppState {
   orders: Order[];
   orderTypes: OrderType[];
   customers: Customer[];
+  taxRates: TaxRate[];
   paymentTypes: PaymentType[];
   inventory: Inventory[];
   purchaseOrders: PurchaseOrder[];
@@ -17,12 +18,11 @@ interface AppState {
   stockMovements: StockMovement[];
   currentUser: User | null;
 
-  setCurrentUser: (user: User | null) => void;
-
   fetchOrderTypes: () => Promise<void>;
   addOrderType: (orderType: Omit<OrderType, 'id' | 'created_at'>) => Promise<void>;
   updateOrderType: (orderType: OrderType) => Promise<void>;
   deleteOrderType: (id: string) => Promise<void>;
+  
 
   fetchProductCategories: () => Promise<void>;
   addProductCategory: (productCategory: Omit<ProductCategory, 'id' | 'created_at' | 'created_by'>) => Promise<void>;
@@ -33,6 +33,8 @@ interface AppState {
   addPaymentType: (paymentType: Omit<PaymentType, 'id' | 'created_at'>) => Promise<void>;
   updatePaymentType: (paymentType: PaymentType) => Promise<void>;
   deletePaymentType: (id: string) => Promise<void>;
+
+  fetchTaxRates: () => Promise<void>;
 
   fetchOrders: () => Promise<void>;
   addOrder: (order: Omit<Order, 'id' | 'created_at' | 'created_by'>) => void;
@@ -58,7 +60,7 @@ interface AppState {
   updateInventoryItem: (item: Inventory) => Promise<void>;
   deleteInventoryItem: (id: string) => Promise<void>;
 
-  fetchPurchaseOrders: () => Promise<void>;
+    fetchPurchaseOrders: () => Promise<void>;
   addPurchaseOrder: (order: Omit<PurchaseOrder, 'id' | 'created_at' | 'created_by'>) => Promise<void>;
   updatePurchaseOrder: (order: PurchaseOrder) => Promise<void>;
   deletePurchaseOrder: (id: string) => Promise<void>;
@@ -77,7 +79,7 @@ interface AppState {
   addSampleProductCategories: () => Promise<void>;
 }
 
-const sampleProducts: Omit<Product, 'id' | 'created_at' | 'business_id' | 'created_by'>[] = [
+const sampleProducts: Omit<Product, 'id' | 'created_at' | 'created_by'>[] = [
   {
     name_en: 'Margherita Pizza',
     name_other: 'بيتزا مارجريتا',
@@ -137,16 +139,15 @@ export const useAppStore = create<AppState>((set, get) => ({
   currentOrder: [],
   orders: [],
   orderTypes: [],
+  taxRates: [],
   customers: [],
   paymentTypes: [],
   inventory: [],
   purchaseOrders: [],
   suppliers: [],
   stockMovements: [],
-
   currentUser: null,
-  setCurrentUser: (user) => set({ currentUser: user }),
-
+  
   fetchProductCategories: async () => {
     const currentUser = get().currentUser;
     if (!currentUser || !currentUser.business_id) throw new Error("No user logged in or no business associated");
@@ -202,16 +203,27 @@ export const useAppStore = create<AppState>((set, get) => ({
     }));
   },
 
+  fetchTaxRates: async () => {
+    const currentUser = get().currentUser;
+    if (!currentUser || !currentUser.business_id) throw new Error("No user logged in or no business associated");
+    const querySnapshot = await getDocs(collection(db, `businesses/${currentUser.business_id}/taxRates`));
+    const taxRates = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as TaxRate));
+    set((state) => ({
+      taxRates: taxRates,
+    }));  },
+
   fetchOrderTypes: async () => {
-    const querySnapshot = await getDocs(collection(db, 'orderTypes'));
+    const currentUser = get().currentUser;
+    if (!currentUser || !currentUser.business_id) throw new Error("No user logged in or no business associated");
+    const querySnapshot = await getDocs(collection(db, `businesses/${currentUser.business_id}/orderTypes`));
     const orderTypes = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as OrderType));
     set({ orderTypes });
   },
 
-  addOrderType: async (orderType) => {
+  addOrderType: async (orderType: Omit<OrderType, 'id' | 'created_at' | 'created_by'>) => {
     const currentUser = get().currentUser;
     if (!currentUser) throw new Error("No user logged in");
-    const docRef = await addDoc(collection(db, 'orderTypes'), {
+    const docRef = await addDoc(collection(db, `businesses/${currentUser.business_id}/orderTypes`), {
       ...orderType,
       created_by: currentUser,
       created_at: Timestamp.fromDate(new Date())
@@ -226,16 +238,20 @@ export const useAppStore = create<AppState>((set, get) => ({
     }));
   },
 
-  updateOrderType: async (orderType) => {
+  updateOrderType: async (orderType: OrderType) => {
+    const currentUser = get().currentUser;
+    if (!currentUser || !currentUser.business_id) throw new Error("No user logged in or no business associated");
     const { id, ...updateData } = orderType;
-    await updateDoc(doc(db, 'orderTypes', id), updateData);
+    await updateDoc(doc(db, `businesses/${currentUser.business_id}/orderTypes`, id), updateData);
     set((state) => ({
       orderTypes: state.orderTypes.map((o) => (o.id === id ? orderType : o)),
     }));
   },
 
   deleteOrderType: async (id: string) => {
-    await deleteDoc(doc(db, 'orderTypes', id));
+    const currentUser = get().currentUser;
+    if (!currentUser || !currentUser.business_id) throw new Error("No user logged in or no business associated");
+    await deleteDoc(doc(db, `businesses/${currentUser.business_id}/orderTypes`, id));
     set((state) => ({
       orderTypes: state.orderTypes.filter((o) => o.id !== id),
     }));

@@ -76,7 +76,7 @@ export default function ManageInventory() {
     }
   };
 
-  const handleSave = async (item: Omit<Inventory, 'id' | 'created_at' | 'created_by' | 'business_id'>) => {
+  const handleSave = async (item: Omit<Inventory, 'id' | 'created_at' | 'created_by'>) => {
     if (selectedItem) {
       await updateInventoryItem({ ...selectedItem, ...item } as Inventory);
     } else {

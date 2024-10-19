@@ -13,7 +13,7 @@ import { useAppStore } from '@/lib/store';
 interface ProductModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (product: Omit<Product, 'id' | 'created_at' | 'business_id' | 'created_by'>) => void;
+  onSave: (product: Omit<Product, 'id' | 'created_at' | 'created_by'>) => void;
   product: Product | null;
 }
 
