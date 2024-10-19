@@ -21,7 +21,7 @@ export interface User {
   role_user: 'admin' | 'manager' | 'cashier';
   is_active?: boolean;
   created_at: Timestamp;
-   // Changed from business_ids: number[]
+  // Changed from business_ids: number[]
 }
 
 export interface UserCredentials {
@@ -35,8 +35,6 @@ export interface AuthResponse {
 }
 
 export interface Table {
-   
-
   id: string;
   table_number: string;
   is_occupied: boolean;
@@ -46,8 +44,6 @@ export interface Table {
 }
 
 export interface ProductCategory {
-   
-
   id: string;
   name: string;
   description?: string;
@@ -59,7 +55,6 @@ export interface ProductCategory {
 }
 
 export interface Product {
-   
   id: string;
   name_en: string;
   name_other?: string;
@@ -76,7 +71,6 @@ export interface Product {
 }
 
 export interface Customer {
-   
   id: string;
   name: string;
   contact?: ContactInfo;
@@ -87,7 +81,6 @@ export interface Customer {
 }
 
 export interface Order {
-  
   id: string;
   table?: Table;
   customer?: Customer;
@@ -113,7 +106,6 @@ export interface OrderItem {
 }
 
 export interface DiscountType {
-   
   id: string;
   name: string;
   created_at: Timestamp;
@@ -121,7 +113,6 @@ export interface DiscountType {
 }
 
 export interface TaxRate {
-   
   id: string;
   name: string;
   created_at: Timestamp;
@@ -129,7 +120,6 @@ export interface TaxRate {
 }
 
 export interface PaymentType {
-   
   id: string;
   name: string;
   created_at: Timestamp;
@@ -137,7 +127,6 @@ export interface PaymentType {
 }
 
 export interface Payment {
-   
   id: string;
   order_id: string;
   payment_type_id: string; // type attribute in snake_case
@@ -147,7 +136,6 @@ export interface Payment {
 }
 
 export interface OrderType {
-   
   id: string;
   name: string;
   created_at: Timestamp;
@@ -156,7 +144,6 @@ export interface OrderType {
 
 export interface Inventory {
   id: string;
-  
   product?: Product;
   name: string;
   quantity_in_stock: number;
@@ -169,7 +156,6 @@ export interface Inventory {
 }
 
 export interface PurchaseOrder {
-   
   id: string; // Unique identifier
   supplier: Supplier; // Reference to Supplier
   items: PurchaseOrderItem[]; // List of items purchased
@@ -189,7 +175,6 @@ export interface PurchaseOrderItem {
 }
 
 export interface Supplier {
-   
   id: string; // Unique identifier
   name: string; // Supplier name
   contact: ContactInfo; // Supplier contact details (phone, email)
@@ -199,7 +184,6 @@ export interface Supplier {
 }
 
 export interface StockMovement {
-   
   id: string; // Unique identifier for the stock movement record
   inventory: Inventory; // Optional: Reference to the Product (for retail)
   movement_type: 'adjustment' | 'sale' | 'return' | 'transfer'; // Type of stock movement
@@ -218,7 +202,7 @@ export interface ContactInfo {
 
 export interface SASSubscription {
   id: string; // Unique identifier for the subscription
-  business: Business; 
+  business: Business;
   plan_id: string; // Reference to the pricing plan
   start_date: Timestamp; // Date when the subscription starts
   end_date?: Timestamp; // Date when the subscription ends (optional for ongoing)
@@ -248,7 +232,7 @@ export interface SASPaymentType {
 // Represents a transaction record
 export interface SASTransaction {
   id: string; // Unique identifier for the transaction
-  business: Business; 
+  business: Business;
   amount: number; // Amount of the transaction
   payment_type: SASPaymentType; // Reference to the payment method used
   status_transaction: 'completed' | 'failed' | 'pending'; // Transaction status
