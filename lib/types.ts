@@ -100,6 +100,7 @@ export interface OrderItem {
   id: string;
   order_id: string;
   product: Product;
+  name: string;
   quantity: number;
   price: number;
   special_instructions?: string;

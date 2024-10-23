@@ -42,7 +42,7 @@ const OrderDetails: React.FC<OrderDetailsProps> = ({ order }) => {
   });
 
   const subtotal = orderItems.reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0);
-  const taxRate = taxRates.find((rate: TaxRate) => rate.id === selectedTaxRate)?.percentage || 0;
+  const taxRate = taxRates.find((rate: TaxRate) => rate.id === selectedTaxRate.id)?.percentage || 0;
   const tax = subtotal * taxRate;
   const total = subtotal + tax;
 
@@ -51,16 +51,15 @@ const OrderDetails: React.FC<OrderDetailsProps> = ({ order }) => {
   };
 
   const handleAddToOrder = (product: Product) => {
-    const orderItem: Omit<OrderItem, 'id' | 'order_id'> = {
+    const orderItem: Omit<OrderItem, 'id' > = {
       product: product,
       quantity: 1,
+      order_id: 0,
       price: product.price,
       name: product.name_en,
-      product_name_en: product.name_en,
-      product_name_other: product.name_other,
       created_at: new Date()
     };
-    addOrder(orderItem);
+    addToOrder(orderItem);
   };
 
   const handlePlaceOrder = () => {
@@ -82,27 +81,15 @@ const OrderDetails: React.FC<OrderDetailsProps> = ({ order }) => {
       return;
     }
 
-    const selectedCustomerObj = customers.find((c) => c.id === selectedCustomer);
-    let customer: Customer | undefined = selectedCustomerObj;
-
-    if (!selectedCustomerObj && (newCustomerName || newCustomerPhone)) {
-      customer = {
-        id: 'new',
-        name: newCustomerName,
-        phone: newCustomerPhone,
-        email: '',
-        created_at: new Date(),
-        created_by: currentUser!
-      };
-    }
+    const selectedCustomerObj = customers.find((c) => c.id === selectedCustomer.id);
 
     const newOrder: Omit<Order, 'id' | 'created_at' | 'created_by'> = {
       items: orderItems,
       customer: customer,
       status_order: 'waiting',
       total_amount: total,
-      tax_rate: taxRates.find((rate) => rate.id === selectedTaxRate)!,
-      order_type: orderTypes.find((type) => type.id === selectedOrderType)!,
+      tax_rate: taxRates.find((rate) => rate.id === selectedTaxRate.id)!,
+      order_type: orderTypes.find((type) => type.id === selectedOrderType.id)!,
       payment_status: 'unpaid',
       discount_type: 'none',
       discount_amount: 0,
