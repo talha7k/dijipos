@@ -34,7 +34,7 @@ DijiPOS is a cutting-edge, web-based Point of Sale (POS) system designed to stre
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/dijipos.git
+   git clone https://github.com/talha7k/dijipos.git
    cd dijipos
    ```
 

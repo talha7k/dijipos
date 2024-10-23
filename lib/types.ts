@@ -5,9 +5,9 @@ export interface Business {
   type_business: 'restaurant' | 'shop';  // type attribute in snake_case
   name: string;
   contact: ContactInfo;
-  timezone?: string;
-  currency?: string;
-  language?: string; // Restaurant's default language
+  timezone: string;
+  currency: string;
+  language: string; // Restaurant's default language
   created_by: User;
   created_at: Timestamp;
 }
@@ -17,9 +17,9 @@ export interface User {
   email: string;
   business_id: string;
   password_hash: string;
-  full_name?: string;
+  full_name: string;
   role_user: 'admin' | 'manager' | 'cashier';
-  is_active?: boolean;
+  is_active: boolean;
   created_at: Timestamp;
   // Changed from business_ids: number[]
 }
@@ -38,18 +38,18 @@ export interface Table {
   id: string;
   table_number: string;
   is_occupied: boolean;
-  is_reserved?: boolean; // To track reserved tables
-  capacity?: number; // Number of seats
+  is_reserved: boolean; // To track reserved tables
+  capacity: number; // Number of seats
   created_at: Timestamp;
 }
 
 export interface ProductCategory {
   id: string;
   name: string;
-  description?: string;
-  image?: string;
-  is_visible?: boolean; // Visibility toggle
-  sort_order?: number; // Sorting in the UI
+  description: string| null;
+  image: string;
+  is_visible: boolean; // Visibility toggle
+  sort_order: number; // Sorting in the UI
   created_by: User;
   created_at: Timestamp;
 }
@@ -57,36 +57,36 @@ export interface ProductCategory {
 export interface Product {
   id: string;
   name_en: string;
-  name_other?: string;
-  description?: string;
-  sku?: string; // barcode support
+  name_other: string;
+  description: string;
+  sku: string| null; // barcode support
   price: number;
-  modifiers?: string[]; // Custom modifiers like spicy, regular, roasted
+  modifiers: string[]| null; // Custom modifiers like spicy, regular, roasted
   category_product: ProductCategory; // type attribute in snake_case
   is_available: boolean;
-  is_tax_inclusive?: boolean;
+  is_tax_inclusive: boolean;
   created_at: Timestamp;
-  image?: string;
+  image: string;
   created_by: User;
 }
 
 export interface Customer {
   id: string;
   name: string;
-  contact?: ContactInfo;
-  loyalty_points?: number; // Loyalty program points
-  language_preference?: string; // Preferred language for communication
+  contact: ContactInfo;
+  loyalty_points: number; // Loyalty program points
+  language_preference: string; // Preferred language for communication
   created_by: User;
   created_at: Timestamp;
 }
 
 export interface Order {
   id: string;
-  table?: Table;
-  customer?: Customer;
+  table: Table | null;
+  customer: Customer | null;
   created_by: User;
   items: OrderItem[];
-  discount_amount?: number;
+  discount_amount: number ;
   discount_type: DiscountType; // Type of discount
   tax_amount: number;
   tax_rate: TaxRate; // Tax percentage rate
@@ -103,7 +103,7 @@ export interface OrderItem {
   name: string;
   quantity: number;
   price: number;
-  special_instructions?: string;
+  special_instructions: string;
 }
 
 export interface DiscountType {
@@ -145,12 +145,12 @@ export interface OrderType {
 
 export interface Inventory {
   id: string;
-  product?: Product;
+  product: Product| null;
   name: string;
   quantity_in_stock: number;
   unit_of_measure: 'grams' | 'ml' | 'pieces';
-  reorder_level?: number;
-  last_restocked_at?: Timestamp;
+  reorder_level: number;
+  last_restocked_at: Timestamp| null;
   expiry_date: Timestamp | 'non-perishable';
   created_at: Timestamp;
   created_by: User;
@@ -163,7 +163,7 @@ export interface PurchaseOrder {
   total_amount: number; // Total cost of the order
   order_status: 'waiting' | 'received' | 'canceled'; // Status of the order
   created_at: Timestamp; // Date when the order was placed
-  received_at?: Timestamp; // Date when the order was received (if applicable)
+  received_at: Timestamp| null; // Date when the order was received (if applicable)
   created_by: User;
 }
 
@@ -179,7 +179,7 @@ export interface Supplier {
   id: string; // Unique identifier
   name: string; // Supplier name
   contact: ContactInfo; // Supplier contact details (phone, email)
-  store_location_id?: number; // Optional: associated store
+  store_location_id: string | null; // Optional: associated store
   created_at: Timestamp; // Date the supplier was added
   created_by: User;
 }
@@ -189,16 +189,16 @@ export interface StockMovement {
   inventory: Inventory; // Optional: Reference to the Product (for retail)
   movement_type: 'adjustment' | 'sale' | 'return' | 'transfer'; // Type of stock movement
   quantity: number; // Quantity affected by the movement
-  reason?: string; // Optional: Reason for adjustment (e.g., "correction", "damage", "sale")
+  reason: string; // Optional: Reason for adjustment (e.g., "correction", "damage", "sale")
   created_at: Timestamp; // Date and time of the movement
   created_by: User;
-  purchase_order?: PurchaseOrder; // Optional: Reference to an order related to the transaction
+  purchase_order: PurchaseOrder| null; // Optional: Reference to an order related to the transaction
 }
 
 export interface ContactInfo {
-  phone?: string; // Optional phone number
-  email?: string; // Optional email address
-  address?: string; // Optional address
+  phone: string; // Optional phone number
+  email: string; // Optional email address
+  address: string; // Optional address
 }
 
 export interface SASSubscription {
@@ -206,7 +206,7 @@ export interface SASSubscription {
   business: Business;
   plan_id: string; // Reference to the pricing plan
   start_date: Timestamp; // Date when the subscription starts
-  end_date?: Timestamp; // Date when the subscription ends (optional for ongoing)
+  end_date: Timestamp| null; // Date when the subscription ends (optional for ongoing)
   status_subscription: 'active' | 'canceled' | 'suspended'; // Subscription status, type attribute in snake_case
   created_at: Timestamp; // Date when the subscription was created
 }
@@ -215,10 +215,10 @@ export interface SASSubscription {
 export interface SASPricingPlan {
   id: string; // Unique identifier for the pricing plan
   name: string; // Name of the plan (e.g., "Basic", "Premium")
-  description?: string; // Description of the plan
+  description: string; // Description of the plan
   price: number; // Monthly price of the plan
   billing_cycle: 'monthly' | 'half-year' | 'yearly'; // Billing cycle
-  features?: string[]; // List of features included in the plan
+  features: string[]; // List of features included in the plan
   created_at: Timestamp; // Date when the plan was created
 }
 
@@ -226,7 +226,7 @@ export interface SASPricingPlan {
 export interface SASPaymentType {
   id: string; // Unique identifier for the payment method
   type_payment: 'credit_card' | 'stcpay' | 'bank_transfer'; // type attribute in snake_case
-  is_default?: boolean; // Indicates if this is the default payment method
+  is_default: boolean; // Indicates if this is the default payment method
   created_at: Timestamp; // Date when the payment method was added
 }
 
