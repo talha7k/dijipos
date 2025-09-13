@@ -14,7 +14,7 @@ export function useOrdersData(organizationId: string | undefined) {
     }
 
     // Fetch orders with real-time updates
-    const ordersQ = query(collection(db, 'tenants', organizationId, 'orders'));
+    const ordersQ = query(collection(db, 'organizations', organizationId, 'orders'));
     const unsubscribe = onSnapshot(ordersQ, (querySnapshot) => {
       const ordersData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -47,7 +47,7 @@ export function useOrderActions(organizationId: string | undefined) {
 
     setUpdatingStatus(orderId);
     try {
-      const orderRef = doc(db, 'tenants', organizationId, 'orders', orderId);
+      const orderRef = doc(db, 'organizations', organizationId, 'orders', orderId);
       await updateDoc(orderRef, {
         ...orderData,
         updatedAt: new Date(),
@@ -75,7 +75,7 @@ export function useOrderActions(organizationId: string | undefined) {
         updatedAt: new Date(),
       };
 
-      const docRef = await addDoc(collection(db, 'tenants', organizationId, 'orders'), cleanedData);
+      const docRef = await addDoc(collection(db, 'organizations', organizationId, 'orders'), cleanedData);
       return docRef.id;
     } catch (error) {
       console.error('Error creating order:', error);
@@ -87,7 +87,7 @@ export function useOrderActions(organizationId: string | undefined) {
     if (!organizationId) return;
 
     try {
-      await deleteDoc(doc(db, 'tenants', organizationId, 'orders', orderId));
+      await deleteDoc(doc(db, 'organizations', organizationId, 'orders', orderId));
     } catch (error) {
       console.error('Error deleting order:', error);
       throw error;

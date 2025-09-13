@@ -14,7 +14,7 @@ export function useUsersData(organizationId: string | undefined) {
     }
 
     // Fetch users with real-time updates
-    const usersQ = query(collection(db, 'tenants', organizationId, 'users'));
+    const usersQ = query(collection(db, 'organizations', organizationId, 'users'));
     const unsubscribe = onSnapshot(usersQ, (querySnapshot) => {
       const usersData = querySnapshot.docs.map(doc => ({
         id: doc.id,

@@ -37,7 +37,7 @@ export function ItemCard({ item, onClick, className = '' }: ItemCardProps) {
         </div>
         <div className="mt-auto">
           <div className="text-center font-bold text-xl py-2 text-foreground bg-primary/5 rounded-md w-full border-t-3 hover:border-primary border-primary/60 dark:border-primary/20">
-            {price.toFixed(2)}
+            {price ? price.toFixed(2) : '0.00'}
           </div>
         </div>
       </div>

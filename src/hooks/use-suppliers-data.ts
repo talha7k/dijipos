@@ -14,7 +14,7 @@ export function useSuppliersData(organizationId: string | undefined) {
     }
 
     // Fetch suppliers with real-time updates
-    const suppliersQ = query(collection(db, 'tenants', organizationId, 'suppliers'));
+    const suppliersQ = query(collection(db, 'organizations', organizationId, 'suppliers'));
     const unsubscribe = onSnapshot(suppliersQ, (querySnapshot) => {
       const suppliersData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -47,7 +47,7 @@ export function useSupplierActions(organizationId: string | undefined) {
 
     setUpdatingStatus(supplierId);
     try {
-      const supplierRef = doc(db, 'tenants', organizationId, 'suppliers', supplierId);
+      const supplierRef = doc(db, 'organizations', organizationId, 'suppliers', supplierId);
       await updateDoc(supplierRef, {
         ...supplierData,
         updatedAt: new Date(),
@@ -74,7 +74,7 @@ export function useSupplierActions(organizationId: string | undefined) {
         updatedAt: new Date(),
       };
 
-      const docRef = await addDoc(collection(db, 'tenants', organizationId, 'suppliers'), cleanedData);
+      const docRef = await addDoc(collection(db, 'organizations', organizationId, 'suppliers'), cleanedData);
       return docRef.id;
     } catch (error) {
       console.error('Error creating supplier:', error);
@@ -86,7 +86,7 @@ export function useSupplierActions(organizationId: string | undefined) {
     if (!organizationId) return;
 
     try {
-      await deleteDoc(doc(db, 'tenants', organizationId, 'suppliers', supplierId));
+      await deleteDoc(doc(db, 'organizations', organizationId, 'suppliers', supplierId));
     } catch (error) {
       console.error('Error deleting supplier:', error);
       throw error;

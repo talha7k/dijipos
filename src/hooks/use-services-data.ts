@@ -14,7 +14,7 @@ export function useServicesData(organizationId: string | undefined) {
     }
 
     // Fetch services with real-time updates
-    const servicesQ = query(collection(db, 'tenants', organizationId, 'services'));
+    const servicesQ = query(collection(db, 'organizations', organizationId, 'services'));
     const unsubscribe = onSnapshot(servicesQ, (querySnapshot) => {
       const servicesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -47,7 +47,7 @@ export function useServiceActions(organizationId: string | undefined) {
 
     setUpdatingStatus(serviceId);
     try {
-      const serviceRef = doc(db, 'tenants', organizationId, 'services', serviceId);
+      const serviceRef = doc(db, 'organizations', organizationId, 'services', serviceId);
       await updateDoc(serviceRef, {
         ...serviceData,
         updatedAt: new Date(),
@@ -73,7 +73,7 @@ export function useServiceActions(organizationId: string | undefined) {
         updatedAt: new Date(),
       };
 
-      const docRef = await addDoc(collection(db, 'tenants', organizationId, 'services'), cleanedData);
+      const docRef = await addDoc(collection(db, 'organizations', organizationId, 'services'), cleanedData);
       return docRef.id;
     } catch (error) {
       console.error('Error creating service:', error);
@@ -85,7 +85,7 @@ export function useServiceActions(organizationId: string | undefined) {
     if (!organizationId) return;
 
     try {
-      await deleteDoc(doc(db, 'tenants', organizationId, 'services', serviceId));
+      await deleteDoc(doc(db, 'organizations', organizationId, 'services', serviceId));
     } catch (error) {
       console.error('Error deleting service:', error);
       throw error;

@@ -14,7 +14,7 @@ export function useCustomersData(organizationId: string | undefined) {
     }
 
     // Fetch customers with real-time updates
-    const customersQ = query(collection(db, 'tenants', organizationId, 'customers'));
+    const customersQ = query(collection(db, 'organizations', organizationId, 'customers'));
     const unsubscribe = onSnapshot(customersQ, (querySnapshot) => {
       const customersData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -47,7 +47,7 @@ export function useCustomerActions(organizationId: string | undefined) {
 
     setUpdatingStatus(customerId);
     try {
-      const customerRef = doc(db, 'tenants', organizationId, 'customers', customerId);
+      const customerRef = doc(db, 'organizations', organizationId, 'customers', customerId);
       await updateDoc(customerRef, {
         ...customerData,
         updatedAt: new Date(),
@@ -73,7 +73,7 @@ export function useCustomerActions(organizationId: string | undefined) {
         updatedAt: new Date(),
       };
 
-      const docRef = await addDoc(collection(db, 'tenants', organizationId, 'customers'), cleanedData);
+      const docRef = await addDoc(collection(db, 'organizations', organizationId, 'customers'), cleanedData);
       return docRef.id;
     } catch (error) {
       console.error('Error creating customer:', error);
@@ -85,7 +85,7 @@ export function useCustomerActions(organizationId: string | undefined) {
     if (!organizationId) return;
 
     try {
-      await deleteDoc(doc(db, 'tenants', organizationId, 'customers', customerId));
+      await deleteDoc(doc(db, 'organizations', organizationId, 'customers', customerId));
     } catch (error) {
       console.error('Error deleting customer:', error);
       throw error;

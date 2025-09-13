@@ -14,7 +14,7 @@ export function useTablesData(organizationId: string | undefined) {
     }
 
     // Fetch tables with real-time updates
-    const tablesQ = query(collection(db, 'tenants', organizationId, 'tables'));
+    const tablesQ = query(collection(db, 'organizations', organizationId, 'tables'));
     const unsubscribe = onSnapshot(tablesQ, (querySnapshot) => {
       const tablesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -47,7 +47,7 @@ export function useTableActions(organizationId: string | undefined) {
 
     setUpdatingStatus(tableId);
     try {
-      const tableRef = doc(db, 'tenants', organizationId, 'tables', tableId);
+      const tableRef = doc(db, 'organizations', organizationId, 'tables', tableId);
       await updateDoc(tableRef, {
         ...tableData,
         updatedAt: new Date(),
@@ -71,7 +71,7 @@ export function useTableActions(organizationId: string | undefined) {
         updatedAt: new Date(),
       };
 
-      const docRef = await addDoc(collection(db, 'tenants', organizationId, 'tables'), cleanedData);
+      const docRef = await addDoc(collection(db, 'organizations', organizationId, 'tables'), cleanedData);
       return docRef.id;
     } catch (error) {
       console.error('Error creating table:', error);
@@ -83,7 +83,7 @@ export function useTableActions(organizationId: string | undefined) {
     if (!organizationId) return;
 
     try {
-      await deleteDoc(doc(db, 'tenants', organizationId, 'tables', tableId));
+      await deleteDoc(doc(db, 'organizations', organizationId, 'tables', tableId));
     } catch (error) {
       console.error('Error deleting table:', error);
       throw error;

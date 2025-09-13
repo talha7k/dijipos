@@ -14,7 +14,7 @@ export function useQuotesData(organizationId: string | undefined) {
     }
 
     // Fetch quotes with real-time updates
-    const quotesQ = query(collection(db, 'tenants', organizationId, 'quotes'));
+    const quotesQ = query(collection(db, 'organizations', organizationId, 'quotes'));
     const unsubscribe = onSnapshot(quotesQ, (querySnapshot) => {
       const quotesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -48,7 +48,7 @@ export function useQuoteActions(organizationId: string | undefined) {
 
     setUpdatingStatus(quoteId);
     try {
-      const quoteRef = doc(db, 'tenants', organizationId, 'quotes', quoteId);
+      const quoteRef = doc(db, 'organizations', organizationId, 'quotes', quoteId);
       await updateDoc(quoteRef, {
         ...quoteData,
         updatedAt: new Date(),
@@ -80,7 +80,7 @@ export function useQuoteActions(organizationId: string | undefined) {
         updatedAt: new Date(),
       };
 
-      const docRef = await addDoc(collection(db, 'tenants', organizationId, 'quotes'), cleanedData);
+      const docRef = await addDoc(collection(db, 'organizations', organizationId, 'quotes'), cleanedData);
       return docRef.id;
     } catch (error) {
       console.error('Error creating quote:', error);
@@ -92,7 +92,7 @@ export function useQuoteActions(organizationId: string | undefined) {
     if (!organizationId) return;
 
     try {
-      await deleteDoc(doc(db, 'tenants', organizationId, 'quotes', quoteId));
+      await deleteDoc(doc(db, 'organizations', organizationId, 'quotes', quoteId));
     } catch (error) {
       console.error('Error deleting quote:', error);
       throw error;

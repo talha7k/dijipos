@@ -14,7 +14,7 @@ export function useProductsData(organizationId: string | undefined) {
     }
 
     // Fetch products with real-time updates
-    const productsQ = query(collection(db, 'tenants', organizationId, 'products'));
+    const productsQ = query(collection(db, 'organizations', organizationId, 'products'));
     const unsubscribe = onSnapshot(productsQ, (querySnapshot) => {
       const productsData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -47,7 +47,7 @@ export function useProductActions(organizationId: string | undefined) {
 
     setUpdatingStatus(productId);
     try {
-      const productRef = doc(db, 'tenants', organizationId, 'products', productId);
+      const productRef = doc(db, 'organizations', organizationId, 'products', productId);
       await updateDoc(productRef, {
         ...productData,
         updatedAt: new Date(),
@@ -73,7 +73,7 @@ export function useProductActions(organizationId: string | undefined) {
         updatedAt: new Date(),
       };
 
-      const docRef = await addDoc(collection(db, 'tenants', organizationId, 'products'), cleanedData);
+      const docRef = await addDoc(collection(db, 'organizations', organizationId, 'products'), cleanedData);
       return docRef.id;
     } catch (error) {
       console.error('Error creating product:', error);
@@ -85,7 +85,7 @@ export function useProductActions(organizationId: string | undefined) {
     if (!organizationId) return;
 
     try {
-      await deleteDoc(doc(db, 'tenants', organizationId, 'products', productId));
+      await deleteDoc(doc(db, 'organizations', organizationId, 'products', productId));
     } catch (error) {
       console.error('Error deleting product:', error);
       throw error;

@@ -14,7 +14,7 @@ export function usePaymentsData(organizationId: string | undefined) {
     }
 
     // Fetch payments with real-time updates
-    const paymentsQ = query(collection(db, 'tenants', organizationId, 'payments'));
+    const paymentsQ = query(collection(db, 'organizations', organizationId, 'payments'));
     const unsubscribe = onSnapshot(paymentsQ, (querySnapshot) => {
       const paymentsData = querySnapshot.docs.map(doc => {
         const data = doc.data();

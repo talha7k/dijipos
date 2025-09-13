@@ -20,12 +20,12 @@ export function useInvoicesData(organizationId: string | undefined) {
     // Fetch organization data
     const fetchOrganization = async () => {
       try {
-        const tenantDoc = await getDoc(doc(db, 'tenants', organizationId));
-        if (tenantDoc.exists()) {
+        const organizationDoc = await getDoc(doc(db, 'organizations', organizationId));
+        if (organizationDoc.exists()) {
           setOrganization({
-            id: tenantDoc.id,
-            ...tenantDoc.data(),
-            createdAt: tenantDoc.data().createdAt?.toDate(),
+            id: organizationDoc.id,
+            ...organizationDoc.data(),
+            createdAt: organizationDoc.data().createdAt?.toDate(),
           } as Organization);
         }
       } catch (error) {
@@ -36,7 +36,7 @@ export function useInvoicesData(organizationId: string | undefined) {
     // Fetch customers
     const fetchCustomers = async () => {
       try {
-        const customersSnapshot = await getDocs(collection(db, 'tenants', organizationId, 'customers'));
+        const customersSnapshot = await getDocs(collection(db, 'organizations', organizationId, 'customers'));
         const customersData = customersSnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data(),
@@ -52,7 +52,7 @@ export function useInvoicesData(organizationId: string | undefined) {
     // Fetch suppliers
     const fetchSuppliers = async () => {
       try {
-        const suppliersSnapshot = await getDocs(collection(db, 'tenants', organizationId, 'suppliers'));
+        const suppliersSnapshot = await getDocs(collection(db, 'organizations', organizationId, 'suppliers'));
         const suppliersData = suppliersSnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data(),
@@ -66,7 +66,7 @@ export function useInvoicesData(organizationId: string | undefined) {
     };
 
     // Fetch payments with real-time updates
-    const paymentsQ = query(collection(db, 'tenants', organizationId, 'payments'));
+    const paymentsQ = query(collection(db, 'organizations', organizationId, 'payments'));
     const paymentsUnsubscribe = onSnapshot(paymentsQ, (querySnapshot) => {
       const paymentsData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -89,7 +89,7 @@ export function useInvoicesData(organizationId: string | undefined) {
     });
 
     // Fetch invoices with real-time updates
-    const invoicesQ = query(collection(db, 'tenants', organizationId, 'invoices'));
+    const invoicesQ = query(collection(db, 'organizations', organizationId, 'invoices'));
     const invoicesUnsubscribe = onSnapshot(invoicesQ, (querySnapshot) => {
       const invoicesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -135,7 +135,7 @@ export function useInvoiceActions(organizationId: string | undefined) {
 
     setUpdatingStatus(invoiceId);
     try {
-      const invoiceRef = doc(db, 'tenants', organizationId, 'invoices', invoiceId);
+      const invoiceRef = doc(db, 'organizations', organizationId, 'invoices', invoiceId);
       await updateDoc(invoiceRef, { status, updatedAt: new Date() });
     } catch (error) {
       console.error('Error updating invoice status:', error);
@@ -166,7 +166,7 @@ export function useInvoiceActions(organizationId: string | undefined) {
     };
 
     try {
-      await addDoc(collection(db, 'tenants', organizationId, 'invoices'), cleanedData);
+      await addDoc(collection(db, 'organizations', organizationId, 'invoices'), cleanedData);
     } catch (error) {
       console.error('Error creating invoice:', error);
       throw error;

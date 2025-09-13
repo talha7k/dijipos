@@ -1,6 +1,6 @@
 import { db } from '@/lib/firebase';
 import { collection, doc, writeBatch } from 'firebase/firestore';
-import { Product, Service,Quote, Customer, Supplier, Item, Payment, PurchaseInvoice, SalesInvoice } from '@/lib/types';
+import { Product, Service, Quote, Customer, Supplier, Item, Payment, PurchaseInvoice, Invoice, Category, Order, OrderPayment, OrderItem } from '@/types';
  
 // --- HELPER FUNCTIONS ---
 
@@ -24,17 +24,73 @@ const companySuffixes = ['Trading', 'Solutions', 'Enterprises', 'Group', 'LLC', 
 
 // --- PROCEDURAL DATA GENERATORS ---
 
-const generateProductsAndServices = (productCount: number, serviceCount: number) => {
+const generateCategories = (): Omit<Category, 'organizationId'>[] => {
+  const categories: Omit<Category, 'organizationId'>[] = [];
+  const mainCategories = [
+    { name: 'Food & Beverages', type: 'both' as const },
+    { name: 'Electronics', type: 'product' as const },
+    { name: 'Services', type: 'service' as const }
+  ];
+
+  const subCategories: Record<string, string[]> = {
+    'Food & Beverages': ['Hot Drinks', 'Cold Drinks', 'Snacks'],
+    'Electronics': ['Computers', 'Accessories', 'Mobile Devices'],
+    'Services': ['Consulting', 'Maintenance', 'Installation']
+  };
+
+  mainCategories.forEach((mainCat) => {
+    // Create main category
+    const mainCategoryId = generateId('cat');
+    categories.push({
+      id: mainCategoryId,
+      name: mainCat.name,
+      description: `${mainCat.name} category`,
+      type: mainCat.type,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    // Create subcategories
+    subCategories[mainCat.name].forEach((subName: string) => {
+      categories.push({
+        id: generateId('cat'),
+        name: subName,
+        description: `${subName} subcategory under ${mainCat.name}`,
+        type: mainCat.type,
+        parentId: mainCategoryId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+    });
+  });
+
+  return categories;
+};
+
+const generateProductsAndServices = (productCount: number, serviceCount: number, categories: Omit<Category, 'organizationId'>[]) => {
   const products: Omit<Product, 'organizationId'>[] = [];
   const services: Omit<Service, 'organizationId'>[] = [];
 
+  // Get only subcategories (categories with parentId)
+  const subCategories = categories.filter(cat => cat.parentId);
+
+  // Select 4 random subcategories for products
+  const selectedSubCategories = [];
+  const shuffled = [...subCategories].sort(() => 0.5 - Math.random());
+  for (let i = 0; i < Math.min(4, shuffled.length); i++) {
+    selectedSubCategories.push(shuffled[i]);
+  }
+
   for (let i = 0; i < productCount; i++) {
+    const randomCategory = getRandomElement(selectedSubCategories);
     products.push({
       id: generateId('prod'),
       name: `${getRandomElement(productAdjectives)} ${getRandomElement(productNouns)}`,
       description: 'High-quality item.',
       price: getRandomFloat(10, 500, 2),
-      unit: getRandomElement(productUnits),
+      categoryId: randomCategory.id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
   }
 
@@ -43,7 +99,9 @@ const generateProductsAndServices = (productCount: number, serviceCount: number)
       id: generateId('serv'),
       name: `${getRandomElement(serviceAdjectives)} ${getRandomElement(serviceNouns)}`,
       description: 'Professional service offering.',
-      rate: getRandomFloat(50, 400, 2), // Per hour
+      price: getRandomFloat(50, 400, 2), // Per hour
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
   }
 
@@ -81,6 +139,104 @@ const generateSuppliers = (count: number): Omit<Supplier, 'organizationId'>[] =>
     });
 };
 
+const generateOrderItems = (products: Omit<Product, 'organizationId'>[], services: Omit<Service, 'organizationId'>[]): OrderItem[] => {
+    const items: OrderItem[] = [];
+    const itemCount = getRandomInt(1, 4);
+
+    for (let i = 0; i < itemCount; i++) {
+        const isProduct = Math.random() > 0.4; // 60% chance of being a product
+        if (isProduct) {
+            const product = getRandomElement(products);
+            const quantity = getRandomInt(1, 5);
+            items.push({
+                id: generateId('ord-item'),
+                type: 'product',
+                productId: product.id,
+                name: product.name,
+                description: product.description || '',
+                quantity,
+                unitPrice: product.price,
+                total: quantity * product.price,
+            });
+        } else {
+            const service = getRandomElement(services);
+            const quantity = getRandomInt(1, 3); // Hours
+            items.push({
+                id: generateId('ord-item'),
+                type: 'service',
+                serviceId: service.id,
+                name: service.name,
+                description: service.description || '',
+                quantity,
+                unitPrice: service.price,
+                total: quantity * service.price,
+            });
+        }
+    }
+    return items;
+};
+
+const generateOrders = (count: number, customers: Omit<Customer, 'organizationId'>[], products: Omit<Product, 'organizationId'>[], services: Omit<Service, 'organizationId'>[]): { orders: Omit<Order, 'organizationId'>[], orderPayments: OrderPayment[] } => {
+    const orders: Omit<Order, 'organizationId'>[] = [];
+    const orderPayments: OrderPayment[] = [];
+
+    Array.from({ length: count }, () => {
+        const customer = Math.random() > 0.3 ? getRandomElement(customers) : undefined; // 70% have customers
+        const orderItems = generateOrderItems(products, services);
+        const subtotal = orderItems.reduce((sum, item) => sum + item.total, 0);
+        const taxRate = 15;
+        const taxAmount = subtotal * (taxRate / 100);
+        const total = subtotal + taxAmount;
+
+        const orderId = generateId('ord');
+        const status = getRandomElement(['open', 'completed', 'cancelled', 'saved'] as const);
+
+        orders.push({
+            id: orderId,
+            orderNumber: `ORD-${Date.now()}-${getRandomInt(100, 999)}`,
+            items: orderItems,
+            subtotal,
+            taxRate,
+            taxAmount,
+            total,
+            status,
+            customerName: customer?.name,
+            customerPhone: customer?.phone,
+            customerEmail: customer?.email,
+            orderType: getRandomElement(['dine-in', 'take-away', 'delivery']),
+            notes: Math.random() > 0.7 ? 'Special instructions for order' : undefined,
+            createdById: 'temp-user-id', // Will be replaced with actual userId
+            createdByName: 'System Generated',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        });
+
+        // Generate payments for completed orders
+        if (status === 'completed') {
+            const paymentCount = getRandomInt(1, 2);
+            let remainingTotal = total;
+            for (let p = 0; p < paymentCount; p++) {
+                const isLastPayment = p === paymentCount - 1;
+                const paymentAmount = isLastPayment ? remainingTotal : getRandomFloat(0.3, 0.7, 2) * remainingTotal;
+                remainingTotal -= paymentAmount;
+                orderPayments.push({
+                    id: generateId('ord-pay'),
+                    orderId: orderId,
+                    organizationId: 'temp-org-id', // Will be replaced with actual orgId
+                    amount: paymentAmount,
+                    paymentMethod: getRandomElement(['Cash', 'Credit Card', 'Digital Wallet']),
+                    paymentDate: new Date(),
+                    reference: `REF-${getRandomInt(100000, 999999)}`,
+                    notes: p === 0 ? 'Payment for order' : 'Additional payment',
+                    createdAt: new Date(),
+                });
+            }
+        }
+    });
+
+    return { orders, orderPayments };
+};
+
 const generateItems = (products: Omit<Product, 'organizationId'>[], services: Omit<Service, 'organizationId'>[]): Item[] => {
     const items: Item[] = [];
     const itemCount = getRandomInt(2, 5);
@@ -95,7 +251,7 @@ const generateItems = (products: Omit<Product, 'organizationId'>[], services: Om
                 type: 'product',
                 productId: product.id,
                 name: product.name,
-                description: `Unit: ${product.unit}`,
+                description: 'Product item',
                 quantity,
                 unitPrice: product.price,
                 total: quantity * product.price,
@@ -110,8 +266,8 @@ const generateItems = (products: Omit<Product, 'organizationId'>[], services: Om
                 name: service.name,
                 description: 'Professional services rendered.',
                 quantity,
-                unitPrice: service.rate,
-                total: quantity * service.rate,
+                unitPrice: service.price,
+                total: quantity * service.price,
             });
         }
     }
@@ -145,7 +301,7 @@ const generateQuotes = (count: number, customers: Omit<Customer, 'organizationId
     });
 };
 
-const generateInvoices = (count: number, customers: Omit<Customer, 'organizationId'>[], suppliers: Omit<Supplier, 'organizationId'>[], products: Omit<Product, 'organizationId'>[], services: Omit<Service, 'organizationId'>[]): Omit<SalesInvoice | PurchaseInvoice, 'organizationId'>[] => {
+const generateInvoices = (count: number, customers: Omit<Customer, 'organizationId'>[], suppliers: Omit<Supplier, 'organizationId'>[], products: Omit<Product, 'organizationId'>[], services: Omit<Service, 'organizationId'>[]): Omit<Invoice, 'organizationId'>[] => {
     return Array.from({ length: count }, () => {
         const items = generateItems(products, services);
         const subtotal = items.reduce((sum, item) => sum + item.total, 0);
@@ -173,6 +329,7 @@ const generateInvoices = (count: number, customers: Omit<Customer, 'organization
                     paymentDate: new Date(),
                     paymentMethod: getRandomElement(['Bank Transfer', 'Credit Card', 'Cash']),
                     notes: '',
+                    createdAt: new Date(),
                 });
             }
         } else if (status === 'sent' && Math.random() > 0.6) { // 40% chance of a partial payment on a sent invoice
@@ -183,7 +340,8 @@ const generateInvoices = (count: number, customers: Omit<Customer, 'organization
                 amount: getRandomFloat(0.1, 0.5, 2) * total,
                 paymentDate: new Date(),
                 paymentMethod: 'Bank Transfer',
-                notes: 'Initial deposit.'
+                notes: 'Initial deposit.',
+                createdAt: new Date(),
             });
         }
         
@@ -201,27 +359,32 @@ const generateInvoices = (count: number, customers: Omit<Customer, 'organization
             dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
         };
 
-        const isSales = Math.random() > 0.2; // 80% of invoices are sales
+        const isSales = Math.random() > 0.5; // 50% of invoices are sales
         if (isSales) {
             const customer = getRandomElement(customers);
-            const salesInvoice: Omit<SalesInvoice, 'organizationId'> = {
+            const invoice: Omit<Invoice, 'organizationId'> = {
                 ...baseInvoice,
                 type: 'sales',
                 clientName: customer.name,
                 clientEmail: customer.email,
                 clientAddress: customer.address,
+                template: 'english',
+                includeQR: true,
             };
-            return salesInvoice;
+            return invoice;
         } else {
             const supplier = getRandomElement(suppliers);
-            const purchaseInvoice: Omit<PurchaseInvoice, 'organizationId'> = {
+            const invoice: Omit<Invoice, 'organizationId'> = {
                 ...baseInvoice,
                 type: 'purchase',
+                supplierId: supplier.id,
                 supplierName: supplier.name,
                 supplierEmail: supplier.email,
                 supplierAddress: supplier.address,
+                template: 'english',
+                includeQR: true,
             };
-            return purchaseInvoice;
+            return invoice;
         }
     });
 };
@@ -235,43 +398,57 @@ export async function generateSampleData(organizationId: string) {
 
   // Define how much data to generate
   const COUNTS = {
-    PRODUCTS: 150,
+    PRODUCTS: 60,
     SERVICES: 40,
-    CUSTOMERS: 50,
-    SUPPLIERS: 25,
-    QUOTES: 80,
-    INVOICES: 200,
+    CUSTOMERS: 10,
+    SUPPLIERS: 10,
+    QUOTES: 20,
+    INVOICES: 40,
+    ORDERS: 25,
   };
 
   try {
     // 1. Generate independent data
-    const { products, services } = generateProductsAndServices(COUNTS.PRODUCTS, COUNTS.SERVICES);
+    const categories = generateCategories();
+    const { products, services } = generateProductsAndServices(COUNTS.PRODUCTS, COUNTS.SERVICES, categories);
     const customers = generateCustomers(COUNTS.CUSTOMERS);
     const suppliers = generateSuppliers(COUNTS.SUPPLIERS);
 
     // 2. Generate dependent data
     const quotes = generateQuotes(COUNTS.QUOTES, customers, products, services);
     const invoices = generateInvoices(COUNTS.INVOICES, customers, suppliers, products, services);
+    const { orders, orderPayments } = generateOrders(COUNTS.ORDERS, customers, products, services);
     
     // 3. Prepare data for batch write
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const collections: { [key: string]: any[] } = {
+        categories,
         products,
         services,
         customers,
         suppliers,
         quotes,
-        invoices
+        invoices,
+        orders,
+        orderPayments
     };
 
     for (const [name, data] of Object.entries(collections)) {
         console.log(`-> Preparing ${data.length} documents for '${name}' collection...`);
         for (const item of data) {
             const docRef = doc(collection(db, 'organizations', organizationId, name), item.id);
-            // Add timestamps and orgId for customers/suppliers
+            // Handle different collection types
             if (['customers', 'suppliers'].includes(name)) {
+                // Add timestamps and orgId for customers/suppliers
                 batch.set(docRef, { ...item, organizationId, createdAt: new Date(), updatedAt: new Date() });
+            } else if (name === 'categories') {
+                // Categories already have timestamps, just add orgId
+                batch.set(docRef, { ...item, organizationId });
+            } else if (name === 'orderPayments') {
+                // OrderPayments already have organizationId set
+                batch.set(docRef, item);
             } else {
+                // Other collections just need organizationId
                 batch.set(docRef, { ...item, organizationId });
             }
         }

@@ -14,7 +14,7 @@ export function useCategoriesData(organizationId: string | undefined) {
     }
 
     // Fetch categories with real-time updates
-    const categoriesQ = query(collection(db, 'tenants', organizationId, 'categories'));
+    const categoriesQ = query(collection(db, 'organizations', organizationId, 'categories'));
     const unsubscribe = onSnapshot(categoriesQ, (querySnapshot) => {
       const categoriesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -47,7 +47,7 @@ export function useCategoryActions(organizationId: string | undefined) {
 
     setUpdatingStatus(categoryId);
     try {
-      const categoryRef = doc(db, 'tenants', organizationId, 'categories', categoryId);
+      const categoryRef = doc(db, 'organizations', organizationId, 'categories', categoryId);
       await updateDoc(categoryRef, {
         ...categoryData,
         updatedAt: new Date(),
@@ -73,7 +73,7 @@ export function useCategoryActions(organizationId: string | undefined) {
         updatedAt: new Date(),
       };
 
-      const docRef = await addDoc(collection(db, 'tenants', organizationId, 'categories'), cleanedData);
+      const docRef = await addDoc(collection(db, 'organizations', organizationId, 'categories'), cleanedData);
       return docRef.id;
     } catch (error) {
       console.error('Error creating category:', error);
@@ -85,7 +85,7 @@ export function useCategoryActions(organizationId: string | undefined) {
     if (!organizationId) return;
 
     try {
-      await deleteDoc(doc(db, 'tenants', organizationId, 'categories', categoryId));
+      await deleteDoc(doc(db, 'organizations', organizationId, 'categories', categoryId));
     } catch (error) {
       console.error('Error deleting category:', error);
       throw error;
