@@ -2,6 +2,7 @@
 
 import { Invoice, Tenant, Customer, Supplier } from '@/types';
 import ZatcaQR from '@/components/ZatcaQR';
+import Image from 'next/image';
 
 interface ArabicInvoiceProps {
   invoice: Invoice;
@@ -30,11 +31,14 @@ export default function ArabicInvoice({ invoice, tenant, customer, supplier }: A
           {/* Company Logo */}
           {tenant.logoUrl && (
             <div className="mb-4">
-              <img 
-                src={tenant.logoUrl} 
-                alt="شعار الشركة" 
-                className="max-h-20 object-contain mr-auto"
-              />
+              <div className="relative w-48 h-20 mr-auto">
+                <Image
+                  src={tenant.logoUrl}
+                  alt="شعار الشركة"
+                  fill
+                  className="object-contain"
+                />
+              </div>
             </div>
           )}
           <h2 className="text-xl font-semibold">{tenant.nameAr || tenant.name}</h2>
@@ -55,11 +59,14 @@ export default function ArabicInvoice({ invoice, tenant, customer, supplier }: A
           {/* Customer Logo */}
           {customer?.logoUrl && (
             <div className="mb-2">
-              <img 
-                src={customer.logoUrl} 
-                alt="شعار العميل" 
-                className="max-h-16 object-contain ml-auto"
-              />
+              <div className="relative w-32 h-16 ml-auto">
+                <Image
+                  src={customer.logoUrl}
+                  alt="شعار العميل"
+                  fill
+                  className="object-contain"
+                />
+              </div>
             </div>
           )}
           <p className="font-medium">{invoice.clientName}</p>
@@ -75,11 +82,14 @@ export default function ArabicInvoice({ invoice, tenant, customer, supplier }: A
           {/* Supplier Logo */}
           {supplier?.logoUrl && (
             <div className="mb-2">
-              <img 
-                src={supplier.logoUrl} 
-                alt="شعار المورد" 
-                className="max-h-16 object-contain"
-              />
+              <div className="relative w-32 h-16">
+                <Image
+                  src={supplier.logoUrl}
+                  alt="شعار المورد"
+                  fill
+                  className="object-contain"
+                />
+              </div>
             </div>
           )}
           <p className="font-medium">{supplier?.nameAr || supplier?.name || 'غير متوفر'}</p>
@@ -165,11 +175,14 @@ export default function ArabicInvoice({ invoice, tenant, customer, supplier }: A
       {tenant.stampUrl && (
         <div className="flex justify-start mt-8">
           <div className="text-center">
-            <img 
-              src={tenant.stampUrl} 
-              alt="ختم الشركة" 
-              className="max-h-32 object-contain"
-            />
+            <div className="relative w-32 h-32">
+              <Image
+                src={tenant.stampUrl}
+                alt="ختم الشركة"
+                fill
+                className="object-contain"
+              />
+            </div>
             <p className="text-sm text-gray-600 mt-2">ختم الشركة</p>
           </div>
         </div>

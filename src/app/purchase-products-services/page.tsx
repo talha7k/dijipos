@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { collection, query, onSnapshot, addDoc, doc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
-import { Product, Service } from '@/types';
+import { Product, Service, Category } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -18,6 +18,7 @@ function ProductsContent() {
   const { user, tenantId } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [services, setServices] = useState<Service[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [productDialogOpen, setProductDialogOpen] = useState(false);
   const [serviceDialogOpen, setServiceDialogOpen] = useState(false);
@@ -59,12 +60,25 @@ function ProductsContent() {
         updatedAt: doc.data().updatedAt?.toDate(),
       })) as Service[];
       setServices(servicesData);
+    });
+
+    // Fetch categories
+    const categoriesQ = query(collection(db, 'tenants', tenantId, 'categories'));
+    const categoriesUnsubscribe = onSnapshot(categoriesQ, (querySnapshot) => {
+      const categoriesData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate(),
+        updatedAt: doc.data().updatedAt?.toDate(),
+      })) as Category[];
+      setCategories(categoriesData);
       setLoading(false);
     });
 
     return () => {
       productsUnsubscribe();
       servicesUnsubscribe();
+      categoriesUnsubscribe();
     };
   }, [tenantId]);
 
@@ -205,7 +219,7 @@ function ProductsContent() {
                       <TableCell>{product.name}</TableCell>
                       <TableCell>{product.description}</TableCell>
                       <TableCell>${product.price ? product.price.toFixed(2) : '0.00'}</TableCell>
-                      <TableCell>{product.category}</TableCell>
+                      <TableCell>{categories.find(c => c.id === product.categoryId)?.name || 'Uncategorized'}</TableCell>
                       <TableCell>
                         <Button
                           variant="destructive"
@@ -304,7 +318,7 @@ function ProductsContent() {
                       <TableCell>{service.name}</TableCell>
                       <TableCell>{service.description}</TableCell>
                       <TableCell>${service.price ? service.price.toFixed(2) : '0.00'}</TableCell>
-                      <TableCell>{service.category}</TableCell>
+                      <TableCell>{categories.find(c => c.id === service.categoryId)?.name || 'Uncategorized'}</TableCell>
                       <TableCell>
                         <Button
                           variant="destructive"

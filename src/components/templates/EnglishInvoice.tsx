@@ -2,6 +2,7 @@
 
 import { Invoice, Tenant, Customer, Supplier } from '@/types';
 import ZatcaQR from '@/components/ZatcaQR';
+import Image from 'next/image';
 
 interface EnglishInvoiceProps {
   invoice: Invoice;
@@ -30,11 +31,14 @@ export default function EnglishInvoice({ invoice, tenant, customer, supplier }: 
           {/* Company Logo */}
           {tenant.logoUrl && (
             <div className="mb-4">
-              <img 
-                src={tenant.logoUrl} 
-                alt="Company Logo" 
-                className="max-h-20 object-contain ml-auto"
-              />
+              <div className="relative w-48 h-20 ml-auto">
+                <Image
+                  src={tenant.logoUrl}
+                  alt="Company Logo"
+                  fill
+                  className="object-contain"
+                />
+              </div>
             </div>
           )}
           <h2 className="text-xl font-semibold">{tenant.name}</h2>
@@ -55,11 +59,14 @@ export default function EnglishInvoice({ invoice, tenant, customer, supplier }: 
           {/* Customer Logo */}
           {customer?.logoUrl && (
             <div className="mb-2">
-              <img 
-                src={customer.logoUrl} 
-                alt="Customer Logo" 
-                className="max-h-16 object-contain"
-              />
+              <div className="relative w-32 h-16">
+                <Image
+                  src={customer.logoUrl}
+                  alt="Customer Logo"
+                  fill
+                  className="object-contain"
+                />
+              </div>
             </div>
           )}
           <p className="font-medium">{invoice.clientName}</p>
@@ -75,11 +82,14 @@ export default function EnglishInvoice({ invoice, tenant, customer, supplier }: 
           {/* Supplier Logo */}
           {supplier?.logoUrl && (
             <div className="mb-2">
-              <img 
-                src={supplier.logoUrl} 
-                alt="Supplier Logo" 
-                className="max-h-16 object-contain"
-              />
+              <div className="relative w-32 h-16">
+                <Image
+                  src={supplier.logoUrl}
+                  alt="Supplier Logo"
+                  fill
+                  className="object-contain"
+                />
+              </div>
             </div>
           )}
           <p className="font-medium">{supplier?.name || 'N/A'}</p>
@@ -165,11 +175,14 @@ export default function EnglishInvoice({ invoice, tenant, customer, supplier }: 
       {tenant.stampUrl && (
         <div className="flex justify-end mt-8">
           <div className="text-center">
-            <img 
-              src={tenant.stampUrl} 
-              alt="Company Stamp" 
-              className="max-h-32 object-contain"
-            />
+            <div className="relative w-32 h-32">
+              <Image
+                src={tenant.stampUrl}
+                alt="Company Stamp"
+                fill
+                className="object-contain"
+              />
+            </div>
             <p className="text-sm text-gray-600 mt-2">Company Stamp</p>
           </div>
         </div>
