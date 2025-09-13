@@ -17,6 +17,7 @@ interface AuthContextType {
   emailVerified: boolean;
   selectOrganization: (organizationId: string) => Promise<void>;
   refreshUserOrganizations: () => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -30,6 +31,7 @@ const AuthContext = createContext<AuthContextType>({
   emailVerified: false,
   selectOrganization: async () => {},
   refreshUserOrganizations: async () => {},
+  logout: async () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -98,6 +100,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const logout = async () => {
+    try {
+      await auth.signOut();
+      setUser(null);
+      setOrganizationUser(null);
+      setCurrentOrganization(null);
+      setUserOrganizations([]);
+      setOrganizationId(null);
+      setEmailVerified(false);
+    } catch (error) {
+      console.error('Error signing out:', error);
+      throw error;
+    }
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setLoading(true);
@@ -147,7 +164,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, organizationUser, currentOrganization, userOrganizations, loading, organizationId, error, emailVerified, selectOrganization, refreshUserOrganizations }}>
+    <AuthContext.Provider value={{ user, organizationUser, currentOrganization, userOrganizations, loading, organizationId, error, emailVerified, selectOrganization, refreshUserOrganizations, logout }}>
       {children}
     </AuthContext.Provider>
   );

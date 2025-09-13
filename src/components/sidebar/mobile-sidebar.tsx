@@ -8,7 +8,7 @@ import { Menu } from "lucide-react";
 import { SidebarHeader } from "./sidebar-header";
 import { SidebarNavSection } from "./sidebar-nav-section";
 import { SidebarNavItem } from "./sidebar-nav-item";
-import { SidebarUserProfile } from "./sidebar-user-profile";
+import { UserProfileWithOrganization } from "../layout/UserProfileWithOrganization";
 import { SidebarProps, NavigationItem } from "./sidebar-types";
 import {
   BarChart3,
@@ -189,12 +189,7 @@ export function MobileSidebar({
             </nav>
           </ScrollArea>
 
-          {user && (
-            <SidebarUserProfile
-              user={user}
-              onLogout={onLogout}
-            />
-          )}
+          <UserProfileWithOrganization />
         </div>
       </SheetContent>
     </Sheet>

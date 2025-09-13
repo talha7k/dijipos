@@ -1,12 +1,5 @@
 import withPWA from 'next-pwa';
 
-const withPWAConfig = withPWA({
-  dest: "public",
-  disable: process.env.NODE_ENV === "development",
-  register: true,
-  skipWaiting: true,
-});
-
 const nextConfig = {
   turbopack: {
     // Turbopack configuration
@@ -19,5 +12,14 @@ const nextConfig = {
     resolveExtensions: ['.tsx', '.ts', '.jsx', '.js', '.json'],
   },
 };
+
+// Only apply PWA configuration in production
+const withPWAConfig = process.env.NODE_ENV === 'production' 
+  ? withPWA({
+      dest: "public",
+      register: true,
+      skipWaiting: true,
+    })
+  : (config: any) => config;
 
 export default withPWAConfig(nextConfig);

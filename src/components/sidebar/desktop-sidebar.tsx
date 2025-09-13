@@ -5,7 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { SidebarHeader } from "./sidebar-header";
 import { SidebarNavSection } from "./sidebar-nav-section";
 import { SidebarNavItem } from "./sidebar-nav-item";
-import { SidebarUserProfile } from "./sidebar-user-profile";
+import { UserProfileWithOrganization } from "../layout/UserProfileWithOrganization";
 import { SidebarProps, NavigationItem } from "./sidebar-types";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -204,10 +204,8 @@ export function DesktopSidebar({
         </ScrollArea>
 
         {user && (
-          <SidebarUserProfile
-            user={user}
+          <UserProfileWithOrganization
             isCollapsed={isCollapsed}
-            onLogout={onLogout}
           />
         )}
       </div>
