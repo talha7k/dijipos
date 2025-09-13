@@ -26,6 +26,7 @@ export function ActionButtons({
     <div className={className}>
       {showEdit && onEdit && (
         <Button
+          type="button"
           variant="ghost"
           size="sm"
           onClick={(e) => {
@@ -40,6 +41,7 @@ export function ActionButtons({
       )}
       {showDelete && onDelete && (
         <Button
+          type="button"
           variant="ghost"
           size="sm"
           onClick={(e) => {

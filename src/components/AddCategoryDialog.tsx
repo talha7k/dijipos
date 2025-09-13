@@ -83,6 +83,7 @@ export function AddCategoryDialog({
                 </CardHeader>
                 <CardContent className="space-y-2 overflow-auto max-h-64">
                   <Button
+                    type="button"
                     variant={selectedParentId === null ? "default" : "ghost"}
                     size="sm"
                     className="w-full justify-start"

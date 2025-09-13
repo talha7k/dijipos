@@ -67,6 +67,7 @@ function CategoryTreeNode({
     <div key={category.id}>
       <div className="flex items-center justify-between w-full group">
         <Button
+          type="button"
           variant={selectedCategory === category.id ? "default" : "ghost"}
           size="sm"
           className={`flex-1 justify-start ${level > 0 ? 'pl-4' : ''}`}
