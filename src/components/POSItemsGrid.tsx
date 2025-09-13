@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { ItemCard } from '@/components/ItemCard';
 import { Category, Product, Service } from '@/types';
-import { Package, Wrench } from 'lucide-react';
 
 interface POSItemsGridProps {
   categories: Category[];
@@ -105,7 +105,7 @@ export function POSItemsGrid({
       {currentChildCategories.length > 0 && (
         <div>
           <h3 className="text-xl font-semibold mb-6">Subcategories</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
             {currentChildCategories.map((subcategory: Category) => {
               const itemsCount = getItemsCount(subcategory.id);
               const subcategoriesCount = getSubcategoriesCount(subcategory.id);
@@ -151,40 +151,14 @@ export function POSItemsGrid({
              currentCategoryId ? `Items in ${getCategoryName(currentCategoryId!)}` : 'Uncategorized Items'}
           </h3>
         )}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-          {filteredItems.map((item) => {
-            const isProduct = 'price' in item;
-            const price = isProduct ? item.price : (item as Service).price;
-
-            return (
-              <Card
-                key={item.id}
-                className="cursor-pointer hover:shadow-lg transition-all duration-200 transform hover:scale-105 h-48 flex flex-col active:scale-95 bg-background hover:bg-accent/50"
-                onClick={() => onItemClick(item, isProduct ? 'product' : 'service')}
-              >
-                <CardHeader className="pb-2 flex-1 flex items-center justify-center">
-                  <div className="flex items-center gap-2 mb-2">
-                    {isProduct ? (
-                      <Package className="h-5 w-5 text-primary" />
-                    ) : (
-                      <Wrench className="h-5 w-5 text-primary" />
-                    )}
-                  </div>
-                  <CardTitle className="text-lg text-center font-bold text-foreground" title={item.name}>
-                    {item.name}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="flex-1 flex flex-col relative p-0">
-                  <div className="text-center text-muted-foreground text-sm line-clamp-3 flex-1 flex items-center px-4 pt-4">
-                    {item.description}
-                  </div>
-                  <Badge variant="outline" className="text-lg px-4 py-2 font-bold text-primary border-primary w-full text-center absolute bottom-0 left-0 right-0 rounded-none rounded-b-md border-t-0 border-l-0 border-r-0">
-                    {price.toFixed(2)}
-                  </Badge>
-                </CardContent>
-              </Card>
-            );
-          })}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          {filteredItems.map((item) => (
+            <ItemCard
+              key={item.id}
+              item={item}
+              onClick={onItemClick}
+            />
+          ))}
         </div>
 
         {filteredItems.length === 0 && currentCategoryId && !isViewingUncategorized && (
