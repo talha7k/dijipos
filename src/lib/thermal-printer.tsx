@@ -1,6 +1,6 @@
 import React from 'react';
 import { Printer, Text, Line, Cut, render, Row, PrinterType } from 'react-thermal-printer';
-import { Order, Tenant } from '@/types';
+import { Order, Organization } from '@/types';
 
 // Web Serial API types
 interface SerialPort {
@@ -28,7 +28,7 @@ export interface ThermalPrinterConfig {
 
 export interface ReceiptData {
   order: Order;
-  tenant: Tenant | null;
+  organization: Organization | null;
 }
 
 export interface ConnectedPrinter {
@@ -187,7 +187,7 @@ export class ThermalPrinterService {
   /**
    * Create the receipt React component
    */
-  private createReceiptComponent({ order, tenant }: ReceiptData) {
+  private createReceiptComponent({ order, organization }: ReceiptData) {
     return (
       <Printer
         type={this.config.type || 'epson'}
@@ -195,10 +195,10 @@ export class ThermalPrinterService {
         debug={false}
       >
         {/* Company Header */}
-        <Text align="center" bold>{tenant?.name || ''}</Text>
-        <Text align="center">{tenant?.address || ''}</Text>
-        <Text align="center">Tel: {tenant?.phone || ''}</Text>
-        {tenant?.vatNumber && <Text align="center">VAT: {tenant.vatNumber}</Text>}
+        <Text align="center" bold>{organization?.name || ''}</Text>
+        <Text align="center">{organization?.address || ''}</Text>
+        <Text align="center">Tel: {organization?.phone || ''}</Text>
+        {organization?.vatNumber && <Text align="center">VAT: {organization.vatNumber}</Text>}
         <Line />
 
         {/* Order Info */}

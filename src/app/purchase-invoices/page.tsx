@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { collection, query, onSnapshot, updateDoc, doc, getDoc, addDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
-import { Invoice, Tenant } from '@/types';
+import { Invoice, Organization } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -19,30 +19,30 @@ import InvoiceForm from '@/components/InvoiceForm';
 import { Receipt } from 'lucide-react';
 
 function InvoicesContent() {
-  const { user, tenantId } = useAuth();
+  const { user, organizationId } = useAuth();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [tenant, setTenant] = useState<Tenant | null>(null);
+  const [organization, setOrganization] = useState<Organization | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
-    if (!tenantId) return;
+    if (!organizationId) return;
 
-    // Fetch tenant data
-    const fetchTenant = async () => {
-      const tenantDoc = await getDoc(doc(db, 'tenants', tenantId));
+    // Fetch organization data
+    const fetchOrganization = async () => {
+      const tenantDoc = await getDoc(doc(db, 'tenants', organizationId));
       if (tenantDoc.exists()) {
-        setTenant({
+        setOrganization({
           id: tenantDoc.id,
           ...tenantDoc.data(),
           createdAt: tenantDoc.data().createdAt?.toDate(),
-        } as Tenant);
+        } as Organization);
       }
     };
-    fetchTenant();
+    fetchOrganization();
 
-    const q = query(collection(db, 'tenants', tenantId, 'purchase-invoices'));
+    const q = query(collection(db, 'tenants', organizationId, 'purchase-invoices'));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const invoicesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -56,17 +56,17 @@ function InvoicesContent() {
     });
 
     return () => unsubscribe();
-  }, [tenantId]);
+  }, [organizationId]);
 
   const handleStatusChange = async (invoiceId: string, status: Invoice['status']) => {
-    if (!tenantId) return;
+    if (!organizationId) return;
 
-    const invoiceRef = doc(db, 'tenants', tenantId, 'purchase-invoices', invoiceId);
+    const invoiceRef = doc(db, 'tenants', organizationId, 'purchase-invoices', invoiceId);
     await updateDoc(invoiceRef, { status, updatedAt: new Date() });
   };
 
-  const handleCreateInvoice = async (invoiceData: Omit<Invoice, 'id' | 'tenantId' | 'createdAt' | 'updatedAt'>) => {
-    if (!tenantId) return;
+  const handleCreateInvoice = async (invoiceData: Omit<Invoice, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => {
+    if (!organizationId) return;
 
     // Clean the data to remove undefined values that Firebase doesn't accept
     const cleanedData = {
@@ -80,16 +80,16 @@ function InvoicesContent() {
         productId: item.productId || null,
         serviceId: item.serviceId || null,
       })),
-      tenantId,
+      organizationId,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
-    await addDoc(collection(db, 'tenants', tenantId, 'purchase-invoices'), cleanedData);
+    await addDoc(collection(db, 'tenants', organizationId, 'purchase-invoices'), cleanedData);
     setDialogOpen(false);
   };
 
-  const handlePrintInvoice = (invoice: Invoice, tenantData: Tenant) => {
+  const handlePrintInvoice = (invoice: Invoice, tenantData: Organization) => {
     if (!tenantData) return;
 
     // Create a new window for printing
@@ -179,7 +179,7 @@ function InvoicesContent() {
     };
   };
 
-  const createEnglishInvoiceHTML = (invoice: Invoice, tenantData: Tenant) => {
+  const createEnglishInvoiceHTML = (invoice: Invoice, tenantData: Organization) => {
     return `
       <div class="invoice-container">
         <div class="flex justify-between items-start mb-8">
@@ -286,7 +286,7 @@ function InvoicesContent() {
     `;
   };
 
-  const createArabicInvoiceHTML = (invoice: Invoice, tenantData: Tenant) => {
+  const createArabicInvoiceHTML = (invoice: Invoice, tenantData: Organization) => {
     return `
       <div class="invoice-container" dir="rtl" style="font-family: Arial, sans-serif;">
         <div class="flex justify-between items-start mb-8 flex-row-reverse">
@@ -454,7 +454,7 @@ function InvoicesContent() {
                           <DialogHeader>
                             <DialogTitle>Purchase Invoice Preview</DialogTitle>
                           </DialogHeader>
-                          {selectedInvoice && tenant && (
+                          {selectedInvoice && organization && (
                             <div>
                               <div className="flex gap-4 mb-4 items-center">
                                 <Button
@@ -462,7 +462,7 @@ function InvoicesContent() {
                                   onClick={() => {
                                     const updatedInvoice = { ...selectedInvoice, template: 'english' as const };
                                     setSelectedInvoice(updatedInvoice);
-                                    updateDoc(doc(db, 'tenants', tenantId!, 'purchase-invoices', selectedInvoice.id), {
+                                    updateDoc(doc(db, 'tenants', organizationId!, 'purchase-invoices', selectedInvoice.id), {
                                       template: 'english'
                                     });
                                   }}
@@ -474,14 +474,14 @@ function InvoicesContent() {
                                   onClick={() => {
                                     const updatedInvoice = { ...selectedInvoice, template: 'arabic' as const };
                                     setSelectedInvoice(updatedInvoice);
-                                    updateDoc(doc(db, 'tenants', tenantId!, 'purchase-invoices', selectedInvoice.id), {
+                                    updateDoc(doc(db, 'tenants', organizationId!, 'purchase-invoices', selectedInvoice.id), {
                                       template: 'arabic'
                                     });
                                   }}
                                 >
                                   Arabic Template
                                 </Button>
-                                <Button variant="outline" onClick={() => handlePrintInvoice(selectedInvoice, tenant)}>
+                                <Button variant="outline" onClick={() => handlePrintInvoice(selectedInvoice, organization)}>
                                   <Printer className="h-4 w-4 mr-2" />
                                   Print
                                 </Button>
@@ -493,7 +493,7 @@ function InvoicesContent() {
                                     onCheckedChange={(checked) => {
                                       const updatedInvoice = { ...selectedInvoice, includeQR: checked };
                                       setSelectedInvoice(updatedInvoice);
-                                      updateDoc(doc(db, 'tenants', tenantId!, 'purchase-invoices', selectedInvoice.id), {
+                                      updateDoc(doc(db, 'tenants', organizationId!, 'purchase-invoices', selectedInvoice.id), {
                                         includeQR: checked
                                       });
                                     }}
@@ -501,9 +501,9 @@ function InvoicesContent() {
                                 </div>
                               </div>
                               {selectedInvoice.template === 'arabic' ? (
-                                <ArabicInvoice invoice={selectedInvoice} tenant={tenant} />
+                                <ArabicInvoice invoice={selectedInvoice} organization={organization} />
                               ) : (
-                                <EnglishInvoice invoice={selectedInvoice} tenant={tenant} />
+                                <EnglishInvoice invoice={selectedInvoice} organization={organization} />
                               )}
                             </div>
                           )}

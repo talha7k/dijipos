@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { collection, query, onSnapshot, getDoc, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
-import { Order, OrderPayment, PaymentType, Tenant, User as AppUser } from '@/types';
+import { Order, OrderPayment, PaymentType, Organization, User as AppUser } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -13,33 +13,33 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { ArrowLeft, Receipt, CreditCard, Users, LayoutGrid, ShoppingBag, Calendar, DollarSign, User } from 'lucide-react';
 
 function OrdersContent() {
-  const { user, tenantId } = useAuth();
+  const { user, organizationId } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [payments, setPayments] = useState<{ [orderId: string]: OrderPayment[] }>({});
   const [users, setUsers] = useState<{ [userId: string]: AppUser }>({});
   const [paymentTypes, setPaymentTypes] = useState<PaymentType[]>([]);
-  const [tenant, setTenant] = useState<Tenant | null>(null);
+  const [organization, setOrganization] = useState<Organization | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   useEffect(() => {
-    if (!tenantId) return;
+    if (!organizationId) return;
 
-    // Fetch tenant data
-    const fetchTenant = async () => {
-      const tenantDoc = await getDoc(doc(db, 'tenants', tenantId));
+    // Fetch organization data
+    const fetchOrganization = async () => {
+      const tenantDoc = await getDoc(doc(db, 'tenants', organizationId));
       if (tenantDoc.exists()) {
-        setTenant({
+        setOrganization({
           id: tenantDoc.id,
           ...tenantDoc.data(),
           createdAt: tenantDoc.data().createdAt?.toDate(),
-        } as Tenant);
+        } as Organization);
       }
     };
-    fetchTenant();
+    fetchOrganization();
 
     // Fetch orders
-    const ordersQ = query(collection(db, 'tenants', tenantId, 'orders'));
+    const ordersQ = query(collection(db, 'tenants', organizationId, 'orders'));
     const ordersUnsubscribe = onSnapshot(ordersQ, (querySnapshot) => {
       const ordersData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -52,7 +52,7 @@ function OrdersContent() {
     });
 
     // Fetch payment types
-    const paymentTypesQ = query(collection(db, 'tenants', tenantId, 'paymentTypes'));
+    const paymentTypesQ = query(collection(db, 'tenants', organizationId, 'paymentTypes'));
     const paymentTypesUnsubscribe = onSnapshot(paymentTypesQ, (querySnapshot) => {
       const paymentTypesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -64,7 +64,7 @@ function OrdersContent() {
     });
 
     // Fetch users
-    const usersQ = query(collection(db, 'tenants', tenantId, 'users'));
+    const usersQ = query(collection(db, 'tenants', organizationId, 'users'));
     const usersUnsubscribe = onSnapshot(usersQ, (querySnapshot) => {
       const usersData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -82,7 +82,7 @@ function OrdersContent() {
     });
 
     // Fetch payments for each order
-    const paymentsQ = query(collection(db, 'tenants', tenantId, 'orderPayments'));
+    const paymentsQ = query(collection(db, 'tenants', organizationId, 'orderPayments'));
     const paymentsUnsubscribe = onSnapshot(paymentsQ, (querySnapshot) => {
       const paymentsData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -108,7 +108,7 @@ function OrdersContent() {
       usersUnsubscribe();
       paymentsUnsubscribe();
     };
-  }, [tenantId]);
+  }, [organizationId]);
 
   const getStatusColor = (status: Order['status']) => {
     switch (status) {

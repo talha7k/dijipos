@@ -200,12 +200,12 @@ function LoginContent() {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
 
-      // Check if tenant exists, if not create one
+      // Check if organization exists, if not create one
       const tenantRef = doc(db, 'tenants', user.uid);
       const tenantSnap = await getDoc(tenantRef);
 
       if (!tenantSnap.exists()) {
-        // Create tenant for Google user
+        // Create organization for Google user
         await setDoc(tenantRef, {
           id: user.uid,
           name: user.displayName || 'My Organization',

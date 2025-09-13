@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { collection, query, onSnapshot, updateDoc, doc, getDoc, addDoc, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
-import { Invoice, Tenant, Customer, Supplier, Payment } from '@/types';
+import { Invoice, Organization, Customer, Supplier, Payment } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -20,9 +20,9 @@ import InvoiceForm from '@/components/InvoiceForm';
 import { Receipt } from 'lucide-react';
 
 function InvoicesContent() {
-  const { user, tenantId } = useAuth();
+  const { user, organizationId } = useAuth();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [tenant, setTenant] = useState<Tenant | null>(null);
+  const [organization, setOrganization] = useState<Organization | null>(null);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [payments, setPayments] = useState<{ [invoiceId: string]: Payment[] }>({});
@@ -32,24 +32,24 @@ function InvoicesContent() {
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!tenantId) return;
+    if (!organizationId) return;
 
-    // Fetch tenant data
-    const fetchTenant = async () => {
-      const tenantDoc = await getDoc(doc(db, 'tenants', tenantId));
+    // Fetch organization data
+    const fetchOrganization = async () => {
+      const tenantDoc = await getDoc(doc(db, 'tenants', organizationId));
       if (tenantDoc.exists()) {
-        setTenant({
+        setOrganization({
           id: tenantDoc.id,
           ...tenantDoc.data(),
           createdAt: tenantDoc.data().createdAt?.toDate(),
-        } as Tenant);
+        } as Organization);
       }
     };
-    fetchTenant();
+    fetchOrganization();
 
     // Fetch customers
     const fetchCustomers = async () => {
-      const customersSnapshot = await getDocs(collection(db, 'tenants', tenantId, 'customers'));
+      const customersSnapshot = await getDocs(collection(db, 'tenants', organizationId, 'customers'));
       const customersData = customersSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
@@ -62,7 +62,7 @@ function InvoicesContent() {
 
     // Fetch suppliers
     const fetchSuppliers = async () => {
-      const suppliersSnapshot = await getDocs(collection(db, 'tenants', tenantId, 'suppliers'));
+      const suppliersSnapshot = await getDocs(collection(db, 'tenants', organizationId, 'suppliers'));
       const suppliersData = suppliersSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
@@ -74,7 +74,7 @@ function InvoicesContent() {
     fetchSuppliers();
 
     // Fetch payments
-    const paymentsQ = query(collection(db, 'tenants', tenantId, 'payments'));
+    const paymentsQ = query(collection(db, 'tenants', organizationId, 'payments'));
     const paymentsUnsubscribe = onSnapshot(paymentsQ, (querySnapshot) => {
       const paymentsData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -94,7 +94,7 @@ function InvoicesContent() {
       setPayments(paymentsByInvoice);
     });
 
-    const q = query(collection(db, 'tenants', tenantId, 'invoices'));
+    const q = query(collection(db, 'tenants', organizationId, 'invoices'));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const invoicesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -111,22 +111,22 @@ function InvoicesContent() {
       unsubscribe();
       paymentsUnsubscribe();
     };
-  }, [tenantId]);
+  }, [organizationId]);
 
   const handleStatusChange = async (invoiceId: string, status: Invoice['status']) => {
-    if (!tenantId) return;
+    if (!organizationId) return;
 
     setUpdatingStatus(invoiceId);
     try {
-      const invoiceRef = doc(db, 'tenants', tenantId, 'invoices', invoiceId);
+      const invoiceRef = doc(db, 'tenants', organizationId, 'invoices', invoiceId);
       await updateDoc(invoiceRef, { status, updatedAt: new Date() });
     } finally {
       setUpdatingStatus(null);
     }
   };
 
-  const handleCreateInvoice = async (invoiceData: Omit<Invoice, 'id' | 'tenantId' | 'createdAt' | 'updatedAt'>) => {
-    if (!tenantId) return;
+  const handleCreateInvoice = async (invoiceData: Omit<Invoice, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => {
+    if (!organizationId) return;
 
     // Clean the data to remove undefined values that Firebase doesn't accept
     const cleanedData = {
@@ -140,16 +140,16 @@ function InvoicesContent() {
         productId: item.productId || null,
         serviceId: item.serviceId || null,
       })),
-      tenantId,
+      organizationId,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
-    await addDoc(collection(db, 'tenants', tenantId, 'invoices'), cleanedData);
+    await addDoc(collection(db, 'tenants', organizationId, 'invoices'), cleanedData);
     setDialogOpen(false);
   };
 
-  const handlePrintInvoice = (invoice: Invoice, tenantData: Tenant) => {
+  const handlePrintInvoice = (invoice: Invoice, tenantData: Organization) => {
     if (!tenantData) return;
 
     // Create a new window for printing
@@ -239,7 +239,7 @@ function InvoicesContent() {
     };
   };
 
-  const createEnglishInvoiceHTML = (invoice: Invoice, tenantData: Tenant) => {
+  const createEnglishInvoiceHTML = (invoice: Invoice, tenantData: Organization) => {
     // Find customer and supplier if available
     const customer = customers.find(c => c.name === invoice.clientName);
     const supplier = suppliers.find(s => s.id === invoice.supplierId);
@@ -372,7 +372,7 @@ function InvoicesContent() {
     `;
   };
 
-  const createArabicInvoiceHTML = (invoice: Invoice, tenantData: Tenant) => {
+  const createArabicInvoiceHTML = (invoice: Invoice, tenantData: Organization) => {
     // Find customer and supplier if available
     const customer = customers.find(c => c.name === invoice.clientName);
     const supplier = suppliers.find(s => s.id === invoice.supplierId);
@@ -567,7 +567,7 @@ function InvoicesContent() {
                           <DialogHeader>
                             <DialogTitle>Invoice Details - {selectedInvoice?.id.slice(-8)}</DialogTitle>
                           </DialogHeader>
-                          {selectedInvoice && tenant && (
+                          {selectedInvoice && organization && (
                             <div className="space-y-6">
                               {/* Invoice Header Information */}
                               <div className="grid grid-cols-2 gap-4">
@@ -729,7 +729,7 @@ function InvoicesContent() {
                                     onClick={() => {
                                       const updatedInvoice = { ...selectedInvoice, template: 'english' as const };
                                       setSelectedInvoice(updatedInvoice);
-                                      updateDoc(doc(db, 'tenants', tenantId!, 'invoices', selectedInvoice.id), {
+                                      updateDoc(doc(db, 'tenants', organizationId!, 'invoices', selectedInvoice.id), {
                                         template: 'english'
                                       });
                                     }}
@@ -741,14 +741,14 @@ function InvoicesContent() {
                                     onClick={() => {
                                       const updatedInvoice = { ...selectedInvoice, template: 'arabic' as const };
                                       setSelectedInvoice(updatedInvoice);
-                                      updateDoc(doc(db, 'tenants', tenantId!, 'invoices', selectedInvoice.id), {
+                                      updateDoc(doc(db, 'tenants', organizationId!, 'invoices', selectedInvoice.id), {
                                         template: 'arabic'
                                       });
                                     }}
                                   >
                                     Arabic Template
                                   </Button>
-                                  <Button variant="outline" onClick={() => handlePrintInvoice(selectedInvoice, tenant)}>
+                                  <Button variant="outline" onClick={() => handlePrintInvoice(selectedInvoice, organization)}>
                                     <Printer className="h-4 w-4 mr-2" />
                                     Print Invoice
                                   </Button>
@@ -760,7 +760,7 @@ function InvoicesContent() {
                                       onCheckedChange={(checked) => {
                                         const updatedInvoice = { ...selectedInvoice, includeQR: checked };
                                         setSelectedInvoice(updatedInvoice);
-                                        updateDoc(doc(db, 'tenants', tenantId!, 'invoices', selectedInvoice.id), {
+                                        updateDoc(doc(db, 'tenants', organizationId!, 'invoices', selectedInvoice.id), {
                                           includeQR: checked
                                         });
                                       }}
@@ -771,14 +771,14 @@ function InvoicesContent() {
                                   {selectedInvoice.template === 'english' ? (
                                     <EnglishInvoice
                                       invoice={selectedInvoice}
-                                      tenant={tenant}
+                                      organization={organization}
                                       customer={customers.find(c => c.name === selectedInvoice.clientName)}
                                       supplier={suppliers.find(s => s.id === selectedInvoice.supplierId)}
                                     />
                                   ) : (
                                     <ArabicInvoice
                                       invoice={selectedInvoice}
-                                      tenant={tenant}
+                                      organization={organization}
                                       customer={customers.find(c => c.name === selectedInvoice.clientName)}
                                       supplier={suppliers.find(s => s.id === selectedInvoice.supplierId)}
                                     />

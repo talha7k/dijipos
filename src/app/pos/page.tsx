@@ -6,7 +6,7 @@ import { collection, query, onSnapshot, QuerySnapshot, DocumentData, addDoc, get
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePOSPersistence, CartItem } from '@/hooks/use-pos-persistence';
-import { Product, Service, Category, Table, Customer, Order, OrderPayment, PaymentType, OrderType, ReceiptTemplate, PrinterSettings, Tenant } from '@/types';
+import { Product, Service, Category, Table, Customer, Order, OrderPayment, PaymentType, OrderType, ReceiptTemplate, PrinterSettings, Organization } from '@/types';
 
 import { POSBreadcrumb } from '@/components/POSBreadcrumb';
 import { POSCategoriesGrid } from '@/components/POSCategoriesGrid';
@@ -35,7 +35,7 @@ import {
 
 
 export default function POSPage() {
-  const { tenantId, user } = useAuth();
+  const { organizationId, user } = useAuth();
 
   // Use the POS persistence hook for all POS state
   const {
@@ -55,7 +55,7 @@ export default function POSPage() {
     setSelectedOrder,
     clearPOSData,
     clearCart
-  } = usePOSPersistence(tenantId || undefined);
+  } = usePOSPersistence(organizationId || undefined);
 
   const [products, setProducts] = useState<Product[]>([]);
   const [services, setServices] = useState<Service[]>([]);
@@ -70,16 +70,16 @@ export default function POSPage() {
   const [showOrderConfirmationDialog, setShowOrderConfirmationDialog] = useState(false);
   const [receiptTemplates, setReceiptTemplates] = useState<ReceiptTemplate[]>([]);
   const [printerSettings, setPrinterSettings] = useState<PrinterSettings | null>(null);
-  const [tenant, setTenant] = useState<Tenant | null>(null);
+  const [organization, setOrganization] = useState<Organization | null>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   // Fetch data from Firebase
   useEffect(() => {
 
-    if (!tenantId) return;
+    if (!organizationId) return;
 
     // Fetch products
-    const productsQ = query(collection(db, 'tenants', tenantId, 'products'));
+    const productsQ = query(collection(db, 'tenants', organizationId, 'products'));
     const productsUnsubscribe = onSnapshot(productsQ, (querySnapshot: QuerySnapshot<DocumentData>) => {
       const productsData = querySnapshot.docs.map((doc: DocumentData) => ({
         id: doc.id,
@@ -89,7 +89,7 @@ export default function POSPage() {
     });
 
     // Fetch services
-    const servicesQ = query(collection(db, 'tenants', tenantId, 'services'));
+    const servicesQ = query(collection(db, 'tenants', organizationId, 'services'));
     const servicesUnsubscribe = onSnapshot(servicesQ, (querySnapshot: QuerySnapshot<DocumentData>) => {
       const servicesData = querySnapshot.docs.map((doc: DocumentData) => ({
         id: doc.id,
@@ -99,7 +99,7 @@ export default function POSPage() {
     });
 
     // Fetch categories from Firebase
-    const categoriesQ = query(collection(db, 'tenants', tenantId, 'categories'));
+    const categoriesQ = query(collection(db, 'tenants', organizationId, 'categories'));
     const categoriesUnsubscribe = onSnapshot(categoriesQ, (querySnapshot) => {
       const categoriesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -112,7 +112,7 @@ export default function POSPage() {
     });
 
     // Fetch tables
-    const tablesQ = query(collection(db, 'tenants', tenantId, 'tables'));
+    const tablesQ = query(collection(db, 'tenants', organizationId, 'tables'));
     const tablesUnsubscribe = onSnapshot(tablesQ, (querySnapshot) => {
       const tablesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -124,7 +124,7 @@ export default function POSPage() {
     });
 
     // Fetch customers
-    const customersQ = query(collection(db, 'tenants', tenantId, 'customers'));
+    const customersQ = query(collection(db, 'tenants', organizationId, 'customers'));
     const customersUnsubscribe = onSnapshot(customersQ, (querySnapshot) => {
       const customersData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -136,7 +136,7 @@ export default function POSPage() {
     });
 
     // Fetch orders
-    const ordersQ = query(collection(db, 'tenants', tenantId, 'orders'));
+    const ordersQ = query(collection(db, 'tenants', organizationId, 'orders'));
     const ordersUnsubscribe = onSnapshot(ordersQ, (querySnapshot) => {
       const ordersData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -148,7 +148,7 @@ export default function POSPage() {
     });
 
     // Fetch payment types
-    const paymentTypesQ = query(collection(db, 'tenants', tenantId, 'paymentTypes'));
+    const paymentTypesQ = query(collection(db, 'tenants', organizationId, 'paymentTypes'));
     const paymentTypesUnsubscribe = onSnapshot(paymentTypesQ, (querySnapshot) => {
       const paymentTypesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -160,7 +160,7 @@ export default function POSPage() {
     });
 
     // Fetch order types
-    const orderTypesQ = query(collection(db, 'tenants', tenantId, 'orderTypes'));
+    const orderTypesQ = query(collection(db, 'tenants', organizationId, 'orderTypes'));
     const orderTypesUnsubscribe = onSnapshot(orderTypesQ, async (querySnapshot) => {
       const orderTypesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -174,7 +174,7 @@ export default function POSPage() {
       // Only set if there's no saved order type in localStorage
       if (orderTypesData.length > 0 && !selectedOrderType) {
         // Check if there's a saved order type in localStorage
-        const savedOrderTypeKey = tenantId ? `${tenantId}_posOrderType` : 'posOrderType';
+        const savedOrderTypeKey = organizationId ? `${organizationId}_posOrderType` : 'posOrderType';
         const savedOrderType = localStorage.getItem(savedOrderTypeKey);
         
         if (savedOrderType) {
@@ -192,7 +192,7 @@ export default function POSPage() {
 
     // Fetch printer settings
     const fetchPrinterSettings = async () => {
-      const printerDoc = await getDoc(doc(db, 'tenants', tenantId, 'settings', 'printer'));
+      const printerDoc = await getDoc(doc(db, 'tenants', organizationId, 'settings', 'printer'));
       if (printerDoc.exists()) {
         const printerData = printerDoc.data() as PrinterSettings;
         setPrinterSettings({
@@ -203,12 +203,12 @@ export default function POSPage() {
       }
     };
 
-    // Fetch tenant data
-    const fetchTenantData = async () => {
-      const tenantDoc = await getDoc(doc(db, 'tenants', tenantId));
+    // Fetch organization data
+    const fetchOrganizationData = async () => {
+      const tenantDoc = await getDoc(doc(db, 'tenants', organizationId));
       if (tenantDoc.exists()) {
-        const tenantData = tenantDoc.data() as Tenant;
-        setTenant({
+        const tenantData = tenantDoc.data() as Organization;
+        setOrganization({
           ...tenantData,
           createdAt: tenantData.createdAt,
           updatedAt: tenantData.updatedAt,
@@ -217,7 +217,7 @@ export default function POSPage() {
     };
 
     // Fetch receipt templates
-    const receiptTemplatesQ = query(collection(db, 'tenants', tenantId, 'receiptTemplates'));
+    const receiptTemplatesQ = query(collection(db, 'tenants', organizationId, 'receiptTemplates'));
     const receiptTemplatesUnsubscribe = onSnapshot(receiptTemplatesQ, (querySnapshot) => {
       const templatesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -228,7 +228,7 @@ export default function POSPage() {
       setReceiptTemplates(templatesData);
     });
 
-    await Promise.all([fetchPrinterSettings(), fetchTenantData()]);
+    await Promise.all([fetchPrinterSettings(), fetchOrganizationData()]);
     setLoading(false);
     });
 
@@ -243,7 +243,7 @@ export default function POSPage() {
       orderTypesUnsubscribe();
     };
 
-  }, [tenantId]);
+  }, [organizationId]);
 
 
   // Calculate cart total
@@ -252,11 +252,11 @@ export default function POSPage() {
   // Debug cart persistence
   useEffect(() => {
     console.log('POSPage: Cart state changed:', cart);
-    console.log('POSPage: tenantId:', tenantId);
-    const cartKey = tenantId ? `${tenantId}_posCart` : 'posCart';
+    console.log('POSPage: organizationId:', organizationId);
+    const cartKey = organizationId ? `${organizationId}_posCart` : 'posCart';
     console.log('POSPage: Looking for cart with key:', cartKey);
     console.log('POSPage: Cart in localStorage:', localStorage.getItem(cartKey));
-  }, [cart, tenantId]);
+  }, [cart, organizationId]);
 
   // Add item to cart
   const addToCart = (item: Product | Service, type: 'product' | 'service') => {
@@ -370,7 +370,7 @@ export default function POSPage() {
   };
 
   const handleSaveCurrentOrder = async () => {
-    if (!pendingOrderToReopen || !tenantId) return;
+    if (!pendingOrderToReopen || !organizationId) return;
     
     // Save the current cart first
     await handleSaveOrder();
@@ -421,17 +421,17 @@ export default function POSPage() {
   };
 
   const handlePaymentProcessed = async (payments: OrderPayment[]) => {
-    if (!selectedOrder || !tenantId) return;
+    if (!selectedOrder || !organizationId) return;
 
     try {
       // Save payments to Firebase
       const paymentPromises = payments.map(payment =>
-        addDoc(collection(db, 'tenants', tenantId, 'orderPayments'), payment)
+        addDoc(collection(db, 'tenants', organizationId, 'orderPayments'), payment)
       );
       await Promise.all(paymentPromises);
 
       // Update order status to completed
-      await addDoc(collection(db, 'tenants', tenantId, 'orders'), {
+      await addDoc(collection(db, 'tenants', organizationId, 'orders'), {
         ...selectedOrder,
         status: 'completed' as const,
         updatedAt: new Date(),
@@ -448,7 +448,7 @@ export default function POSPage() {
 
 
   const handleSaveOrder = async () => {
-    if (cart.length === 0 || !tenantId) return;
+    if (cart.length === 0 || !organizationId) return;
 
     // Generate order number
     const orderNumber = `ORD-${Date.now()}`;
@@ -506,7 +506,7 @@ export default function POSPage() {
         tableName: selectedTable.name,
       }),
       orderType: selectedOrderType?.name || 'dine-in',
-      tenantId,
+      organizationId,
       createdById: user?.uid || 'unknown',
       createdByName: user?.displayName || user?.email || 'Unknown User',
       createdAt: new Date(),
@@ -514,7 +514,7 @@ export default function POSPage() {
     };
 
     try {
-      await addDoc(collection(db, 'tenants', tenantId, 'orders'), orderData);
+      await addDoc(collection(db, 'tenants', organizationId, 'orders'), orderData);
       alert('Order saved successfully!');
       // Clear all POS data after successful save
       clearPOSData();
@@ -564,17 +564,17 @@ export default function POSPage() {
                       }}
                       onPrintReceipt={async () => {
                         // Check if receipt templates exist, create a default one if not
-                        if (receiptTemplates.length === 0 && tenantId) {
+                        if (receiptTemplates.length === 0 && organizationId) {
                           try {
                             const defaultTemplateContent = '<!DOCTYPE html>\\n<html>\\n<head>\\n  <meta charset="utf-8">\\n  <title>Receipt</title>\\n  <style>\\n    body { font-family: monospace; margin: 0; padding: 10px; }\\n    .header { text-align: center; margin-bottom: 10px; }\\n    .content { margin-bottom: 10px; }\\n    .footer { text-align: center; margin-top: 10px; }\\n    .line { display: flex; justify-content: space-between; }\\n    .total { font-weight: bold; border-top: 1px dashed; padding-top: 5px; }\\n  </style>\\n</head>\\n<body>\\n  <div class="header">\\n    <h2>{{companyName}}</h2>\\n    <p>{{companyAddress}}</p>\\n    <p>Tel: {{companyPhone}}</p>\\n    <p>VAT: {{companyVat}}</p>\\n    <hr>\\n    <p>Order #: {{orderNumber}}</p>\\n    <p>Date: {{orderDate}}</p>\\n    <p>Table: {{tableName}}</p>\\n    <p>Customer: {{customerName}}</p>\\n    <hr>\\n  </div>\\n  \\n  <div class="content">\\n    {{#each items}}\\n    <div class="line">\\n      <span>{{name}} ({{quantity}}x)</span>\\n      <span>{{total}}</span>\\n    </div>\\n    {{/each}}\\n  </div>\\n  \\n  <div class="total">\\n    <div class="line">\\n      <span>Subtotal:</span>\\n      <span>{{subtotal}}</span>\\n    </div>\\n    <div class="line">\\n      <span>VAT ({{vatRate}}%):</span>\\n      <span>{{vatAmount}}</span>\\n    </div>\\n    <div class="line">\\n      <span>TOTAL:</span>\\n      <span>{{total}}</span>\\n    </div>\\n  </div>\\n  \\n  <div class="footer">\\n    <p>Payment: {{paymentMethod}}</p>\\n    <p>Thank you for your business!</p>\\n  </div>\\n</body>\\n</html>';
 
-                            await addDoc(collection(db, 'tenants', tenantId, 'receiptTemplates'), {
+                            await addDoc(collection(db, 'tenants', organizationId, 'receiptTemplates'), {
                               name: 'Default Receipt',
                               description: 'Default receipt template',
                               content: defaultTemplateContent,
                               type: 'thermal',
                               isDefault: true,
-                              tenantId,
+                              organizationId,
                               createdAt: new Date(),
                               updatedAt: new Date(),
                             });
@@ -592,7 +592,7 @@ export default function POSPage() {
                         // Create a temporary order from cart for printing
                         const tempOrder: Order = {
                           id: 'temp',
-                          tenantId: tenantId || '',
+                          organizationId: organizationId || '',
                           orderNumber: `TEMP-${Date.now()}`,
                           items: cart.map(item => ({
                             id: `${item.type}-${item.id}`,
@@ -810,17 +810,17 @@ export default function POSPage() {
           onSaveOrder={handleSaveOrder}
           onPrintReceipt={async () => {
             // Check if receipt templates exist, create a default one if not
-            if (receiptTemplates.length === 0 && tenantId) {
+            if (receiptTemplates.length === 0 && organizationId) {
               try {
                 const defaultTemplateContent = '<!DOCTYPE html>\\n<html>\\n<head>\\n  <meta charset="utf-8">\\n  <title>Receipt</title>\\n  <style>\\n    body { font-family: monospace; margin: 0; padding: 10px; }\\n    .header { text-align: center; margin-bottom: 10px; }\\n    .content { margin-bottom: 10px; }\\n    .footer { text-align: center; margin-top: 10px; }\\n    .line { display: flex; justify-content: space-between; }\\n    .total { font-weight: bold; border-top: 1px dashed; padding-top: 5px; }\\n  </style>\\n</head>\\n<body>\\n  <div class="header">\\n    <h2>{{companyName}}</h2>\\n    <p>{{companyAddress}}</p>\\n    <p>Tel: {{companyPhone}}</p>\\n    <p>VAT: {{companyVat}}</p>\\n    <hr>\\n    <p>Order #: {{orderNumber}}</p>\\n    <p>Date: {{orderDate}}</p>\\n    <p>Table: {{tableName}}</p>\\n    <p>Customer: {{customerName}}</p>\\n    <hr>\\n  </div>\\n  \\n  <div class="content">\\n    {{#each items}}\\n    <div class="line">\\n      <span>{{name}} ({{quantity}}x)</span>\\n      <span>{{total}}</span>\\n    </div>\\n    {{/each}}\\n  </div>\\n  \\n  <div class="total">\\n    <div class="line">\\n      <span>Subtotal:</span>\\n      <span>{{subtotal}}</span>\\n    </div>\\n    <div class="line">\\n      <span>VAT ({{vatRate}}%):</span>\\n      <span>{{vatAmount}}</span>\\n    </div>\\n    <div class="line">\\n      <span>TOTAL:</span>\\n      <span>{{total}}</span>\\n    </div>\\n  </div>\\n  \\n  <div class="footer">\\n    <p>Payment: {{paymentMethod}}</p>\\n    <p>Thank you for your business!</p>\\n  </div>\\n</body>\\n</html>';
 
-                await addDoc(collection(db, 'tenants', tenantId, 'receiptTemplates'), {
+                await addDoc(collection(db, 'tenants', organizationId, 'receiptTemplates'), {
                   name: 'Default Receipt',
                   description: 'Default receipt template',
                   content: defaultTemplateContent,
                   type: 'thermal',
                   isDefault: true,
-                  tenantId,
+                  organizationId,
                   createdAt: new Date(),
                   updatedAt: new Date(),
                 });
@@ -838,7 +838,7 @@ export default function POSPage() {
             // Create a temporary order from cart for printing
             const tempOrder: Order = {
               id: 'temp',
-              tenantId: tenantId || '',
+              organizationId: organizationId || '',
               orderNumber: `TEMP-${Date.now()}`,
               items: cart.map(item => ({
                 id: `${item.type}-${item.id}`,
@@ -904,7 +904,7 @@ export default function POSPage() {
       {selectedOrder && (
         <ReceiptPrintDialog
           order={selectedOrder}
-          tenant={tenant}
+          organization={organization}
           receiptTemplates={receiptTemplates}
           printerSettings={printerSettings}
         >

@@ -19,7 +19,7 @@ import {
 } from '@/lib/sample-data';
 
 interface InvoiceFormProps {
-  onSubmit: (invoice: Omit<Invoice, 'id' | 'tenantId' | 'createdAt' | 'updatedAt'>) => void;
+  onSubmit: (invoice: Omit<Invoice, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => void;
   defaultType?: 'sales' | 'purchase';
 }
 
@@ -126,7 +126,7 @@ export default function InvoiceForm({ onSubmit, defaultType = 'sales' }: Invoice
         clientEmail,
         clientAddress,
         clientVAT,
-      } as Omit<Invoice, 'id' | 'tenantId' | 'createdAt' | 'updatedAt'>);
+      } as Omit<Invoice, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>);
     } else {
       onSubmit({
         ...baseInvoice,
@@ -137,7 +137,7 @@ export default function InvoiceForm({ onSubmit, defaultType = 'sales' }: Invoice
         supplierVAT,
         invoiceNumber,
         invoiceDate: new Date(invoiceDate),
-      } as Omit<Invoice, 'id' | 'tenantId' | 'createdAt' | 'updatedAt'>);
+      } as Omit<Invoice, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>);
     }
   };
 

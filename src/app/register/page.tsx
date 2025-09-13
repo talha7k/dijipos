@@ -36,10 +36,10 @@ function RegisterContent() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Create tenant document
-      const tenantId = user.uid;
-      await setDoc(doc(db, 'tenants', tenantId), {
-        id: tenantId,
+      // Create organization document
+      const organizationId = user.uid;
+      await setDoc(doc(db, 'tenants', organizationId), {
+        id: organizationId,
         name: tenantName,
         email: email,
         createdAt: new Date(),

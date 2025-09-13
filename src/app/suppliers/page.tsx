@@ -33,7 +33,7 @@ export default function SuppliersPage() {
       vatNumber: '',
       contactPerson: '',
       logoUrl: '',
-      tenantId: 'default',
+      organizationId: 'default',
       createdAt: new Date(),
       updatedAt: new Date(),
     }))
@@ -126,7 +126,7 @@ export default function SuppliersPage() {
         const newSupplier: Supplier = {
           id: `s${Date.now()}`,
           ...formData,
-          tenantId: 'default',
+          organizationId: 'default',
           createdAt: new Date(),
           updatedAt: new Date(),
         };

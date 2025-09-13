@@ -22,7 +22,7 @@ export function CollapsibleSidebar({ className }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
-  const { user, tenantId } = useAuth();
+  const { user, organizationId } = useAuth();
 
   const toggleSection = (title: string) => {
     setOpenSections((prev) => ({
@@ -51,7 +51,7 @@ export function CollapsibleSidebar({ className }: SidebarProps) {
       email: user.email || undefined,
       displayName: user.displayName || undefined,
     } : undefined,
-    tenantId: tenantId || undefined,
+    organizationId: organizationId || undefined,
     onLogout: handleLogout,
     onSectionToggle: toggleSection,
     onExpandSidebar: isCollapsed ? toggleCollapse : undefined,

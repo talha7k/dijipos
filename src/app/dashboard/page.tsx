@@ -13,7 +13,7 @@ import { db } from '@/lib/firebase';
 import { Quote, Invoice, Payment, Product, Service, Table } from '@/types';
 
 function DashboardContent() {
-  const { user, tenantId } = useAuth();
+  const { user, organizationId } = useAuth();
   const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -39,11 +39,11 @@ function DashboardContent() {
   };
 
   useEffect(() => {
-    if (!tenantId) return;
+    if (!organizationId) return;
 
     const unsubscribers = [
       // Quotes
-      onSnapshot(query(collection(db, 'tenants', tenantId, 'quotes')), (snapshot) => {
+      onSnapshot(query(collection(db, 'tenants', organizationId, 'quotes')), (snapshot) => {
         const quotes = snapshot.docs.map(doc => doc.data() as Quote);
         const total = quotes.reduce((sum, q) => sum + q.total, 0);
         const pending = quotes.filter(q => q.status === 'draft').length;
@@ -51,7 +51,7 @@ function DashboardContent() {
       }),
 
       // Invoices
-      onSnapshot(query(collection(db, 'tenants', tenantId, 'invoices')), (snapshot) => {
+      onSnapshot(query(collection(db, 'tenants', organizationId, 'invoices')), (snapshot) => {
         const invoices = snapshot.docs.map(doc => doc.data() as Invoice);
         const total = invoices.reduce((sum, inv) => sum + inv.total, 0);
         const unpaid = invoices.filter(inv => inv.status !== 'paid').reduce((sum, inv) => sum + inv.total, 0);
@@ -60,24 +60,24 @@ function DashboardContent() {
       }),
 
       // Payments
-      onSnapshot(query(collection(db, 'tenants', tenantId, 'payments')), (snapshot) => {
+      onSnapshot(query(collection(db, 'tenants', organizationId, 'payments')), (snapshot) => {
         const payments = snapshot.docs.map(doc => doc.data() as Payment);
         const total = payments.reduce((sum, p) => sum + p.amount, 0);
         setAnalytics(prev => ({ ...prev, payments: { total } }));
       }),
 
       // Products
-      onSnapshot(query(collection(db, 'tenants', tenantId, 'products')), (snapshot) => {
+      onSnapshot(query(collection(db, 'tenants', organizationId, 'products')), (snapshot) => {
         setAnalytics(prev => ({ ...prev, products: { count: snapshot.size } }));
       }),
 
       // Services
-      onSnapshot(query(collection(db, 'tenants', tenantId, 'services')), (snapshot) => {
+      onSnapshot(query(collection(db, 'tenants', organizationId, 'services')), (snapshot) => {
         setAnalytics(prev => ({ ...prev, services: { count: snapshot.size } }));
       }),
 
       // Tables
-      onSnapshot(query(collection(db, 'tenants', tenantId, 'tables')), (snapshot) => {
+      onSnapshot(query(collection(db, 'tenants', organizationId, 'tables')), (snapshot) => {
         const tables = snapshot.docs.map(doc => doc.data() as Table);
         const available = tables.filter(table => table.status === 'available').length;
         setAnalytics(prev => ({ ...prev, tables: { count: tables.length, available } }));
@@ -85,7 +85,7 @@ function DashboardContent() {
     ];
 
     return () => unsubscribers.forEach(unsub => unsub());
-  }, [tenantId]);
+  }, [organizationId]);
 
   return (
     <div className="container mx-auto p-4">

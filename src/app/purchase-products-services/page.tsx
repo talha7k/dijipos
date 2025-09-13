@@ -15,7 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Package, Wrench } from 'lucide-react';
 function ProductsContent() {
-  const { user, tenantId } = useAuth();
+  const { user, organizationId } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -36,10 +36,10 @@ function ProductsContent() {
   const [serviceCategory, setServiceCategory] = useState('');
 
   useEffect(() => {
-    if (!tenantId) return;
+    if (!organizationId) return;
 
     // Fetch products
-    const productsQ = query(collection(db, 'tenants', tenantId, 'purchase-products'));
+    const productsQ = query(collection(db, 'tenants', organizationId, 'purchase-products'));
     const productsUnsubscribe = onSnapshot(productsQ, (querySnapshot) => {
       const productsData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -51,7 +51,7 @@ function ProductsContent() {
     });
 
     // Fetch services
-    const servicesQ = query(collection(db, 'tenants', tenantId, 'purchase-services'));
+    const servicesQ = query(collection(db, 'tenants', organizationId, 'purchase-services'));
     const servicesUnsubscribe = onSnapshot(servicesQ, (querySnapshot) => {
       const servicesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -63,7 +63,7 @@ function ProductsContent() {
     });
 
     // Fetch categories
-    const categoriesQ = query(collection(db, 'tenants', tenantId, 'categories'));
+    const categoriesQ = query(collection(db, 'tenants', organizationId, 'categories'));
     const categoriesUnsubscribe = onSnapshot(categoriesQ, (querySnapshot) => {
       const categoriesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -80,18 +80,18 @@ function ProductsContent() {
       servicesUnsubscribe();
       categoriesUnsubscribe();
     };
-  }, [tenantId]);
+  }, [organizationId]);
 
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!tenantId) return;
+    if (!organizationId) return;
 
-    await addDoc(collection(db, 'tenants', tenantId, 'purchase-products'), {
+    await addDoc(collection(db, 'tenants', organizationId, 'purchase-products'), {
       name: productName,
       description: productDescription,
       price: parseFloat(productPrice),
       category: productCategory,
-      tenantId,
+      organizationId,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -105,14 +105,14 @@ function ProductsContent() {
 
   const handleAddService = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!tenantId) return;
+    if (!organizationId) return;
 
-    await addDoc(collection(db, 'tenants', tenantId, 'purchase-services'), {
+    await addDoc(collection(db, 'tenants', organizationId, 'purchase-services'), {
       name: serviceName,
       description: serviceDescription,
       price: parseFloat(servicePrice),
       category: serviceCategory,
-      tenantId,
+      organizationId,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -125,13 +125,13 @@ function ProductsContent() {
   };
 
   const handleDeleteProduct = async (id: string) => {
-    if (!tenantId) return;
-    await deleteDoc(doc(db, 'tenants', tenantId, 'purchase-products', id));
+    if (!organizationId) return;
+    await deleteDoc(doc(db, 'tenants', organizationId, 'purchase-products', id));
   };
 
   const handleDeleteService = async (id: string) => {
-    if (!tenantId) return;
-    await deleteDoc(doc(db, 'tenants', tenantId, 'purchase-services', id));
+    if (!organizationId) return;
+    await deleteDoc(doc(db, 'tenants', organizationId, 'purchase-services', id));
   };
 
   if (loading) return <div>Loading...</div>;

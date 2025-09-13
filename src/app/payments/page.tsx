@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { CreditCard } from 'lucide-react';
 
 function PaymentsContent() {
-  const { user, tenantId } = useAuth();
+  const { user, organizationId } = useAuth();
   const [payments, setPayments] = useState<Payment[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,10 +26,10 @@ function PaymentsContent() {
   const [notes, setNotes] = useState('');
 
   useEffect(() => {
-    if (!tenantId) return;
+    if (!organizationId) return;
 
     // Fetch payments
-    const paymentsQ = query(collection(db, 'tenants', tenantId, 'payments'));
+    const paymentsQ = query(collection(db, 'tenants', organizationId, 'payments'));
     const paymentsUnsubscribe = onSnapshot(paymentsQ, (querySnapshot) => {
       const paymentsData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -40,7 +40,7 @@ function PaymentsContent() {
     });
 
     // Fetch invoices for payment creation
-    const invoicesQ = query(collection(db, 'tenants', tenantId, 'invoices'));
+    const invoicesQ = query(collection(db, 'tenants', organizationId, 'invoices'));
     const invoicesUnsubscribe = onSnapshot(invoicesQ, (querySnapshot) => {
       const invoicesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -54,14 +54,14 @@ function PaymentsContent() {
       paymentsUnsubscribe();
       invoicesUnsubscribe();
     };
-  }, [tenantId]);
+  }, [organizationId]);
 
   const handleAddPayment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!tenantId || !selectedInvoiceId) return;
+    if (!organizationId || !selectedInvoiceId) return;
 
-    await addDoc(collection(db, 'tenants', tenantId, 'payments'), {
-      tenantId,
+    await addDoc(collection(db, 'tenants', organizationId, 'payments'), {
+      organizationId,
       invoiceId: selectedInvoiceId,
       amount: parseFloat(amount),
       paymentDate: new Date(),

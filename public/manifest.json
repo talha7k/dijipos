@@ -1,7 +1,7 @@
 {
   "name": "DijiInvoice",
   "short_name": "DijiInvoice",
-  "description": "Multi-tenant invoice management platform",
+  "description": "Multi-organization invoice management platform",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

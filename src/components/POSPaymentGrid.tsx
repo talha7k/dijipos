@@ -78,7 +78,7 @@ export function POSPaymentGrid({ order, paymentTypes, onPaymentProcessed, onBack
     // Convert to OrderPayment format
     const orderPayments: OrderPayment[] = payments.map(payment => ({
       id: payment.id,
-      tenantId: order.tenantId,
+      organizationId: order.organizationId,
       orderId: order.id,
       amount: payment.amount,
       paymentMethod: payment.paymentMethod,

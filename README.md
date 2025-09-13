@@ -1,10 +1,10 @@
 # DijiInvoice
 
-A multi-tenant SaaS platform for invoice management built with Next.js, Shadcn/ui, and Firebase.
+A multi-organization SaaS platform for invoice management built with Next.js, Shadcn/ui, and Firebase.
 
 ## Features
 
-- **Multi-tenant SaaS**: Isolated data per organization
+- **Multi-organization SaaS**: Isolated data per organization
 - **Quotes Management**: Create quotes and convert to invoices
 - **Invoice Tracking**: Manage invoices with partial payments
 - **Products & Services**: Catalog management
@@ -61,10 +61,10 @@ A multi-tenant SaaS platform for invoice management built with Next.js, Shadcn/u
 
 ## Database Schema
 
-Data is stored in Firestore with tenant isolation:
+Data is stored in Firestore with organization isolation:
 
 ```
-/tenants/{tenantId}/
+/tenants/{organizationId}/
   - quotes/
   - invoices/
   - products/
@@ -77,8 +77,8 @@ Data is stored in Firestore with tenant isolation:
 - **Email/Password**: Standard registration and login
 - **Google Sign-In**: One-click authentication with Google
 - **Password Reset**: Email-based password recovery
-- **Multi-tenant**: Each user belongs to their own organization
-- **Auto Tenant Creation**: Google users get automatic tenant setup
+- **Multi-organization**: Each user belongs to their own organization
+- **Auto Organization Creation**: Google users get automatic organization setup
 
 ## Offline Support
 

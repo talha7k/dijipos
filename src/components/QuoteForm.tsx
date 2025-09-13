@@ -17,7 +17,7 @@ import {
 } from '@/lib/sample-data';
 
 interface QuoteFormProps {
-  onSubmit: (quote: Omit<Quote, 'id' | 'tenantId' | 'createdAt' | 'updatedAt'>) => void;
+  onSubmit: (quote: Omit<Quote, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => void;
 }
 
 export default function QuoteForm({ onSubmit }: QuoteFormProps) {
@@ -89,7 +89,7 @@ export default function QuoteForm({ onSubmit }: QuoteFormProps) {
       total,
       status: 'draft',
       notes,
-    });
+    } as Omit<Quote, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>);
   };
 
   return (

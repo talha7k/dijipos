@@ -4,7 +4,7 @@
 import { Invoice, Category, Product, Service, Table, Order, Customer, Supplier, OrderType, PaymentType } from '@/types';
 
 // Sample categories
-export const sampleCategories: Omit<Category, 'tenantId'>[] = [
+export const sampleCategories: Omit<Category, 'organizationId'>[] = [
   {
     id: 'cat1',
     name: 'Food & Beverages',
@@ -64,7 +64,7 @@ export const sampleCategories: Omit<Category, 'tenantId'>[] = [
 ];
 
 // Sample products
-export const sampleProducts: Omit<Product, 'tenantId'>[] = [
+export const sampleProducts: Omit<Product, 'organizationId'>[] = [
   {
     id: 'p1',
     name: 'Margherita Pizza',
@@ -140,7 +140,7 @@ export const sampleProducts: Omit<Product, 'tenantId'>[] = [
 ];
 
 // Sample services
-export const sampleServices: Omit<Service, 'tenantId'>[] = [
+export const sampleServices: Omit<Service, 'organizationId'>[] = [
   {
     id: 's1',
     name: 'IT Support',
@@ -162,7 +162,7 @@ export const sampleServices: Omit<Service, 'tenantId'>[] = [
 ];
 
 // Sample customers
-export const sampleCustomers: Omit<Customer, 'tenantId'>[] = [
+export const sampleCustomers: Omit<Customer, 'organizationId'>[] = [
   {
     id: 'c1',
     name: 'John Smith',
@@ -211,7 +211,7 @@ export const sampleCustomers: Omit<Customer, 'tenantId'>[] = [
 ]
 
 // Sample suppliers
-export const sampleSuppliers: Omit<Supplier, 'tenantId'>[] = [
+export const sampleSuppliers: Omit<Supplier, 'organizationId'>[] = [
   {
     id: 'sup1',
     name: 'Fresh Foods Co',
@@ -260,7 +260,7 @@ export const sampleSuppliers: Omit<Supplier, 'tenantId'>[] = [
 ]
 
 // Sample tables
-export const sampleTables: Omit<Table, 'tenantId'>[] = [
+export const sampleTables: Omit<Table, 'organizationId'>[] = [
   {
     id: 't1',
     name: 'Table 1',
@@ -304,7 +304,7 @@ export const sampleTables: Omit<Table, 'tenantId'>[] = [
 ]
 
 // Sample order types
-export const sampleOrderTypes: Omit<OrderType, 'tenantId'>[] = [
+export const sampleOrderTypes: Omit<OrderType, 'organizationId'>[] = [
   {
     id: 'ot1',
     name: 'Dine In',
@@ -329,7 +329,7 @@ export const sampleOrderTypes: Omit<OrderType, 'tenantId'>[] = [
 ]
 
 // Sample payment types
-export const samplePaymentTypes: Omit<PaymentType, 'tenantId'>[] = [
+export const samplePaymentTypes: Omit<PaymentType, 'organizationId'>[] = [
   {
     id: 'pt1',
     name: 'Cash',
@@ -361,7 +361,7 @@ export const samplePaymentTypes: Omit<PaymentType, 'tenantId'>[] = [
 ]
 
 // Sample orders
-export const sampleOrders: Omit<Order, 'tenantId'>[] = [
+export const sampleOrders: Omit<Order, 'organizationId'>[] = [
   {
     id: 'o1',
     orderNumber: 'ORD-001',
@@ -395,6 +395,8 @@ export const sampleOrders: Omit<Order, 'tenantId'>[] = [
     tableId: 't1',
     tableName: 'Table 1',
     orderType: 'Dine In',
+    createdById: 'user1',
+    createdByName: 'Admin User',
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -438,13 +440,15 @@ export const sampleOrders: Omit<Order, 'tenantId'>[] = [
     customerName: 'Sarah Johnson',
     customerPhone: '+1-234-567-8901',
     orderType: 'Take Away',
+    createdById: 'user1',
+    createdByName: 'Admin User',
     createdAt: new Date(),
     updatedAt: new Date(),
   }
 ]
 
 // Helper functions to get combobox options
-export const getCustomerOptions = (customers: Omit<Customer, 'tenantId'>[]) => {
+export const getCustomerOptions = (customers: Omit<Customer, 'organizationId'>[]) => {
   return customers.map(customer => ({
     value: customer.id,
     label: customer.name,
@@ -452,7 +456,7 @@ export const getCustomerOptions = (customers: Omit<Customer, 'tenantId'>[]) => {
   }))
 }
 
-export const getProductOptions = (products: Omit<Product, 'tenantId'>[]) => {
+export const getProductOptions = (products: Omit<Product, 'organizationId'>[]) => {
   return products.map(product => ({
     value: product.id,
     label: product.name,
@@ -460,7 +464,7 @@ export const getProductOptions = (products: Omit<Product, 'tenantId'>[]) => {
   }))
 }
 
-export const getServiceOptions = (services: Omit<Service, 'tenantId'>[]) => {
+export const getServiceOptions = (services: Omit<Service, 'organizationId'>[]) => {
   return services.map(service => ({
     value: service.id,
     label: service.name,
@@ -469,7 +473,7 @@ export const getServiceOptions = (services: Omit<Service, 'tenantId'>[]) => {
 }
 
 // Helper functions for mixed product/service arrays
-export const getProductOptionsFromMixed = (items: (Omit<Product, 'tenantId'> & { type: 'product' } | Omit<Service, 'tenantId'> & { type: 'service' })[]) => {
+export const getProductOptionsFromMixed = (items: (Omit<Product, 'organizationId'> & { type: 'product' } | Omit<Service, 'organizationId'> & { type: 'service' })[]) => {
   return items.filter(item => item.type === 'product').map(item => ({
     value: item.id,
     label: item.name,
@@ -477,7 +481,7 @@ export const getProductOptionsFromMixed = (items: (Omit<Product, 'tenantId'> & {
   }))
 }
 
-export const getServiceOptionsFromMixed = (items: (Omit<Product, 'tenantId'> & { type: 'product' } | Omit<Service, 'tenantId'> & { type: 'service' })[]) => {
+export const getServiceOptionsFromMixed = (items: (Omit<Product, 'organizationId'> & { type: 'product' } | Omit<Service, 'organizationId'> & { type: 'service' })[]) => {
   return items.filter(item => item.type === 'service').map(item => ({
     value: item.id,
     label: item.name,
@@ -485,7 +489,7 @@ export const getServiceOptionsFromMixed = (items: (Omit<Product, 'tenantId'> & {
   }))
 }
 
-export const getSupplierOptions = (suppliers: Omit<Supplier, 'tenantId'>[]) => {
+export const getSupplierOptions = (suppliers: Omit<Supplier, 'organizationId'>[]) => {
   return suppliers.map(supplier => ({
     value: supplier.id,
     label: supplier.name,
@@ -517,16 +521,16 @@ export const getPaymentTypeOptions = (paymentTypes: PaymentType[]) => {
   }))
 }
 
-export const getCustomerById = (customers: Omit<Customer, 'tenantId'>[], id: string) => {
+export const getCustomerById = (customers: Omit<Customer, 'organizationId'>[], id: string) => {
   return customers.find(customer => customer.id === id)
 }
 
-export const getSupplierById = (suppliers: Omit<Supplier, 'tenantId'>[], id: string) => {
+export const getSupplierById = (suppliers: Omit<Supplier, 'organizationId'>[], id: string) => {
   return suppliers.find(supplier => supplier.id === id)
 }
 
 // Sample purchase invoices
-export const samplePurchaseInvoices: Omit<Invoice, 'tenantId'>[] = [
+export const samplePurchaseInvoices: Omit<Invoice, 'organizationId'>[] = [
   {
     id: 'pi1',
     type: 'purchase',
@@ -618,7 +622,7 @@ export const samplePurchaseInvoices: Omit<Invoice, 'tenantId'>[] = [
 ]
 
 // Sample sales invoices
-export const sampleSalesInvoices: Omit<Invoice, 'tenantId'>[] = [
+export const sampleSalesInvoices: Omit<Invoice, 'organizationId'>[] = [
   {
     id: 'si1',
     type: 'sales',
@@ -720,7 +724,7 @@ export const sampleProductsServices = [
 ];
 
 // Combined sample invoices (both sales and purchase)
-export const sampleInvoices: Omit<Invoice, 'tenantId'>[] = [
+export const sampleInvoices: Omit<Invoice, 'organizationId'>[] = [
   ...samplePurchaseInvoices,
   ...sampleSalesInvoices,
 ]
@@ -733,6 +737,6 @@ export const getServiceById = (services: Service[], id: string) => {
   return services.find(service => service.id === id)
 }
 
-export const getProductServiceById = (items: ((Omit<Product, 'tenantId'> & { type: 'product' }) | (Omit<Service, 'tenantId'> & { type: 'service' }))[], id: string) => {
+export const getProductServiceById = (items: ((Omit<Product, 'organizationId'> & { type: 'product' }) | (Omit<Service, 'organizationId'> & { type: 'service' }))[], id: string) => {
   return items.find(item => item.id === id)
 }

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
-import { Tenant } from '@/types';
+import { Organization } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -16,8 +16,8 @@ import { Building2, CreditCard, User, Mail, Calendar, X } from 'lucide-react';
 import { ImageUpload } from '@/components/ui/image-upload';
 
 function CompanyContent() {
-  const { user, tenantId } = useAuth();
-  const [tenant, setTenant] = useState<Tenant | null>(null);
+  const { user, organizationId } = useAuth();
+  const [organization, setOrganization] = useState<Organization | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   
@@ -33,46 +33,46 @@ function CompanyContent() {
   const [stampUrl, setStampUrl] = useState('');
 
   useEffect(() => {
-    if (!tenantId) return;
+    if (!organizationId) return;
 
-    const fetchTenant = async () => {
-      const tenantDoc = await getDoc(doc(db, 'tenants', tenantId));
-      if (tenantDoc.exists()) {
-        const tenantData = {
-          id: tenantDoc.id,
-          ...tenantDoc.data(),
-          createdAt: tenantDoc.data().createdAt?.toDate(),
-        } as Tenant;
+    const fetchOrganization = async () => {
+      const organizationDoc = await getDoc(doc(db, 'organizations', organizationId));
+      if (organizationDoc.exists()) {
+        const organizationData = {
+          id: organizationDoc.id,
+          ...organizationDoc.data(),
+          createdAt: organizationDoc.data().createdAt?.toDate(),
+        } as Organization;
 
-        setTenant(tenantData);
-        setCompanyName(tenantData.name || '');
-        setCompanyNameAr(tenantData.nameAr || '');
-        setCompanyEmail(tenantData.email || '');
-        setCompanyAddress(tenantData.address || '');
-        setCompanyPhone(tenantData.phone || '');
-        setVatNumber(tenantData.vatNumber || '');
-        setLogoUrl(tenantData.logoUrl || '');
-        setStampUrl(tenantData.stampUrl || '');
+        setOrganization(organizationData);
+        setCompanyName(organizationData.name || '');
+        setCompanyNameAr(organizationData.nameAr || '');
+        setCompanyEmail(organizationData.email || '');
+        setCompanyAddress(organizationData.address || '');
+        setCompanyPhone(organizationData.phone || '');
+        setVatNumber(organizationData.vatNumber || '');
+        setLogoUrl(organizationData.logoUrl || '');
+        setStampUrl(organizationData.stampUrl || '');
       }
       setLoading(false);
     };
 
-    fetchTenant();
-  }, [tenantId]);
+    fetchOrganization();
+  }, [organizationId]);
 
   
 
   const handleRemoveLogo = async () => {
-    if (!tenantId) return;
+    if (!organizationId) return;
     
     try {
-      await updateDoc(doc(db, 'tenants', tenantId), {
+      await updateDoc(doc(db, 'organizations', organizationId), {
         logoUrl: '',
         updatedAt: new Date(),
       });
       
       setLogoUrl('');
-      setTenant(prev => prev ? { ...prev, logoUrl: '' } : null);
+      setOrganization(prev => prev ? { ...prev, logoUrl: '' } : null);
     } catch (error) {
       console.error('Error removing logo:', error);
       alert('Failed to remove logo.');
@@ -80,16 +80,16 @@ function CompanyContent() {
   };
 
   const handleRemoveStamp = async () => {
-    if (!tenantId) return;
+    if (!organizationId) return;
     
     try {
-      await updateDoc(doc(db, 'tenants', tenantId), {
+      await updateDoc(doc(db, 'organizations', organizationId), {
         stampUrl: '',
         updatedAt: new Date(),
       });
       
       setStampUrl('');
-      setTenant(prev => prev ? { ...prev, stampUrl: '' } : null);
+      setOrganization(prev => prev ? { ...prev, stampUrl: '' } : null);
     } catch (error) {
       console.error('Error removing stamp:', error);
       alert('Failed to remove stamp.');
@@ -97,11 +97,11 @@ function CompanyContent() {
   };
 
   const handleSaveCompanyInfo = async () => {
-    if (!tenantId) return;
+    if (!organizationId) return;
 
     setSaving(true);
     try {
-      await updateDoc(doc(db, 'tenants', tenantId), {
+      await updateDoc(doc(db, 'organizations', organizationId), {
         name: companyName,
         nameAr: companyNameAr,
         email: companyEmail,
@@ -114,7 +114,7 @@ function CompanyContent() {
       });
 
       // Update local state
-      setTenant(prev => prev ? {
+      setOrganization(prev => prev ? {
         ...prev,
         name: companyName,
         nameAr: companyNameAr,
@@ -262,7 +262,7 @@ function CompanyContent() {
                   <ImageUpload
                     value={logoUrl}
                     onChange={(url) => setLogoUrl(url || '')}
-                    path={`tenants/${tenantId}`}
+                    path={`organizations/${organizationId}`}
                     placeholder="Upload company logo"
                     maxSize={2}
                   />
@@ -296,7 +296,7 @@ function CompanyContent() {
                   <ImageUpload
                     value={stampUrl}
                     onChange={(url) => setStampUrl(url || '')}
-                    path={`tenants/${tenantId}`}
+                    path={`organizations/${organizationId}`}
                     placeholder="Upload company stamp"
                     maxSize={2}
                   />
@@ -321,8 +321,8 @@ function CompanyContent() {
                   <h3 className="text-lg font-semibold">Current Plan</h3>
                   <p className="text-muted-foreground">Professional Plan</p>
                 </div>
-                <Badge variant={tenant?.subscriptionStatus === 'active' ? 'default' : 'secondary'}>
-                  {tenant?.subscriptionStatus || 'Unknown'}
+                <Badge variant={organization?.subscriptionStatus === 'active' ? 'default' : 'secondary'}>
+                  {organization?.subscriptionStatus || 'Unknown'}
                 </Badge>
               </div>
 
@@ -370,7 +370,7 @@ function CompanyContent() {
                 </div>
                 <div className="flex items-center space-x-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span>Joined {tenant?.createdAt?.toLocaleDateString()}</span>
+                  <span>Joined {organization?.createdAt?.toLocaleDateString()}</span>
                 </div>
               </div>
 

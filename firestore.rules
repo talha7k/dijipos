@@ -6,19 +6,19 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Helper function to check if user owns the tenant
-    function isTenantOwner(tenantId) {
-      return isAuthenticated() && request.auth.uid == tenantId;
+    // Helper function to check if user owns the organization
+    function isTenantOwner(organizationId) {
+      return isAuthenticated() && request.auth.uid == organizationId;
     }
 
-    // Tenants collection - users can only read/write their own tenant
-    match /tenants/{tenantId} {
-      allow read, write: if isTenantOwner(tenantId);
+    // Tenants collection - users can only read/write their own organization
+    match /tenants/{organizationId} {
+      allow read, write: if isTenantOwner(organizationId);
     }
 
-    // Subcollections under tenants - only tenant owners can access
-    match /tenants/{tenantId}/{collection=**} {
-      allow read, write: if isTenantOwner(tenantId);
+    // Subcollections under tenants - only organization owners can access
+    match /tenants/{organizationId}/{collection=**} {
+      allow read, write: if isTenantOwner(organizationId);
     }
   }
 }

@@ -6,12 +6,12 @@ import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Printer, Download } from 'lucide-react';
-import { Order, ReceiptTemplate, PrinterSettings, Tenant } from '@/types';
+import { Order, ReceiptTemplate, PrinterSettings, Organization } from '@/types';
 import thermalPrinter from '@/lib/thermal-printer';
 
 interface ReceiptPrintDialogProps {
   order: Order;
-  tenant: Tenant | null;
+  organization: Organization | null;
   receiptTemplates: ReceiptTemplate[];
   printerSettings: PrinterSettings | null;
   children: React.ReactNode;
@@ -19,7 +19,7 @@ interface ReceiptPrintDialogProps {
 
 export function ReceiptPrintDialog({
   order,
-  tenant,
+  organization,
   receiptTemplates,
   printerSettings,
   children
@@ -57,7 +57,7 @@ export function ReceiptPrintDialog({
           }
 
           // Print the receipt using the service
-          await thermalPrinter.printReceipt({ order, tenant });
+          await thermalPrinter.printReceipt({ order, organization });
           setIsGenerating(false);
           setOpen(false);
           alert('Receipt printed successfully!');
@@ -69,10 +69,10 @@ export function ReceiptPrintDialog({
       } else {
         // Prepare template data for A4 templates
         const templateData = {
-        companyName: tenant?.name || '',
-        companyAddress: tenant?.address || '',
-        companyPhone: tenant?.phone || '',
-        companyVat: tenant?.vatNumber || '',
+        companyName: organization?.name || '',
+        companyAddress: organization?.address || '',
+        companyPhone: organization?.phone || '',
+        companyVat: organization?.vatNumber || '',
         orderNumber: order.orderNumber,
         orderDate: new Date(order.createdAt).toLocaleDateString(),
         tableName: order.tableName || '',
@@ -143,10 +143,10 @@ export function ReceiptPrintDialog({
     try {
       // Prepare template data (same as generateReceipt)
       const templateData = {
-        companyName: tenant?.name || '',
-        companyAddress: tenant?.address || '',
-        companyPhone: tenant?.phone || '',
-        companyVat: tenant?.vatNumber || '',
+        companyName: organization?.name || '',
+        companyAddress: organization?.address || '',
+        companyPhone: organization?.phone || '',
+        companyVat: organization?.vatNumber || '',
         orderNumber: order.orderNumber,
         orderDate: new Date(order.createdAt).toLocaleDateString(),
         tableName: order.tableName || '',

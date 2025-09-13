@@ -1,26 +1,26 @@
 'use client';
 
-import { Invoice, Tenant, Customer, Supplier } from '@/types';
+import { Invoice, Organization, Customer, Supplier } from '@/types';
 import ZatcaQR from '@/components/ZatcaQR';
 import Image from 'next/image';
 
 interface ArabicInvoiceProps {
   invoice: Invoice;
-  tenant: Tenant;
+  organization: Organization;
   customer?: Customer; // Customer data if available
   supplier?: Supplier; // Supplier data if available
 }
 
-export default function ArabicInvoice({ invoice, tenant, customer, supplier }: ArabicInvoiceProps) {
+export default function ArabicInvoice({ invoice, organization, customer, supplier }: ArabicInvoiceProps) {
   return (
     <div dir="rtl" className="max-w-4xl mx-auto bg-white p-8 shadow-lg print-content" style={{ fontFamily: 'var(--font-amiri)' }}>
       {/* Header */}
       <div className="flex justify-between items-start mb-8 flex-row-reverse">
         <div className="text-right">
           {/* QR Code - positioned above invoice number */}
-          {invoice.includeQR && tenant.vatNumber && (
+          {invoice.includeQR && organization.vatNumber && (
             <div className="mb-4">
-              <ZatcaQR invoice={invoice} tenant={tenant} />
+              <ZatcaQR invoice={invoice} organization={organization} />
               <p className="text-sm text-gray-600 mt-2">رمز QR متوافق مع زاتكا</p>
             </div>
           )}
@@ -29,11 +29,11 @@ export default function ArabicInvoice({ invoice, tenant, customer, supplier }: A
         </div>
         <div className="text-left">
           {/* Company Logo */}
-          {tenant.logoUrl && (
+          {organization.logoUrl && (
             <div className="mb-4">
               <div className="relative w-48 h-20 mr-auto">
                 <Image
-                  src={tenant.logoUrl}
+                  src={organization.logoUrl}
                   alt="شعار الشركة"
                   fill
                   className="object-contain"
@@ -41,14 +41,14 @@ export default function ArabicInvoice({ invoice, tenant, customer, supplier }: A
               </div>
             </div>
           )}
-          <h2 className="text-xl font-semibold">{tenant.nameAr || tenant.name}</h2>
-          {tenant.nameAr && tenant.name && (
-            <p className="text-lg">{tenant.name}</p>
+          <h2 className="text-xl font-semibold">{organization.nameAr || organization.name}</h2>
+          {organization.nameAr && organization.name && (
+            <p className="text-lg">{organization.name}</p>
           )}
-          <p>{tenant.address}</p>
-          <p>{tenant.email}</p>
-          <p>{tenant.phone}</p>
-          {tenant.vatNumber && <p>الرقم الضريبي: {tenant.vatNumber}</p>}
+          <p>{organization.address}</p>
+          <p>{organization.email}</p>
+          <p>{organization.phone}</p>
+          {organization.vatNumber && <p>الرقم الضريبي: {organization.vatNumber}</p>}
         </div>
       </div>
 
@@ -172,12 +172,12 @@ export default function ArabicInvoice({ invoice, tenant, customer, supplier }: A
       )}
 
       {/* Company Stamp */}
-      {tenant.stampUrl && (
+      {organization.stampUrl && (
         <div className="flex justify-start mt-8">
           <div className="text-center">
             <div className="relative w-32 h-32">
               <Image
-                src={tenant.stampUrl}
+                src={organization.stampUrl}
                 alt="ختم الشركة"
                 fill
                 className="object-contain"

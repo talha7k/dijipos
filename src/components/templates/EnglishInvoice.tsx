@@ -1,26 +1,26 @@
 'use client';
 
-import { Invoice, Tenant, Customer, Supplier } from '@/types';
+import { Invoice, Organization, Customer, Supplier } from '@/types';
 import ZatcaQR from '@/components/ZatcaQR';
 import Image from 'next/image';
 
 interface EnglishInvoiceProps {
   invoice: Invoice;
-  tenant: Tenant;
+  organization: Organization;
   customer?: Customer; // Customer data if available
   supplier?: Supplier; // Supplier data if available
 }
 
-export default function EnglishInvoice({ invoice, tenant, customer, supplier }: EnglishInvoiceProps) {
+export default function EnglishInvoice({ invoice, organization, customer, supplier }: EnglishInvoiceProps) {
   return (
     <div className="max-w-4xl mx-auto bg-white p-8 shadow-lg print-content">
       {/* Header */}
       <div className="flex justify-between items-start mb-8">
         <div>
           {/* QR Code - positioned above invoice number */}
-          {invoice.includeQR && tenant.vatNumber && (
+          {invoice.includeQR && organization.vatNumber && (
             <div className="mb-4">
-              <ZatcaQR invoice={invoice} tenant={tenant} />
+              <ZatcaQR invoice={invoice} organization={organization} />
               <p className="text-sm text-gray-600 mt-2">ZATCA Compliant QR Code</p>
             </div>
           )}
@@ -29,11 +29,11 @@ export default function EnglishInvoice({ invoice, tenant, customer, supplier }: 
         </div>
         <div className="text-right">
           {/* Company Logo */}
-          {tenant.logoUrl && (
+          {organization.logoUrl && (
             <div className="mb-4">
               <div className="relative w-48 h-20 ml-auto">
                 <Image
-                  src={tenant.logoUrl}
+                  src={organization.logoUrl}
                   alt="Company Logo"
                   fill
                   className="object-contain"
@@ -41,14 +41,14 @@ export default function EnglishInvoice({ invoice, tenant, customer, supplier }: 
               </div>
             </div>
           )}
-          <h2 className="text-xl font-semibold">{tenant.name}</h2>
-          {tenant.nameAr && (
-            <p className="text-lg">{tenant.nameAr}</p>
+          <h2 className="text-xl font-semibold">{organization.name}</h2>
+          {organization.nameAr && (
+            <p className="text-lg">{organization.nameAr}</p>
           )}
-          <p>{tenant.address}</p>
-          <p>{tenant.email}</p>
-          <p>{tenant.phone}</p>
-          {tenant.vatNumber && <p>VAT: {tenant.vatNumber}</p>}
+          <p>{organization.address}</p>
+          <p>{organization.email}</p>
+          <p>{organization.phone}</p>
+          {organization.vatNumber && <p>VAT: {organization.vatNumber}</p>}
         </div>
       </div>
 
@@ -172,12 +172,12 @@ export default function EnglishInvoice({ invoice, tenant, customer, supplier }: 
       )}
 
       {/* Company Stamp */}
-      {tenant.stampUrl && (
+      {organization.stampUrl && (
         <div className="flex justify-end mt-8">
           <div className="text-center">
             <div className="relative w-32 h-32">
               <Image
-                src={tenant.stampUrl}
+                src={organization.stampUrl}
                 alt="Company Stamp"
                 fill
                 className="object-contain"

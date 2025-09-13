@@ -6,14 +6,14 @@ service firebase.storage {
       return request.auth != null;
     }
 
-    // Helper function to check if user owns the tenant
-    function isTenantOwner(tenantId) {
-      return isAuthenticated() && request.auth.uid == tenantId;
+    // Helper function to check if user owns the organization
+    function isTenantOwner(organizationId) {
+      return isAuthenticated() && request.auth.uid == organizationId;
     }
 
-    // Tenant-specific files (logos, stamps, etc.)
-    match /tenants/{tenantId}/{allPaths=**} {
-      allow read, write: if isTenantOwner(tenantId);
+    // Organization-specific files (logos, stamps, etc.)
+    match /tenants/{organizationId}/{allPaths=**} {
+      allow read, write: if isTenantOwner(organizationId);
     }
 
     // Public files (if needed)

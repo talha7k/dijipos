@@ -78,7 +78,7 @@ const defaultStyle: TemplateStyle = {
 };
 
 function TemplatesContent() {
-  const { tenantId } = useAuth();
+  const { organizationId } = useAuth();
   const [templates, setTemplates] = useState<InvoiceTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -102,7 +102,7 @@ function TemplatesContent() {
       const mockTemplates: InvoiceTemplate[] = [
         {
           id: '1',
-          tenantId: tenantId!,
+          organizationId: organizationId!,
           name: 'English Standard',
           description: 'Standard English invoice template',
           type: 'english',
@@ -114,7 +114,7 @@ function TemplatesContent() {
         },
         {
           id: '2',
-          tenantId: tenantId!,
+          organizationId: organizationId!,
           name: 'Arabic Standard',
           description: 'Standard Arabic invoice template',
           type: 'arabic',
@@ -131,21 +131,21 @@ function TemplatesContent() {
     } finally {
       setLoading(false);
     }
-  }, [tenantId]);
+  }, [organizationId]);
 
   useEffect(() => {
-    if (tenantId) {
+    if (organizationId) {
       fetchTemplates();
     }
-  }, [tenantId, fetchTemplates]);
+  }, [organizationId, fetchTemplates]);
 
   const handleCreateTemplate = async () => {
-    if (!tenantId || !newTemplate.name.trim()) return;
+    if (!organizationId || !newTemplate.name.trim()) return;
 
     try {
       const template: InvoiceTemplate = {
         id: Date.now().toString(),
-        tenantId,
+        organizationId,
         name: newTemplate.name,
         description: newTemplate.description,
         type: newTemplate.type,

@@ -14,17 +14,17 @@ import { TableList } from '@/components/TableList';
 import { AddTableDialog } from '@/components/AddTableDialog';
 
 export default function TablesPage() {
-  const { tenantId } = useAuth();
+  const { organizationId } = useAuth();
   const [tables, setTables] = useState<Table[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    if (!tenantId) return;
+    if (!organizationId) return;
 
     // Fetch tables
-    const tablesQ = query(collection(db, 'tenants', tenantId, 'tables'));
+    const tablesQ = query(collection(db, 'tenants', organizationId, 'tables'));
     const tablesUnsubscribe = onSnapshot(tablesQ, (querySnapshot) => {
       const tablesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -39,20 +39,20 @@ export default function TablesPage() {
     return () => {
       tablesUnsubscribe();
     };
-  }, [tenantId]);
+  }, [organizationId]);
 
   const handleAddTable = async (table: {
     name: string;
     capacity: number;
     status: 'available' | 'occupied' | 'reserved' | 'maintenance';
   }) => {
-    if (!tenantId) return;
+    if (!organizationId) return;
 
-    await addDoc(collection(db, 'tenants', tenantId, 'tables'), {
+    await addDoc(collection(db, 'tenants', organizationId, 'tables'), {
       name: table.name,
       capacity: table.capacity,
       status: table.status,
-      tenantId,
+      organizationId,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -63,14 +63,14 @@ export default function TablesPage() {
     capacity: number;
     status: 'available' | 'occupied' | 'reserved' | 'maintenance';
   }>) => {
-    if (!tenantId) return;
+    if (!organizationId) return;
 
     const promises = tables.map(table =>
-      addDoc(collection(db, 'tenants', tenantId, 'tables'), {
+      addDoc(collection(db, 'tenants', organizationId, 'tables'), {
         name: table.name,
         capacity: table.capacity,
         status: table.status,
-        tenantId,
+        organizationId,
         createdAt: new Date(),
         updatedAt: new Date(),
       })
@@ -80,9 +80,9 @@ export default function TablesPage() {
   };
 
   const handleDeleteTable = async (tableId: string) => {
-    if (!tenantId) return;
+    if (!organizationId) return;
     if (confirm('Are you sure you want to delete this table?')) {
-      await deleteDoc(doc(db, 'tenants', tenantId, 'tables', tableId));
+      await deleteDoc(doc(db, 'tenants', organizationId, 'tables', tableId));
     }
   };
 

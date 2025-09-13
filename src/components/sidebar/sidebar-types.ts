@@ -18,7 +18,7 @@ export interface SidebarProps {
     email?: string;
     displayName?: string;
   };
-  tenantId?: string;
+  organizationId?: string;
   onLogout?: () => void;
   onSectionToggle?: (title: string) => void;
   onExpandSidebar?: () => void;

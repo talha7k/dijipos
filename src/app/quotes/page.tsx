@@ -13,15 +13,15 @@ import QuoteForm from '@/components/QuoteForm';
 import { FileText } from 'lucide-react';
 
 function QuotesContent() {
-  const { user, tenantId } = useAuth();
+  const { user, organizationId } = useAuth();
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
-    if (!tenantId) return;
+    if (!organizationId) return;
 
-    const q = query(collection(db, 'tenants', tenantId, 'quotes'));
+    const q = query(collection(db, 'tenants', organizationId, 'quotes'));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const quotesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -35,10 +35,10 @@ function QuotesContent() {
     });
 
     return () => unsubscribe();
-  }, [tenantId]);
+  }, [organizationId]);
 
-  const handleCreateQuote = async (quoteData: Omit<Quote, 'id' | 'tenantId' | 'createdAt' | 'updatedAt'>) => {
-    if (!tenantId) return;
+  const handleCreateQuote = async (quoteData: Omit<Quote, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => {
+    if (!organizationId) return;
 
     // Clean the data to remove undefined values that Firebase doesn't accept
     const cleanedData = {
@@ -52,19 +52,19 @@ function QuotesContent() {
         productId: item.productId || null,
         serviceId: item.serviceId || null,
       })),
-      tenantId,
+      organizationId,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
-    await addDoc(collection(db, 'tenants', tenantId, 'quotes'), cleanedData);
+    await addDoc(collection(db, 'tenants', organizationId, 'quotes'), cleanedData);
     setDialogOpen(false);
   };
 
   const handleConvertToInvoice = async (quoteId: string) => {
-    if (!tenantId) return;
+    if (!organizationId) return;
 
-    const quoteRef = doc(db, 'tenants', tenantId, 'quotes', quoteId);
+    const quoteRef = doc(db, 'tenants', organizationId, 'quotes', quoteId);
     await updateDoc(quoteRef, { status: 'converted' });
 
     const quote = quotes.find(q => q.id === quoteId);
@@ -91,12 +91,12 @@ function QuotesContent() {
         template: 'english', // default template
         includeQR: false, // default no QR
         quoteId,
-        tenantId,
+        organizationId,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
 
-      await addDoc(collection(db, 'tenants', tenantId, 'invoices'), cleanedQuoteData);
+      await addDoc(collection(db, 'tenants', organizationId, 'invoices'), cleanedQuoteData);
     }
   };
 

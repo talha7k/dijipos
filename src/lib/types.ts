@@ -4,7 +4,7 @@ export interface Product {
   description?: string;
   price: number;
   category?: string;
-  tenantId: string;
+  organizationId: string;
 }
 
 export interface Service {
@@ -13,7 +13,7 @@ export interface Service {
   description?: string;
   rate: number; // hourly rate
   category?: string;
-  tenantId: string;
+  organizationId: string;
 }
 
 export interface Item {
@@ -30,7 +30,7 @@ export interface Item {
 
 export interface Quote {
   id: string;
-  tenantId: string;
+  organizationId: string;
   clientName: string;
   clientEmail: string;
   clientAddress?: string;
@@ -48,7 +48,7 @@ export interface Quote {
 
 interface BaseInvoice {
   id: string;
-  tenantId: string;
+  organizationId: string;
   items: Item[];
   subtotal: number;
   taxRate: number;
@@ -86,7 +86,7 @@ export interface Payment {
   paymentDate: Date;
   paymentMethod: string;
   notes?: string;
-  tenantId: string;
+  organizationId: string;
 }
 
 export interface Customer {
@@ -95,7 +95,7 @@ export interface Customer {
   email: string;
   address?: string;
   phone?: string;
-  tenantId: string;
+  organizationId: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -107,12 +107,12 @@ export interface Supplier {
   address?: string;
   phone?: string;
   vatNumber?: string;
-  tenantId: string;
+  organizationId: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
-export interface Tenant {
+export interface Organization {
   id: string;
   name: string;
   email: string;

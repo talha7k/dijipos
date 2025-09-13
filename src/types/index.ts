@@ -4,7 +4,7 @@ export interface Category {
   description?: string;
   parentId?: string; // For hierarchical categories
   type: 'product' | 'service' | 'both'; // Category can be for products, services, or both
-  tenantId: string;
+  organizationId: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -23,7 +23,7 @@ export interface Product {
   price: number;
   categoryId?: string; // Reference to Category ID
   variations?: ProductVariation[]; // Optional variations
-  tenantId: string;
+  organizationId: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -34,7 +34,7 @@ export interface Service {
   description?: string;
   price: number; // total price
   categoryId?: string; // Reference to Category ID
-  tenantId: string;
+  organizationId: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -54,7 +54,7 @@ export interface Item {
 
 export interface Quote {
   id: string;
-  tenantId: string;
+  organizationId: string;
   clientName: string;
   clientEmail: string;
   clientAddress?: string;
@@ -72,7 +72,7 @@ export interface Quote {
 
 export interface Invoice {
   id: string;
-  tenantId: string;
+  organizationId: string;
   quoteId?: string;
   type: 'sales' | 'purchase';
   clientName?: string; // For sales invoices
@@ -102,7 +102,7 @@ export interface Invoice {
 
 export interface Payment {
   id: string;
-  tenantId: string;
+  organizationId: string;
   invoiceId: string;
   amount: number;
   paymentDate: Date;
@@ -138,7 +138,7 @@ export interface TemplateStyle {
 
 export interface InvoiceTemplate {
   id: string;
-  tenantId: string;
+  organizationId: string;
   name: string;
   description?: string;
   type: 'english' | 'arabic' | 'custom';
@@ -160,7 +160,7 @@ export interface Supplier {
   vatNumber?: string;
   contactPerson?: string;
   logoUrl?: string; // Supplier logo URL
-  tenantId: string;
+  organizationId: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -174,14 +174,14 @@ export interface Customer {
   phone?: string;
   vatNumber?: string;
   logoUrl?: string; // Customer logo URL
-  tenantId: string;
+  organizationId: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
 export interface PurchaseInvoice {
   id: string;
-  tenantId: string;
+  organizationId: string;
   supplierId: string;
   supplierName: string;
   supplierEmail: string;
@@ -208,7 +208,7 @@ export interface Table {
   name: string;
   capacity: number; // Number of seats
   status: 'available' | 'occupied' | 'reserved' | 'maintenance';
-  tenantId: string;
+  organizationId: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -265,7 +265,7 @@ export interface OrderType {
   id: string;
   name: string;
   description?: string;
-  tenantId: string;
+  organizationId: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -274,7 +274,7 @@ export interface PaymentType {
   id: string;
   name: string;
   description?: string;
-  tenantId: string;
+  organizationId: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -289,7 +289,7 @@ export interface PrinterSettings {
   printerType?: 'epson' | 'star'; // Thermal printer type
   characterSet?: string; // Character set (e.g., 'korea', 'japan', 'multilingual')
   baudRate?: number; // Serial baud rate (default: 9600)
-  tenantId: string;
+  organizationId: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -301,7 +301,7 @@ export interface ReceiptTemplate {
   type: 'thermal' | 'a4';
   content: string; // HTML template content
   isDefault: boolean;
-  tenantId: string;
+  organizationId: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -310,14 +310,14 @@ export interface VATSettings {
   id: string;
   rate: number; // VAT rate in percentage (e.g., 15 for 15%)
   isEnabled: boolean;
-  tenantId: string;
+  organizationId: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
 export interface StoreSettings {
   id: string;
-  tenantId: string;
+  organizationId: string;
   vatSettings: VATSettings;
   orderTypes: OrderType[];
   paymentTypes: PaymentType[];

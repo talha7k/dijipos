@@ -227,7 +227,7 @@ function UsersContent() {
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="role">Role</Label>
-                  <Select value={invitationFormData.role} onValueChange={(value: any) => setInvitationFormData({ ...invitationFormData, role: value })}>
+                  <Select value={invitationFormData.role} onValueChange={(value: 'admin' | 'manager' | 'cashier' | 'waiter') => setInvitationFormData({ ...invitationFormData, role: value })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select role" />
                     </SelectTrigger>
@@ -433,7 +433,7 @@ function UsersContent() {
           <div className="space-y-4">
             <div>
               <Label htmlFor="role">Role</Label>
-              <Select value={formData.role} onValueChange={(value: any) => setFormData({ ...formData, role: value })}>
+              <Select value={formData.role} onValueChange={(value: 'admin' | 'manager' | 'cashier' | 'waiter') => setFormData({ ...formData, role: value })}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select role" />
                 </SelectTrigger>

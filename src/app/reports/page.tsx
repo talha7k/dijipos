@@ -47,7 +47,7 @@ interface ReportData {
 }
 
 export default function ReportsPage() {
-  const { tenantId } = useAuth();
+  const { organizationId } = useAuth();
   const [loading, setLoading] = useState(true);
   const [reportData, setReportData] = useState<ReportData | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -60,11 +60,11 @@ export default function ReportsPage() {
   const [exportingVAT, setExportingVAT] = useState(false);
 
   const fetchInvoices = useCallback(async () => {
-    if (!tenantId) return;
+    if (!organizationId) return;
     
     setLoading(true);
     try {
-      const invoicesRef = collection(db, 'tenants', tenantId, 'invoices');
+      const invoicesRef = collection(db, 'tenants', organizationId, 'invoices');
       const q = query(invoicesRef);
       const querySnapshot = await getDocs(q);
       
@@ -101,7 +101,7 @@ export default function ReportsPage() {
     } finally {
       setLoading(false);
     }
-  }, [tenantId]);
+  }, [organizationId]);
 
   const calculateReportData = useCallback(() => {
     const startDate = new Date(dateRange.startDate);
@@ -147,10 +147,10 @@ export default function ReportsPage() {
   }, [invoices, dateRange]);
 
   useEffect(() => {
-    if (tenantId) {
+    if (organizationId) {
       fetchInvoices();
     }
-  }, [tenantId, fetchInvoices]);
+  }, [organizationId, fetchInvoices]);
 
   useEffect(() => {
     if (invoices.length > 0) {

@@ -2,22 +2,22 @@
 
 import { useEffect, useRef } from 'react';
 import QRCode from 'qrcode';
-import { Invoice, Tenant } from '@/types';
+import { Invoice, Organization } from '@/types';
 
 interface ZatcaQRProps {
   invoice: Invoice;
-  tenant: Tenant;
+  organization: Organization;
 }
 
-export default function ZatcaQR({ invoice, tenant }: ZatcaQRProps) {
+export default function ZatcaQR({ invoice, organization }: ZatcaQRProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     if (!canvasRef.current) return;
 
     // ZATCA QR code format (simplified)
-    const sellerName = tenant.name;
-    const vatNumber = tenant.vatNumber || '';
+    const sellerName = organization.name;
+    const vatNumber = organization.vatNumber || '';
     const invoiceDate = invoice.createdAt.toISOString().split('T')[0];
     const total = invoice.total.toFixed(2);
     const vatAmount = invoice.taxAmount.toFixed(2);
@@ -39,7 +39,7 @@ export default function ZatcaQR({ invoice, tenant }: ZatcaQRProps) {
         light: '#FFFFFF'
       }
     });
-  }, [invoice, tenant]);
+  }, [invoice, organization]);
 
   return <canvas ref={canvasRef} />;
 }

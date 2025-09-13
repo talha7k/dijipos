@@ -24,7 +24,7 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/lib/firebase';
 
 export default function CustomersPage() {
-  const { tenantId } = useAuth();
+  const { organizationId } = useAuth();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -41,10 +41,10 @@ export default function CustomersPage() {
   });
 
   useEffect(() => {
-    if (!tenantId) return;
+    if (!organizationId) return;
 
     // Fetch customers
-    const customersQ = query(collection(db, 'tenants', tenantId, 'customers'));
+    const customersQ = query(collection(db, 'tenants', organizationId, 'customers'));
     const customersUnsubscribe = onSnapshot(customersQ, (querySnapshot) => {
       const customersData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -59,7 +59,7 @@ export default function CustomersPage() {
     return () => {
       customersUnsubscribe();
     };
-  }, [tenantId]);
+  }, [organizationId]);
 
   const handleAddCustomer = () => {
     setEditingCustomer(null);
@@ -90,9 +90,9 @@ export default function CustomersPage() {
   };
 
   const handleDeleteCustomer = async (id: string) => {
-    if (!tenantId) return;
+    if (!organizationId) return;
     if (confirm('Are you sure you want to delete this customer?')) {
-      await deleteDoc(doc(db, 'tenants', tenantId, 'customers', id));
+      await deleteDoc(doc(db, 'tenants', organizationId, 'customers', id));
     }
   };
 
@@ -121,19 +121,19 @@ export default function CustomersPage() {
   };
 
   const handleSaveCustomer = async () => {
-    if (!tenantId) return;
+    if (!organizationId) return;
 
     if (editingCustomer) {
       // Update existing customer
-      await updateDoc(doc(db, 'tenants', tenantId, 'customers', editingCustomer.id), {
+      await updateDoc(doc(db, 'tenants', organizationId, 'customers', editingCustomer.id), {
         ...formData,
         updatedAt: new Date(),
       });
     } else {
       // Add new customer
-      await addDoc(collection(db, 'tenants', tenantId, 'customers'), {
+      await addDoc(collection(db, 'tenants', organizationId, 'customers'), {
         ...formData,
-        tenantId,
+        organizationId,
         createdAt: new Date(),
         updatedAt: new Date(),
       });

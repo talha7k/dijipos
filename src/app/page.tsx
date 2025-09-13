@@ -11,7 +11,7 @@ import { Suspense } from 'react';
 import { toast } from 'sonner';
 
 function HomeContent() {
-  const { user, loading, tenantId, emailVerified } = useAuth();
+  const { user, loading, organizationId, emailVerified } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -31,7 +31,7 @@ function HomeContent() {
       if (!oobCode || !mode) {
         // No action code, proceed with normal routing
         if (!loading) {
-          if (user && tenantId) {
+          if (user && organizationId) {
             if (emailVerified) {
               router.push('/dashboard');
             } else {
@@ -219,7 +219,7 @@ function HomeContent() {
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">DijiInvoice</CardTitle>
           <CardDescription>
-            Multi-tenant invoice management platform
+            Multi-organization invoice management platform
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

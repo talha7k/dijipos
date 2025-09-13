@@ -26,7 +26,7 @@ const amiri = Amiri({
 export const metadata: Metadata = {
   title: "DijiInvoice - Invoice Management SaaS",
   description:
-    "Multi-tenant invoice management platform with quotes, payments, and offline support",
+    "Multi-organization invoice management platform with quotes, payments, and offline support",
   manifest: "/manifest.json",
   keywords: ["nextjs", "next14", "pwa", "next-pwa"],
 };

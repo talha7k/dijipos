@@ -31,7 +31,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       <div className="flex h-screen bg-background">
         <CollapsibleSidebar />
         <main className={`flex-1 overflow-auto pt-16 md:pt-0 ${isCollapsed ? 'md:ml-16' : 'md:ml-64'}`}>
-          {/* Tenant Selector */}
+          {/* Organization Selector */}
           <div className="sticky top-0 z-10 bg-background border-b p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
