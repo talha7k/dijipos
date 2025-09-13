@@ -35,7 +35,14 @@ function SettingsContent() {
   const [newOrderType, setNewOrderType] = useState({ name: '', description: '' });
   const [newPaymentType, setNewPaymentType] = useState({ name: '', description: '' });
   const [newVatSettings, setNewVatSettings] = useState({ rate: 0, isEnabled: true });
-  const [newPrinterSettings, setNewPrinterSettings] = useState({ paperWidth: 58, fontSize: 'medium' as 'small' | 'medium' | 'large', autoCut: true });
+   const [newPrinterSettings, setNewPrinterSettings] = useState({
+     paperWidth: 58,
+     fontSize: 'medium' as 'small' | 'medium' | 'large',
+     autoCut: true,
+     printerType: 'epson' as 'epson' | 'star',
+     characterSet: 'korea',
+     baudRate: 9600
+   });
   const [newReceiptTemplate, setNewReceiptTemplate] = useState({ name: '', description: '', content: '', type: 'thermal' as 'thermal' | 'a4' });
 
   useEffect(() => {
@@ -110,6 +117,9 @@ function SettingsContent() {
           fontSize: 'medium',
           characterPerLine: 32, // Approximate for 58mm paper
           autoCut: true,
+          printerType: 'epson',
+          characterSet: 'korea',
+          baudRate: 9600,
           tenantId,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -552,14 +562,54 @@ function SettingsContent() {
                           <option value="large">Large</option>
                         </select>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <Switch
-                          id="auto-cut"
-                          checked={newPrinterSettings.autoCut}
-                          onCheckedChange={(checked) => setNewPrinterSettings({ ...newPrinterSettings, autoCut: checked })}
-                        />
-                        <Label htmlFor="auto-cut">Auto Cut (if supported)</Label>
-                      </div>
+                       <div className="flex items-center space-x-2">
+                         <Switch
+                           id="auto-cut"
+                           checked={newPrinterSettings.autoCut}
+                           onCheckedChange={(checked) => setNewPrinterSettings({ ...newPrinterSettings, autoCut: checked })}
+                         />
+                         <Label htmlFor="auto-cut">Auto Cut (if supported)</Label>
+                       </div>
+                       <div>
+                         <Label htmlFor="printer-type">Printer Type</Label>
+                         <select
+                           id="printer-type"
+                           className="w-full p-2 border rounded"
+                           value={newPrinterSettings.printerType}
+                           onChange={(e) => setNewPrinterSettings({ ...newPrinterSettings, printerType: e.target.value as 'epson' | 'star' })}
+                         >
+                           <option value="epson">Epson</option>
+                           <option value="star">Star</option>
+                         </select>
+                       </div>
+                       <div>
+                         <Label htmlFor="character-set">Character Set</Label>
+                         <select
+                           id="character-set"
+                           className="w-full p-2 border rounded"
+                           value={newPrinterSettings.characterSet}
+                           onChange={(e) => setNewPrinterSettings({ ...newPrinterSettings, characterSet: e.target.value })}
+                         >
+                           <option value="korea">Korea</option>
+                           <option value="japan">Japan</option>
+                           <option value="multilingual">Multilingual</option>
+                           <option value="usa">USA</option>
+                         </select>
+                       </div>
+                       <div>
+                         <Label htmlFor="baud-rate">Baud Rate</Label>
+                         <select
+                           id="baud-rate"
+                           className="w-full p-2 border rounded"
+                           value={newPrinterSettings.baudRate}
+                           onChange={(e) => setNewPrinterSettings({ ...newPrinterSettings, baudRate: parseInt(e.target.value) })}
+                         >
+                           <option value={9600}>9600</option>
+                           <option value={19200}>19200</option>
+                           <option value={38400}>38400</option>
+                           <option value={115200}>115200</option>
+                         </select>
+                       </div>
                       <Button onClick={handleUpdatePrinterSettings} className="w-full">
                         Update Settings
                       </Button>
@@ -583,12 +633,24 @@ function SettingsContent() {
                     <span>Characters per Line:</span>
                     <span className="font-medium">{printerSettings.characterPerLine}</span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span>Auto Cut:</span>
-                    <Badge variant={printerSettings.autoCut ? "default" : "secondary"}>
-                      {printerSettings.autoCut ? "Enabled" : "Disabled"}
-                    </Badge>
-                  </div>
+                   <div className="flex items-center justify-between">
+                     <span>Auto Cut:</span>
+                     <Badge variant={printerSettings.autoCut ? "default" : "secondary"}>
+                       {printerSettings.autoCut ? "Enabled" : "Disabled"}
+                     </Badge>
+                   </div>
+                   <div className="flex items-center justify-between">
+                     <span>Printer Type:</span>
+                     <span className="font-medium">{printerSettings.printerType || 'epson'}</span>
+                   </div>
+                   <div className="flex items-center justify-between">
+                     <span>Character Set:</span>
+                     <span className="font-medium">{printerSettings.characterSet || 'korea'}</span>
+                   </div>
+                   <div className="flex items-center justify-between">
+                     <span>Baud Rate:</span>
+                     <span className="font-medium">{printerSettings.baudRate || 9600}</span>
+                   </div>
                 </div>
               ) : (
                 <p className="text-muted-foreground">Printer settings not configured.</p>

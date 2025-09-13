@@ -5,8 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { Printer, FileText, Download } from 'lucide-react';
+import { Printer, Download } from 'lucide-react';
 import { Order, ReceiptTemplate, PrinterSettings, Tenant } from '@/types';
+import thermalPrinter from '@/lib/thermal-printer';
 
 interface ReceiptPrintDialogProps {
   order: Order;
@@ -43,8 +44,31 @@ export function ReceiptPrintDialog({
     setIsGenerating(true);
     
     try {
-      // Prepare template data
-      const templateData = {
+      if (template.type === 'thermal') {
+        try {
+          // Update printer config if settings are available
+          if (printerSettings) {
+            thermalPrinter.updateConfig({
+              type: printerSettings.printerType,
+              width: printerSettings.characterPerLine,
+              characterSet: printerSettings.characterSet,
+              baudRate: printerSettings.baudRate,
+            });
+          }
+
+          // Print the receipt using the service
+          await thermalPrinter.printReceipt({ order, tenant });
+          setIsGenerating(false);
+          setOpen(false);
+          alert('Receipt printed successfully!');
+        } catch (error) {
+          console.error('Printing failed:', error);
+          setIsGenerating(false);
+          alert(error instanceof Error ? error.message : 'Failed to print receipt. Please check printer connection.');
+        }
+      } else {
+        // Prepare template data for A4 templates
+        const templateData = {
         companyName: tenant?.name || '',
         companyAddress: tenant?.address || '',
         companyPhone: tenant?.phone || '',
@@ -100,9 +124,10 @@ export function ReceiptPrintDialog({
           setIsGenerating(false);
           setOpen(false);
         };
-      } else {
-        setIsGenerating(false);
-        alert('Please allow popups to print receipts');
+        } else {
+          setIsGenerating(false);
+          alert('Please allow popups to print receipts');
+        }
       }
     } catch (error) {
       console.error('Error generating receipt:', error);

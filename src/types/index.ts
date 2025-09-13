@@ -283,6 +283,10 @@ export interface PrinterSettings {
   fontSize: 'small' | 'medium' | 'large';
   characterPerLine: number; // Characters per line based on paper width
   autoCut: boolean;
+  // Thermal printer specific settings
+  printerType?: 'epson' | 'star'; // Thermal printer type
+  characterSet?: string; // Character set (e.g., 'korea', 'japan', 'multilingual')
+  baudRate?: number; // Serial baud rate (default: 9600)
   tenantId: string;
   createdAt: Date;
   updatedAt: Date;
