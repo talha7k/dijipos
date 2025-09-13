@@ -17,7 +17,7 @@ interface OrganizationSelectorProps {
 }
 
 export function OrganizationSelector({ children }: OrganizationSelectorProps) {
-  const { user, organizationId, userOrganizations, currentOrganization, selectOrganization } = useAuth();
+  const { user, organizationId, userOrganizations, currentOrganization, selectOrganization, refreshUserOrganizations } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [showJoinForm, setShowJoinForm] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -85,6 +85,9 @@ export function OrganizationSelector({ children }: OrganizationSelectorProps) {
         usedAt: serverTimestamp(),
       });
       
+      // Refresh user organizations to include the new one
+      await refreshUserOrganizations();
+      
       // Switch to the new organization
       await selectOrganization(invitationCode.organizationId);
       
@@ -122,6 +125,9 @@ export function OrganizationSelector({ children }: OrganizationSelectorProps) {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
+      
+      // Refresh user organizations to include the new one
+      await refreshUserOrganizations();
       
       // Switch to the new organization
       await selectOrganization(organizationRef.id);

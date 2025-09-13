@@ -2,8 +2,9 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
 import { User as AppUser, OrganizationUser, Organization } from '@/types';
+import { collection, query, where, getDocs, doc, getDoc, onSnapshot } from 'firebase/firestore';
 
 interface AuthContextType {
   user: User | null;
@@ -15,6 +16,7 @@ interface AuthContextType {
   error: string | null;
   emailVerified: boolean;
   selectOrganization: (organizationId: string) => Promise<void>;
+  refreshUserOrganizations: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -27,6 +29,7 @@ const AuthContext = createContext<AuthContextType>({
   error: null,
   emailVerified: false,
   selectOrganization: async () => {},
+  refreshUserOrganizations: async () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -41,20 +44,51 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [error, setError] = useState<string | null>(null);
   const [emailVerified, setEmailVerified] = useState(false);
 
+  const refreshUserOrganizations = async () => {
+    if (!user) return;
+    
+    try {
+      const organizationUsersQuery = query(
+        collection(db, 'organizationUsers'),
+        where('userId', '==', user.uid),
+        where('isActive', '==', true)
+      );
+      const organizationUsersSnapshot = await getDocs(organizationUsersQuery);
+      const organizationAssociations = organizationUsersSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate(),
+        updatedAt: doc.data().updatedAt?.toDate(),
+      })) as OrganizationUser[];
+      
+      setUserOrganizations(organizationAssociations);
+    } catch (error) {
+      console.error('Error refreshing user organizations:', error);
+    }
+  };
+
   const selectOrganization = async (selectedOrganizationId: string) => {
     if (!user) return;
     
     try {
+      // Refresh organizations first to ensure we have the latest data
+      await refreshUserOrganizations();
+      
       // Find the organization user association
       const organizationAssociation = userOrganizations.find(ou => ou.organizationId === selectedOrganizationId);
       if (organizationAssociation) {
         setOrganizationUser(organizationAssociation);
         setOrganizationId(selectedOrganizationId);
         
-        // Fetch organization details
-        const response = await fetch(`/api/organizations/${selectedOrganizationId}`);
-        if (response.ok) {
-          const organizationData = await response.json();
+        // Fetch organization details from Firebase
+        const organizationDoc = await getDoc(doc(db, 'organizations', selectedOrganizationId));
+        if (organizationDoc.exists()) {
+          const organizationData = {
+            id: organizationDoc.id,
+            ...organizationDoc.data(),
+            createdAt: organizationDoc.data()?.createdAt?.toDate(),
+            updatedAt: organizationDoc.data()?.updatedAt?.toDate(),
+          } as Organization;
           setCurrentOrganization(organizationData);
         }
       }
@@ -74,16 +108,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (user) {
           setEmailVerified(user.emailVerified || false);
           
-          // Fetch user's organization associations
-          const response = await fetch(`/api/user-organizations/${user.uid}`);
-          if (response.ok) {
-            const organizationAssociations = await response.json();
-            setUserOrganizations(organizationAssociations);
-            
-            // Auto-select first organization if available
-            if (organizationAssociations.length > 0 && !organizationId) {
-              await selectOrganization(organizationAssociations[0].organizationId);
-            }
+          // Fetch user's organization associations from Firebase
+          const organizationUsersQuery = query(
+            collection(db, 'organizationUsers'),
+            where('userId', '==', user.uid),
+            where('isActive', '==', true)
+          );
+          const organizationUsersSnapshot = await getDocs(organizationUsersQuery);
+          const organizationAssociations = organizationUsersSnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+            createdAt: doc.data().createdAt?.toDate(),
+            updatedAt: doc.data().updatedAt?.toDate(),
+          })) as OrganizationUser[];
+          
+          setUserOrganizations(organizationAssociations);
+          
+          // Auto-select first organization if available
+          if (organizationAssociations.length > 0 && !organizationId) {
+            await selectOrganization(organizationAssociations[0].organizationId);
           }
         } else {
           setOrganizationId(null);
@@ -104,7 +147,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, organizationUser, currentOrganization, userOrganizations, loading, organizationId, error, emailVerified, selectOrganization }}>
+    <AuthContext.Provider value={{ user, organizationUser, currentOrganization, userOrganizations, loading, organizationId, error, emailVerified, selectOrganization, refreshUserOrganizations }}>
       {children}
     </AuthContext.Provider>
   );
