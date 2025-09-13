@@ -228,7 +228,7 @@ export interface OrderItem {
 
 export interface Order {
   id: string;
-  tenantId: string;
+  organizationId: string;
   orderNumber: string;
   items: OrderItem[];
   subtotal: number;
@@ -251,7 +251,7 @@ export interface Order {
 
 export interface OrderPayment {
   id: string;
-  tenantId: string;
+  organizationId: string;
   orderId: string;
   amount: number;
   paymentMethod: string; // cash, card, online, etc.
@@ -334,17 +334,17 @@ export interface User {
   updatedAt: Date;
 }
 
-export interface TenantUser {
+export interface OrganizationUser {
   id: string;
   userId: string;
-  tenantId: string;
+  organizationId: string;
   role: 'admin' | 'manager' | 'waiter' | 'cashier';
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
 
-export interface Tenant {
+export interface Organization {
   id: string;
   name: string;
   nameAr?: string; // Arabic company name

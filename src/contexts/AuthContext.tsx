@@ -3,64 +3,64 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import { User as AppUser, TenantUser, Tenant } from '@/types';
+import { User as AppUser, OrganizationUser, Organization } from '@/types';
 
 interface AuthContextType {
   user: User | null;
-  tenantUser: TenantUser | null;
-  currentTenant: Tenant | null;
-  userTenants: TenantUser[];
+  organizationUser: OrganizationUser | null;
+  currentOrganization: Organization | null;
+  userOrganizations: OrganizationUser[];
   loading: boolean;
-  tenantId: string | null;
+  organizationId: string | null;
   error: string | null;
   emailVerified: boolean;
-  selectTenant: (tenantId: string) => Promise<void>;
+  selectOrganization: (organizationId: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
-  tenantUser: null,
-  currentTenant: null,
-  userTenants: [],
+  organizationUser: null,
+  currentOrganization: null,
+  userOrganizations: [],
   loading: true,
-  tenantId: null,
+  organizationId: null,
   error: null,
   emailVerified: false,
-  selectTenant: async () => {},
+  selectOrganization: async () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [tenantUser, setTenantUser] = useState<TenantUser | null>(null);
-  const [currentTenant, setCurrentTenant] = useState<Tenant | null>(null);
-  const [userTenants, setUserTenants] = useState<TenantUser[]>([]);
+  const [organizationUser, setOrganizationUser] = useState<OrganizationUser | null>(null);
+  const [currentOrganization, setCurrentOrganization] = useState<Organization | null>(null);
+  const [userOrganizations, setUserOrganizations] = useState<OrganizationUser[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tenantId, setTenantId] = useState<string | null>(null);
+  const [organizationId, setOrganizationId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [emailVerified, setEmailVerified] = useState(false);
 
-  const selectTenant = async (selectedTenantId: string) => {
+  const selectOrganization = async (selectedOrganizationId: string) => {
     if (!user) return;
     
     try {
-      // Find the tenant user association
-      const tenantAssociation = userTenants.find(tu => tu.tenantId === selectedTenantId);
-      if (tenantAssociation) {
-        setTenantUser(tenantAssociation);
-        setTenantId(selectedTenantId);
+      // Find the organization user association
+      const organizationAssociation = userOrganizations.find(ou => ou.organizationId === selectedOrganizationId);
+      if (organizationAssociation) {
+        setOrganizationUser(organizationAssociation);
+        setOrganizationId(selectedOrganizationId);
         
-        // Fetch tenant details
-        const response = await fetch(`/api/tenants/${selectedTenantId}`);
+        // Fetch organization details
+        const response = await fetch(`/api/organizations/${selectedOrganizationId}`);
         if (response.ok) {
-          const tenantData = await response.json();
-          setCurrentTenant(tenantData);
+          const organizationData = await response.json();
+          setCurrentOrganization(organizationData);
         }
       }
     } catch (error) {
-      console.error('Error selecting tenant:', error);
-      setError('Failed to switch tenant');
+      console.error('Error selecting organization:', error);
+      setError('Failed to switch organization');
     }
   };
 
@@ -74,22 +74,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (user) {
           setEmailVerified(user.emailVerified || false);
           
-          // Fetch user's tenant associations
-          const response = await fetch(`/api/user-tenants/${user.uid}`);
+          // Fetch user's organization associations
+          const response = await fetch(`/api/user-organizations/${user.uid}`);
           if (response.ok) {
-            const tenantAssociations = await response.json();
-            setUserTenants(tenantAssociations);
+            const organizationAssociations = await response.json();
+            setUserOrganizations(organizationAssociations);
             
-            // Auto-select first tenant if available
-            if (tenantAssociations.length > 0 && !tenantId) {
-              await selectTenant(tenantAssociations[0].tenantId);
+            // Auto-select first organization if available
+            if (organizationAssociations.length > 0 && !organizationId) {
+              await selectOrganization(organizationAssociations[0].organizationId);
             }
           }
         } else {
-          setTenantId(null);
-          setTenantUser(null);
-          setCurrentTenant(null);
-          setUserTenants([]);
+          setOrganizationId(null);
+          setOrganizationUser(null);
+          setCurrentOrganization(null);
+          setUserOrganizations([]);
           setEmailVerified(false);
         }
       } catch (err) {
@@ -104,7 +104,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, tenantUser, currentTenant, userTenants, loading, tenantId, error, emailVerified, selectTenant }}>
+    <AuthContext.Provider value={{ user, organizationUser, currentOrganization, userOrganizations, loading, organizationId, error, emailVerified, selectOrganization }}>
       {children}
     </AuthContext.Provider>
   );

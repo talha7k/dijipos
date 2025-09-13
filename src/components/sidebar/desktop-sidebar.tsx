@@ -7,6 +7,7 @@ import { SidebarNavSection } from "./sidebar-nav-section";
 import { SidebarNavItem } from "./sidebar-nav-item";
 import { SidebarUserProfile } from "./sidebar-user-profile";
 import { SidebarProps, NavigationItem } from "./sidebar-types";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   BarChart3,
   Building2,
@@ -19,90 +20,122 @@ import {
   Wallet,
 } from "lucide-react";
 
-const navigationItems: NavigationItem[] = [
-  {
-    title: "Dashboard",
-    href: "/dashboard",
-    icon: Home,
-  },
-  {
-    title: "Point of Sale",
-    href: "/pos",
-    icon: Receipt,
-  },
-  {
-    title: "Sales",
-    icon: Receipt,
-    children: [
-      {
-        title: "Orders",
-        href: "/orders",
-        icon: Receipt,
-      },
-      {
-        title: "Invoices",
-        href: "/invoices",
-        icon: Receipt,
-      },
-      {
-        title: "Quotes",
-        href: "/quotes",
-        icon: FileText,
-      },
-      {
-        title: "Payments",
-        href: "/payments",
-        icon: Wallet,
-      },
-      {
-        title: "Products & Services",
-        href: "/products-services",
-        icon: BarChart3,
-      },
-      {
-        title: "Customers",
-        href: "/customers",
-        icon: Users,
-      },
-    ],
-  },
-  {
-    title: "Purchases",
-    icon: Receipt,
-    children: [
-      {
-        title: "Invoices",
-        href: "/purchase-invoices",
-        icon: Receipt,
-      },
-      {
-        title: "Products & Services",
-        href: "/purchase-products-services",
-        icon: BarChart3,
-      },
-      {
-        title: "Suppliers",
-        href: "/suppliers",
-        icon: Users,
-      },
-    ],
-  },
-  {
-    title: "Reports",
-    href: "/reports",
-    icon: PieChart,
-  },
-  {
-    title: "Company",
-    href: "/company",
-    icon: Building2,
-  },
-  {
-    title: "Settings",
-    href: "/settings",
-    icon: Settings,
-  },
-];
+const getNavigationItems = (role: string): NavigationItem[] => {
+  const baseItems: NavigationItem[] = [
+    {
+      title: "Dashboard",
+      href: "/dashboard",
+      icon: Home,
+    },
+    {
+      title: "Point of Sale",
+      href: "/pos",
+      icon: Receipt,
+    },
+  ];
+
+  const salesItems: NavigationItem[] = [
+    {
+      title: "Sales",
+      icon: Receipt,
+      children: [
+        {
+          title: "Orders",
+          href: "/orders",
+          icon: Receipt,
+        },
+        {
+          title: "Invoices",
+          href: "/invoices",
+          icon: Receipt,
+        },
+        {
+          title: "Quotes",
+          href: "/quotes",
+          icon: FileText,
+        },
+        {
+          title: "Payments",
+          href: "/payments",
+          icon: Wallet,
+        },
+        {
+          title: "Products & Services",
+          href: "/products-services",
+          icon: BarChart3,
+        },
+        {
+          title: "Customers",
+          href: "/customers",
+          icon: Users,
+        },
+      ],
+    },
+  ];
+
+  const purchaseItems: NavigationItem[] = [
+    {
+      title: "Purchases",
+      icon: Receipt,
+      children: [
+        {
+          title: "Invoices",
+          href: "/purchase-invoices",
+          icon: Receipt,
+        },
+        {
+          title: "Products & Services",
+          href: "/purchase-products-services",
+          icon: BarChart3,
+        },
+        {
+          title: "Suppliers",
+          href: "/suppliers",
+          icon: Users,
+        },
+      ],
+    },
+  ];
+
+  const adminItems: NavigationItem[] = [
+    {
+      title: "Reports",
+      href: "/reports",
+      icon: PieChart,
+    },
+    {
+      title: "Company",
+      href: "/company",
+      icon: Building2,
+    },
+    {
+      title: "Settings",
+      href: "/settings",
+      icon: Settings,
+    },
+  ];
+
+  const managerItems: NavigationItem[] = [
+    {
+      title: "Reports",
+      href: "/reports",
+      icon: PieChart,
+    },
+  ];
+
+  switch (role) {
+    case 'admin':
+      return [...baseItems, ...salesItems, ...purchaseItems, ...adminItems];
+    case 'manager':
+      return [...baseItems, ...salesItems, ...purchaseItems, ...managerItems];
+    case 'cashier':
+      return [...baseItems, ...salesItems];
+    case 'waiter':
+      return [...baseItems, ...salesItems];
+    default:
+      return baseItems;
+  }
+};
 
 export function DesktopSidebar({
   className,
@@ -117,6 +150,8 @@ export function DesktopSidebar({
   onExpandSidebar,
   openSections = {},
 }: SidebarProps) {
+  const { organizationUser } = useAuth();
+  const navigationItems = getNavigationItems(organizationUser?.role || 'waiter');
   return (
     <div
       className={cn(
