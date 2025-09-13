@@ -17,6 +17,7 @@ import { POSOrderGrid } from '@/components/POSOrderGrid';
 import { POSPaymentGrid } from '@/components/POSPaymentGrid';
 import { OrderTypeSelectionDialog } from '@/components/OrderTypeSelectionDialog';
 import { ReceiptPrintDialog } from '@/components/ReceiptPrintDialog';
+import { CartItemModal } from '@/components/CartItemModal';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -349,6 +350,18 @@ export default function POSPage() {
     setSelectedOrderType(orderType);
   };
 
+  const handleTableDeselect = () => {
+    setSelectedTable(null);
+  };
+
+  const handleCustomerDeselect = () => {
+    setSelectedCustomer(null);
+  };
+
+  const handleOrderTypeDeselect = () => {
+    setSelectedOrderType(null);
+  };
+
   const handleOrderReopen = (order: Order) => {
     // Check if there are items in the current cart
     if (cart.length > 0) {
@@ -397,10 +410,37 @@ export default function POSPage() {
 
   const handleClearCart = () => {
     if (cart.length === 0) return;
-    
+
     if (confirm('Are you sure you want to clear the cart? This action cannot be undone.')) {
       setCart([]);
     }
+  };
+
+  // Cart item operation handlers
+  const [selectedCartItem, setSelectedCartItem] = useState<CartItem | null>(null);
+  const [showQuantityModal, setShowQuantityModal] = useState(false);
+
+  const handleCartItemClick = (item: CartItem) => {
+    setSelectedCartItem(item);
+    setShowQuantityModal(true);
+  };
+
+  const handleQuantityUpdate = (newQuantity: number) => {
+    if (!selectedCartItem || newQuantity <= 0) return;
+
+    setCart(cart.map(cartItem =>
+      cartItem.id === selectedCartItem.id && cartItem.type === selectedCartItem.type
+        ? { ...cartItem, quantity: newQuantity, total: newQuantity * cartItem.price }
+        : cartItem
+    ));
+
+    setSelectedCartItem(null);
+    setShowQuantityModal(false);
+  };
+
+  const handleQuantityModalClose = () => {
+    setSelectedCartItem(null);
+    setShowQuantityModal(false);
   };
 
   const handlePaymentClick = (order: Order) => {
@@ -516,6 +556,8 @@ export default function POSPage() {
       {/* Content Area - takes remaining space */}
       <div className="flex flex-col flex-1 min-w-0">
         <POSHeader
+          cart={cart}
+          cartTotal={cartTotal}
           selectedTable={selectedTable}
           selectedCustomer={selectedCustomer}
           orderTypes={orderTypes}
@@ -524,6 +566,8 @@ export default function POSPage() {
           onCustomerSelect={handleCustomerSelect}
           onOrdersClick={handleOrdersClick}
           onOrderTypeSelect={handleOrderTypeSelect}
+          onTableDeselect={handleTableDeselect}
+          onCustomerDeselect={handleCustomerDeselect}
         />
 
       {/* Main Content */}
@@ -616,6 +660,8 @@ export default function POSPage() {
                 };
                 setSelectedOrder(tempOrder);
               }}
+              onClearCart={handleClearCart}
+              onItemClick={handleCartItemClick}
             />
           </>
         )}
@@ -632,6 +678,7 @@ export default function POSPage() {
               cartTotal={cartTotal}
               onCheckout={() => {}}
               onSaveOrder={handleSaveOrder}
+              onItemClick={handleCartItemClick}
             />
           </div>
         )}
@@ -648,6 +695,7 @@ export default function POSPage() {
               cartTotal={cartTotal}
               onCheckout={() => {}}
               onSaveOrder={handleSaveOrder}
+              onItemClick={handleCartItemClick}
             />
           </div>
         )}
@@ -665,6 +713,7 @@ export default function POSPage() {
               cartTotal={cartTotal}
               onCheckout={() => {}}
               onSaveOrder={handleSaveOrder}
+              onItemClick={handleCartItemClick}
             />
           </div>
         )}
@@ -682,6 +731,7 @@ export default function POSPage() {
               cartTotal={cartTotal}
               onCheckout={() => {}}
               onSaveOrder={handleSaveOrder}
+              onItemClick={handleCartItemClick}
             />
           </div>
         )}
@@ -718,8 +768,23 @@ export default function POSPage() {
         >
           <Button className="hidden" />
         </ReceiptPrintDialog>
-)}
-      </div>
-     </div>
+      )}
+
+      {/* Cart Item Modal for quantity management */}
+      <CartItemModal
+        item={selectedCartItem}
+        isOpen={showQuantityModal}
+        onClose={handleQuantityModalClose}
+        onUpdateQuantity={(itemId, newQuantity) => handleQuantityUpdate(newQuantity)}
+        onDeleteItem={(itemId) => {
+          if (selectedCartItem) {
+            setCart(cart.filter(cartItem =>
+              !(cartItem.id === selectedCartItem.id && cartItem.type === selectedCartItem.type)
+            ));
+          }
+        }}
+      />
+    </div>
+  </div>
    );
 }

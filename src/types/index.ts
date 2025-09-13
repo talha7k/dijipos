@@ -9,12 +9,20 @@ export interface Category {
   updatedAt: Date;
 }
 
+export interface ProductVariation {
+  id: string;
+  name: string;
+  price: number;
+  description?: string;
+}
+
 export interface Product {
   id: string;
   name: string;
   description?: string;
   price: number;
   categoryId?: string; // Reference to Category ID
+  variations?: ProductVariation[]; // Optional variations
   tenantId: string;
   createdAt: Date;
   updatedAt: Date;

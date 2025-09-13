@@ -18,9 +18,18 @@ interface POSCartSidebarProps {
   onSaveOrder?: () => void;
   onPrintReceipt?: () => void;
   onClearCart?: () => void;
+  onItemClick?: (item: CartItem) => void;
 }
 
-export function POSCartSidebar({ cart, cartTotal, onCheckout, onSaveOrder, onPrintReceipt, onClearCart }: POSCartSidebarProps) {
+export function POSCartSidebar({
+  cart,
+  cartTotal,
+  onCheckout,
+  onSaveOrder,
+  onPrintReceipt,
+  onClearCart,
+  onItemClick
+}: POSCartSidebarProps) {
   return (
     <div className="w-80 bg-card border-l flex flex-col h-full">
 
@@ -33,7 +42,11 @@ export function POSCartSidebar({ cart, cartTotal, onCheckout, onSaveOrder, onPri
         ) : (
           <div className="space-y-3">
             {cart.map((item) => (
-              <POSCartItem key={`${item.type}-${item.id}`} item={item} />
+              <POSCartItem
+                key={`${item.type}-${item.id}`}
+                item={item}
+                onClick={onItemClick ? () => onItemClick(item) : undefined}
+              />
             ))}
           </div>
         )}

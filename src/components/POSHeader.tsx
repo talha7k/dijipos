@@ -1,4 +1,3 @@
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, Customer, OrderType } from '@/types';
 import { Users, LayoutGrid, FileText, ShoppingBag } from 'lucide-react';
@@ -14,12 +13,16 @@ interface CartItem {
 }
 
 interface POSHeaderProps {
+  cart: CartItem[];
+  cartTotal: number;
   selectedTable?: Table | null;
   selectedCustomer?: Customer | null;
   orderTypes: OrderType[];
   selectedOrderType: OrderType | null;
   onTableSelect: () => void;
+  onTableDeselect: () => void;
   onCustomerSelect: () => void;
+  onCustomerDeselect: () => void;
   onOrdersClick: () => void;
   onOrderTypeSelect: (orderType: OrderType) => void;
 }
@@ -30,9 +33,12 @@ export function POSHeader({
   orderTypes,
   selectedOrderType,
   onTableSelect,
+  onTableDeselect,
   onCustomerSelect,
+  onCustomerDeselect,
   onOrdersClick,
-  onOrderTypeSelect
+  onOrderTypeSelect,
+  onOrderTypeDeselect
 }: POSHeaderProps) {
   return (
     <div className="bg-card shadow p-4 border-b">
@@ -45,11 +51,12 @@ export function POSHeader({
               variant={selectedTable ? "default" : "outline"}
               size="sm"
               onClick={onTableSelect}
+              onDoubleClick={onTableDeselect}
               className={`flex items-center space-x-2 ${selectedTable ? 'bg-green-600 hover:bg-green-700 text-white' : ''}`}
             >
               <LayoutGrid className="h-4 w-4" />
               <span>
-                {selectedTable ? selectedTable.name : 'Select Table'}
+                {selectedTable ? selectedTable.name : 'Table'}
               </span>
             </Button>
           </div>
@@ -60,11 +67,12 @@ export function POSHeader({
               variant={selectedCustomer ? "default" : "outline"}
               size="sm"
               onClick={onCustomerSelect}
+              onDoubleClick={onCustomerDeselect}
               className={`flex items-center space-x-2 ${selectedCustomer ? 'bg-green-600 hover:bg-green-700 text-white' : ''}`}
             >
               <Users className="h-4 w-4" />
               <span>
-                {selectedCustomer ? selectedCustomer.name : 'Select Customer'}
+                {selectedCustomer ? selectedCustomer.name : 'Customer'}
               </span>
             </Button>
           </div>
@@ -79,6 +87,7 @@ export function POSHeader({
               <Button
                 variant={selectedOrderType ? "default" : "outline"}
                 size="sm"
+                onDoubleClick={onOrderTypeDeselect}
                 className={`flex items-center space-x-2 ${selectedOrderType ? 'bg-green-600 hover:bg-green-700 text-white' : ''}`}
               >
                 <ShoppingBag className="h-4 w-4" />
