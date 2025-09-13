@@ -20,6 +20,7 @@ import { ServiceList } from '@/components/ServiceList';
 import { AddProductDialog } from '@/components/AddProductDialog';
 import { AddServiceDialog } from '@/components/AddServiceDialog';
 import { AddCategoryDialog } from '@/components/AddCategoryDialog';
+import { toast } from 'sonner';
 
 function ProductsContent() {
   const { organizationId } = useAuth();

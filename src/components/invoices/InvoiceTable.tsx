@@ -4,22 +4,24 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Invoice } from '@/types';
-import { Receipt } from 'lucide-react';
+import { Receipt, MoreHorizontal } from 'lucide-react';
 
 interface InvoiceTableProps {
   invoices: Invoice[];
   onInvoiceClick: (invoice: Invoice) => void;
   onPrintPreview: (invoice: Invoice) => void;
+  onActionsClick: (invoice: Invoice) => void;
   onStatusChange: (invoiceId: string, status: Invoice['status']) => void;
   updatingStatus: string | null;
 }
 
-export function InvoiceTable({ 
-  invoices, 
-  onInvoiceClick, 
-  onPrintPreview, 
-  onStatusChange, 
-  updatingStatus 
+export function InvoiceTable({
+  invoices,
+  onInvoiceClick,
+  onPrintPreview,
+  onActionsClick,
+  onStatusChange,
+  updatingStatus
 }: InvoiceTableProps) {
   return (
     <Table>
@@ -54,18 +56,29 @@ export function InvoiceTable({
               </Badge>
             </TableCell>
             <TableCell>{invoice.dueDate?.toLocaleDateString()}</TableCell>
-             <TableCell onClick={(e) => e.stopPropagation()}>
-               <div className="flex items-center gap-2">
-                 <Button
-                   variant="outline"
-                   size="sm"
-                   onClick={(e) => {
-                     e.stopPropagation();
-                     onPrintPreview(invoice);
-                   }}
-                 >
-                   Print Preview
-                 </Button>
+              <TableCell onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onActionsClick(invoice);
+                    }}
+                  >
+                    <MoreHorizontal className="h-4 w-4 mr-1" />
+                    Actions
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onPrintPreview(invoice);
+                    }}
+                  >
+                    Print Preview
+                  </Button>
                  {invoice.status === 'draft' && (
                    <Button
                      variant="outline"

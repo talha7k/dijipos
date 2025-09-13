@@ -311,8 +311,11 @@ const generateQuotes = (count: number, customers: Omit<Customer, 'organizationId
     });
 };
 
-const generateInvoices = (count: number, customers: Omit<Customer, 'organizationId'>[], suppliers: Omit<Supplier, 'organizationId'>[], products: Omit<Product, 'organizationId'>[], services: Omit<Service, 'organizationId'>[]): Omit<Invoice, 'organizationId'>[] => {
-    return Array.from({ length: count }, () => {
+const generateInvoices = (count: number, customers: Omit<Customer, 'organizationId'>[], suppliers: Omit<Supplier, 'organizationId'>[], products: Omit<Product, 'organizationId'>[], services: Omit<Service, 'organizationId'>[]): { invoices: Omit<Invoice, 'organizationId'>[], payments: Payment[] } => {
+    const allInvoices: Omit<Invoice, 'organizationId'>[] = [];
+    const allPayments: Payment[] = [];
+
+    Array.from({ length: count }, () => {
         const items = generateItems(products, services);
         const subtotal = items.reduce((sum, item) => sum + item.total, 0);
         const taxRate = 15;
@@ -321,7 +324,7 @@ const generateInvoices = (count: number, customers: Omit<Customer, 'organization
         const status = getRandomElement<'sent' | 'paid' | 'overdue'>(['sent', 'paid', 'overdue']);
 
         const invoiceId = generateId('inv');
-        
+
         // Generate payments based on invoice status
         const payments: Payment[] = [];
         if (status === 'paid') {
@@ -331,7 +334,7 @@ const generateInvoices = (count: number, customers: Omit<Customer, 'organization
                 const isLastPayment = p === paymentCount - 1;
                 const paymentAmount = isLastPayment ? remainingTotal : getRandomFloat(0.3, 0.7, 2) * remainingTotal;
                 remainingTotal -= paymentAmount;
-                payments.push({
+                const payment = {
                     id: generateId('pay'),
                     invoiceId: invoiceId,
                     organizationId: 'temp-org-id', // Will be replaced with actual orgId
@@ -340,10 +343,12 @@ const generateInvoices = (count: number, customers: Omit<Customer, 'organization
                     paymentMethod: getRandomElement(['Bank Transfer', 'Credit Card', 'Cash']),
                     notes: '',
                     createdAt: new Date(),
-                });
+                };
+                payments.push(payment);
+                allPayments.push(payment);
             }
         } else if (status === 'sent' && Math.random() > 0.6) { // 40% chance of a partial payment on a sent invoice
-            payments.push({
+            const payment = {
                 id: generateId('pay'),
                 invoiceId: invoiceId,
                 organizationId: 'temp-org-id', // Will be replaced with actual orgId
@@ -352,9 +357,11 @@ const generateInvoices = (count: number, customers: Omit<Customer, 'organization
                 paymentMethod: 'Bank Transfer',
                 notes: 'Initial deposit.',
                 createdAt: new Date(),
-            });
+            };
+            payments.push(payment);
+            allPayments.push(payment);
         }
-        
+
         const baseInvoice = {
             id: invoiceId,
             items,
@@ -363,7 +370,6 @@ const generateInvoices = (count: number, customers: Omit<Customer, 'organization
             taxAmount,
             total,
             status,
-            payments,
             createdAt: new Date(),
             updatedAt: new Date(),
             dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
@@ -381,7 +387,7 @@ const generateInvoices = (count: number, customers: Omit<Customer, 'organization
                 template: 'english',
                 includeQR: true,
             };
-            return invoice;
+            allInvoices.push(invoice);
         } else {
             const supplier = getRandomElement(suppliers);
             const invoice: Omit<Invoice, 'organizationId'> = {
@@ -394,9 +400,11 @@ const generateInvoices = (count: number, customers: Omit<Customer, 'organization
                 template: 'english',
                 includeQR: true,
             };
-            return invoice;
+            allInvoices.push(invoice);
         }
     });
+
+    return { invoices: allInvoices, payments: allPayments };
 };
 
 
@@ -426,7 +434,7 @@ export async function generateSampleData(organizationId: string) {
 
     // 2. Generate dependent data
     const quotes = generateQuotes(COUNTS.QUOTES, customers, products, services);
-    const invoices = generateInvoices(COUNTS.INVOICES, customers, suppliers, products, services);
+    const { invoices, payments } = generateInvoices(COUNTS.INVOICES, customers, suppliers, products, services);
     const { orders, orderPayments } = generateOrders(COUNTS.ORDERS, customers, products, services);
     
     // 3. Prepare data for batch write
@@ -439,6 +447,7 @@ export async function generateSampleData(organizationId: string) {
         suppliers,
         quotes,
         invoices,
+        payments,
         orders,
         orderPayments
     };
@@ -454,8 +463,8 @@ export async function generateSampleData(organizationId: string) {
             } else if (name === 'categories') {
                 // Categories already have timestamps, just add orgId
                 batch.set(docRef, { ...item, organizationId });
-            } else if (name === 'orderPayments') {
-                // OrderPayments already have organizationId set
+            } else if (name === 'payments' || name === 'orderPayments') {
+                // Payments already have organizationId set
                 batch.set(docRef, item);
             } else {
                 // Other collections just need organizationId

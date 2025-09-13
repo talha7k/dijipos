@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { collection, addDoc, doc, deleteDoc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 
 import { usePaymentTypesData } from '@/hooks/use-payment-types-data';
 import { useReceiptTemplatesData } from '@/hooks/use-receipt-templates-data';
@@ -497,12 +498,12 @@ function SettingsContent() {
                          // Import sample data generation function
                          const { generateSampleData } = await import('@/lib/sample-data-generator');
                          await generateSampleData(organizationId!);
-                         alert('Sample data generated successfully!');
+                         toast.success('Sample data generated successfully!');
                          // Refresh the page to show new data
                          window.location.reload();
                        } catch (error) {
                          console.error('Failed to generate sample data:', error);
-                         alert('Failed to generate sample data. Please try again.');
+                         toast.error('Failed to generate sample data. Please try again.');
                        }
                      }
                    }}
@@ -710,12 +711,12 @@ function SettingsContent() {
                                  onClick={async () => {
                                    try {
                                      await thermalPrinter.connect();
-                                     alert('Printer connected successfully!');
+                                     toast.success('Printer connected successfully!');
                                      // Refresh the list
                              const printers = await (thermalPrinter as unknown as ThermalPrinterService).getConnectedPrinters();
                                      setConnectedPrinters(printers);
                                    } catch (error) {
-                                     alert('Failed to connect to printer');
+                                     toast.error('Failed to connect to printer');
                                    }
                                  }}
                                >
@@ -727,9 +728,9 @@ function SettingsContent() {
                                  onClick={async () => {
                                    try {
                                      await (thermalPrinter as unknown as ThermalPrinterService).printTest();
-                                     alert('Test print sent!');
+                                     toast.success('Test print sent!');
                                    } catch (error) {
-                                     alert('Failed to print test');
+                                     toast.error('Failed to print test');
                                    }
                                  }}
                                >

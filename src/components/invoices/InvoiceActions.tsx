@@ -1,19 +1,44 @@
 'use client';
 
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Invoice } from '@/types';
-import { Printer, Eye } from 'lucide-react';
+import { Invoice, Payment } from '@/types';
+import { Printer, Eye, MoreHorizontal } from 'lucide-react';
+import { InvoiceActionsDialog } from './InvoiceActionsDialog';
 
 interface InvoiceActionsProps {
   invoice: Invoice;
+  payments: Payment[];
   onPrint: (invoice: Invoice) => void;
+  onViewDetails: (invoice: Invoice) => void;
   onStatusChange: (invoiceId: string, status: Invoice['status']) => void;
+  onEdit?: (invoice: Invoice) => void;
+  onDuplicate?: (invoice: Invoice) => void;
+  onSend?: (invoice: Invoice) => void;
+  onDownloadPDF?: (invoice: Invoice) => void;
 }
 
-export function InvoiceActions({ invoice, onPrint, onStatusChange }: InvoiceActionsProps) {
+export function InvoiceActions({
+  invoice,
+  payments,
+  onPrint,
+  onViewDetails,
+  onStatusChange,
+  onEdit,
+  onDuplicate,
+  onSend,
+  onDownloadPDF
+}: InvoiceActionsProps) {
+  const [showActionsDialog, setShowActionsDialog] = useState(false);
+
   const handlePrintPreview = (e: React.MouseEvent) => {
     e.stopPropagation();
     onPrint(invoice);
+  };
+
+  const handleViewDetails = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onViewDetails(invoice);
   };
 
   const handleStatusChange = (e: React.MouseEvent, newStatus: Invoice['status']) => {
@@ -21,58 +46,87 @@ export function InvoiceActions({ invoice, onPrint, onStatusChange }: InvoiceActi
     onStatusChange(invoice.id, newStatus);
   };
 
-  return (
-    <div className="flex items-center gap-2">
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={handlePrintPreview}
-        title="Print Preview"
-      >
-        <Printer className="h-4 w-4" />
-      </Button>
-      
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={(e) => {
-          e.stopPropagation();
-          // This would open the details view
-        }}
-        title="View Details"
-      >
-        <Eye className="h-4 w-4" />
-      </Button>
+  const handleActionsClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowActionsDialog(true);
+  };
 
-      {invoice.status === 'draft' && (
+  return (
+    <>
+      <div className="flex items-center gap-2">
         <Button
           variant="outline"
           size="sm"
-          onClick={(e) => handleStatusChange(e, 'sent')}
+          onClick={handleActionsClick}
+          title="More Actions"
         >
-          Send
+          <MoreHorizontal className="h-4 w-4 mr-1" />
+          Actions
         </Button>
-      )}
-      
-      {invoice.status === 'sent' && (
+
         <Button
-          variant="outline"
+          variant="ghost"
           size="sm"
-          onClick={(e) => handleStatusChange(e, 'paid')}
+          onClick={handlePrintPreview}
+          title="Print Preview"
         >
-          Mark Paid
+          <Printer className="h-4 w-4" />
         </Button>
-      )}
-      
-      {invoice.status === 'overdue' && (
+
         <Button
-          variant="outline"
+          variant="ghost"
           size="sm"
-          onClick={(e) => handleStatusChange(e, 'paid')}
+          onClick={handleViewDetails}
+          title="View Details"
         >
-          Mark Paid
+          <Eye className="h-4 w-4" />
         </Button>
-      )}
-    </div>
+
+        {invoice.status === 'draft' && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={(e) => handleStatusChange(e, 'sent')}
+          >
+            Send
+          </Button>
+        )}
+
+        {invoice.status === 'sent' && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={(e) => handleStatusChange(e, 'paid')}
+          >
+            Mark Paid
+          </Button>
+        )}
+
+        {invoice.status === 'overdue' && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={(e) => handleStatusChange(e, 'paid')}
+          >
+            Mark Paid
+          </Button>
+        )}
+      </div>
+
+      <InvoiceActionsDialog
+        invoice={invoice}
+        payments={payments}
+        open={showActionsDialog}
+        onOpenChange={setShowActionsDialog}
+        onViewDetails={() => onViewDetails(invoice)}
+        onPrint={() => onPrint(invoice)}
+        onEdit={() => onEdit?.(invoice)}
+        onDuplicate={() => onDuplicate?.(invoice)}
+        onSend={() => onSend?.(invoice)}
+        onMarkAsPaid={() => onStatusChange(invoice.id, 'paid')}
+        onMarkAsSent={() => onStatusChange(invoice.id, 'sent')}
+        onDownloadPDF={() => onDownloadPDF?.(invoice)}
+      />
+    </>
   );
 }

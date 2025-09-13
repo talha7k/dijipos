@@ -1,11 +1,12 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Invoice, Payment, Organization, Customer, Supplier } from '@/types';
-import { CreditCard } from 'lucide-react';
+import { CreditCard, Printer, Eye } from 'lucide-react';
 
 
 
@@ -17,6 +18,7 @@ interface InvoiceDetailsDialogProps {
   payments: { [invoiceId: string]: Payment[] };
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onPrint?: () => void;
 }
 
 export function InvoiceDetailsDialog({
@@ -26,13 +28,49 @@ export function InvoiceDetailsDialog({
   suppliers,
   payments,
   open,
-  onOpenChange
+  onOpenChange,
+  onPrint
 }: InvoiceDetailsDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-6xl max-h-[80vh] overflow-y-auto">
         {invoice ? (
           <div className="space-y-6">
+            {/* Dialog Header with Print Button */}
+            <div className="flex justify-between items-center border-b pb-4">
+              <div>
+                <h2 className="text-2xl font-bold">Invoice Details</h2>
+                <p className="text-gray-600">Invoice #{invoice.id.slice(-8)}</p>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    // Show payments section
+                    const paymentsSection = document.getElementById('payments-section');
+                    if (paymentsSection) {
+                      paymentsSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  <Eye className="h-4 w-4" />
+                  View Payments
+                </Button>
+                {onPrint && (
+                  <Button
+                    onClick={onPrint}
+                    size="sm"
+                    className="flex items-center gap-2"
+                  >
+                    <Printer className="h-4 w-4" />
+                    Print PDF
+                  </Button>
+                )}
+              </div>
+            </div>
+
             {/* Invoice Header Information */}
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -136,8 +174,8 @@ export function InvoiceDetailsDialog({
               </div>
 
               {/* Payment Information Accordion */}
-              <div>
-                <Accordion type="single" collapsible className="w-full">
+              <div id="payments-section">
+                <Accordion type="single" collapsible className="w-full" defaultValue="payments">
                   <AccordionItem value="payments">
                     <AccordionTrigger className="font-semibold">
                       <div className="flex items-center gap-2">

@@ -35,6 +35,7 @@ function PaymentsContent() {
         id: doc.id,
         ...doc.data(),
         paymentDate: doc.data().paymentDate?.toDate(),
+        createdAt: doc.data().createdAt?.toDate(),
       })) as Payment[];
       setPayments(paymentsData);
     });
@@ -45,6 +46,9 @@ function PaymentsContent() {
       const invoicesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
+        dueDate: doc.data().dueDate?.toDate(),
+        createdAt: doc.data().createdAt?.toDate(),
+        updatedAt: doc.data().updatedAt?.toDate(),
       })) as Invoice[];
       setInvoices(invoicesData);
       setLoading(false);

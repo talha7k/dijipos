@@ -15,6 +15,7 @@ import { db } from '@/lib/firebase';
 import { Organization } from '@/types';
 import { useTheme } from '@/contexts/ThemeContext';
 import { auth } from '@/lib/firebase';
+import { toast } from 'sonner';
 
 export function OrganizationManager() {
   const { user, organizationId, userOrganizations, selectOrganization, refreshUserOrganizations } = useAuth();
@@ -171,7 +172,7 @@ export function OrganizationManager() {
       router.push('/dashboard');
     } catch (error) {
       console.error('Error creating organization:', error);
-      alert('Failed to create organization. Please try again.');
+      toast('Failed to create organization. Please try again.');
     } finally {
       setLoading(false);
     }

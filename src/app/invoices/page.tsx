@@ -101,9 +101,27 @@ export default function InvoicesPage() {
         invoices={getFilteredInvoices()}
         customers={customers}
         suppliers={suppliers}
+        payments={payments}
         onInvoiceClick={handleInvoiceClick}
+        onViewDetails={handleInvoiceClick}
         onStatusChange={handleStatusChange}
         onPrint={handlePrint}
+        onEdit={(invoice) => {
+          // Handle edit - could open edit form
+          console.log('Edit invoice:', invoice.id);
+        }}
+        onDuplicate={(invoice) => {
+          // Handle duplicate - could create copy
+          console.log('Duplicate invoice:', invoice.id);
+        }}
+        onSend={(invoice) => {
+          // Handle send - could send via email
+          console.log('Send invoice:', invoice.id);
+        }}
+        onDownloadPDF={(invoice) => {
+          // Handle PDF download
+          console.log('Download PDF for invoice:', invoice.id);
+        }}
       />
 
       {/* Create Invoice Dialog */}

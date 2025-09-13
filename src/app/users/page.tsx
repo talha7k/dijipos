@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Users, Plus, Edit, Trash2, Shield, Settings, Copy, Link } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface InvitationCode {
   id: string;
@@ -109,7 +110,7 @@ function UsersContent() {
       });
     } catch (error) {
       console.error('Error creating invitation code:', error);
-      alert('Failed to create invitation code. Please try again.');
+      toast.error('Failed to create invitation code. Please try again.');
     }
   };
 
@@ -120,17 +121,17 @@ function UsersContent() {
       await deleteDoc(doc(db, 'organizations', organizationId, 'invitationCodes', codeId));
     } catch (error) {
       console.error('Error deleting invitation code:', error);
-      alert('Failed to delete invitation code. Please try again.');
+      toast.error('Failed to delete invitation code. Please try again.');
     }
   };
 
   const handleCopyInvitationCode = async (code: string) => {
     try {
       await navigator.clipboard.writeText(code);
-      alert('Invitation code copied to clipboard!');
+      toast.success('Invitation code copied to clipboard!');
     } catch (error) {
       console.error('Error copying code:', error);
-      alert('Failed to copy code to clipboard.');
+      toast.error('Failed to copy code to clipboard.');
     }
   };
 
@@ -152,7 +153,7 @@ function UsersContent() {
       });
     } catch (error) {
       console.error('Error updating user:', error);
-      alert('Failed to update user. Please try again.');
+      toast.error('Failed to update user. Please try again.');
     }
   };
 
@@ -167,7 +168,7 @@ function UsersContent() {
       });
     } catch (error) {
       console.error('Error toggling user status:', error);
-      alert('Failed to update user status. Please try again.');
+      toast.error('Failed to update user status. Please try again.');
     }
   };
 

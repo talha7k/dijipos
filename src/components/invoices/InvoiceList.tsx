@@ -3,7 +3,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Invoice, Customer, Supplier } from '@/types';
+import { Invoice, Customer, Supplier, Payment } from '@/types';
 import { Receipt } from 'lucide-react';
 import { InvoiceStatusToggle } from './InvoiceStatusToggle';
 import { InvoiceActions } from './InvoiceActions';
@@ -12,18 +12,30 @@ interface InvoiceListProps {
   invoices: Invoice[];
   customers: Customer[];
   suppliers: Supplier[];
+  payments: { [invoiceId: string]: Payment[] };
   onInvoiceClick: (invoice: Invoice) => void;
   onPrint: (invoice: Invoice) => void;
+  onViewDetails: (invoice: Invoice) => void;
   onStatusChange: (invoiceId: string, status: Invoice['status']) => void;
+  onEdit?: (invoice: Invoice) => void;
+  onDuplicate?: (invoice: Invoice) => void;
+  onSend?: (invoice: Invoice) => void;
+  onDownloadPDF?: (invoice: Invoice) => void;
 }
 
-export function InvoiceList({ 
-  invoices, 
+export function InvoiceList({
+  invoices,
   customers,
   suppliers,
-  onInvoiceClick, 
-  onPrint, 
-  onStatusChange 
+  payments,
+  onInvoiceClick,
+  onPrint,
+  onViewDetails,
+  onStatusChange,
+  onEdit,
+  onDuplicate,
+  onSend,
+  onDownloadPDF
 }: InvoiceListProps) {
   return (
     <div className="overflow-x-auto">
@@ -60,11 +72,17 @@ export function InvoiceList({
               <TableCell>{invoice.dueDate?.toLocaleDateString()}</TableCell>
               <TableCell onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center gap-2">
-                  <InvoiceActions
-                    invoice={invoice}
-                    onPrint={onPrint}
-                    onStatusChange={onStatusChange}
-                  />
+                   <InvoiceActions
+                     invoice={invoice}
+                     payments={payments[invoice.id] || []}
+                     onPrint={onPrint}
+                     onViewDetails={onViewDetails}
+                     onStatusChange={onStatusChange}
+                     onEdit={onEdit}
+                     onDuplicate={onDuplicate}
+                     onSend={onSend}
+                     onDownloadPDF={onDownloadPDF}
+                   />
                 </div>
               </TableCell>
             </TableRow>
