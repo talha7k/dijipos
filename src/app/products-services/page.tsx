@@ -118,7 +118,7 @@ function ProductsContent() {
   const handleAddCategory = async (category: {
     name: string;
     description: string;
-    type: 'product' | 'service' | 'both';
+    type: 'product' | 'service';
     parentId: string | null;
   }) => {
     if (!tenantId) return;

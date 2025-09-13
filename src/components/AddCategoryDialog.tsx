@@ -7,8 +7,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { FolderPlus } from 'lucide-react';
 import { Category } from '@/types';
+import { CategoryTree } from './CategoryTree';
 
 interface AddCategoryDialogProps {
   open: boolean;
@@ -16,11 +19,11 @@ interface AddCategoryDialogProps {
   onAddCategory: (category: {
     name: string;
     description: string;
-    type: 'product' | 'service' | 'both';
+    type: 'product' | 'service';
     parentId: string | null;
   }) => void;
   categories: Category[];
-  defaultType?: 'product' | 'service' | 'both';
+  defaultType?: 'product' | 'service';
 }
 
 export function AddCategoryDialog({
@@ -32,8 +35,8 @@ export function AddCategoryDialog({
 }: AddCategoryDialogProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [type, setType] = useState<'product' | 'service' | 'both'>(defaultType);
-  const [parentId, setParentId] = useState<string>('');
+  const [type, setType] = useState<'product' | 'service'>(defaultType);
+  const [selectedParentId, setSelectedParentId] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,20 +45,19 @@ export function AddCategoryDialog({
       name,
       description,
       type,
-      parentId: parentId || null
+      parentId: selectedParentId
     });
 
     // Reset form
     setName('');
     setDescription('');
     setType(defaultType);
-    setParentId('');
+    setSelectedParentId(null);
     onOpenChange(false);
   };
 
-  const availableParentCategories = categories.filter(c => 
-    !c.parentId && 
-    (c.type === type || c.type === 'both')
+  const filteredCategories = categories.filter(c => 
+    c.type === type || c.type === 'both'
   );
 
   return (
@@ -66,7 +68,7 @@ export function AddCategoryDialog({
           Add Category
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Category</DialogTitle>
         </DialogHeader>
@@ -92,33 +94,55 @@ export function AddCategoryDialog({
           </div>
           <div>
             <Label htmlFor="categoryType">Type</Label>
-            <Select value={type} onValueChange={(value: 'product' | 'service' | 'both') => setType(value)}>
+            <Select value={type} onValueChange={(value: 'product' | 'service') => {
+              setType(value);
+              setSelectedParentId(null); // Reset parent selection when type changes
+            }}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="product">Products</SelectItem>
                 <SelectItem value="service">Services</SelectItem>
-                <SelectItem value="both">Both Products and Services</SelectItem>
               </SelectContent>
             </Select>
           </div>
+          
           <div>
-            <Label htmlFor="categoryParentId">Parent Category (Optional)</Label>
-            <Select value={parentId || "none"} onValueChange={(value) => setParentId(value === "none" ? "" : value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a parent category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">None (Top Level)</SelectItem>
-                {availableParentCategories.map(category => (
-                  <SelectItem key={category.id} value={category.id}>
-                    {category.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label>Parent Category (Optional)</Label>
+            <Card className="mt-2">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm">Select where to add this category</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Button
+                  variant={selectedParentId === null ? "default" : "ghost"}
+                  size="sm"
+                  className="w-full justify-start"
+                  onClick={() => setSelectedParentId(null)}
+                >
+                  <div className="flex items-center gap-2 flex-1">
+                    <div className="w-3" />
+                    <span>Root Level (No Parent)</span>
+                  </div>
+                  <Badge variant={selectedParentId === null ? "default" : "secondary"}>
+                    Top Level
+                  </Badge>
+                </Button>
+                
+                <CategoryTree
+                  categories={filteredCategories}
+                  products={[]}
+                  services={[]}
+                  selectedCategory={selectedParentId}
+                  onCategorySelect={setSelectedParentId}
+                  onCategoryDelete={() => {}} // No delete functionality in this context
+                  type={type}
+                />
+              </CardContent>
+            </Card>
           </div>
+          
           <div className="flex justify-end space-x-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel

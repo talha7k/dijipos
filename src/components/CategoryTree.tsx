@@ -45,9 +45,13 @@ export function CategoryTree({
   };
 
   const getItemsCount = (categoryId: string) => {
-    return type === 'product' 
-      ? products.filter(p => p.categoryId === categoryId).length
-      : services.filter(s => s.categoryId === categoryId).length;
+    if (type === 'product' && products.length > 0) {
+      return products.filter(p => p.categoryId === categoryId).length;
+    }
+    if (type === 'service' && services.length > 0) {
+      return services.filter(s => s.categoryId === categoryId).length;
+    }
+    return 0;
   };
 
   const isExpanded = (categoryId: string) => {
