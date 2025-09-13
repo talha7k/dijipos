@@ -5,6 +5,7 @@ import { collection, query, onSnapshot, addDoc, doc, deleteDoc, updateDoc } from
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Table } from '@/types';
+import { useTablesData } from '@/hooks/use-tables-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -15,31 +16,14 @@ import { AddTableDialog } from '@/components/AddTableDialog';
 
 export default function TablesPage() {
   const { organizationId } = useAuth();
-  const [tables, setTables] = useState<Table[]>([]);
+  const { tables, loading: tablesLoading } = useTablesData(organizationId || undefined);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    if (!organizationId) return;
-
-    // Fetch tables
-    const tablesQ = query(collection(db, 'organizations', organizationId, 'tables'));
-    const tablesUnsubscribe = onSnapshot(tablesQ, (querySnapshot) => {
-      const tablesData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-      })) as Table[];
-      setTables(tablesData);
-      setLoading(false);
-    });
-
-    return () => {
-      tablesUnsubscribe();
-    };
-  }, [organizationId]);
+    setLoading(tablesLoading);
+  }, [tablesLoading]);
 
   const handleAddTable = async (table: {
     name: string;

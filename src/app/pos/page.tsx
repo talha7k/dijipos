@@ -2,10 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import React from 'react';
-import { collection, query, onSnapshot, QuerySnapshot, DocumentData, addDoc, getDoc, doc } from 'firebase/firestore';
+import { collection, query, onSnapshot, addDoc, getDoc, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePOSPersistence, CartItem } from '@/hooks/use-pos-persistence';
+import { useProductsData } from '@/hooks/use-products-data';
+import { useServicesData } from '@/hooks/use-services-data';
+import { useCategoriesData } from '@/hooks/use-categories-data';
+import { useTablesData } from '@/hooks/use-tables-data';
+import { useCustomersData } from '@/hooks/use-customers-data';
+import { useOrdersData } from '@/hooks/use-orders-data';
 import { Product, Service, Category, Table, Customer, Order, OrderPayment, PaymentType, OrderType, ReceiptTemplate, PrinterSettings, Organization } from '@/types';
 
 import { POSBreadcrumb } from '@/components/POSBreadcrumb';
@@ -57,15 +63,17 @@ export default function POSPage() {
     clearCart
   } = usePOSPersistence(organizationId || undefined);
 
-  const [products, setProducts] = useState<Product[]>([]);
-  const [services, setServices] = useState<Service[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [tables, setTables] = useState<Table[]>([]);
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [orders, setOrders] = useState<Order[]>([]);
   const [paymentTypes, setPaymentTypes] = useState<PaymentType[]>([]);
   const [loading, setLoading] = useState(true);
   const [orderTypes, setOrderTypes] = useState<OrderType[]>([]);
+  
+  // Use new hooks for data management
+  const { products, loading: productsLoading } = useProductsData(organizationId || undefined);
+  const { services, loading: servicesLoading } = useServicesData(organizationId || undefined);
+  const { categories, loading: categoriesLoading } = useCategoriesData(organizationId || undefined);
+  const { tables, loading: tablesLoading } = useTablesData(organizationId || undefined);
+  const { customers, loading: customersLoading } = useCustomersData(organizationId || undefined);
+  const { orders, loading: ordersLoading } = useOrdersData(organizationId || undefined);
   const [pendingOrderToReopen, setPendingOrderToReopen] = useState<Order | null>(null);
   const [showOrderConfirmationDialog, setShowOrderConfirmationDialog] = useState(false);
   const [receiptTemplates, setReceiptTemplates] = useState<ReceiptTemplate[]>([]);
@@ -73,81 +81,19 @@ export default function POSPage() {
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
-  // Fetch data from Firebase
+  // Fetch data from Firebase using new hooks
   useEffect(() => {
-
     if (!organizationId) return;
 
-    // Fetch products
-    const productsQ = query(collection(db, 'organizations', organizationId, 'products'));
-    const productsUnsubscribe = onSnapshot(productsQ, (querySnapshot: QuerySnapshot<DocumentData>) => {
-      const productsData = querySnapshot.docs.map((doc: DocumentData) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Product[];
-      setProducts(productsData);
-    });
+    // Check if all data is loaded
+    const allDataLoaded = !productsLoading && !servicesLoading && !categoriesLoading && 
+                         !tablesLoading && !customersLoading && !ordersLoading;
+    
+    if (allDataLoaded) {
+      setLoading(false);
+    }
 
-    // Fetch services
-    const servicesQ = query(collection(db, 'organizations', organizationId, 'services'));
-    const servicesUnsubscribe = onSnapshot(servicesQ, (querySnapshot: QuerySnapshot<DocumentData>) => {
-      const servicesData = querySnapshot.docs.map((doc: DocumentData) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Service[];
-      setServices(servicesData);
-    });
-
-    // Fetch categories from Firebase
-    const categoriesQ = query(collection(db, 'organizations', organizationId, 'categories'));
-    const categoriesUnsubscribe = onSnapshot(categoriesQ, (querySnapshot) => {
-      const categoriesData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-      })) as Category[];
-      
-      setCategories(categoriesData);
-    });
-
-    // Fetch tables
-    const tablesQ = query(collection(db, 'organizations', organizationId, 'tables'));
-    const tablesUnsubscribe = onSnapshot(tablesQ, (querySnapshot) => {
-      const tablesData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-      })) as Table[];
-      setTables(tablesData);
-    });
-
-    // Fetch customers
-    const customersQ = query(collection(db, 'organizations', organizationId, 'customers'));
-    const customersUnsubscribe = onSnapshot(customersQ, (querySnapshot) => {
-      const customersData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-      })) as Customer[];
-      setCustomers(customersData);
-    });
-
-    // Fetch orders
-    const ordersQ = query(collection(db, 'organizations', organizationId, 'orders'));
-    const ordersUnsubscribe = onSnapshot(ordersQ, (querySnapshot) => {
-      const ordersData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-      })) as Order[];
-      setOrders(ordersData);
-    });
-
-    // Fetch payment types
+    // Fetch payment types (not covered by hooks yet)
     const paymentTypesQ = query(collection(db, 'organizations', organizationId, 'paymentTypes'));
     const paymentTypesUnsubscribe = onSnapshot(paymentTypesQ, (querySnapshot) => {
       const paymentTypesData = querySnapshot.docs.map(doc => ({
@@ -159,7 +105,7 @@ export default function POSPage() {
       setPaymentTypes(paymentTypesData);
     });
 
-    // Fetch order types
+    // Fetch order types (not covered by hooks yet)
     const orderTypesQ = query(collection(db, 'organizations', organizationId, 'orderTypes'));
     const orderTypesUnsubscribe = onSnapshot(orderTypesQ, async (querySnapshot) => {
       const orderTypesData = querySnapshot.docs.map(doc => ({
@@ -171,9 +117,7 @@ export default function POSPage() {
       setOrderTypes(orderTypesData);
 
       // Set default order type if none selected and order types exist
-      // Only set if there's no saved order type in localStorage
       if (orderTypesData.length > 0 && !selectedOrderType) {
-        // Check if there's a saved order type in localStorage
         const savedOrderTypeKey = organizationId ? `${organizationId}_posOrderType` : 'posOrderType';
         const savedOrderType = localStorage.getItem(savedOrderTypeKey);
         
@@ -189,9 +133,10 @@ export default function POSPage() {
           setSelectedOrderType(orderTypesData[0]);
         }
       }
+    });
 
-    // Fetch printer settings
-    const fetchPrinterSettings = async () => {
+    // Fetch printer settings and organization data (not covered by hooks)
+    const fetchAdditionalData = async () => {
       const printerDoc = await getDoc(doc(db, 'organizations', organizationId, 'settings', 'printer'));
       if (printerDoc.exists()) {
         const printerData = printerDoc.data() as PrinterSettings;
@@ -201,10 +146,7 @@ export default function POSPage() {
           updatedAt: printerData.updatedAt,
         });
       }
-    };
 
-    // Fetch organization data
-    const fetchOrganizationData = async () => {
       const organizationDoc = await getDoc(doc(db, 'organizations', organizationId));
       if (organizationDoc.exists()) {
         const organizationData = organizationDoc.data() as Organization;
@@ -216,7 +158,7 @@ export default function POSPage() {
       }
     };
 
-    // Fetch receipt templates
+    // Fetch receipt templates (not covered by hooks)
     const receiptTemplatesQ = query(collection(db, 'organizations', organizationId, 'receiptTemplates'));
     const receiptTemplatesUnsubscribe = onSnapshot(receiptTemplatesQ, (querySnapshot) => {
       const templatesData = querySnapshot.docs.map(doc => ({
@@ -228,26 +170,25 @@ export default function POSPage() {
       setReceiptTemplates(templatesData);
     });
 
-    await Promise.all([fetchPrinterSettings(), fetchOrganizationData()]);
-    setLoading(false);
-    });
+    fetchAdditionalData();
 
     return () => {
-      productsUnsubscribe();
-      servicesUnsubscribe();
-      categoriesUnsubscribe();
-      tablesUnsubscribe();
-      customersUnsubscribe();
-      ordersUnsubscribe();
       paymentTypesUnsubscribe();
       orderTypesUnsubscribe();
+      receiptTemplatesUnsubscribe();
     };
-
-  }, [organizationId]);
+  }, [organizationId, selectedOrderType]);
 
 
   // Calculate cart total
   const cartTotal = cart.reduce((sum: number, item: CartItem) => sum + item.total, 0);
+
+  // Update loading state based on all data sources
+  useEffect(() => {
+    const allDataLoaded = !productsLoading && !servicesLoading && !categoriesLoading && 
+                         !tablesLoading && !customersLoading && !ordersLoading;
+    setLoading(!allDataLoaded);
+  }, [productsLoading, servicesLoading, categoriesLoading, tablesLoading, customersLoading, ordersLoading]);
 
   // Debug cart persistence
   useEffect(() => {

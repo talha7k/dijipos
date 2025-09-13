@@ -20,12 +20,13 @@ import {
 import { Plus, Users, Upload, X } from 'lucide-react';
 import { ActionButtons } from '@/components/ui/action-buttons';
 import { Customer } from '@/types';
+import { useCustomersData } from '@/hooks/use-customers-data';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/lib/firebase';
 
 export default function CustomersPage() {
   const { organizationId } = useAuth();
-  const [customers, setCustomers] = useState<Customer[]>([]);
+  const { customers, loading: customersLoading } = useCustomersData(organizationId || undefined);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
@@ -41,25 +42,8 @@ export default function CustomersPage() {
   });
 
   useEffect(() => {
-    if (!organizationId) return;
-
-    // Fetch customers
-    const customersQ = query(collection(db, 'organizations', organizationId, 'customers'));
-    const customersUnsubscribe = onSnapshot(customersQ, (querySnapshot) => {
-      const customersData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-      })) as Customer[];
-      setCustomers(customersData);
-      setLoading(false);
-    });
-
-    return () => {
-      customersUnsubscribe();
-    };
-  }, [organizationId]);
+    setLoading(customersLoading);
+  }, [customersLoading]);
 
   const handleAddCustomer = () => {
     setEditingCustomer(null);

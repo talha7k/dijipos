@@ -5,6 +5,9 @@ import { collection, query, onSnapshot, getDoc, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Order, OrderPayment, PaymentType, Organization, User as AppUser } from '@/types';
+import { useOrdersData } from '@/hooks/use-orders-data';
+import { useUsersData } from '@/hooks/use-users-data';
+import { usePaymentTypesData } from '@/hooks/use-payment-types-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -14,10 +17,11 @@ import { ArrowLeft, Receipt, CreditCard, Users, LayoutGrid, ShoppingBag, Calenda
 
 function OrdersContent() {
   const { user, organizationId } = useAuth();
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [payments, setPayments] = useState<{ [orderId: string]: OrderPayment[] }>({});
+  const { orders, loading: ordersLoading } = useOrdersData(organizationId || undefined);
+  const { users: usersArray, loading: usersLoading } = useUsersData(organizationId || undefined);
+  const { paymentTypes, loading: paymentTypesLoading } = usePaymentTypesData(organizationId || undefined);
   const [users, setUsers] = useState<{ [userId: string]: AppUser }>({});
-  const [paymentTypes, setPaymentTypes] = useState<PaymentType[]>([]);
+  const [payments, setPayments] = useState<{ [orderId: string]: OrderPayment[] }>({});
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -38,48 +42,18 @@ function OrdersContent() {
     };
     fetchOrganization();
 
-    // Fetch orders
-    const ordersQ = query(collection(db, 'organizations', organizationId, 'orders'));
-    const ordersUnsubscribe = onSnapshot(ordersQ, (querySnapshot) => {
-      const ordersData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-      })) as Order[];
-      setOrders(ordersData);
-      setLoading(false);
-    });
+    // Update loading state based on all data sources
+    const allDataLoaded = !ordersLoading && !usersLoading && !paymentTypesLoading;
+    setLoading(!allDataLoaded);
 
-    // Fetch payment types
-    const paymentTypesQ = query(collection(db, 'organizations', organizationId, 'paymentTypes'));
-    const paymentTypesUnsubscribe = onSnapshot(paymentTypesQ, (querySnapshot) => {
-      const paymentTypesData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-      })) as PaymentType[];
-      setPaymentTypes(paymentTypesData);
-    });
-
-    // Fetch users
-    const usersQ = query(collection(db, 'organizations', organizationId, 'users'));
-    const usersUnsubscribe = onSnapshot(usersQ, (querySnapshot) => {
-      const usersData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-      })) as AppUser[];
-      
-      // Group users by id for easy lookup
+    // Map users array to dictionary for easy lookup
+    if (usersArray) {
       const usersById: { [userId: string]: AppUser } = {};
-      usersData.forEach(user => {
+      usersArray.forEach((user: AppUser) => {
         usersById[user.id] = user;
       });
       setUsers(usersById);
-    });
+    }
 
     // Fetch payments for each order
     const paymentsQ = query(collection(db, 'organizations', organizationId, 'orderPayments'));
@@ -103,12 +77,9 @@ function OrdersContent() {
     });
 
     return () => {
-      ordersUnsubscribe();
-      paymentTypesUnsubscribe();
-      usersUnsubscribe();
       paymentsUnsubscribe();
     };
-  }, [organizationId]);
+  }, [organizationId, ordersLoading, usersLoading, paymentTypesLoading, usersArray]);
 
   const getStatusColor = (status: Order['status']) => {
     switch (status) {

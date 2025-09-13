@@ -5,6 +5,9 @@ import { collection, query, onSnapshot, addDoc, doc, deleteDoc } from 'firebase/
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Product, Service, Category } from '@/types';
+import { useProductsData } from '@/hooks/use-products-data';
+import { useServicesData } from '@/hooks/use-services-data';
+import { useCategoriesData } from '@/hooks/use-categories-data';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -20,9 +23,9 @@ import { AddCategoryDialog } from '@/components/AddCategoryDialog';
 
 function ProductsContent() {
   const { organizationId } = useAuth();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [services, setServices] = useState<Service[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const { products, loading: productsLoading } = useProductsData(organizationId || undefined);
+  const { services, loading: servicesLoading } = useServicesData(organizationId || undefined);
+  const { categories, loading: categoriesLoading } = useCategoriesData(organizationId || undefined);
   const [loading, setLoading] = useState(true);
   const [productDialogOpen, setProductDialogOpen] = useState(false);
   const [serviceDialogOpen, setServiceDialogOpen] = useState(false);
@@ -31,51 +34,10 @@ function ProductsContent() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!organizationId) return;
-
-    // Fetch products
-    const productsQ = query(collection(db, 'organizations', organizationId, 'products'));
-    const productsUnsubscribe = onSnapshot(productsQ, (querySnapshot) => {
-      const productsData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-      })) as Product[];
-      setProducts(productsData);
-    });
-
-    // Fetch services
-    const servicesQ = query(collection(db, 'organizations', organizationId, 'services'));
-    const servicesUnsubscribe = onSnapshot(servicesQ, (querySnapshot) => {
-      const servicesData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-      })) as Service[];
-      setServices(servicesData);
-    });
-
-    // Fetch categories
-    const categoriesQ = query(collection(db, 'organizations', organizationId, 'categories'));
-    const categoriesUnsubscribe = onSnapshot(categoriesQ, (querySnapshot) => {
-      const categoriesData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-      })) as Category[];
-      setCategories(categoriesData);
-      setLoading(false);
-    });
-
-    return () => {
-      productsUnsubscribe();
-      servicesUnsubscribe();
-      categoriesUnsubscribe();
-    };
-  }, [organizationId]);
+    // Update loading state based on all data sources
+    const allDataLoaded = !productsLoading && !servicesLoading && !categoriesLoading;
+    setLoading(!allDataLoaded);
+  }, [productsLoading, servicesLoading, categoriesLoading]);
 
   const handleAddProduct = async (product: {
     name: string;
@@ -147,15 +109,15 @@ function ProductsContent() {
   const handleDeleteCategory = async (categoryId: string) => {
     if (!organizationId) return;
     
-    const category = categories.find(c => c.id === categoryId);
+    const category = categories.find((c: Category) => c.id === categoryId);
     if (!category) return;
 
     const itemCount = category.type === 'product' || category.type === 'both'
-      ? products.filter(p => p.categoryId === categoryId).length
+      ? products.filter((p: Product) => p.categoryId === categoryId).length
       : 0;
-    
+
     const serviceCount = category.type === 'service' || category.type === 'both'
-      ? services.filter(s => s.categoryId === categoryId).length
+      ? services.filter((s: Service) => s.categoryId === categoryId).length
       : 0;
 
     const totalCount = itemCount + serviceCount;

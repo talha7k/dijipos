@@ -8,23 +8,24 @@ import Link from 'next/link';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
-import { collection, query, onSnapshot } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { Quote, Invoice, Payment, Product, Service, Table } from '@/types';
+import { useQuotesData } from '@/hooks/use-quotes-data';
+import { useInvoicesData } from '@/hooks/use-invoices-data';
+import { usePaymentsData } from '@/hooks/use-payments-data';
+import { useProductsData } from '@/hooks/use-products-data';
+import { useServicesData } from '@/hooks/use-services-data';
+import { useTablesData } from '@/hooks/use-tables-data';
 
 function DashboardContent() {
   const { user, organizationId } = useAuth();
   const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  const [analytics, setAnalytics] = useState({
-    quotes: { count: 0, total: 0, pending: 0 },
-    invoices: { count: 0, total: 0, unpaid: 0, paid: 0 },
-    payments: { total: 0 },
-    products: { count: 0 },
-    services: { count: 0 },
-    tables: { count: 0, available: 0 },
-  });
+  const { quotes } = useQuotesData(organizationId || undefined);
+  const { invoices } = useInvoicesData(organizationId || undefined);
+  const { payments } = usePaymentsData(organizationId || undefined);
+  const { products } = useProductsData(organizationId || undefined);
+  const { services } = useServicesData(organizationId || undefined);
+  const { tables } = useTablesData(organizationId || undefined);
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -38,54 +39,7 @@ function DashboardContent() {
     }
   };
 
-  useEffect(() => {
-    if (!organizationId) return;
-
-    const unsubscribers = [
-      // Quotes
-      onSnapshot(query(collection(db, 'organizations', organizationId, 'quotes')), (snapshot) => {
-        const quotes = snapshot.docs.map(doc => doc.data() as Quote);
-        const total = quotes.reduce((sum, q) => sum + q.total, 0);
-        const pending = quotes.filter(q => q.status === 'draft').length;
-        setAnalytics(prev => ({ ...prev, quotes: { count: quotes.length, total, pending } }));
-      }),
-
-      // Invoices
-      onSnapshot(query(collection(db, 'organizations', organizationId, 'invoices')), (snapshot) => {
-        const invoices = snapshot.docs.map(doc => doc.data() as Invoice);
-        const total = invoices.reduce((sum, inv) => sum + inv.total, 0);
-        const unpaid = invoices.filter(inv => inv.status !== 'paid').reduce((sum, inv) => sum + inv.total, 0);
-        const paid = invoices.filter(inv => inv.status === 'paid').reduce((sum, inv) => sum + inv.total, 0);
-        setAnalytics(prev => ({ ...prev, invoices: { count: invoices.length, total, unpaid, paid } }));
-      }),
-
-      // Payments
-      onSnapshot(query(collection(db, 'organizations', organizationId, 'payments')), (snapshot) => {
-        const payments = snapshot.docs.map(doc => doc.data() as Payment);
-        const total = payments.reduce((sum, p) => sum + p.amount, 0);
-        setAnalytics(prev => ({ ...prev, payments: { total } }));
-      }),
-
-      // Products
-      onSnapshot(query(collection(db, 'organizations', organizationId, 'products')), (snapshot) => {
-        setAnalytics(prev => ({ ...prev, products: { count: snapshot.size } }));
-      }),
-
-      // Services
-      onSnapshot(query(collection(db, 'organizations', organizationId, 'services')), (snapshot) => {
-        setAnalytics(prev => ({ ...prev, services: { count: snapshot.size } }));
-      }),
-
-      // Tables
-      onSnapshot(query(collection(db, 'organizations', organizationId, 'tables')), (snapshot) => {
-        const tables = snapshot.docs.map(doc => doc.data() as Table);
-        const available = tables.filter(table => table.status === 'available').length;
-        setAnalytics(prev => ({ ...prev, tables: { count: tables.length, available } }));
-      }),
-    ];
-
-    return () => unsubscribers.forEach(unsub => unsub());
-  }, [organizationId]);
+  
 
   return (
     <div className="container mx-auto p-4">
@@ -102,9 +56,9 @@ function DashboardContent() {
               <CardDescription>Total Value</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${analytics.quotes.total.toFixed(2)}</div>
+              <div className="text-2xl font-bold">${quotes.reduce((sum, q) => sum + q.total, 0).toFixed(2)}</div>
               <p className="text-sm text-muted-foreground">
-                {analytics.quotes.count} total • {analytics.quotes.pending} pending
+                {quotes.length} total • {quotes.filter(q => q.status === 'draft').length} pending
               </p>
             </CardContent>
           </Card>
@@ -117,9 +71,9 @@ function DashboardContent() {
               <CardDescription>Total Value</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${analytics.invoices.total.toFixed(2)}</div>
+              <div className="text-2xl font-bold">${invoices.reduce((sum, inv) => sum + inv.total, 0).toFixed(2)}</div>
               <p className="text-sm text-muted-foreground">
-                {analytics.invoices.count} total • ${analytics.invoices.unpaid.toFixed(2)} unpaid
+                {invoices.length} total • ${invoices.filter(inv => inv.status !== 'paid').reduce((sum, inv) => sum + inv.total, 0).toFixed(2)} unpaid
               </p>
             </CardContent>
           </Card>
@@ -132,7 +86,7 @@ function DashboardContent() {
               <CardDescription>Total Received</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${analytics.payments.total.toFixed(2)}</div>
+              <div className="text-2xl font-bold">${payments.reduce((sum, p) => sum + p.amount, 0).toFixed(2)}</div>
               <p className="text-sm text-muted-foreground">
                 Revenue collected
               </p>
@@ -147,9 +101,9 @@ function DashboardContent() {
               <CardDescription>Total Items</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{analytics.products.count + analytics.services.count}</div>
+              <div className="text-2xl font-bold">{products.length + services.length}</div>
               <p className="text-sm text-muted-foreground">
-                {analytics.products.count} products • {analytics.services.count} services
+                {products.length} products • {services.length} services
               </p>
             </CardContent>
           </Card>
@@ -162,9 +116,9 @@ function DashboardContent() {
               <CardDescription>Table Management</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{analytics.tables.count}</div>
+              <div className="text-2xl font-bold">{tables.length}</div>
               <p className="text-sm text-muted-foreground">
-                {analytics.tables.available} available • {analytics.tables.count - analytics.tables.available} occupied
+                {tables.filter(table => table.status === 'available').length} available • {tables.filter(table => table.status !== 'available').length} occupied
               </p>
             </CardContent>
           </Card>
