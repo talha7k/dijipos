@@ -44,7 +44,7 @@ export default function CustomersPage() {
     if (!organizationId) return;
 
     // Fetch customers
-    const customersQ = query(collection(db, 'tenants', organizationId, 'customers'));
+    const customersQ = query(collection(db, 'organizations', organizationId, 'customers'));
     const customersUnsubscribe = onSnapshot(customersQ, (querySnapshot) => {
       const customersData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -92,7 +92,7 @@ export default function CustomersPage() {
   const handleDeleteCustomer = async (id: string) => {
     if (!organizationId) return;
     if (confirm('Are you sure you want to delete this customer?')) {
-      await deleteDoc(doc(db, 'tenants', organizationId, 'customers', id));
+      await deleteDoc(doc(db, 'organizations', organizationId, 'customers', id));
     }
   };
 
@@ -125,13 +125,13 @@ export default function CustomersPage() {
 
     if (editingCustomer) {
       // Update existing customer
-      await updateDoc(doc(db, 'tenants', organizationId, 'customers', editingCustomer.id), {
+      await updateDoc(doc(db, 'organizations', organizationId, 'customers', editingCustomer.id), {
         ...formData,
         updatedAt: new Date(),
       });
     } else {
       // Add new customer
-      await addDoc(collection(db, 'tenants', organizationId, 'customers'), {
+      await addDoc(collection(db, 'organizations', organizationId, 'customers'), {
         ...formData,
         organizationId,
         createdAt: new Date(),

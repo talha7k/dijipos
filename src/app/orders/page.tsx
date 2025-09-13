@@ -27,19 +27,19 @@ function OrdersContent() {
 
     // Fetch organization data
     const fetchOrganization = async () => {
-      const tenantDoc = await getDoc(doc(db, 'tenants', organizationId));
-      if (tenantDoc.exists()) {
+      const organizationDoc = await getDoc(doc(db, 'organizations', organizationId));
+      if (organizationDoc.exists()) {
         setOrganization({
-          id: tenantDoc.id,
-          ...tenantDoc.data(),
-          createdAt: tenantDoc.data().createdAt?.toDate(),
+          id: organizationDoc.id,
+          ...organizationDoc.data(),
+          createdAt: organizationDoc.data().createdAt?.toDate(),
         } as Organization);
       }
     };
     fetchOrganization();
 
     // Fetch orders
-    const ordersQ = query(collection(db, 'tenants', organizationId, 'orders'));
+    const ordersQ = query(collection(db, 'organizations', organizationId, 'orders'));
     const ordersUnsubscribe = onSnapshot(ordersQ, (querySnapshot) => {
       const ordersData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -52,7 +52,7 @@ function OrdersContent() {
     });
 
     // Fetch payment types
-    const paymentTypesQ = query(collection(db, 'tenants', organizationId, 'paymentTypes'));
+    const paymentTypesQ = query(collection(db, 'organizations', organizationId, 'paymentTypes'));
     const paymentTypesUnsubscribe = onSnapshot(paymentTypesQ, (querySnapshot) => {
       const paymentTypesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -64,7 +64,7 @@ function OrdersContent() {
     });
 
     // Fetch users
-    const usersQ = query(collection(db, 'tenants', organizationId, 'users'));
+    const usersQ = query(collection(db, 'organizations', organizationId, 'users'));
     const usersUnsubscribe = onSnapshot(usersQ, (querySnapshot) => {
       const usersData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -82,7 +82,7 @@ function OrdersContent() {
     });
 
     // Fetch payments for each order
-    const paymentsQ = query(collection(db, 'tenants', organizationId, 'orderPayments'));
+    const paymentsQ = query(collection(db, 'organizations', organizationId, 'orderPayments'));
     const paymentsUnsubscribe = onSnapshot(paymentsQ, (querySnapshot) => {
       const paymentsData = querySnapshot.docs.map(doc => ({
         id: doc.id,

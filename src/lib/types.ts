@@ -5,6 +5,7 @@ export interface Product {
   price: number;
   category?: string;
   organizationId: string;
+  unit?: string;
 }
 
 export interface Service {

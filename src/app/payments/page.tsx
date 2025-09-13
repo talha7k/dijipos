@@ -29,7 +29,7 @@ function PaymentsContent() {
     if (!organizationId) return;
 
     // Fetch payments
-    const paymentsQ = query(collection(db, 'tenants', organizationId, 'payments'));
+    const paymentsQ = query(collection(db, 'organizations', organizationId, 'payments'));
     const paymentsUnsubscribe = onSnapshot(paymentsQ, (querySnapshot) => {
       const paymentsData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -40,7 +40,7 @@ function PaymentsContent() {
     });
 
     // Fetch invoices for payment creation
-    const invoicesQ = query(collection(db, 'tenants', organizationId, 'invoices'));
+    const invoicesQ = query(collection(db, 'organizations', organizationId, 'invoices'));
     const invoicesUnsubscribe = onSnapshot(invoicesQ, (querySnapshot) => {
       const invoicesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -60,7 +60,7 @@ function PaymentsContent() {
     e.preventDefault();
     if (!organizationId || !selectedInvoiceId) return;
 
-    await addDoc(collection(db, 'tenants', organizationId, 'payments'), {
+    await addDoc(collection(db, 'organizations', organizationId, 'payments'), {
       organizationId,
       invoiceId: selectedInvoiceId,
       amount: parseFloat(amount),

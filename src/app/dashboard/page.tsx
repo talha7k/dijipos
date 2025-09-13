@@ -43,7 +43,7 @@ function DashboardContent() {
 
     const unsubscribers = [
       // Quotes
-      onSnapshot(query(collection(db, 'tenants', organizationId, 'quotes')), (snapshot) => {
+      onSnapshot(query(collection(db, 'organizations', organizationId, 'quotes')), (snapshot) => {
         const quotes = snapshot.docs.map(doc => doc.data() as Quote);
         const total = quotes.reduce((sum, q) => sum + q.total, 0);
         const pending = quotes.filter(q => q.status === 'draft').length;
@@ -51,7 +51,7 @@ function DashboardContent() {
       }),
 
       // Invoices
-      onSnapshot(query(collection(db, 'tenants', organizationId, 'invoices')), (snapshot) => {
+      onSnapshot(query(collection(db, 'organizations', organizationId, 'invoices')), (snapshot) => {
         const invoices = snapshot.docs.map(doc => doc.data() as Invoice);
         const total = invoices.reduce((sum, inv) => sum + inv.total, 0);
         const unpaid = invoices.filter(inv => inv.status !== 'paid').reduce((sum, inv) => sum + inv.total, 0);
@@ -60,24 +60,24 @@ function DashboardContent() {
       }),
 
       // Payments
-      onSnapshot(query(collection(db, 'tenants', organizationId, 'payments')), (snapshot) => {
+      onSnapshot(query(collection(db, 'organizations', organizationId, 'payments')), (snapshot) => {
         const payments = snapshot.docs.map(doc => doc.data() as Payment);
         const total = payments.reduce((sum, p) => sum + p.amount, 0);
         setAnalytics(prev => ({ ...prev, payments: { total } }));
       }),
 
       // Products
-      onSnapshot(query(collection(db, 'tenants', organizationId, 'products')), (snapshot) => {
+      onSnapshot(query(collection(db, 'organizations', organizationId, 'products')), (snapshot) => {
         setAnalytics(prev => ({ ...prev, products: { count: snapshot.size } }));
       }),
 
       // Services
-      onSnapshot(query(collection(db, 'tenants', organizationId, 'services')), (snapshot) => {
+      onSnapshot(query(collection(db, 'organizations', organizationId, 'services')), (snapshot) => {
         setAnalytics(prev => ({ ...prev, services: { count: snapshot.size } }));
       }),
 
       // Tables
-      onSnapshot(query(collection(db, 'tenants', organizationId, 'tables')), (snapshot) => {
+      onSnapshot(query(collection(db, 'organizations', organizationId, 'tables')), (snapshot) => {
         const tables = snapshot.docs.map(doc => doc.data() as Table);
         const available = tables.filter(table => table.status === 'available').length;
         setAnalytics(prev => ({ ...prev, tables: { count: tables.length, available } }));

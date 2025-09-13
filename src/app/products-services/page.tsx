@@ -34,7 +34,7 @@ function ProductsContent() {
     if (!organizationId) return;
 
     // Fetch products
-    const productsQ = query(collection(db, 'tenants', organizationId, 'products'));
+    const productsQ = query(collection(db, 'organizations', organizationId, 'products'));
     const productsUnsubscribe = onSnapshot(productsQ, (querySnapshot) => {
       const productsData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -46,7 +46,7 @@ function ProductsContent() {
     });
 
     // Fetch services
-    const servicesQ = query(collection(db, 'tenants', organizationId, 'services'));
+    const servicesQ = query(collection(db, 'organizations', organizationId, 'services'));
     const servicesUnsubscribe = onSnapshot(servicesQ, (querySnapshot) => {
       const servicesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -58,7 +58,7 @@ function ProductsContent() {
     });
 
     // Fetch categories
-    const categoriesQ = query(collection(db, 'tenants', organizationId, 'categories'));
+    const categoriesQ = query(collection(db, 'organizations', organizationId, 'categories'));
     const categoriesUnsubscribe = onSnapshot(categoriesQ, (querySnapshot) => {
       const categoriesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -85,7 +85,7 @@ function ProductsContent() {
   }) => {
     if (!organizationId) return;
 
-    await addDoc(collection(db, 'tenants', organizationId, 'products'), {
+    await addDoc(collection(db, 'organizations', organizationId, 'products'), {
       name: product.name,
       description: product.description,
       price: product.price,
@@ -104,7 +104,7 @@ function ProductsContent() {
   }) => {
     if (!organizationId) return;
 
-    await addDoc(collection(db, 'tenants', organizationId, 'services'), {
+    await addDoc(collection(db, 'organizations', organizationId, 'services'), {
       name: service.name,
       description: service.description,
       price: service.price,
@@ -123,7 +123,7 @@ function ProductsContent() {
   }) => {
     if (!organizationId) return;
 
-    await addDoc(collection(db, 'tenants', organizationId, 'categories'), {
+    await addDoc(collection(db, 'organizations', organizationId, 'categories'), {
       name: category.name,
       description: category.description,
       type: category.type,
@@ -136,12 +136,12 @@ function ProductsContent() {
 
   const handleDeleteProduct = async (id: string) => {
     if (!organizationId) return;
-    await deleteDoc(doc(db, 'tenants', organizationId, 'products', id));
+    await deleteDoc(doc(db, 'organizations', organizationId, 'products', id));
   };
 
   const handleDeleteService = async (id: string) => {
     if (!organizationId) return;
-    await deleteDoc(doc(db, 'tenants', organizationId, 'services', id));
+    await deleteDoc(doc(db, 'organizations', organizationId, 'services', id));
   };
 
   const handleDeleteCategory = async (categoryId: string) => {
@@ -161,7 +161,7 @@ function ProductsContent() {
     const totalCount = itemCount + serviceCount;
     
     if (confirm(`Are you sure you want to delete the category "${category.name}"?${totalCount > 0 ? ` This will also remove ${totalCount} item${totalCount > 1 ? 's' : ''} in this category.` : ''}`)) {
-      await deleteDoc(doc(db, 'tenants', organizationId, 'categories', categoryId));
+      await deleteDoc(doc(db, 'organizations', organizationId, 'categories', categoryId));
     }
   };
 

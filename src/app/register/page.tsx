@@ -15,7 +15,7 @@ import { toast } from 'sonner';
 function RegisterContent() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [tenantName, setTenantName] = useState('');
+  const [organizationName, setOrganizationName] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -38,9 +38,9 @@ function RegisterContent() {
 
       // Create organization document
       const organizationId = user.uid;
-      await setDoc(doc(db, 'tenants', organizationId), {
+      await setDoc(doc(db, 'organizations', organizationId), {
         id: organizationId,
-        name: tenantName,
+        name: organizationName,
         email: email,
         createdAt: new Date(),
         subscriptionStatus: 'trial',
@@ -94,11 +94,11 @@ function RegisterContent() {
         <CardContent>
           <form onSubmit={handleRegister} className="space-y-4">
             <div>
-              <Label htmlFor="tenantName">Organization Name</Label>
+              <Label htmlFor="organizationName">Organization Name</Label>
               <Input
-                id="tenantName"
-                value={tenantName}
-                onChange={(e) => setTenantName(e.target.value)}
+                id="organizationName"
+                value={organizationName}
+                onChange={(e) => setOrganizationName(e.target.value)}
                 required
               />
             </div>

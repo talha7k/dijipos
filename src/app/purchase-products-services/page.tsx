@@ -39,7 +39,7 @@ function ProductsContent() {
     if (!organizationId) return;
 
     // Fetch products
-    const productsQ = query(collection(db, 'tenants', organizationId, 'purchase-products'));
+    const productsQ = query(collection(db, 'organizations', organizationId, 'purchase-products'));
     const productsUnsubscribe = onSnapshot(productsQ, (querySnapshot) => {
       const productsData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -51,7 +51,7 @@ function ProductsContent() {
     });
 
     // Fetch services
-    const servicesQ = query(collection(db, 'tenants', organizationId, 'purchase-services'));
+    const servicesQ = query(collection(db, 'organizations', organizationId, 'purchase-services'));
     const servicesUnsubscribe = onSnapshot(servicesQ, (querySnapshot) => {
       const servicesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -63,7 +63,7 @@ function ProductsContent() {
     });
 
     // Fetch categories
-    const categoriesQ = query(collection(db, 'tenants', organizationId, 'categories'));
+    const categoriesQ = query(collection(db, 'organizations', organizationId, 'categories'));
     const categoriesUnsubscribe = onSnapshot(categoriesQ, (querySnapshot) => {
       const categoriesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -86,7 +86,7 @@ function ProductsContent() {
     e.preventDefault();
     if (!organizationId) return;
 
-    await addDoc(collection(db, 'tenants', organizationId, 'purchase-products'), {
+    await addDoc(collection(db, 'organizations', organizationId, 'purchase-products'), {
       name: productName,
       description: productDescription,
       price: parseFloat(productPrice),
@@ -107,7 +107,7 @@ function ProductsContent() {
     e.preventDefault();
     if (!organizationId) return;
 
-    await addDoc(collection(db, 'tenants', organizationId, 'purchase-services'), {
+    await addDoc(collection(db, 'organizations', organizationId, 'purchase-services'), {
       name: serviceName,
       description: serviceDescription,
       price: parseFloat(servicePrice),
@@ -126,12 +126,12 @@ function ProductsContent() {
 
   const handleDeleteProduct = async (id: string) => {
     if (!organizationId) return;
-    await deleteDoc(doc(db, 'tenants', organizationId, 'purchase-products', id));
+    await deleteDoc(doc(db, 'organizations', organizationId, 'purchase-products', id));
   };
 
   const handleDeleteService = async (id: string) => {
     if (!organizationId) return;
-    await deleteDoc(doc(db, 'tenants', organizationId, 'purchase-services', id));
+    await deleteDoc(doc(db, 'organizations', organizationId, 'purchase-services', id));
   };
 
   if (loading) return <div>Loading...</div>;

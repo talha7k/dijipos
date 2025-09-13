@@ -7,13 +7,13 @@ service firebase.storage {
     }
 
     // Helper function to check if user owns the organization
-    function isTenantOwner(organizationId) {
+    function isOrganizationOwner(organizationId) {
       return isAuthenticated() && request.auth.uid == organizationId;
     }
 
     // Organization-specific files (logos, stamps, etc.)
-    match /tenants/{organizationId}/{allPaths=**} {
-      allow read, write: if isTenantOwner(organizationId);
+    match /organizations/{organizationId}/{allPaths=**} {
+      allow read, write: if isOrganizationOwner(organizationId);
     }
 
     // Public files (if needed)

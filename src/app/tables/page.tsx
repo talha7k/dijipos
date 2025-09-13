@@ -24,7 +24,7 @@ export default function TablesPage() {
     if (!organizationId) return;
 
     // Fetch tables
-    const tablesQ = query(collection(db, 'tenants', organizationId, 'tables'));
+    const tablesQ = query(collection(db, 'organizations', organizationId, 'tables'));
     const tablesUnsubscribe = onSnapshot(tablesQ, (querySnapshot) => {
       const tablesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -48,7 +48,7 @@ export default function TablesPage() {
   }) => {
     if (!organizationId) return;
 
-    await addDoc(collection(db, 'tenants', organizationId, 'tables'), {
+    await addDoc(collection(db, 'organizations', organizationId, 'tables'), {
       name: table.name,
       capacity: table.capacity,
       status: table.status,
@@ -66,7 +66,7 @@ export default function TablesPage() {
     if (!organizationId) return;
 
     const promises = tables.map(table =>
-      addDoc(collection(db, 'tenants', organizationId, 'tables'), {
+      addDoc(collection(db, 'organizations', organizationId, 'tables'), {
         name: table.name,
         capacity: table.capacity,
         status: table.status,
@@ -82,7 +82,7 @@ export default function TablesPage() {
   const handleDeleteTable = async (tableId: string) => {
     if (!organizationId) return;
     if (confirm('Are you sure you want to delete this table?')) {
-      await deleteDoc(doc(db, 'tenants', organizationId, 'tables', tableId));
+      await deleteDoc(doc(db, 'organizations', organizationId, 'tables', tableId));
     }
   };
 

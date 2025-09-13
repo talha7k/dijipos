@@ -64,7 +64,7 @@ A multi-organization SaaS platform for invoice management built with Next.js, Sh
 Data is stored in Firestore with organization isolation:
 
 ```
-/tenants/{organizationId}/
+/organizations/{organizationId}/
   - quotes/
   - invoices/
   - products/

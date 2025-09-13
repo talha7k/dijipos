@@ -31,18 +31,18 @@ function InvoicesContent() {
 
     // Fetch organization data
     const fetchOrganization = async () => {
-      const tenantDoc = await getDoc(doc(db, 'tenants', organizationId));
-      if (tenantDoc.exists()) {
+      const organizationDoc = await getDoc(doc(db, 'organizations', organizationId));
+      if (organizationDoc.exists()) {
         setOrganization({
-          id: tenantDoc.id,
-          ...tenantDoc.data(),
-          createdAt: tenantDoc.data().createdAt?.toDate(),
+          id: organizationDoc.id,
+          ...organizationDoc.data(),
+          createdAt: organizationDoc.data().createdAt?.toDate(),
         } as Organization);
       }
     };
     fetchOrganization();
 
-    const q = query(collection(db, 'tenants', organizationId, 'purchase-invoices'));
+    const q = query(collection(db, 'organizations', organizationId, 'purchase-invoices'));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const invoicesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -61,7 +61,7 @@ function InvoicesContent() {
   const handleStatusChange = async (invoiceId: string, status: Invoice['status']) => {
     if (!organizationId) return;
 
-    const invoiceRef = doc(db, 'tenants', organizationId, 'purchase-invoices', invoiceId);
+    const invoiceRef = doc(db, 'organizations', organizationId, 'purchase-invoices', invoiceId);
     await updateDoc(invoiceRef, { status, updatedAt: new Date() });
   };
 
@@ -85,12 +85,12 @@ function InvoicesContent() {
       updatedAt: new Date(),
     };
 
-    await addDoc(collection(db, 'tenants', organizationId, 'purchase-invoices'), cleanedData);
+    await addDoc(collection(db, 'organizations', organizationId, 'purchase-invoices'), cleanedData);
     setDialogOpen(false);
   };
 
-  const handlePrintInvoice = (invoice: Invoice, tenantData: Organization) => {
-    if (!tenantData) return;
+  const handlePrintInvoice = (invoice: Invoice, organizationData: Organization) => {
+    if (!organizationData) return;
 
     // Create a new window for printing
     const printWindow = window.open('', '_blank');
@@ -98,8 +98,8 @@ function InvoicesContent() {
 
     // Create the invoice HTML content
     const invoiceContent = invoice.template === 'arabic' 
-      ? createArabicInvoiceHTML(invoice, tenantData)
-      : createEnglishInvoiceHTML(invoice, tenantData);
+      ? createArabicInvoiceHTML(invoice, organizationData)
+      : createEnglishInvoiceHTML(invoice, organizationData);
 
     // Write the HTML to the new window
     printWindow.document.write(`
@@ -179,7 +179,7 @@ function InvoicesContent() {
     };
   };
 
-  const createEnglishInvoiceHTML = (invoice: Invoice, tenantData: Organization) => {
+  const createEnglishInvoiceHTML = (invoice: Invoice, organizationData: Organization) => {
     return `
       <div class="invoice-container">
         <div class="flex justify-between items-start mb-8">
@@ -188,11 +188,11 @@ function InvoicesContent() {
             <p class="text-gray-600">Purchase Invoice #${invoice.id.slice(-8)}</p>
           </div>
           <div class="text-right">
-            <h2 class="text-xl font-semibold">${tenantData.name}</h2>
-            <p>${tenantData.address}</p>
-            <p>${tenantData.email}</p>
-            <p>${tenantData.phone}</p>
-            ${tenantData.vatNumber ? `<p>VAT: ${tenantData.vatNumber}</p>` : ''}
+            <h2 class="text-xl font-semibold">${organizationData.name}</h2>
+            <p>${organizationData.address}</p>
+            <p>${organizationData.email}</p>
+            <p>${organizationData.phone}</p>
+            ${organizationData.vatNumber ? `<p>VAT: ${organizationData.vatNumber}</p>` : ''}
           </div>
         </div>
 
@@ -272,7 +272,7 @@ function InvoicesContent() {
           </div>
         ` : ''}
 
-        ${invoice.includeQR && tenantData.vatNumber ? `
+        ${invoice.includeQR && organizationData.vatNumber ? `
           <div class="flex justify-end">
             <div class="text-center">
               <p class="text-sm text-gray-600 mb-2">ZATCA Compliant QR Code</p>
@@ -286,7 +286,7 @@ function InvoicesContent() {
     `;
   };
 
-  const createArabicInvoiceHTML = (invoice: Invoice, tenantData: Organization) => {
+  const createArabicInvoiceHTML = (invoice: Invoice, organizationData: Organization) => {
     return `
       <div class="invoice-container" dir="rtl" style="font-family: Arial, sans-serif;">
         <div class="flex justify-between items-start mb-8 flex-row-reverse">
@@ -295,11 +295,11 @@ function InvoicesContent() {
             <p class="text-gray-600">رقم فاتورة الشراء #${invoice.id.slice(-8)}</p>
           </div>
           <div class="text-left">
-            <h2 class="text-xl font-semibold">${tenantData.name}</h2>
-            <p>${tenantData.address}</p>
-            <p>${tenantData.email}</p>
-            <p>${tenantData.phone}</p>
-            ${tenantData.vatNumber ? `<p>الرقم الضريبي: ${tenantData.vatNumber}</p>` : ''}
+            <h2 class="text-xl font-semibold">${organizationData.name}</h2>
+            <p>${organizationData.address}</p>
+            <p>${organizationData.email}</p>
+            <p>${organizationData.phone}</p>
+            ${organizationData.vatNumber ? `<p>الرقم الضريبي: ${organizationData.vatNumber}</p>` : ''}
           </div>
         </div>
 
@@ -379,7 +379,7 @@ function InvoicesContent() {
           </div>
         ` : ''}
 
-        ${invoice.includeQR && tenantData.vatNumber ? `
+        ${invoice.includeQR && organizationData.vatNumber ? `
           <div class="flex justify-start">
             <div class="text-center">
               <p class="text-sm text-gray-600 mb-2">رمز QR متوافق مع زاتكا</p>
@@ -462,7 +462,7 @@ function InvoicesContent() {
                                   onClick={() => {
                                     const updatedInvoice = { ...selectedInvoice, template: 'english' as const };
                                     setSelectedInvoice(updatedInvoice);
-                                    updateDoc(doc(db, 'tenants', organizationId!, 'purchase-invoices', selectedInvoice.id), {
+                                    updateDoc(doc(db, 'organizations', organizationId!, 'purchase-invoices', selectedInvoice.id), {
                                       template: 'english'
                                     });
                                   }}
@@ -474,7 +474,7 @@ function InvoicesContent() {
                                   onClick={() => {
                                     const updatedInvoice = { ...selectedInvoice, template: 'arabic' as const };
                                     setSelectedInvoice(updatedInvoice);
-                                    updateDoc(doc(db, 'tenants', organizationId!, 'purchase-invoices', selectedInvoice.id), {
+                                    updateDoc(doc(db, 'organizations', organizationId!, 'purchase-invoices', selectedInvoice.id), {
                                       template: 'arabic'
                                     });
                                   }}
@@ -493,7 +493,7 @@ function InvoicesContent() {
                                     onCheckedChange={(checked) => {
                                       const updatedInvoice = { ...selectedInvoice, includeQR: checked };
                                       setSelectedInvoice(updatedInvoice);
-                                      updateDoc(doc(db, 'tenants', organizationId!, 'purchase-invoices', selectedInvoice.id), {
+                                      updateDoc(doc(db, 'organizations', organizationId!, 'purchase-invoices', selectedInvoice.id), {
                                         includeQR: checked
                                       });
                                     }}

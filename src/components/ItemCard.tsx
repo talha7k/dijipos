@@ -32,7 +32,7 @@ export function ItemCard({ item, onClick, className = '' }: ItemCardProps) {
         </div>
       </div>
       <div className="flex-1 flex flex-col">
-        <div className="text-center text-muted-foreground text-xs line-clamp-4 mb-2 px-3">
+        <div className="text-center text-muted-foreground text-xs line-clamp-2 mb-2 px-3">
           {item.description}
         </div>
         <div className="mt-auto">

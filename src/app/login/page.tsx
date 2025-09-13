@@ -201,12 +201,12 @@ function LoginContent() {
       const user = result.user;
 
       // Check if organization exists, if not create one
-      const tenantRef = doc(db, 'tenants', user.uid);
-      const tenantSnap = await getDoc(tenantRef);
+      const organizationRef = doc(db, 'organizations', user.uid);
+      const organizationSnap = await getDoc(organizationRef);
 
-      if (!tenantSnap.exists()) {
+      if (!organizationSnap.exists()) {
         // Create organization for Google user
-        await setDoc(tenantRef, {
+        await setDoc(organizationRef, {
           id: user.uid,
           name: user.displayName || 'My Organization',
           email: user.email,

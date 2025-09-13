@@ -31,7 +31,7 @@ const POS_STORAGE_KEYS = {
 };
 
 // Helper function to get organization-specific storage key
-const getTenantStorageKey = (baseKey: string, organizationId?: string) => {
+const getOrganizationStorageKey = (baseKey: string, organizationId?: string) => {
   return organizationId ? `${organizationId}_${baseKey}` : baseKey;
 };
 
@@ -53,7 +53,7 @@ export const usePOSPersistence = (organizationId?: string) => {
     }
 
     // Load cart
-    const cartKey = getTenantStorageKey(POS_STORAGE_KEYS.CART, organizationId);
+    const cartKey = getOrganizationStorageKey(POS_STORAGE_KEYS.CART, organizationId);
     console.log('Looking for cart with key:', cartKey);
     const savedCart = localStorage.getItem(cartKey);
     console.log('Loading cart from localStorage:', savedCart);
@@ -89,73 +89,73 @@ export const usePOSPersistence = (organizationId?: string) => {
     }
 
     // Load selected table
-    const savedTable = localStorage.getItem(getTenantStorageKey(POS_STORAGE_KEYS.TABLE, organizationId));
+    const savedTable = localStorage.getItem(getOrganizationStorageKey(POS_STORAGE_KEYS.TABLE, organizationId));
     if (savedTable) {
       try {
         const parsedTable = JSON.parse(savedTable);
         setSelectedTable(parsedTable);
       } catch (error) {
         console.error('Error loading table from localStorage:', error);
-        localStorage.removeItem(getTenantStorageKey(POS_STORAGE_KEYS.TABLE, organizationId));
+        localStorage.removeItem(getOrganizationStorageKey(POS_STORAGE_KEYS.TABLE, organizationId));
       }
     }
 
     // Load selected customer
-    const savedCustomer = localStorage.getItem(getTenantStorageKey(POS_STORAGE_KEYS.CUSTOMER, organizationId));
+    const savedCustomer = localStorage.getItem(getOrganizationStorageKey(POS_STORAGE_KEYS.CUSTOMER, organizationId));
     if (savedCustomer) {
       try {
         const parsedCustomer = JSON.parse(savedCustomer);
         setSelectedCustomer(parsedCustomer);
       } catch (error) {
         console.error('Error loading customer from localStorage:', error);
-        localStorage.removeItem(getTenantStorageKey(POS_STORAGE_KEYS.CUSTOMER, organizationId));
+        localStorage.removeItem(getOrganizationStorageKey(POS_STORAGE_KEYS.CUSTOMER, organizationId));
       }
     }
 
     // Load selected order type (using the standard storage key)
-    const savedOrderTypeFromStandardKey = localStorage.getItem(getTenantStorageKey(POS_STORAGE_KEYS.ORDER_TYPE, organizationId));
+    const savedOrderTypeFromStandardKey = localStorage.getItem(getOrganizationStorageKey(POS_STORAGE_KEYS.ORDER_TYPE, organizationId));
     if (savedOrderTypeFromStandardKey) {
       try {
         const parsedOrderType = JSON.parse(savedOrderTypeFromStandardKey);
         setSelectedOrderType(parsedOrderType);
       } catch (error) {
         console.error('Error loading order type from localStorage (standard key):', error);
-        localStorage.removeItem(getTenantStorageKey(POS_STORAGE_KEYS.ORDER_TYPE, organizationId));
+        localStorage.removeItem(getOrganizationStorageKey(POS_STORAGE_KEYS.ORDER_TYPE, organizationId));
       }
     }
 
     // Load current view
-    const savedCurrentView = localStorage.getItem(getTenantStorageKey(POS_STORAGE_KEYS.VIEW, organizationId));
+    const savedCurrentView = localStorage.getItem(getOrganizationStorageKey(POS_STORAGE_KEYS.VIEW, organizationId));
     if (savedCurrentView) {
       try {
         setCurrentView(savedCurrentView as 'items' | 'tables' | 'customers' | 'orders' | 'payment');
       } catch (error) {
         console.error('Error loading current view from localStorage:', error);
-        localStorage.removeItem(getTenantStorageKey(POS_STORAGE_KEYS.VIEW, organizationId));
+        localStorage.removeItem(getOrganizationStorageKey(POS_STORAGE_KEYS.VIEW, organizationId));
       }
     }
 
     // Load category path
-    const savedCategoryPath = localStorage.getItem(getTenantStorageKey(POS_STORAGE_KEYS.CATEGORY_PATH, organizationId));
+    const savedCategoryPath = localStorage.getItem(getOrganizationStorageKey(POS_STORAGE_KEYS.CATEGORY_PATH, organizationId));
     if (savedCategoryPath) {
       try {
         const parsedCategoryPath = JSON.parse(savedCategoryPath);
         setCategoryPath(parsedCategoryPath);
       } catch (error) {
         console.error('Error loading category path from localStorage:', error);
-        localStorage.removeItem(getTenantStorageKey(POS_STORAGE_KEYS.CATEGORY_PATH, organizationId));
+        localStorage.removeItem(getOrganizationStorageKey(POS_STORAGE_KEYS.CATEGORY_PATH, organizationId));
       }
     }
 
     // Load selected order
-    const savedSelectedOrder = localStorage.getItem(getTenantStorageKey(POS_STORAGE_KEYS.ORDER, organizationId));
+    const savedSelectedOrder = localStorage.getItem(getOrganizationStorageKey(POS_STORAGE_KEYS.ORDER, organizationId));
     if (savedSelectedOrder) {
       try {
         const parsedSelectedOrder = JSON.parse(savedSelectedOrder);
         setSelectedOrder(parsedSelectedOrder);
       } catch (error) {
         console.error('Error loading selected order from localStorage:', error);
-        localStorage.removeItem(getTenantStorageKey(POS_STORAGE_KEYS.ORDER, organizationId));
+        localStorage.removeItem(getOrganizationStorageKey(POS_STORAGE_KEYS.ORDER, organizationId));
       }
     }
   }, [organizationId]);
@@ -168,7 +168,7 @@ export const usePOSPersistence = (organizationId?: string) => {
       return;
     }
     
-    const cartKey = getTenantStorageKey(POS_STORAGE_KEYS.CART, organizationId);
+    const cartKey = getOrganizationStorageKey(POS_STORAGE_KEYS.CART, organizationId);
     console.log('Saving cart to localStorage with key:', cartKey);
     console.log('Cart data:', cart);
     localStorage.setItem(cartKey, JSON.stringify(cart));
@@ -181,7 +181,7 @@ export const usePOSPersistence = (organizationId?: string) => {
     
     // Save to both the custom key and the standard key for compatibility
     const orderTypeKey = `${organizationId}_posOrderType`;
-    const standardOrderTypeKey = getTenantStorageKey(POS_STORAGE_KEYS.ORDER_TYPE, organizationId);
+    const standardOrderTypeKey = getOrganizationStorageKey(POS_STORAGE_KEYS.ORDER_TYPE, organizationId);
     
     console.log('Saving order type to localStorage with key:', orderTypeKey);
     console.log('Order type data:', selectedOrderType);
@@ -192,53 +192,53 @@ export const usePOSPersistence = (organizationId?: string) => {
 
   useEffect(() => {
     if (selectedTable) {
-      localStorage.setItem(getTenantStorageKey(POS_STORAGE_KEYS.TABLE, organizationId), JSON.stringify(selectedTable));
+      localStorage.setItem(getOrganizationStorageKey(POS_STORAGE_KEYS.TABLE, organizationId), JSON.stringify(selectedTable));
     } else {
-      localStorage.removeItem(getTenantStorageKey(POS_STORAGE_KEYS.TABLE, organizationId));
+      localStorage.removeItem(getOrganizationStorageKey(POS_STORAGE_KEYS.TABLE, organizationId));
     }
   }, [selectedTable, organizationId]);
 
   useEffect(() => {
     if (selectedCustomer) {
-      localStorage.setItem(getTenantStorageKey(POS_STORAGE_KEYS.CUSTOMER, organizationId), JSON.stringify(selectedCustomer));
+      localStorage.setItem(getOrganizationStorageKey(POS_STORAGE_KEYS.CUSTOMER, organizationId), JSON.stringify(selectedCustomer));
     } else {
-      localStorage.removeItem(getTenantStorageKey(POS_STORAGE_KEYS.CUSTOMER, organizationId));
+      localStorage.removeItem(getOrganizationStorageKey(POS_STORAGE_KEYS.CUSTOMER, organizationId));
     }
   }, [selectedCustomer, organizationId]);
 
   useEffect(() => {
     if (selectedOrderType) {
-      localStorage.setItem(getTenantStorageKey(POS_STORAGE_KEYS.ORDER_TYPE, organizationId), JSON.stringify(selectedOrderType));
+      localStorage.setItem(getOrganizationStorageKey(POS_STORAGE_KEYS.ORDER_TYPE, organizationId), JSON.stringify(selectedOrderType));
     } else {
-      localStorage.removeItem(getTenantStorageKey(POS_STORAGE_KEYS.ORDER_TYPE, organizationId));
+      localStorage.removeItem(getOrganizationStorageKey(POS_STORAGE_KEYS.ORDER_TYPE, organizationId));
     }
   }, [selectedOrderType, organizationId]);
 
   useEffect(() => {
-    localStorage.setItem(getTenantStorageKey(POS_STORAGE_KEYS.VIEW, organizationId), currentView);
+    localStorage.setItem(getOrganizationStorageKey(POS_STORAGE_KEYS.VIEW, organizationId), currentView);
   }, [currentView, organizationId]);
 
   useEffect(() => {
-    localStorage.setItem(getTenantStorageKey(POS_STORAGE_KEYS.CATEGORY_PATH, organizationId), JSON.stringify(categoryPath));
+    localStorage.setItem(getOrganizationStorageKey(POS_STORAGE_KEYS.CATEGORY_PATH, organizationId), JSON.stringify(categoryPath));
   }, [categoryPath, organizationId]);
 
   useEffect(() => {
     if (selectedOrder) {
-      localStorage.setItem(getTenantStorageKey(POS_STORAGE_KEYS.ORDER, organizationId), JSON.stringify(selectedOrder));
+      localStorage.setItem(getOrganizationStorageKey(POS_STORAGE_KEYS.ORDER, organizationId), JSON.stringify(selectedOrder));
     } else {
-      localStorage.removeItem(getTenantStorageKey(POS_STORAGE_KEYS.ORDER, organizationId));
+      localStorage.removeItem(getOrganizationStorageKey(POS_STORAGE_KEYS.ORDER, organizationId));
     }
   }, [selectedOrder, organizationId]);
 
   // Clear all POS data
   const clearPOSData = () => {
-    localStorage.removeItem(getTenantStorageKey(POS_STORAGE_KEYS.CART, organizationId));
-    localStorage.removeItem(getTenantStorageKey(POS_STORAGE_KEYS.TABLE, organizationId));
-    localStorage.removeItem(getTenantStorageKey(POS_STORAGE_KEYS.CUSTOMER, organizationId));
-    localStorage.removeItem(getTenantStorageKey(POS_STORAGE_KEYS.ORDER_TYPE, organizationId));
-    localStorage.removeItem(getTenantStorageKey(POS_STORAGE_KEYS.VIEW, organizationId));
-    localStorage.removeItem(getTenantStorageKey(POS_STORAGE_KEYS.CATEGORY_PATH, organizationId));
-    localStorage.removeItem(getTenantStorageKey(POS_STORAGE_KEYS.ORDER, organizationId));
+    localStorage.removeItem(getOrganizationStorageKey(POS_STORAGE_KEYS.CART, organizationId));
+    localStorage.removeItem(getOrganizationStorageKey(POS_STORAGE_KEYS.TABLE, organizationId));
+    localStorage.removeItem(getOrganizationStorageKey(POS_STORAGE_KEYS.CUSTOMER, organizationId));
+    localStorage.removeItem(getOrganizationStorageKey(POS_STORAGE_KEYS.ORDER_TYPE, organizationId));
+    localStorage.removeItem(getOrganizationStorageKey(POS_STORAGE_KEYS.VIEW, organizationId));
+    localStorage.removeItem(getOrganizationStorageKey(POS_STORAGE_KEYS.CATEGORY_PATH, organizationId));
+    localStorage.removeItem(getOrganizationStorageKey(POS_STORAGE_KEYS.ORDER, organizationId));
   };
 
   // Clear cart with confirmation
@@ -255,13 +255,13 @@ export const usePOSPersistence = (organizationId?: string) => {
       setSelectedOrder(null);
       
       // Explicitly clear cart from localStorage but preserve order type
-      localStorage.removeItem(getTenantStorageKey(POS_STORAGE_KEYS.CART, organizationId));
-      localStorage.removeItem(getTenantStorageKey(POS_STORAGE_KEYS.TABLE, organizationId));
-      localStorage.removeItem(getTenantStorageKey(POS_STORAGE_KEYS.CUSTOMER, organizationId));
-      localStorage.removeItem(getTenantStorageKey(POS_STORAGE_KEYS.CATEGORY_PATH, organizationId));
-      localStorage.removeItem(getTenantStorageKey(POS_STORAGE_KEYS.ORDER, organizationId));
+      localStorage.removeItem(getOrganizationStorageKey(POS_STORAGE_KEYS.CART, organizationId));
+      localStorage.removeItem(getOrganizationStorageKey(POS_STORAGE_KEYS.TABLE, organizationId));
+      localStorage.removeItem(getOrganizationStorageKey(POS_STORAGE_KEYS.CUSTOMER, organizationId));
+      localStorage.removeItem(getOrganizationStorageKey(POS_STORAGE_KEYS.CATEGORY_PATH, organizationId));
+      localStorage.removeItem(getOrganizationStorageKey(POS_STORAGE_KEYS.ORDER, organizationId));
       // Don't remove order type from localStorage
-      // localStorage.removeItem(getTenantStorageKey(POS_STORAGE_KEYS.ORDER_TYPE, organizationId));
+      // localStorage.removeItem(getOrganizationStorageKey(POS_STORAGE_KEYS.ORDER_TYPE, organizationId));
     }
   };
 

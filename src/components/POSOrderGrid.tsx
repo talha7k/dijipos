@@ -47,89 +47,95 @@ export function POSOrderGrid({ orders, onOrderSelect, onPaymentClick, onBack }: 
 
   if (selectedOrder) {
     return (
-      <div className="flex-1 overflow-auto p-4 bg-background">
-        <div className="flex items-center gap-4 mb-6">
-          <Button variant="ghost" onClick={() => setSelectedOrder(null)}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Orders
-          </Button>
-          <h2 className="text-2xl font-bold">Order #{selectedOrder.orderNumber}</h2>
+      <div className="flex-1 flex flex-col bg-background">
+        <div className="flex-shrink-0 p-4 border-b">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" onClick={() => setSelectedOrder(null)}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Orders
+            </Button>
+            <h2 className="text-2xl font-bold">Order #{selectedOrder.orderNumber}</h2>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Order Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex justify-between">
-                <span>Status:</span>
-                <Badge className={`${getStatusColor(selectedOrder.status)} text-white`}>
-                  {getStatusIcon(selectedOrder.status)}
-                  <span className="ml-1 capitalize">{selectedOrder.status}</span>
-                </Badge>
-              </div>
-              <div className="flex justify-between">
-                <span>Customer:</span>
-                <span>{selectedOrder.customerName || 'Walk-in'}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Table:</span>
-                <span>{selectedOrder.tableName || 'N/A'}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Order Type:</span>
-                <span className="capitalize">{selectedOrder.orderType}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Created:</span>
-                <span>{selectedOrder.createdAt.toLocaleString()}</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Order Items</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {selectedOrder.items.map((item) => (
-                  <div key={item.id} className="flex justify-between items-center p-2 border rounded">
-                    <div>
-                      <div className="font-medium">{item.name}</div>
-                      <div className="text-sm text-muted-foreground">
-                        ${item.unitPrice.toFixed(2)} × {item.quantity}
-                      </div>
-                    </div>
-                    <div className="font-medium">${item.total.toFixed(2)}</div>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-4 pt-4 border-t">
-                <div className="flex justify-between text-lg font-bold">
-                  <span>Total:</span>
-                  <span>${selectedOrder.total.toFixed(2)}</span>
+        <div className="flex-1 overflow-auto p-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Order Details</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between">
+                  <span>Status:</span>
+                  <Badge className={`${getStatusColor(selectedOrder.status)} text-white`}>
+                    {getStatusIcon(selectedOrder.status)}
+                    <span className="ml-1 capitalize">{selectedOrder.status}</span>
+                  </Badge>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+                <div className="flex justify-between">
+                  <span>Customer:</span>
+                  <span>{selectedOrder.customerName || 'Walk-in'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Table:</span>
+                  <span>{selectedOrder.tableName || 'N/A'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Order Type:</span>
+                  <span className="capitalize">{selectedOrder.orderType}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Created:</span>
+                  <span>{selectedOrder.createdAt.toLocaleString()}</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Order Items</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {selectedOrder.items.map((item) => (
+                    <div key={item.id} className="flex justify-between items-center p-2 border rounded">
+                      <div>
+                        <div className="font-medium">{item.name}</div>
+                        <div className="text-sm text-muted-foreground">
+                          ${item.unitPrice.toFixed(2)} × {item.quantity}
+                        </div>
+                      </div>
+                      <div className="font-medium">${item.total.toFixed(2)}</div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-4 pt-4 border-t">
+                  <div className="flex justify-between text-lg font-bold">
+                    <span>Total:</span>
+                    <span>${selectedOrder.total.toFixed(2)}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
-        <div className="mt-6 flex gap-4">
-          <Button
-            onClick={() => onOrderSelect(selectedOrder)}
-            className="flex-1"
-            variant="outline"
-          >
-            Reopen Order
-          </Button>
-          <Button
-            onClick={() => onPaymentClick(selectedOrder)}
-            className="flex-1"
-          >
-            Process Payment
-          </Button>
+        <div className="flex-shrink-0 p-4 border-t bg-background">
+          <div className="flex gap-4">
+            <Button
+              onClick={() => onOrderSelect(selectedOrder)}
+              className="flex-1"
+              variant="outline"
+            >
+              Reopen Order
+            </Button>
+            <Button
+              onClick={() => onPaymentClick(selectedOrder)}
+              className="flex-1"
+            >
+              Process Payment
+            </Button>
+          </div>
         </div>
       </div>
     );

@@ -21,7 +21,7 @@ function QuotesContent() {
   useEffect(() => {
     if (!organizationId) return;
 
-    const q = query(collection(db, 'tenants', organizationId, 'quotes'));
+    const q = query(collection(db, 'organizations', organizationId, 'quotes'));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const quotesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -57,14 +57,14 @@ function QuotesContent() {
       updatedAt: new Date(),
     };
 
-    await addDoc(collection(db, 'tenants', organizationId, 'quotes'), cleanedData);
+    await addDoc(collection(db, 'organizations', organizationId, 'quotes'), cleanedData);
     setDialogOpen(false);
   };
 
   const handleConvertToInvoice = async (quoteId: string) => {
     if (!organizationId) return;
 
-    const quoteRef = doc(db, 'tenants', organizationId, 'quotes', quoteId);
+    const quoteRef = doc(db, 'organizations', organizationId, 'quotes', quoteId);
     await updateDoc(quoteRef, { status: 'converted' });
 
     const quote = quotes.find(q => q.id === quoteId);
@@ -96,7 +96,7 @@ function QuotesContent() {
         updatedAt: new Date(),
       };
 
-      await addDoc(collection(db, 'tenants', organizationId, 'invoices'), cleanedQuoteData);
+      await addDoc(collection(db, 'organizations', organizationId, 'invoices'), cleanedQuoteData);
     }
   };
 

@@ -64,7 +64,7 @@ export default function ReportsPage() {
     
     setLoading(true);
     try {
-      const invoicesRef = collection(db, 'tenants', organizationId, 'invoices');
+      const invoicesRef = collection(db, 'organizations', organizationId, 'invoices');
       const q = query(invoicesRef);
       const querySnapshot = await getDocs(q);
       

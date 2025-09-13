@@ -1,25 +1,18 @@
-import withPWA from 'next-pwa';
+import type { NextConfig } from "next";
+import { PHASE_DEVELOPMENT_SERVER } from "next/constants";
 
-const nextConfig = {
-  turbopack: {
-    // Turbopack configuration
-    rules: {
-      // Add any custom loader rules here if needed
-    },
-    resolveAlias: {
-      // Add any module aliases here if needed
-    },
-    resolveExtensions: ['.tsx', '.ts', '.jsx', '.js', '.json'],
-  },
+const nextConfig = (phase: string) => {
+  if (phase === PHASE_DEVELOPMENT_SERVER) {
+    console.log("Happy development session ;)");
+  }
+
+  const nextConfigOptions: NextConfig = {
+    reactStrictMode: true,
+    poweredByHeader: false,
+    typedRoutes: true,
+  };
+
+  return nextConfigOptions;
 };
 
-// Only apply PWA configuration in production
-const withPWAConfig = process.env.NODE_ENV === 'production' 
-  ? withPWA({
-      dest: "public",
-      register: true,
-      skipWaiting: true,
-    })
-  : (config: any) => config;
-
-export default withPWAConfig(nextConfig);
+export default nextConfig;

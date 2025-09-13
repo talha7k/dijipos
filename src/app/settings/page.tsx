@@ -69,7 +69,7 @@ function SettingsContent() {
     if (!organizationId) return;
 
     // Fetch order types
-    const orderTypesQ = query(collection(db, 'tenants', organizationId, 'orderTypes'));
+    const orderTypesQ = query(collection(db, 'organizations', organizationId, 'orderTypes'));
     const orderTypesUnsubscribe = onSnapshot(orderTypesQ, (querySnapshot) => {
       const orderTypesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -81,7 +81,7 @@ function SettingsContent() {
     });
 
     // Fetch payment types
-    const paymentTypesQ = query(collection(db, 'tenants', organizationId, 'paymentTypes'));
+    const paymentTypesQ = query(collection(db, 'organizations', organizationId, 'paymentTypes'));
     const paymentTypesUnsubscribe = onSnapshot(paymentTypesQ, (querySnapshot) => {
       const paymentTypesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -94,7 +94,7 @@ function SettingsContent() {
 
     // Fetch VAT settings
     const fetchVatSettings = async () => {
-      const vatDoc = await getDoc(doc(db, 'tenants', organizationId, 'settings', 'vat'));
+      const vatDoc = await getDoc(doc(db, 'organizations', organizationId, 'settings', 'vat'));
       if (vatDoc.exists()) {
         const vatData = vatDoc.data() as VATSettings;
         setVatSettings({
@@ -112,7 +112,7 @@ function SettingsContent() {
           createdAt: new Date(),
           updatedAt: new Date(),
         };
-        await setDoc(doc(db, 'tenants', organizationId, 'settings', 'vat'), defaultVat);
+        await setDoc(doc(db, 'organizations', organizationId, 'settings', 'vat'), defaultVat);
         setVatSettings(defaultVat);
       }
     };
@@ -133,7 +133,7 @@ function SettingsContent() {
 
     // Fetch printer settings
     const fetchPrinterSettings = async () => {
-      const printerDoc = await getDoc(doc(db, 'tenants', organizationId, 'settings', 'printer'));
+      const printerDoc = await getDoc(doc(db, 'organizations', organizationId, 'settings', 'printer'));
       if (printerDoc.exists()) {
         const printerData = printerDoc.data() as PrinterSettings;
         setPrinterSettings({
@@ -156,13 +156,13 @@ function SettingsContent() {
           createdAt: new Date(),
           updatedAt: new Date(),
         };
-        await setDoc(doc(db, 'tenants', organizationId, 'settings', 'printer'), defaultPrinter);
+        await setDoc(doc(db, 'organizations', organizationId, 'settings', 'printer'), defaultPrinter);
         setPrinterSettings(defaultPrinter);
       }
     };
 
     // Fetch receipt templates
-    const templatesQ = query(collection(db, 'tenants', organizationId, 'receiptTemplates'));
+    const templatesQ = query(collection(db, 'organizations', organizationId, 'receiptTemplates'));
     const templatesUnsubscribe = onSnapshot(templatesQ, (querySnapshot) => {
       const templatesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -186,7 +186,7 @@ function SettingsContent() {
   const handleAddOrderType = async () => {
     if (!organizationId || !newOrderType.name.trim()) return;
 
-    await addDoc(collection(db, 'tenants', organizationId, 'orderTypes'), {
+    await addDoc(collection(db, 'organizations', organizationId, 'orderTypes'), {
       ...newOrderType,
       organizationId,
       createdAt: new Date(),
@@ -200,7 +200,7 @@ function SettingsContent() {
   const handleAddPaymentType = async () => {
     if (!organizationId || !newPaymentType.name.trim()) return;
 
-    await addDoc(collection(db, 'tenants', organizationId, 'paymentTypes'), {
+    await addDoc(collection(db, 'organizations', organizationId, 'paymentTypes'), {
       ...newPaymentType,
       organizationId,
       createdAt: new Date(),
@@ -222,7 +222,7 @@ function SettingsContent() {
       updatedAt: new Date(),
     };
 
-    await setDoc(doc(db, 'tenants', organizationId, 'settings', 'vat'), updatedVat);
+    await setDoc(doc(db, 'organizations', organizationId, 'settings', 'vat'), updatedVat);
     setVatSettings(updatedVat);
     setVatDialogOpen(false);
   };
@@ -230,14 +230,14 @@ function SettingsContent() {
   const handleDeleteOrderType = async (id: string) => {
     if (!organizationId) return;
     if (confirm('Are you sure you want to delete this order type?')) {
-      await deleteDoc(doc(db, 'tenants', organizationId, 'orderTypes', id));
+      await deleteDoc(doc(db, 'organizations', organizationId, 'orderTypes', id));
     }
   };
 
   const handleDeletePaymentType = async (id: string) => {
     if (!organizationId) return;
     if (confirm('Are you sure you want to delete this payment type?')) {
-      await deleteDoc(doc(db, 'tenants', organizationId, 'paymentTypes', id));
+      await deleteDoc(doc(db, 'organizations', organizationId, 'paymentTypes', id));
     }
   };
 
@@ -261,7 +261,7 @@ function SettingsContent() {
       updatedAt: new Date(),
     };
 
-    await setDoc(doc(db, 'tenants', organizationId, 'settings', 'printer'), updatedPrinter);
+    await setDoc(doc(db, 'organizations', organizationId, 'settings', 'printer'), updatedPrinter);
     setPrinterSettings(updatedPrinter);
     setPrinterDialogOpen(false);
   };
@@ -271,7 +271,7 @@ function SettingsContent() {
 
     const defaultTemplateContent = '<!DOCTYPE html>\\n<html>\\n<head>\\n  <meta charset="utf-8">\\n  <title>Receipt</title>\\n  <style>\\n    body { font-family: monospace; margin: 0; padding: 10px; }\\n    .header { text-align: center; margin-bottom: 10px; }\\n    .content { margin-bottom: 10px; }\\n    .footer { text-align: center; margin-top: 10px; }\\n    .line { display: flex; justify-content: space-between; }\\n    .total { font-weight: bold; border-top: 1px dashed; padding-top: 5px; }\\n  </style>\\n</head>\\n<body>\\n  <div class="header">\\n    <h2>{{companyName}}</h2>\\n    <p>{{companyAddress}}</p>\\n    <p>Tel: {{companyPhone}}</p>\\n    <p>VAT: {{companyVat}}</p>\\n    <hr>\\n    <p>Order #: {{orderNumber}}</p>\\n    <p>Date: {{orderDate}}</p>\\n    <p>Table: {{tableName}}</p>\\n    <p>Customer: {{customerName}}</p>\\n    <hr>\\n  </div>\\n  \\n  <div class="content">\\n    {{#each items}}\\n    <div class="line">\\n      <span>{{name}} ({{quantity}}x)</span>\\n      <span>{{total}}</span>\\n    </div>\\n    {{/each}}\\n  </div>\\n  \\n  <div class="total">\\n    <div class="line">\\n      <span>Subtotal:</span>\\n      <span>{{subtotal}}</span>\\n    </div>\\n    <div class="line">\\n      <span>VAT ({{vatRate}}%):</span>\\n      <span>{{vatAmount}}</span>\\n    </div>\\n    <div class="line">\\n      <span>TOTAL:</span>\\n      <span>{{total}}</span>\\n    </div>\\n  </div>\\n  \\n  <div class="footer">\\n    <p>Payment: {{paymentMethod}}</p>\\n    <p>Thank you for your business!</p>\\n  </div>\\n</body>\\n</html>';
 
-    await addDoc(collection(db, 'tenants', organizationId, 'receiptTemplates'), {
+    await addDoc(collection(db, 'organizations', organizationId, 'receiptTemplates'), {
       ...newReceiptTemplate,
       content: newReceiptTemplate.content || defaultTemplateContent,
       isDefault: receiptTemplates.length === 0, // First template is default
@@ -289,7 +289,7 @@ function SettingsContent() {
 
     // Update all templates to set isDefault: false
     const updatePromises = receiptTemplates.map(template => {
-      const templateRef = doc(db, 'tenants', organizationId, 'receiptTemplates', template.id);
+      const templateRef = doc(db, 'organizations', organizationId, 'receiptTemplates', template.id);
       return setDoc(templateRef, { 
         ...template, 
         isDefault: template.id === templateId,
@@ -303,7 +303,7 @@ function SettingsContent() {
   const handleDeleteTemplate = async (id: string) => {
     if (!organizationId) return;
     if (confirm('Are you sure you want to delete this receipt template?')) {
-      await deleteDoc(doc(db, 'tenants', organizationId, 'receiptTemplates', id));
+      await deleteDoc(doc(db, 'organizations', organizationId, 'receiptTemplates', id));
     }
   };
 

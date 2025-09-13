@@ -79,7 +79,7 @@ export default function POSPage() {
     if (!organizationId) return;
 
     // Fetch products
-    const productsQ = query(collection(db, 'tenants', organizationId, 'products'));
+    const productsQ = query(collection(db, 'organizations', organizationId, 'products'));
     const productsUnsubscribe = onSnapshot(productsQ, (querySnapshot: QuerySnapshot<DocumentData>) => {
       const productsData = querySnapshot.docs.map((doc: DocumentData) => ({
         id: doc.id,
@@ -89,7 +89,7 @@ export default function POSPage() {
     });
 
     // Fetch services
-    const servicesQ = query(collection(db, 'tenants', organizationId, 'services'));
+    const servicesQ = query(collection(db, 'organizations', organizationId, 'services'));
     const servicesUnsubscribe = onSnapshot(servicesQ, (querySnapshot: QuerySnapshot<DocumentData>) => {
       const servicesData = querySnapshot.docs.map((doc: DocumentData) => ({
         id: doc.id,
@@ -99,7 +99,7 @@ export default function POSPage() {
     });
 
     // Fetch categories from Firebase
-    const categoriesQ = query(collection(db, 'tenants', organizationId, 'categories'));
+    const categoriesQ = query(collection(db, 'organizations', organizationId, 'categories'));
     const categoriesUnsubscribe = onSnapshot(categoriesQ, (querySnapshot) => {
       const categoriesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -112,7 +112,7 @@ export default function POSPage() {
     });
 
     // Fetch tables
-    const tablesQ = query(collection(db, 'tenants', organizationId, 'tables'));
+    const tablesQ = query(collection(db, 'organizations', organizationId, 'tables'));
     const tablesUnsubscribe = onSnapshot(tablesQ, (querySnapshot) => {
       const tablesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -124,7 +124,7 @@ export default function POSPage() {
     });
 
     // Fetch customers
-    const customersQ = query(collection(db, 'tenants', organizationId, 'customers'));
+    const customersQ = query(collection(db, 'organizations', organizationId, 'customers'));
     const customersUnsubscribe = onSnapshot(customersQ, (querySnapshot) => {
       const customersData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -136,7 +136,7 @@ export default function POSPage() {
     });
 
     // Fetch orders
-    const ordersQ = query(collection(db, 'tenants', organizationId, 'orders'));
+    const ordersQ = query(collection(db, 'organizations', organizationId, 'orders'));
     const ordersUnsubscribe = onSnapshot(ordersQ, (querySnapshot) => {
       const ordersData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -148,7 +148,7 @@ export default function POSPage() {
     });
 
     // Fetch payment types
-    const paymentTypesQ = query(collection(db, 'tenants', organizationId, 'paymentTypes'));
+    const paymentTypesQ = query(collection(db, 'organizations', organizationId, 'paymentTypes'));
     const paymentTypesUnsubscribe = onSnapshot(paymentTypesQ, (querySnapshot) => {
       const paymentTypesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -160,7 +160,7 @@ export default function POSPage() {
     });
 
     // Fetch order types
-    const orderTypesQ = query(collection(db, 'tenants', organizationId, 'orderTypes'));
+    const orderTypesQ = query(collection(db, 'organizations', organizationId, 'orderTypes'));
     const orderTypesUnsubscribe = onSnapshot(orderTypesQ, async (querySnapshot) => {
       const orderTypesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -192,7 +192,7 @@ export default function POSPage() {
 
     // Fetch printer settings
     const fetchPrinterSettings = async () => {
-      const printerDoc = await getDoc(doc(db, 'tenants', organizationId, 'settings', 'printer'));
+      const printerDoc = await getDoc(doc(db, 'organizations', organizationId, 'settings', 'printer'));
       if (printerDoc.exists()) {
         const printerData = printerDoc.data() as PrinterSettings;
         setPrinterSettings({
@@ -205,19 +205,19 @@ export default function POSPage() {
 
     // Fetch organization data
     const fetchOrganizationData = async () => {
-      const tenantDoc = await getDoc(doc(db, 'tenants', organizationId));
-      if (tenantDoc.exists()) {
-        const tenantData = tenantDoc.data() as Organization;
+      const organizationDoc = await getDoc(doc(db, 'organizations', organizationId));
+      if (organizationDoc.exists()) {
+        const organizationData = organizationDoc.data() as Organization;
         setOrganization({
-          ...tenantData,
-          createdAt: tenantData.createdAt,
-          updatedAt: tenantData.updatedAt,
+          ...organizationData,
+          createdAt: organizationData.createdAt,
+          updatedAt: organizationData.updatedAt,
         });
       }
     };
 
     // Fetch receipt templates
-    const receiptTemplatesQ = query(collection(db, 'tenants', organizationId, 'receiptTemplates'));
+    const receiptTemplatesQ = query(collection(db, 'organizations', organizationId, 'receiptTemplates'));
     const receiptTemplatesUnsubscribe = onSnapshot(receiptTemplatesQ, (querySnapshot) => {
       const templatesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -426,12 +426,12 @@ export default function POSPage() {
     try {
       // Save payments to Firebase
       const paymentPromises = payments.map(payment =>
-        addDoc(collection(db, 'tenants', organizationId, 'orderPayments'), payment)
+        addDoc(collection(db, 'organizations', organizationId, 'orderPayments'), payment)
       );
       await Promise.all(paymentPromises);
 
       // Update order status to completed
-      await addDoc(collection(db, 'tenants', organizationId, 'orders'), {
+      await addDoc(collection(db, 'organizations', organizationId, 'orders'), {
         ...selectedOrder,
         status: 'completed' as const,
         updatedAt: new Date(),
@@ -514,7 +514,7 @@ export default function POSPage() {
     };
 
     try {
-      await addDoc(collection(db, 'tenants', organizationId, 'orders'), orderData);
+      await addDoc(collection(db, 'organizations', organizationId, 'orders'), orderData);
       alert('Order saved successfully!');
       // Clear all POS data after successful save
       clearPOSData();
@@ -568,7 +568,7 @@ export default function POSPage() {
                           try {
                             const defaultTemplateContent = '<!DOCTYPE html>\\n<html>\\n<head>\\n  <meta charset="utf-8">\\n  <title>Receipt</title>\\n  <style>\\n    body { font-family: monospace; margin: 0; padding: 10px; }\\n    .header { text-align: center; margin-bottom: 10px; }\\n    .content { margin-bottom: 10px; }\\n    .footer { text-align: center; margin-top: 10px; }\\n    .line { display: flex; justify-content: space-between; }\\n    .total { font-weight: bold; border-top: 1px dashed; padding-top: 5px; }\\n  </style>\\n</head>\\n<body>\\n  <div class="header">\\n    <h2>{{companyName}}</h2>\\n    <p>{{companyAddress}}</p>\\n    <p>Tel: {{companyPhone}}</p>\\n    <p>VAT: {{companyVat}}</p>\\n    <hr>\\n    <p>Order #: {{orderNumber}}</p>\\n    <p>Date: {{orderDate}}</p>\\n    <p>Table: {{tableName}}</p>\\n    <p>Customer: {{customerName}}</p>\\n    <hr>\\n  </div>\\n  \\n  <div class="content">\\n    {{#each items}}\\n    <div class="line">\\n      <span>{{name}} ({{quantity}}x)</span>\\n      <span>{{total}}</span>\\n    </div>\\n    {{/each}}\\n  </div>\\n  \\n  <div class="total">\\n    <div class="line">\\n      <span>Subtotal:</span>\\n      <span>{{subtotal}}</span>\\n    </div>\\n    <div class="line">\\n      <span>VAT ({{vatRate}}%):</span>\\n      <span>{{vatAmount}}</span>\\n    </div>\\n    <div class="line">\\n      <span>TOTAL:</span>\\n      <span>{{total}}</span>\\n    </div>\\n  </div>\\n  \\n  <div class="footer">\\n    <p>Payment: {{paymentMethod}}</p>\\n    <p>Thank you for your business!</p>\\n  </div>\\n</body>\\n</html>';
 
-                            await addDoc(collection(db, 'tenants', organizationId, 'receiptTemplates'), {
+                            await addDoc(collection(db, 'organizations', organizationId, 'receiptTemplates'), {
                               name: 'Default Receipt',
                               description: 'Default receipt template',
                               content: defaultTemplateContent,
@@ -814,7 +814,7 @@ export default function POSPage() {
               try {
                 const defaultTemplateContent = '<!DOCTYPE html>\\n<html>\\n<head>\\n  <meta charset="utf-8">\\n  <title>Receipt</title>\\n  <style>\\n    body { font-family: monospace; margin: 0; padding: 10px; }\\n    .header { text-align: center; margin-bottom: 10px; }\\n    .content { margin-bottom: 10px; }\\n    .footer { text-align: center; margin-top: 10px; }\\n    .line { display: flex; justify-content: space-between; }\\n    .total { font-weight: bold; border-top: 1px dashed; padding-top: 5px; }\\n  </style>\\n</head>\\n<body>\\n  <div class="header">\\n    <h2>{{companyName}}</h2>\\n    <p>{{companyAddress}}</p>\\n    <p>Tel: {{companyPhone}}</p>\\n    <p>VAT: {{companyVat}}</p>\\n    <hr>\\n    <p>Order #: {{orderNumber}}</p>\\n    <p>Date: {{orderDate}}</p>\\n    <p>Table: {{tableName}}</p>\\n    <p>Customer: {{customerName}}</p>\\n    <hr>\\n  </div>\\n  \\n  <div class="content">\\n    {{#each items}}\\n    <div class="line">\\n      <span>{{name}} ({{quantity}}x)</span>\\n      <span>{{total}}</span>\\n    </div>\\n    {{/each}}\\n  </div>\\n  \\n  <div class="total">\\n    <div class="line">\\n      <span>Subtotal:</span>\\n      <span>{{subtotal}}</span>\\n    </div>\\n    <div class="line">\\n      <span>VAT ({{vatRate}}%):</span>\\n      <span>{{vatAmount}}</span>\\n    </div>\\n    <div class="line">\\n      <span>TOTAL:</span>\\n      <span>{{total}}</span>\\n    </div>\\n  </div>\\n  \\n  <div class="footer">\\n    <p>Payment: {{paymentMethod}}</p>\\n    <p>Thank you for your business!</p>\\n  </div>\\n</body>\\n</html>';
 
-                await addDoc(collection(db, 'tenants', organizationId, 'receiptTemplates'), {
+                await addDoc(collection(db, 'organizations', organizationId, 'receiptTemplates'), {
                   name: 'Default Receipt',
                   description: 'Default receipt template',
                   content: defaultTemplateContent,
