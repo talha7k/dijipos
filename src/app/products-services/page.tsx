@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Package, Wrench, Search } from 'lucide-react';
+import { Package, Wrench, Search, Plus } from 'lucide-react';
 import { CategoryTree } from '@/components/CategoryTree';
 import { ProductList } from '@/components/ProductList';
 import { ServiceList } from '@/components/ServiceList';
@@ -238,23 +238,41 @@ function ProductsContent() {
 
             {/* Right side - Products */}
             <div className="w-full md:w-2/3">
-              <div className="flex justify-end mb-4">
-                <AddProductDialog
-                  open={productDialogOpen}
-                  onOpenChange={setProductDialogOpen}
-                  onAddProduct={handleAddProduct}
-                  categories={categories}
-                  selectedCategory={selectedCategory}
-                />
-              </div>
-              
-              <ProductList
-                products={products}
-                categories={categories}
-                selectedCategory={selectedCategory}
-                searchTerm={searchTerm}
-                onDeleteProduct={handleDeleteProduct}
-              />
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Package className="h-5 w-5" />
+                      All Products
+                    </div>
+                    <AddProductDialog
+                      open={productDialogOpen}
+                      onOpenChange={setProductDialogOpen}
+                      onAddProduct={handleAddProduct}
+                      categories={categories}
+                      selectedCategory={selectedCategory}
+                    />
+                  </CardTitle>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                    <Input
+                      placeholder="Search products..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <ProductList
+                    products={products}
+                    categories={categories}
+                    selectedCategory={selectedCategory}
+                    searchTerm={searchTerm}
+                    onDeleteProduct={handleDeleteProduct}
+                  />
+                </CardContent>
+              </Card>
             </div>
           </div>
         </TabsContent>
@@ -318,23 +336,41 @@ function ProductsContent() {
 
             {/* Right side - Services */}
             <div className="w-full md:w-2/3">
-              <div className="flex justify-end mb-4">
-                <AddServiceDialog
-                  open={serviceDialogOpen}
-                  onOpenChange={setServiceDialogOpen}
-                  onAddService={handleAddService}
-                  categories={categories}
-                  selectedCategory={selectedCategory}
-                />
-              </div>
-              
-              <ServiceList
-                services={services}
-                categories={categories}
-                selectedCategory={selectedCategory}
-                searchTerm={searchTerm}
-                onDeleteService={handleDeleteService}
-              />
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Wrench className="h-5 w-5" />
+                      All Services
+                    </div>
+                    <AddServiceDialog
+                      open={serviceDialogOpen}
+                      onOpenChange={setServiceDialogOpen}
+                      onAddService={handleAddService}
+                      categories={categories}
+                      selectedCategory={selectedCategory}
+                    />
+                  </CardTitle>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                    <Input
+                      placeholder="Search services..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <ServiceList
+                    services={services}
+                    categories={categories}
+                    selectedCategory={selectedCategory}
+                    searchTerm={searchTerm}
+                    onDeleteService={handleDeleteService}
+                  />
+                </CardContent>
+              </Card>
             </div>
           </div>
         </TabsContent>
