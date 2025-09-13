@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ItemCard } from '@/components/ItemCard';
+import { SubcategoryCard } from '@/components/SubcategoryCard';
 import { Category, Product, Service } from '@/types';
 
 interface POSItemsGridProps {
@@ -111,32 +112,14 @@ export function POSItemsGrid({
               const subcategoriesCount = getSubcategoriesCount(subcategory.id);
 
               return (
-                <Card
+                <SubcategoryCard
                   key={subcategory.id}
-                  className={`cursor-pointer hover:shadow-lg transition-all duration-200 transform hover:scale-105 h-48 flex flex-col active:scale-95 ${getCategoryStyling(subcategory.id)}`}
-                  onClick={() => onCategoryClick(subcategory.id)}
-                >
-                  <CardHeader className="pb-2 flex-1 flex items-center justify-center">
-                    <CardTitle className="text-xl text-center font-bold text-foreground">{subcategory.name}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="flex-1 flex flex-col items-center justify-center p-4">
-                    <div className="text-center text-muted-foreground text-sm mb-2 line-clamp-2">
-                      {subcategory.description}
-                    </div>
-                    <div className="flex flex-col gap-1 items-center">
-                      {subcategoriesCount > 0 && (
-                        <Badge variant="secondary" className="text-xs">
-                          {subcategoriesCount} subcategories
-                        </Badge>
-                      )}
-                      {itemsCount > 0 && (
-                        <Badge variant="outline" className="text-xs">
-                          {itemsCount} items
-                        </Badge>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
+                  subcategory={subcategory}
+                  itemsCount={itemsCount}
+                  subcategoriesCount={subcategoriesCount}
+                  onClick={onCategoryClick}
+                  className={getCategoryStyling(subcategory.id)}
+                />
               );
             })}
           </div>

@@ -191,7 +191,7 @@ const generateOrders = (count: number, customers: Omit<Customer, 'organizationId
         const orderId = generateId('ord');
         const status = getRandomElement(['open', 'completed', 'cancelled', 'saved'] as const);
 
-        orders.push({
+        const orderData: any = {
             id: orderId,
             orderNumber: `ORD-${Date.now()}-${getRandomInt(100, 999)}`,
             items: orderItems,
@@ -200,16 +200,26 @@ const generateOrders = (count: number, customers: Omit<Customer, 'organizationId
             taxAmount,
             total,
             status,
-            customerName: customer?.name,
-            customerPhone: customer?.phone,
-            customerEmail: customer?.email,
             orderType: getRandomElement(['dine-in', 'take-away', 'delivery']),
-            notes: Math.random() > 0.7 ? 'Special instructions for order' : undefined,
             createdById: 'temp-user-id', // Will be replaced with actual userId
             createdByName: 'System Generated',
             createdAt: new Date(),
             updatedAt: new Date(),
-        });
+        };
+
+        // Only add customer fields if customer exists
+        if (customer) {
+            orderData.customerName = customer.name;
+            orderData.customerPhone = customer.phone;
+            orderData.customerEmail = customer.email;
+        }
+
+        // Only add notes if randomly selected
+        if (Math.random() > 0.7) {
+            orderData.notes = 'Special instructions for order';
+        }
+
+        orders.push(orderData as Omit<Order, 'organizationId'>);
 
         // Generate payments for completed orders
         if (status === 'completed') {
