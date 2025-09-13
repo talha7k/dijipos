@@ -25,6 +25,7 @@ interface POSHeaderProps {
   onCustomerDeselect: () => void;
   onOrdersClick: () => void;
   onOrderTypeSelect: (orderType: OrderType) => void;
+  onOrderTypeDeselect: () => void;
 }
 
 export function POSHeader({

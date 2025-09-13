@@ -5,6 +5,7 @@ import React from 'react';
 import { collection, query, onSnapshot, QuerySnapshot, DocumentData, addDoc, getDoc, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePOSPersistence, CartItem } from '@/hooks/use-pos-persistence';
 import { Product, Service, Category, Table, Customer, Order, OrderPayment, PaymentType, OrderType, ReceiptTemplate, PrinterSettings, Tenant } from '@/types';
 import { POSHeader } from '@/components/POSHeader';
 import { POSBreadcrumb } from '@/components/POSBreadcrumb';
@@ -30,17 +31,30 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
-interface CartItem {
-  id: string;
-  type: 'product' | 'service';
-  name: string;
-  price: number;
-  quantity: number;
-  total: number;
-}
 
 export default function POSPage() {
   const { tenantId } = useAuth();
+
+  // Use the POS persistence hook for all POS state
+  const {
+    cart,
+    selectedTable,
+    selectedCustomer,
+    selectedOrderType,
+    currentView,
+    categoryPath,
+    selectedOrder,
+    setCart,
+    setSelectedTable,
+    setSelectedCustomer,
+    setSelectedOrderType,
+    setCurrentView,
+    setCategoryPath,
+    setSelectedOrder,
+    clearPOSData,
+    clearCart
+  } = usePOSPersistence(tenantId || undefined);
+
   const [products, setProducts] = useState<Product[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -49,14 +63,7 @@ export default function POSPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [paymentTypes, setPaymentTypes] = useState<PaymentType[]>([]);
   const [loading, setLoading] = useState(true);
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [categoryPath, setCategoryPath] = useState<string[]>([]);
-  const [selectedTable, setSelectedTable] = useState<Table | null>(null);
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [currentView, setCurrentView] = useState<'items' | 'tables' | 'customers' | 'orders' | 'payment'>('items');
   const [orderTypes, setOrderTypes] = useState<OrderType[]>([]);
-  const [selectedOrderType, setSelectedOrderType] = useState<OrderType | null>(null);
   const [pendingOrderToReopen, setPendingOrderToReopen] = useState<Order | null>(null);
   const [showOrderConfirmationDialog, setShowOrderConfirmationDialog] = useState(false);
   const [receiptTemplates, setReceiptTemplates] = useState<ReceiptTemplate[]>([]);
@@ -65,40 +72,6 @@ export default function POSPage() {
 
   // Fetch data from Firebase
   useEffect(() => {
-    // Load cart from localStorage on mount
-    const savedCart = localStorage.getItem('posCart');
-    if (savedCart) {
-      try {
-        const parsedCart = JSON.parse(savedCart);
-        setCart(parsedCart);
-      } catch (error) {
-        console.error('Error loading cart from localStorage:', error);
-        localStorage.removeItem('posCart');
-      }
-    }
-
-    // Load other POS state from localStorage
-    const savedTable = localStorage.getItem('posSelectedTable');
-    if (savedTable) {
-      try {
-        const parsedTable = JSON.parse(savedTable);
-        setSelectedTable(parsedTable);
-      } catch (error) {
-        console.error('Error loading table from localStorage:', error);
-        localStorage.removeItem('posSelectedTable');
-      }
-    }
-
-    const savedCustomer = localStorage.getItem('posSelectedCustomer');
-    if (savedCustomer) {
-      try {
-        const parsedCustomer = JSON.parse(savedCustomer);
-        setSelectedCustomer(parsedCustomer);
-      } catch (error) {
-        console.error('Error loading customer from localStorage:', error);
-        localStorage.removeItem('posSelectedCustomer');
-      }
-    }
 
     if (!tenantId) return;
 
@@ -254,28 +227,6 @@ export default function POSPage() {
 
   }, [tenantId]);
 
-  // Save cart to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem('posCart', JSON.stringify(cart));
-  }, [cart]);
-
-  // Save selected table to localStorage whenever it changes
-  useEffect(() => {
-    if (selectedTable) {
-      localStorage.setItem('posSelectedTable', JSON.stringify(selectedTable));
-    } else {
-      localStorage.removeItem('posSelectedTable');
-    }
-  }, [selectedTable]);
-
-  // Save selected customer to localStorage whenever it changes
-  useEffect(() => {
-    if (selectedCustomer) {
-      localStorage.setItem('posSelectedCustomer', JSON.stringify(selectedCustomer));
-    } else {
-      localStorage.removeItem('posSelectedCustomer');
-    }
-  }, [selectedCustomer]);
 
   // Calculate cart total
   const cartTotal = cart.reduce((sum: number, item: CartItem) => sum + item.total, 0);
@@ -408,13 +359,7 @@ export default function POSPage() {
     proceedWithOrderReopen(pendingOrderToReopen);
   };
 
-  const handleClearCart = () => {
-    if (cart.length === 0) return;
-
-    if (confirm('Are you sure you want to clear the cart? This action cannot be undone.')) {
-      setCart([]);
-    }
-  };
+  const handleClearCart = () => clearCart();
 
   // Cart item operation handlers
   const [selectedCartItem, setSelectedCartItem] = useState<CartItem | null>(null);
@@ -473,6 +418,7 @@ export default function POSPage() {
       alert('Failed to process payment. Please try again.');
     }
   };
+
 
   const handleSaveOrder = async () => {
     if (cart.length === 0 || !tenantId) return;
@@ -541,6 +487,8 @@ export default function POSPage() {
     try {
       await addDoc(collection(db, 'tenants', tenantId, 'orders'), orderData);
       alert('Order saved successfully!');
+      // Clear all POS data after successful save
+      clearPOSData();
       // Clear cart after saving
       setCart([]);
     } catch (error) {
@@ -568,6 +516,7 @@ export default function POSPage() {
           onOrderTypeSelect={handleOrderTypeSelect}
           onTableDeselect={handleTableDeselect}
           onCustomerDeselect={handleCustomerDeselect}
+          onOrderTypeDeselect={handleOrderTypeDeselect}
         />
 
       {/* Main Content */}
