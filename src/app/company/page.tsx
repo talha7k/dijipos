@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { db, storage } from '@/lib/firebase';
+import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Tenant } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -11,16 +11,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building2, CreditCard, User, Mail, Calendar, Upload, X } from 'lucide-react';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { Building2, CreditCard, User, Mail, Calendar, X } from 'lucide-react';
+
+import { ImageUpload } from '@/components/ui/image-upload';
 
 function CompanyContent() {
   const { user, tenantId } = useAuth();
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [uploadingLogo, setUploadingLogo] = useState(false);
-  const [uploadingStamp, setUploadingStamp] = useState(false);
+  
 
   // Form state
   const [companyName, setCompanyName] = useState('');
@@ -60,63 +60,7 @@ function CompanyContent() {
     fetchTenant();
   }, [tenantId]);
 
-  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || !e.target.files[0] || !tenantId) return;
-    
-    const file = e.target.files[0];
-    setUploadingLogo(true);
-    
-    try {
-      const storageRef = ref(storage, `tenants/${tenantId}/logo`);
-      await uploadBytes(storageRef, file);
-      const downloadUrl = await getDownloadURL(storageRef);
-      
-      setLogoUrl(downloadUrl);
-      
-      // Update tenant document
-      await updateDoc(doc(db, 'tenants', tenantId), {
-        logoUrl: downloadUrl,
-        updatedAt: new Date(),
-      });
-      
-      // Update local state
-      setTenant(prev => prev ? { ...prev, logoUrl: downloadUrl } : null);
-    } catch (error) {
-      console.error('Error uploading logo:', error);
-      alert('Failed to upload logo.');
-    } finally {
-      setUploadingLogo(false);
-    }
-  };
-
-  const handleStampUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || !e.target.files[0] || !tenantId) return;
-    
-    const file = e.target.files[0];
-    setUploadingStamp(true);
-    
-    try {
-      const storageRef = ref(storage, `tenants/${tenantId}/stamp`);
-      await uploadBytes(storageRef, file);
-      const downloadUrl = await getDownloadURL(storageRef);
-      
-      setStampUrl(downloadUrl);
-      
-      // Update tenant document
-      await updateDoc(doc(db, 'tenants', tenantId), {
-        stampUrl: downloadUrl,
-        updatedAt: new Date(),
-      });
-      
-      // Update local state
-      setTenant(prev => prev ? { ...prev, stampUrl: downloadUrl } : null);
-    } catch (error) {
-      console.error('Error uploading stamp:', error);
-      alert('Failed to upload stamp.');
-    } finally {
-      setUploadingStamp(false);
-    }
-  };
+  
 
   const handleRemoveLogo = async () => {
     if (!tenantId) return;
@@ -315,24 +259,13 @@ function CompanyContent() {
                       <span className="text-gray-400 text-xs">No Logo</span>
                     </div>
                   )}
-                  <div>
-                    <Label htmlFor="logo-upload" className="cursor-pointer">
-                      <Button variant="outline" loading={uploadingLogo}>
-                        <Upload className="h-4 w-4 mr-2" />
-                        Upload Logo
-                      </Button>
-                    </Label>
-                    <Input
-                      id="logo-upload"
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handleLogoUpload}
-                    />
-                    <p className="text-sm text-gray-500 mt-2">
-                      Recommended: Square image, max 2MB
-                    </p>
-                  </div>
+                  <ImageUpload
+                    value={logoUrl}
+                    onChange={(url) => setLogoUrl(url || '')}
+                    path={`tenants/${tenantId}`}
+                    placeholder="Upload company logo"
+                    maxSize={2}
+                  />
                 </div>
               </div>
 
@@ -360,24 +293,13 @@ function CompanyContent() {
                       <span className="text-gray-400 text-xs">No Stamp</span>
                     </div>
                   )}
-                  <div>
-                    <Label htmlFor="stamp-upload" className="cursor-pointer">
-                      <Button variant="outline" loading={uploadingStamp}>
-                        <Upload className="h-4 w-4 mr-2" />
-                        Upload Stamp
-                      </Button>
-                    </Label>
-                    <Input
-                      id="stamp-upload"
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handleStampUpload}
-                    />
-                    <p className="text-sm text-gray-500 mt-2">
-                      Recommended: Transparent PNG, max 2MB
-                    </p>
-                  </div>
+                  <ImageUpload
+                    value={stampUrl}
+                    onChange={(url) => setStampUrl(url || '')}
+                    path={`tenants/${tenantId}`}
+                    placeholder="Upload company stamp"
+                    maxSize={2}
+                  />
                 </div>
               </div>
 
