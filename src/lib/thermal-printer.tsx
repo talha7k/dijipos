@@ -7,10 +7,12 @@ interface SerialPort {
   open(options: { baudRate: number }): Promise<void>;
   close(): Promise<void>;
   writable: WritableStream | null;
+  getInfo?: () => { usbVendorId?: number; usbProductId?: number };
 }
 
 interface Serial extends EventTarget {
   requestPort(): Promise<SerialPort>;
+  getPorts(): Promise<SerialPort[]>;
 }
 
 interface NavigatorWithSerial extends Navigator {
@@ -39,7 +41,17 @@ export interface ConnectedPrinter {
   usbProductId?: number;
 }
 
-class ThermalPrinterService {
+export interface ConnectedPrinter {
+  id: string;
+  name: string;
+  vendorId?: number;
+  productId?: number;
+  serialNumber?: string;
+  usbVendorId?: number;
+  usbProductId?: number;
+}
+
+export class ThermalPrinterService {
   private port: SerialPort | null = null;
   private connectedPrinter: ConnectedPrinter | null = null;
   private config: ThermalPrinterConfig = {
@@ -48,6 +60,33 @@ class ThermalPrinterService {
     characterSet: 'korea',
     baudRate: 9600,
   };
+
+  /**
+   * Get previously connected printers
+   */
+  async getConnectedPrinters(): Promise<ConnectedPrinter[]> {
+    try {
+      if (!(navigator as NavigatorWithSerial).serial) {
+        return [];
+      }
+
+      const ports = await (navigator as NavigatorWithSerial).serial.getPorts();
+      return ports.map((port, index) => {
+        const info = port.getInfo?.();
+        return {
+          id: `printer-${index}`,
+          name: `Printer ${index + 1}`,
+          vendorId: info?.usbVendorId,
+          productId: info?.usbProductId,
+          usbVendorId: info?.usbVendorId,
+          usbProductId: info?.usbProductId,
+        };
+      });
+    } catch (error) {
+      console.error('Failed to get connected printers:', error);
+      return [];
+    }
+  }
 
   /**
    * Connect to a thermal printer via Web Serial API
@@ -61,12 +100,25 @@ class ThermalPrinterService {
       this.port = await (navigator as NavigatorWithSerial).serial.requestPort();
       await this.port.open({ baudRate: this.config.baudRate! });
 
+      // Store printer info
+      const info = this.port.getInfo?.();
+      this.connectedPrinter = {
+        id: 'current',
+        name: 'Connected Printer',
+        vendorId: info?.usbVendorId,
+        productId: info?.usbProductId,
+        usbVendorId: info?.usbVendorId,
+        usbProductId: info?.usbProductId,
+      };
+
       console.log('Connected to thermal printer');
     } catch (error) {
       console.error('Failed to connect to thermal printer:', error);
       throw new Error('Failed to connect to thermal printer. Please check your printer connection.');
     }
   }
+
+
 
   /**
    * Disconnect from the thermal printer
@@ -76,6 +128,7 @@ class ThermalPrinterService {
       try {
         await this.port.close();
         this.port = null;
+        this.connectedPrinter = null;
         console.log('Disconnected from thermal printer');
       } catch (error) {
         console.error('Error disconnecting from thermal printer:', error);
@@ -88,6 +141,13 @@ class ThermalPrinterService {
    */
   isConnected(): boolean {
     return this.port !== null;
+  }
+
+  /**
+   * Get current connected printer info
+   */
+  getConnectedPrinter(): ConnectedPrinter | null {
+    return this.connectedPrinter;
   }
 
   /**

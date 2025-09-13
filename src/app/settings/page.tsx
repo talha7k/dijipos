@@ -5,6 +5,25 @@ import { collection, query, onSnapshot, addDoc, doc, deleteDoc, setDoc, getDoc }
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 import { OrderType, PaymentType, VATSettings, PrinterSettings, ReceiptTemplate } from '@/types';
+import thermalPrinter from '@/lib/thermal-printer';
+
+interface ConnectedPrinter {
+  id: string;
+  name: string;
+  vendorId?: number;
+  productId?: number;
+  serialNumber?: string;
+  usbVendorId?: number;
+  usbProductId?: number;
+}
+
+interface ThermalPrinterService {
+  getConnectedPrinters(): Promise<ConnectedPrinter[]>;
+  connect(): Promise<void>;
+  disconnect(): Promise<void>;
+  isConnected(): boolean;
+  printTest(): Promise<void>;
+}
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -20,9 +39,10 @@ function SettingsContent() {
   const [orderTypes, setOrderTypes] = useState<OrderType[]>([]);
   const [paymentTypes, setPaymentTypes] = useState<PaymentType[]>([]);
   const [vatSettings, setVatSettings] = useState<VATSettings | null>(null);
-  const [printerSettings, setPrinterSettings] = useState<PrinterSettings | null>(null);
-  const [receiptTemplates, setReceiptTemplates] = useState<ReceiptTemplate[]>([]);
-  const [loading, setLoading] = useState(true);
+   const [printerSettings, setPrinterSettings] = useState<PrinterSettings | null>(null);
+   const [receiptTemplates, setReceiptTemplates] = useState<ReceiptTemplate[]>([]);
+   const [connectedPrinters, setConnectedPrinters] = useState<ConnectedPrinter[]>([]);
+   const [loading, setLoading] = useState(true);
 
   // Dialog states
   const [orderTypeDialogOpen, setOrderTypeDialogOpen] = useState(false);
@@ -98,6 +118,18 @@ function SettingsContent() {
     };
 
     fetchVatSettings();
+
+    // Fetch connected printers
+    const fetchConnectedPrinters = async () => {
+      try {
+        const printers = await (thermalPrinter as unknown as ThermalPrinterService).getConnectedPrinters();
+        setConnectedPrinters(printers);
+      } catch (error) {
+        console.error('Failed to fetch connected printers:', error);
+      }
+    };
+
+    fetchConnectedPrinters();
 
     // Fetch printer settings
     const fetchPrinterSettings = async () => {
@@ -618,21 +650,21 @@ function SettingsContent() {
                 </Dialog>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              {printerSettings ? (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span>Paper Width:</span>
-                    <span className="font-medium">{printerSettings.paperWidth}mm</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span>Font Size:</span>
-                    <span className="font-medium">{printerSettings.fontSize}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span>Characters per Line:</span>
-                    <span className="font-medium">{printerSettings.characterPerLine}</span>
-                  </div>
+             <CardContent>
+               {printerSettings ? (
+                 <div className="space-y-4">
+                   <div className="flex items-center justify-between">
+                     <span>Paper Width:</span>
+                     <span className="font-medium">{printerSettings.paperWidth}mm</span>
+                   </div>
+                   <div className="flex items-center justify-between">
+                     <span>Font Size:</span>
+                     <span className="font-medium">{printerSettings.fontSize}</span>
+                   </div>
+                   <div className="flex items-center justify-between">
+                     <span>Characters per Line:</span>
+                     <span className="font-medium">{printerSettings.characterPerLine}</span>
+                   </div>
                    <div className="flex items-center justify-between">
                      <span>Auto Cut:</span>
                      <Badge variant={printerSettings.autoCut ? "default" : "secondary"}>
@@ -651,11 +683,93 @@ function SettingsContent() {
                      <span>Baud Rate:</span>
                      <span className="font-medium">{printerSettings.baudRate || 9600}</span>
                    </div>
-                </div>
-              ) : (
-                <p className="text-muted-foreground">Printer settings not configured.</p>
-              )}
-            </CardContent>
+
+                   {/* Connected Printers Section */}
+                   <div className="border-t pt-4">
+                     <div className="flex items-center justify-between mb-2">
+                       <span className="font-medium">Connected Printers:</span>
+                       <Button
+                         size="sm"
+                         variant="outline"
+                         onClick={async () => {
+                           try {
+                                     const printers = await (thermalPrinter as unknown as ThermalPrinterService).getConnectedPrinters();
+                             setConnectedPrinters(printers);
+                           } catch (error) {
+                             console.error('Failed to refresh printers:', error);
+                           }
+                         }}
+                       >
+                         Refresh
+                       </Button>
+                     </div>
+                     {connectedPrinters.length > 0 ? (
+                       <div className="space-y-2">
+                         {connectedPrinters.map((printer) => (
+                           <div key={printer.id} className="flex items-center justify-between p-2 border rounded">
+                             <div>
+                               <span className="font-medium">{printer.name}</span>
+                               {printer.vendorId && (
+                                 <div className="text-sm text-muted-foreground">
+                                   Vendor: 0x{printer.vendorId.toString(16)}, Product: 0x{printer.productId?.toString(16)}
+                                 </div>
+                               )}
+                             </div>
+                             <div className="flex gap-2">
+                               <Button
+                                 size="sm"
+                                 variant="outline"
+                                 onClick={async () => {
+                                   try {
+                                     await thermalPrinter.connect();
+                                     alert('Printer connected successfully!');
+                                     // Refresh the list
+                             const printers = await (thermalPrinter as unknown as ThermalPrinterService).getConnectedPrinters();
+                                     setConnectedPrinters(printers);
+                                   } catch (error) {
+                                     alert('Failed to connect to printer');
+                                   }
+                                 }}
+                               >
+                                 Connect
+                               </Button>
+                               <Button
+                                 size="sm"
+                                 variant="outline"
+                                 onClick={async () => {
+                                   try {
+                                     await (thermalPrinter as unknown as ThermalPrinterService).printTest();
+                                     alert('Test print sent!');
+                                   } catch (error) {
+                                     alert('Failed to print test');
+                                   }
+                                 }}
+                               >
+                                 Test Print
+                               </Button>
+                             </div>
+                           </div>
+                         ))}
+                       </div>
+                     ) : (
+                       <p className="text-sm text-muted-foreground">
+                         No printers detected. Connect a thermal printer and click &quot;Refresh&quot;.
+                       </p>
+                     )}
+                      {(thermalPrinter as unknown as ThermalPrinterService).isConnected() && (
+                       <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded">
+                         <div className="flex items-center gap-2 text-green-700">
+                           <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                           <span className="text-sm font-medium">Printer Connected</span>
+                         </div>
+                       </div>
+                     )}
+                   </div>
+                 </div>
+               ) : (
+                 <p className="text-muted-foreground">Printer settings not configured.</p>
+               )}
+             </CardContent>
           </Card>
         </TabsContent>
 
