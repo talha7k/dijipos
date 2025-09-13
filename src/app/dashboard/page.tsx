@@ -10,7 +10,7 @@ import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import { collection, query, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Quote, Invoice, Payment, Product, Service } from '@/types';
+import { Quote, Invoice, Payment, Product, Service, Table } from '@/types';
 
 function DashboardContent() {
   const { user, tenantId } = useAuth();
@@ -23,6 +23,7 @@ function DashboardContent() {
     payments: { total: 0 },
     products: { count: 0 },
     services: { count: 0 },
+    tables: { count: 0, available: 0 },
   });
 
   const handleLogout = async () => {
@@ -74,6 +75,13 @@ function DashboardContent() {
       onSnapshot(query(collection(db, 'tenants', tenantId, 'services')), (snapshot) => {
         setAnalytics(prev => ({ ...prev, services: { count: snapshot.size } }));
       }),
+
+      // Tables
+      onSnapshot(query(collection(db, 'tenants', tenantId, 'tables')), (snapshot) => {
+        const tables = snapshot.docs.map(doc => doc.data() as Table);
+        const available = tables.filter(table => table.status === 'available').length;
+        setAnalytics(prev => ({ ...prev, tables: { count: tables.length, available } }));
+      }),
     ];
 
     return () => unsubscribers.forEach(unsub => unsub());
@@ -86,7 +94,7 @@ function DashboardContent() {
         <Button onClick={handleLogout} variant="outline" loading={isLoggingOut}>Logout</Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <Link href="/quotes">
           <Card className="cursor-pointer hover:shadow-lg transition-shadow">
             <CardHeader>
@@ -142,6 +150,21 @@ function DashboardContent() {
               <div className="text-2xl font-bold">{analytics.products.count + analytics.services.count}</div>
               <p className="text-sm text-muted-foreground">
                 {analytics.products.count} products • {analytics.services.count} services
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/tables">
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <CardTitle>Tables</CardTitle>
+              <CardDescription>Table Management</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{analytics.tables.count}</div>
+              <p className="text-sm text-muted-foreground">
+                {analytics.tables.available} available • {analytics.tables.count - analytics.tables.available} occupied
               </p>
             </CardContent>
           </Card>

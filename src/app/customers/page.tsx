@@ -1,6 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { collection, query, onSnapshot, addDoc, doc, deleteDoc, updateDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,27 +19,14 @@ import {
 } from '@/components/ui/table';
 import { Plus, Users, Upload, X } from 'lucide-react';
 import { ActionButtons } from '@/components/ui/action-buttons';
-import { sampleCustomers } from '@/lib/sample-data';
 import { Customer } from '@/types';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/lib/firebase';
 
 export default function CustomersPage() {
-  const [customers, setCustomers] = useState<Customer[]>(
-    sampleCustomers.map(c => ({
-      id: c.id,
-      name: c.name,
-      nameAr: '',
-      email: c.email,
-      address: c.address || '',
-      phone: c.phone || '',
-      vatNumber: '',
-      logoUrl: '',
-      tenantId: 'default',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }))
-  );
+  const { tenantId } = useAuth();
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -49,6 +39,27 @@ export default function CustomersPage() {
     vatNumber: '',
     logoUrl: '',
   });
+
+  useEffect(() => {
+    if (!tenantId) return;
+
+    // Fetch customers
+    const customersQ = query(collection(db, 'tenants', tenantId, 'customers'));
+    const customersUnsubscribe = onSnapshot(customersQ, (querySnapshot) => {
+      const customersData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate(),
+        updatedAt: doc.data().updatedAt?.toDate(),
+      })) as Customer[];
+      setCustomers(customersData);
+      setLoading(false);
+    });
+
+    return () => {
+      customersUnsubscribe();
+    };
+  }, [tenantId]);
 
   const handleAddCustomer = () => {
     setEditingCustomer(null);
@@ -78,8 +89,11 @@ export default function CustomersPage() {
     setIsDialogOpen(true);
   };
 
-  const handleDeleteCustomer = (id: string) => {
-    setCustomers(customers.filter(c => c.id !== id));
+  const handleDeleteCustomer = async (id: string) => {
+    if (!tenantId) return;
+    if (confirm('Are you sure you want to delete this customer?')) {
+      await deleteDoc(doc(db, 'tenants', tenantId, 'customers', id));
+    }
   };
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -106,27 +120,28 @@ export default function CustomersPage() {
     setFormData(prev => ({ ...prev, logoUrl: '' }));
   };
 
-  const handleSaveCustomer = () => {
+  const handleSaveCustomer = async () => {
+    if (!tenantId) return;
+
     if (editingCustomer) {
       // Update existing customer
-      setCustomers(customers.map(c =>
-        c.id === editingCustomer.id
-          ? { ...c, ...formData, updatedAt: new Date() }
-          : c
-      ));
+      await updateDoc(doc(db, 'tenants', tenantId, 'customers', editingCustomer.id), {
+        ...formData,
+        updatedAt: new Date(),
+      });
     } else {
       // Add new customer
-      const newCustomer: Customer = {
-        id: `c${Date.now()}`,
+      await addDoc(collection(db, 'tenants', tenantId, 'customers'), {
         ...formData,
-        tenantId: 'default',
+        tenantId,
         createdAt: new Date(),
         updatedAt: new Date(),
-      };
-      setCustomers([...customers, newCustomer]);
+      });
     }
     setIsDialogOpen(false);
   };
+
+  if (loading) return <div className="flex items-center justify-center h-screen">Loading...</div>;
 
   return (
     <div className="container mx-auto p-6">

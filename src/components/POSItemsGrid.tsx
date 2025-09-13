@@ -44,18 +44,20 @@ export function POSItemsGrid({
 
   const currentCategoryId = getCurrentCategoryId();
   const currentChildCategories = currentCategoryId ? getChildCategories(currentCategoryId) : [];
+  
+  // Get items for current category - include items that don't have a category assigned
   const filteredItems = currentCategoryId ? [
-    ...products.filter((p: Product) => p.categoryId === currentCategoryId),
-    ...services.filter((s: Service) => s.categoryId === currentCategoryId)
+    ...products.filter((p: Product) => p.categoryId === currentCategoryId || !p.categoryId),
+    ...services.filter((s: Service) => s.categoryId === currentCategoryId || !s.categoryId)
   ] : [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Subcategories Section */}
       {currentChildCategories.length > 0 && (
         <div>
-          <h3 className="text-lg font-semibold mb-4">Subcategories</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          <h3 className="text-xl font-semibold mb-6">Subcategories</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
             {currentChildCategories.map((subcategory: Category) => {
               const itemsCount = getItemsCount(subcategory.id);
 
@@ -69,7 +71,7 @@ export function POSItemsGrid({
                     <CardTitle className="text-xl text-center font-bold text-foreground">{subcategory.name}</CardTitle>
                   </CardHeader>
                   <CardContent className="flex-1 flex flex-col items-center justify-center p-4">
-                    <div className="text-center text-muted-foreground text-sm mb-2">
+                    <div className="text-center text-muted-foreground text-sm mb-2 line-clamp-2">
                       {subcategory.description}
                     </div>
                     {itemsCount > 0 && (
@@ -89,10 +91,10 @@ export function POSItemsGrid({
 
       {/* Direct Items in Current Category */}
       <div>
-        <h3 className="text-lg font-semibold mb-4">
+        <h3 className="text-xl font-semibold mb-6">
           Items in {getCategoryName(currentCategoryId!)}
         </h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
           {filteredItems.map((item) => {
             const isProduct = 'price' in item;
             const price = isProduct ? item.price : (item as Service).price;
@@ -111,7 +113,9 @@ export function POSItemsGrid({
                       <Wrench className="h-5 w-5 text-primary" />
                     )}
                   </div>
-                  <CardTitle className="text-lg text-center font-bold text-foreground">{item.name}</CardTitle>
+                  <CardTitle className="text-lg text-center font-bold text-foreground" title={item.name}>
+                    {item.name}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="flex-1 flex flex-col items-center justify-center p-4">
                   <div className="text-center text-muted-foreground text-sm mb-3 line-clamp-2">
