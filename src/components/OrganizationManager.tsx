@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -190,15 +191,21 @@ export function OrganizationManager() {
       <div className="w-full max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-start mb-12">
-          <div className="text-center flex-1">
-            <div className="flex items-center justify-center gap-4 mb-6">
-              <div className={`p-4 rounded-2xl ${isDark ? 'bg-gradient-to-r from-purple-600 to-blue-600' : 'bg-gradient-to-r from-blue-600 to-indigo-600'}`}>
-                <Building2 className="h-12 w-12 text-white" />
+            <div className="text-center flex-1">
+              <div className="flex items-center justify-center gap-4 mb-6">
+                <div className={`p-2 rounded-2xl ${isDark ? 'bg-gradient-to-r from-purple-600/10 to-blue-600/10' : 'bg-gradient-to-r from-blue-600/10 to-indigo-600/10'}`}>
+                  <Image
+                    src="/icon_logo.svg"
+                    alt="DijiPOS Logo"
+                    width={48}
+                    height={48}
+                    className="h-15 w-15"
+                  />
+                </div>
+                <h1 className={`text-5xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>DijiPOS</h1>
               </div>
-              <h1 className={`text-5xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>DijiPOS</h1>
+              <p className={`text-xl ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Manage your organizations with ease</p>
             </div>
-            <p className={`text-xl ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Manage your organizations with ease</p>
-          </div>
           
           {/* Logout Button */}
           <Button

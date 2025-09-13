@@ -2,8 +2,9 @@
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Receipt, Moon, Sun, ChevronLeft, ChevronRight } from "lucide-react";
+import { Moon, Sun, ChevronLeft, ChevronRight } from "lucide-react";
 import { SidebarProps } from "./sidebar-types";
+import Image from "next/image";
 
 export function SidebarHeader({
   isCollapsed = false,
@@ -16,8 +17,14 @@ export function SidebarHeader({
     <div className="flex items-center justify-between p-4 border-b">
       {!isCollapsed && (
         <div className="flex items-center space-x-2">
-          <Receipt className="h-6 w-6" />
-          <span className="font-semibold">DijiInvoice</span>
+          <Image
+            src="/icon_logo.svg"
+            alt="DijiPOS Logo"
+            width={24}
+            height={24}
+            className="h-8 w-8"
+          />
+          <span className="font-semibold">DijiPOS</span>
         </div>
       )}
       <div className="flex items-center space-1">
