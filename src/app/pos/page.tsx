@@ -64,6 +64,41 @@ export default function POSPage() {
 
   // Fetch data from Firebase
   useEffect(() => {
+    // Load cart from localStorage on mount
+    const savedCart = localStorage.getItem('posCart');
+    if (savedCart) {
+      try {
+        const parsedCart = JSON.parse(savedCart);
+        setCart(parsedCart);
+      } catch (error) {
+        console.error('Error loading cart from localStorage:', error);
+        localStorage.removeItem('posCart');
+      }
+    }
+
+    // Load other POS state from localStorage
+    const savedTable = localStorage.getItem('posSelectedTable');
+    if (savedTable) {
+      try {
+        const parsedTable = JSON.parse(savedTable);
+        setSelectedTable(parsedTable);
+      } catch (error) {
+        console.error('Error loading table from localStorage:', error);
+        localStorage.removeItem('posSelectedTable');
+      }
+    }
+
+    const savedCustomer = localStorage.getItem('posSelectedCustomer');
+    if (savedCustomer) {
+      try {
+        const parsedCustomer = JSON.parse(savedCustomer);
+        setSelectedCustomer(parsedCustomer);
+      } catch (error) {
+        console.error('Error loading customer from localStorage:', error);
+        localStorage.removeItem('posSelectedCustomer');
+      }
+    }
+
     if (!tenantId) return;
 
     // Fetch products
@@ -218,6 +253,29 @@ export default function POSPage() {
 
   }, [tenantId]);
 
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('posCart', JSON.stringify(cart));
+  }, [cart]);
+
+  // Save selected table to localStorage whenever it changes
+  useEffect(() => {
+    if (selectedTable) {
+      localStorage.setItem('posSelectedTable', JSON.stringify(selectedTable));
+    } else {
+      localStorage.removeItem('posSelectedTable');
+    }
+  }, [selectedTable]);
+
+  // Save selected customer to localStorage whenever it changes
+  useEffect(() => {
+    if (selectedCustomer) {
+      localStorage.setItem('posSelectedCustomer', JSON.stringify(selectedCustomer));
+    } else {
+      localStorage.removeItem('posSelectedCustomer');
+    }
+  }, [selectedCustomer]);
+
   // Calculate cart total
   const cartTotal = cart.reduce((sum: number, item: CartItem) => sum + item.total, 0);
 
@@ -337,6 +395,14 @@ export default function POSPage() {
     proceedWithOrderReopen(pendingOrderToReopen);
   };
 
+  const handleClearCart = () => {
+    if (cart.length === 0) return;
+    
+    if (confirm('Are you sure you want to clear the cart? This action cannot be undone.')) {
+      setCart([]);
+    }
+  };
+
   const handlePaymentClick = (order: Order) => {
     setSelectedOrder(order);
     setCurrentView('payment');
@@ -446,33 +512,35 @@ export default function POSPage() {
   if (loading) return <div className="flex items-center justify-center h-screen">Loading...</div>;
 
   return (
-    <div className="flex flex-col h-screen bg-background">
-      <POSHeader
-        cart={cart}
-        cartTotal={cartTotal}
-        selectedTable={selectedTable}
-        selectedCustomer={selectedCustomer}
-        onTableSelect={handleTableSelect}
-        onCustomerSelect={handleCustomerSelect}
-        onOrdersClick={handleOrdersClick}
-      />
-
-      {/* Breadcrumb - only shown in items view */}
-      {currentView === 'items' && (
-        <POSBreadcrumb
-          categoryPath={categoryPath}
-          categories={categories}
-          onNavigateToRoot={navigateToRoot}
-          onNavigateToPath={setCategoryPath}
+    <div className="flex h-screen bg-background">
+      {/* Content Area - takes remaining space */}
+      <div className="flex flex-col flex-1 min-w-0">
+        <POSHeader
+          selectedTable={selectedTable}
+          selectedCustomer={selectedCustomer}
+          orderTypes={orderTypes}
+          selectedOrderType={selectedOrderType}
+          onTableSelect={handleTableSelect}
+          onCustomerSelect={handleCustomerSelect}
+          onOrdersClick={handleOrdersClick}
+          onOrderTypeSelect={handleOrderTypeSelect}
         />
-      )}
 
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">
         {currentView === 'items' && (
           <>
             {/* Items Grid */}
-            <div className="flex-1 overflow-auto p-4 bg-background">
+            <div className="flex-1 overflow-auto bg-background">
+              {/* Breadcrumb - only shown in items view */}
+              <POSBreadcrumb
+                categoryPath={categoryPath}
+                categories={categories}
+                onNavigateToRoot={navigateToRoot}
+                onNavigateToPath={setCategoryPath}
+              />
+
+              <div className="p-4">
               {categoryPath.length === 0 ? (
                 <div className="space-y-8">
                   <div>
@@ -508,6 +576,7 @@ export default function POSPage() {
                   onItemClick={addToCart}
                 />
               )}
+              </div>
             </div>
 
             <POSCartSidebar
@@ -649,7 +718,8 @@ export default function POSPage() {
         >
           <Button className="hidden" />
         </ReceiptPrintDialog>
-      )}
-    </div>
-  );
+)}
+      </div>
+     </div>
+   );
 }

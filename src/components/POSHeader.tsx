@@ -14,8 +14,6 @@ interface CartItem {
 }
 
 interface POSHeaderProps {
-  cart: CartItem[];
-  cartTotal: number;
   selectedTable?: Table | null;
   selectedCustomer?: Customer | null;
   orderTypes: OrderType[];
@@ -27,8 +25,6 @@ interface POSHeaderProps {
 }
 
 export function POSHeader({
-  cart,
-  cartTotal,
   selectedTable,
   selectedCustomer,
   orderTypes,
@@ -46,10 +42,10 @@ export function POSHeader({
           {/* Table Selection */}
           <div className="flex items-center space-x-2">
             <Button
-              variant="outline"
+              variant={selectedTable ? "default" : "outline"}
               size="sm"
               onClick={onTableSelect}
-              className="flex items-center space-x-2"
+              className={`flex items-center space-x-2 ${selectedTable ? 'bg-green-600 hover:bg-green-700 text-white' : ''}`}
             >
               <LayoutGrid className="h-4 w-4" />
               <span>
@@ -61,10 +57,10 @@ export function POSHeader({
           {/* Customer Selection */}
           <div className="flex items-center space-x-2">
             <Button
-              variant="outline"
+              variant={selectedCustomer ? "default" : "outline"}
               size="sm"
               onClick={onCustomerSelect}
-              className="flex items-center space-x-2"
+              className={`flex items-center space-x-2 ${selectedCustomer ? 'bg-green-600 hover:bg-green-700 text-white' : ''}`}
             >
               <Users className="h-4 w-4" />
               <span>
@@ -81,9 +77,9 @@ export function POSHeader({
               onOrderTypeSelect={onOrderTypeSelect}
             >
               <Button
-                variant="outline"
+                variant={selectedOrderType ? "default" : "outline"}
                 size="sm"
-                className="flex items-center space-x-2"
+                className={`flex items-center space-x-2 ${selectedOrderType ? 'bg-green-600 hover:bg-green-700 text-white' : ''}`}
               >
                 <ShoppingBag className="h-4 w-4" />
                 <span>
@@ -104,16 +100,6 @@ export function POSHeader({
               <FileText className="h-4 w-4" />
               <span>Orders</span>
             </Button>
-          </div>
-
-          {/* Cart Info */}
-          <div className="flex items-center space-x-2">
-            <Badge variant="outline" className="text-lg px-3 py-1">
-              {cart.length} items
-            </Badge>
-            <Badge variant="secondary" className="text-lg px-3 py-1">
-              ${cartTotal.toFixed(2)}
-            </Badge>
           </div>
         </div>
       </div>

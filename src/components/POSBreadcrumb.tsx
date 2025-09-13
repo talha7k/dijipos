@@ -24,7 +24,7 @@ export function POSBreadcrumb({
   };
 
   return (
-    <div className="bg-card border-b p-3 flex items-center space-x-2">
+    <div className="bg-card border-b p-3 flex items-center space-x-2 max-w-full overflow-hidden h-[3.5rem]">
       {categoryPath.length > 0 ? (
         <>
           <Button

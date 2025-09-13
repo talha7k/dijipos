@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { ShoppingCart, Save, Printer } from 'lucide-react';
+import { ShoppingCart, Save, Printer, Trash2 } from 'lucide-react';
 import { POSCartItem } from './POSCartItem';
 
 interface CartItem {
@@ -17,17 +17,12 @@ interface POSCartSidebarProps {
   onCheckout: () => void;
   onSaveOrder?: () => void;
   onPrintReceipt?: () => void;
+  onClearCart?: () => void;
 }
 
-export function POSCartSidebar({ cart, cartTotal, onCheckout, onSaveOrder, onPrintReceipt }: POSCartSidebarProps) {
+export function POSCartSidebar({ cart, cartTotal, onCheckout, onSaveOrder, onPrintReceipt, onClearCart }: POSCartSidebarProps) {
   return (
-    <div className="w-80 bg-card border-l flex flex-col">
-      <div className="p-4 border-b">
-        <h2 className="text-xl font-semibold flex items-center space-x-2 text-foreground">
-          <ShoppingCart className="h-5 w-5" />
-          <span>Cart</span>
-        </h2>
-      </div>
+    <div className="w-80 bg-card border-l flex flex-col h-full">
 
       <div className="flex-1 overflow-auto p-4">
         {cart.length === 0 ? (
@@ -45,41 +40,53 @@ export function POSCartSidebar({ cart, cartTotal, onCheckout, onSaveOrder, onPri
       </div>
 
       <div className="border-t p-4 bg-card">
+        <div className="flex justify-between mb-2">
+          <span className="font-medium text-sm text-muted-foreground">Items:</span>
+          <span className="font-medium text-sm text-muted-foreground">{cart.reduce((sum, item) => sum + item.quantity, 0)}</span>
+        </div>
         <div className="flex justify-between mb-4">
           <span className="font-medium text-lg text-foreground">Total:</span>
           <span className="font-bold text-xl text-foreground">${cartTotal.toFixed(2)}</span>
         </div>
-        <div className="space-y-2">
+        <div className="flex gap-2 mb-2">
           {onSaveOrder && (
             <Button
               variant="outline"
-              className="w-full h-12 text-sm font-medium"
+              className="flex-1 h-12 text-sm font-medium"
               disabled={cart.length === 0}
               onClick={onSaveOrder}
             >
-              <Save className="h-4 w-4 mr-2" />
-              Save Order
+              <Save className="h-5 w-5" />
             </Button>
           )}
           {onPrintReceipt && (
             <Button
               variant="outline"
-              className="w-full h-12 text-sm font-medium"
+              className="flex-1 h-12 text-sm font-medium"
               disabled={cart.length === 0}
               onClick={onPrintReceipt}
             >
-              <Printer className="h-4 w-4 mr-2" />
-              Print Receipt
+              <Printer className="h-5 w-5" />
             </Button>
           )}
-          <Button
-            className="w-full h-14 text-lg font-bold"
-            disabled={cart.length === 0}
-            onClick={onCheckout}
-          >
-            Checkout
-          </Button>
+          {onClearCart && (
+            <Button
+              variant="outline"
+              className="flex-1 h-12 text-sm font-medium"
+              disabled={cart.length === 0}
+              onClick={onClearCart}
+            >
+              <Trash2 className="h-5 w-5" />
+            </Button>
+          )}
         </div>
+        <Button
+          className="w-full h-14 text-lg font-bold"
+          disabled={cart.length === 0}
+          onClick={onCheckout}
+        >
+          Checkout
+        </Button>
       </div>
     </div>
   );

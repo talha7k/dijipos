@@ -35,8 +35,8 @@ function SettingsContent() {
   const [newOrderType, setNewOrderType] = useState({ name: '', description: '' });
   const [newPaymentType, setNewPaymentType] = useState({ name: '', description: '' });
   const [newVatSettings, setNewVatSettings] = useState({ rate: 0, isEnabled: true });
-  const [newPrinterSettings, setNewPrinterSettings] = useState({ paperWidth: 58, fontSize: 'medium' as const, autoCut: true });
-  const [newReceiptTemplate, setNewReceiptTemplate] = useState({ name: '', description: '', content: '', type: 'thermal' as const });
+  const [newPrinterSettings, setNewPrinterSettings] = useState({ paperWidth: 58, fontSize: 'medium' as 'small' | 'medium' | 'large', autoCut: true });
+  const [newReceiptTemplate, setNewReceiptTemplate] = useState({ name: '', description: '', content: '', type: 'thermal' as 'thermal' | 'a4' });
 
   useEffect(() => {
     if (!tenantId) return;
@@ -542,7 +542,10 @@ function SettingsContent() {
                           id="font-size"
                           className="w-full p-2 border rounded"
                           value={newPrinterSettings.fontSize}
-                          onChange={(e) => setNewPrinterSettings({ ...newPrinterSettings, fontSize: e.target.value as 'small' | 'medium' | 'large' })}
+                          onChange={(e) => {
+                          const value = e.target.value as 'small' | 'medium' | 'large';
+                          setNewPrinterSettings({ ...newPrinterSettings, fontSize: value });
+                        }}
                         >
                           <option value="small">Small</option>
                           <option value="medium">Medium</option>
@@ -638,7 +641,7 @@ function SettingsContent() {
                           id="template-type"
                           className="w-full p-2 border rounded"
                           value={newReceiptTemplate.type}
-                          onChange={(e) => setNewReceiptTemplate({ ...newReceiptTemplate, type: e.target.value as any })}
+                          onChange={(e) => setNewReceiptTemplate({ ...newReceiptTemplate, type: e.target.value as 'thermal' | 'a4' })}
                         >
                           <option value="thermal">Thermal Printer</option>
                           <option value="a4">A4 Printer</option>
