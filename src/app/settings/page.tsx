@@ -1,9 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, query, onSnapshot, addDoc, doc, deleteDoc, setDoc, getDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, deleteDoc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
+
+import { usePaymentTypesData } from '@/hooks/use-payment-types-data';
+import { useReceiptTemplatesData } from '@/hooks/use-receipt-templates-data';
 import { OrderType, PaymentType, VATSettings, PrinterSettings, ReceiptTemplate } from '@/types';
 import thermalPrinter from '@/lib/thermal-printer';
 
@@ -36,11 +39,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 
 function SettingsContent() {
   const { organizationId } = useAuth();
-  const [orderTypes, setOrderTypes] = useState<OrderType[]>([]);
-  const [paymentTypes, setPaymentTypes] = useState<PaymentType[]>([]);
+  const { paymentTypes, loading: paymentTypesLoading } = usePaymentTypesData(organizationId || undefined);
+  const { receiptTemplates, loading: receiptTemplatesLoading } = useReceiptTemplatesData(organizationId || undefined);
   const [vatSettings, setVatSettings] = useState<VATSettings | null>(null);
    const [printerSettings, setPrinterSettings] = useState<PrinterSettings | null>(null);
-   const [receiptTemplates, setReceiptTemplates] = useState<ReceiptTemplate[]>([]);
    const [connectedPrinters, setConnectedPrinters] = useState<ConnectedPrinter[]>([]);
    const [loading, setLoading] = useState(true);
 
@@ -67,30 +69,6 @@ function SettingsContent() {
 
   useEffect(() => {
     if (!organizationId) return;
-
-    // Fetch order types
-    const orderTypesQ = query(collection(db, 'organizations', organizationId, 'orderTypes'));
-    const orderTypesUnsubscribe = onSnapshot(orderTypesQ, (querySnapshot) => {
-      const orderTypesData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-      })) as OrderType[];
-      setOrderTypes(orderTypesData);
-    });
-
-    // Fetch payment types
-    const paymentTypesQ = query(collection(db, 'organizations', organizationId, 'paymentTypes'));
-    const paymentTypesUnsubscribe = onSnapshot(paymentTypesQ, (querySnapshot) => {
-      const paymentTypesData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-      })) as PaymentType[];
-      setPaymentTypes(paymentTypesData);
-    });
 
     // Fetch VAT settings
     const fetchVatSettings = async () => {
@@ -161,27 +139,11 @@ function SettingsContent() {
       }
     };
 
-    // Fetch receipt templates
-    const templatesQ = query(collection(db, 'organizations', organizationId, 'receiptTemplates'));
-    const templatesUnsubscribe = onSnapshot(templatesQ, (querySnapshot) => {
-      const templatesData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-      })) as ReceiptTemplate[];
-      setReceiptTemplates(templatesData);
-    });
-
     fetchPrinterSettings();
-    setLoading(false);
-
-    return () => {
-      orderTypesUnsubscribe();
-      paymentTypesUnsubscribe();
-      templatesUnsubscribe();
-    };
-  }, [organizationId]);
+    
+    const isLoading = paymentTypesLoading || receiptTemplatesLoading;
+    setLoading(isLoading);
+  }, [organizationId, paymentTypesLoading, receiptTemplatesLoading]);
 
   const handleAddOrderType = async () => {
     if (!organizationId || !newOrderType.name.trim()) return;
@@ -371,30 +333,7 @@ function SettingsContent() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {orderTypes.length === 0 ? (
-                <p className="text-muted-foreground">No order types added yet.</p>
-              ) : (
-                <div className="grid gap-2">
-                  {orderTypes.map((type) => (
-                    <div key={type.id} className="flex items-center justify-between p-3 border rounded">
-                      <div>
-                        <h3 className="font-medium">{type.name}</h3>
-                        {type.description && (
-                          <p className="text-sm text-muted-foreground">{type.description}</p>
-                        )}
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteOrderType(type.id)}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <p className="text-muted-foreground">Order types feature coming soon.</p>
             </CardContent>
           </Card>
         </TabsContent>

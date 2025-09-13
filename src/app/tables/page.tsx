@@ -78,8 +78,8 @@ export default function TablesPage() {
       maintenance: 0,
     };
 
-    tables.forEach(table => {
-      stats[table.status]++;
+    tables.forEach((table: Table) => {
+      stats[table.status as keyof typeof stats]++;
     });
 
     return stats;

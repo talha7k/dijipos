@@ -112,6 +112,17 @@ export interface Payment {
   createdAt: Date;
 }
 
+export interface InvitationCode {
+  id: string;
+  code: string;
+  organizationId: string;
+  role: 'admin' | 'manager' | 'waiter' | 'cashier';
+  expiresAt: Date;
+  isUsed: boolean;
+  usedBy?: string;
+  createdAt: Date;
+}
+
 export interface TemplateField {
   id: string;
   name: string;

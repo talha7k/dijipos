@@ -1,10 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { doc, getDoc, updateDoc, collection, query, onSnapshot, addDoc, deleteDoc, where } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, addDoc, deleteDoc, collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
-import { Organization, OrganizationUser } from '@/types';
+import { useOrganizationData } from '@/hooks/use-organization-data';
+import { useOrganizationUsersData } from '@/hooks/use-organization-users-data';
+import { useInvitationCodesData } from '@/hooks/use-invitation-codes-data';
+import { Organization, OrganizationUser, InvitationCode } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -19,26 +22,15 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ImageUpload } from '@/components/ui/image-upload';
 
-interface InvitationCode {
-  id: string;
-  code: string;
-  organizationId: string;
-  role: 'admin' | 'manager' | 'waiter' | 'cashier';
-  expiresAt: Date;
-  isUsed: boolean;
-  usedBy?: string;
-  createdAt: Date;
-}
+
 
 function CompanyContent() {
   const { user, organizationId } = useAuth();
-  const [organization, setOrganization] = useState<Organization | null>(null);
+  const { organization, loading: orgLoading, error: orgError } = useOrganizationData(organizationId || undefined);
+  const { organizationUsers, loading: usersLoading, error: usersError } = useOrganizationUsersData(organizationId || undefined);
+  const { invitationCodes, loading: codesLoading, error: codesError } = useInvitationCodesData(organizationId || undefined);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  
-  // Team management state
-  const [organizationUsers, setOrganizationUsers] = useState<OrganizationUser[]>([]);
-  const [invitationCodes, setInvitationCodes] = useState<InvitationCode[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [invitationDialogOpen, setInvitationDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<OrganizationUser | null>(null);
@@ -62,61 +54,22 @@ function CompanyContent() {
   const [stampUrl, setStampUrl] = useState('');
 
   useEffect(() => {
-    if (!organizationId) return;
+    if (!organization) return;
 
-    const fetchOrganization = async () => {
-      const organizationDoc = await getDoc(doc(db, 'organizations', organizationId));
-      if (organizationDoc.exists()) {
-        const organizationData = {
-          id: organizationDoc.id,
-          ...organizationDoc.data(),
-          createdAt: organizationDoc.data().createdAt?.toDate(),
-        } as Organization;
+    setCompanyName(organization.name || '');
+    setCompanyNameAr(organization.nameAr || '');
+    setCompanyEmail(organization.email || '');
+    setCompanyAddress(organization.address || '');
+    setCompanyPhone(organization.phone || '');
+    setVatNumber(organization.vatNumber || '');
+    setLogoUrl(organization.logoUrl || '');
+    setStampUrl(organization.stampUrl || '');
+  }, [organization]);
 
-        setOrganization(organizationData);
-        setCompanyName(organizationData.name || '');
-        setCompanyNameAr(organizationData.nameAr || '');
-        setCompanyEmail(organizationData.email || '');
-        setCompanyAddress(organizationData.address || '');
-        setCompanyPhone(organizationData.phone || '');
-        setVatNumber(organizationData.vatNumber || '');
-        setLogoUrl(organizationData.logoUrl || '');
-        setStampUrl(organizationData.stampUrl || '');
-      }
-      setLoading(false);
-    };
-
-    fetchOrganization();
-
-    // Fetch organization users
-    const usersQuery = query(collection(db, 'organizationUsers'), where('organizationId', '==', organizationId));
-    const usersUnsubscribe = onSnapshot(usersQuery, (querySnapshot) => {
-      const usersData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-      })) as OrganizationUser[];
-      setOrganizationUsers(usersData);
-    });
-
-    // Fetch invitation codes
-    const codesQuery = query(collection(db, 'invitationCodes'), where('organizationId', '==', organizationId));
-    const codesUnsubscribe = onSnapshot(codesQuery, (querySnapshot) => {
-      const codesData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        expiresAt: doc.data().expiresAt?.toDate(),
-        createdAt: doc.data().createdAt?.toDate(),
-      })) as InvitationCode[];
-      setInvitationCodes(codesData);
-    });
-
-    return () => {
-      usersUnsubscribe();
-      codesUnsubscribe();
-    };
-  }, [organizationId]);
+  useEffect(() => {
+    const isLoading = orgLoading || usersLoading || codesLoading;
+    setLoading(isLoading);
+  }, [orgLoading, usersLoading, codesLoading]);
 
   
 
@@ -130,7 +83,6 @@ function CompanyContent() {
       });
       
       setLogoUrl('');
-      setOrganization(prev => prev ? { ...prev, logoUrl: '' } : null);
     } catch (error) {
       console.error('Error removing logo:', error);
       alert('Failed to remove logo.');
@@ -147,7 +99,6 @@ function CompanyContent() {
       });
       
       setStampUrl('');
-      setOrganization(prev => prev ? { ...prev, stampUrl: '' } : null);
     } catch (error) {
       console.error('Error removing stamp:', error);
       alert('Failed to remove stamp.');
@@ -171,18 +122,7 @@ function CompanyContent() {
         updatedAt: new Date(),
       });
 
-      // Update local state
-      setOrganization(prev => prev ? {
-        ...prev,
-        name: companyName,
-        nameAr: companyNameAr,
-        email: companyEmail,
-        address: companyAddress,
-        phone: companyPhone,
-        vatNumber: vatNumber,
-        logoUrl: logoUrl,
-        stampUrl: stampUrl,
-      } : null);
+      // Organization data will be updated via the hook automatically
 
       alert('Company information updated successfully!');
     } catch (error) {

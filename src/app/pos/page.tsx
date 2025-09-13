@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import React from 'react';
-import { collection, query, onSnapshot, addDoc, getDoc, doc } from 'firebase/firestore';
+import { addDoc, getDoc, doc, collection } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePOSPersistence, CartItem } from '@/hooks/use-pos-persistence';
@@ -12,6 +12,11 @@ import { useCategoriesData } from '@/hooks/use-categories-data';
 import { useTablesData } from '@/hooks/use-tables-data';
 import { useCustomersData } from '@/hooks/use-customers-data';
 import { useOrdersData } from '@/hooks/use-orders-data';
+import { usePaymentTypesData } from '@/hooks/use-payment-types-data';
+import { useOrderTypesData } from '@/hooks/use-order-types-data';
+import { useReceiptTemplatesData } from '@/hooks/use-receipt-templates-data';
+import { usePrinterSettingsData } from '@/hooks/use-printer-settings-data';
+import { useOrganizationData } from '@/hooks/use-organization-data';
 import { Product, Service, Category, Table, Customer, Order, OrderPayment, PaymentType, OrderType, ReceiptTemplate, PrinterSettings, Organization } from '@/types';
 
 import { POSBreadcrumb } from '@/components/POSBreadcrumb';
@@ -63,9 +68,10 @@ export default function POSPage() {
     clearCart
   } = usePOSPersistence(organizationId || undefined);
 
-  const [paymentTypes, setPaymentTypes] = useState<PaymentType[]>([]);
   const [loading, setLoading] = useState(true);
-  const [orderTypes, setOrderTypes] = useState<OrderType[]>([]);
+  const [pendingOrderToReopen, setPendingOrderToReopen] = useState<Order | null>(null);
+  const [showOrderConfirmationDialog, setShowOrderConfirmationDialog] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
   
   // Use new hooks for data management
   const { products, loading: productsLoading } = useProductsData(organizationId || undefined);
@@ -74,121 +80,48 @@ export default function POSPage() {
   const { tables, loading: tablesLoading } = useTablesData(organizationId || undefined);
   const { customers, loading: customersLoading } = useCustomersData(organizationId || undefined);
   const { orders, loading: ordersLoading } = useOrdersData(organizationId || undefined);
-  const [pendingOrderToReopen, setPendingOrderToReopen] = useState<Order | null>(null);
-  const [showOrderConfirmationDialog, setShowOrderConfirmationDialog] = useState(false);
-  const [receiptTemplates, setReceiptTemplates] = useState<ReceiptTemplate[]>([]);
-  const [printerSettings, setPrinterSettings] = useState<PrinterSettings | null>(null);
-  const [organization, setOrganization] = useState<Organization | null>(null);
-  const [isCartOpen, setIsCartOpen] = useState(false);
+  const { paymentTypes, loading: paymentTypesLoading } = usePaymentTypesData(organizationId || undefined);
+  const { orderTypes, loading: orderTypesLoading } = useOrderTypesData(organizationId || undefined);
+  const { receiptTemplates, loading: receiptTemplatesLoading } = useReceiptTemplatesData(organizationId || undefined);
+  const { printerSettings, loading: printerSettingsLoading } = usePrinterSettingsData(organizationId || undefined);
+  const { organization, loading: organizationLoading } = useOrganizationData(organizationId || undefined);
 
-  // Fetch data from Firebase using new hooks
+  // Update loading state based on all data sources
   useEffect(() => {
-    if (!organizationId) return;
-
-    // Check if all data is loaded
     const allDataLoaded = !productsLoading && !servicesLoading && !categoriesLoading && 
-                         !tablesLoading && !customersLoading && !ordersLoading;
-    
-    if (allDataLoaded) {
-      setLoading(false);
-    }
+                         !tablesLoading && !customersLoading && !ordersLoading &&
+                         !paymentTypesLoading && !orderTypesLoading && !receiptTemplatesLoading &&
+                         !printerSettingsLoading && !organizationLoading;
+    setLoading(!allDataLoaded);
+  }, [productsLoading, servicesLoading, categoriesLoading, tablesLoading, customersLoading, 
+      ordersLoading, paymentTypesLoading, orderTypesLoading, receiptTemplatesLoading, 
+      printerSettingsLoading, organizationLoading]);
 
-    // Fetch payment types (not covered by hooks yet)
-    const paymentTypesQ = query(collection(db, 'organizations', organizationId, 'paymentTypes'));
-    const paymentTypesUnsubscribe = onSnapshot(paymentTypesQ, (querySnapshot) => {
-      const paymentTypesData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-      })) as PaymentType[];
-      setPaymentTypes(paymentTypesData);
-    });
-
-    // Fetch order types (not covered by hooks yet)
-    const orderTypesQ = query(collection(db, 'organizations', organizationId, 'orderTypes'));
-    const orderTypesUnsubscribe = onSnapshot(orderTypesQ, async (querySnapshot) => {
-      const orderTypesData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-      })) as OrderType[];
-      setOrderTypes(orderTypesData);
-
-      // Set default order type if none selected and order types exist
-      if (orderTypesData.length > 0 && !selectedOrderType) {
-        const savedOrderTypeKey = organizationId ? `${organizationId}_posOrderType` : 'posOrderType';
-        const savedOrderType = localStorage.getItem(savedOrderTypeKey);
-        
-        if (savedOrderType) {
-          try {
-            const parsedOrderType = JSON.parse(savedOrderType);
-            setSelectedOrderType(parsedOrderType);
-          } catch (error) {
-            console.error('Error loading order type from localStorage:', error);
-            setSelectedOrderType(orderTypesData[0]);
-          }
-        } else {
-          setSelectedOrderType(orderTypesData[0]);
+  // Set default order type when order types are loaded
+  useEffect(() => {
+    if (orderTypes && orderTypes.length > 0 && !selectedOrderType) {
+      const savedOrderTypeKey = organizationId ? `${organizationId}_posOrderType` : 'posOrderType';
+      const savedOrderType = localStorage.getItem(savedOrderTypeKey);
+      
+      if (savedOrderType) {
+        try {
+          const parsedOrderType = JSON.parse(savedOrderType);
+          setSelectedOrderType(parsedOrderType);
+        } catch (error) {
+          console.error('Error loading order type from localStorage:', error);
+          setSelectedOrderType(orderTypes[0]);
         }
+      } else {
+        setSelectedOrderType(orderTypes[0]);
       }
-    });
-
-    // Fetch printer settings and organization data (not covered by hooks)
-    const fetchAdditionalData = async () => {
-      const printerDoc = await getDoc(doc(db, 'organizations', organizationId, 'settings', 'printer'));
-      if (printerDoc.exists()) {
-        const printerData = printerDoc.data() as PrinterSettings;
-        setPrinterSettings({
-          ...printerData,
-          createdAt: printerData.createdAt,
-          updatedAt: printerData.updatedAt,
-        });
-      }
-
-      const organizationDoc = await getDoc(doc(db, 'organizations', organizationId));
-      if (organizationDoc.exists()) {
-        const organizationData = organizationDoc.data() as Organization;
-        setOrganization({
-          ...organizationData,
-          createdAt: organizationData.createdAt,
-          updatedAt: organizationData.updatedAt,
-        });
-      }
-    };
-
-    // Fetch receipt templates (not covered by hooks)
-    const receiptTemplatesQ = query(collection(db, 'organizations', organizationId, 'receiptTemplates'));
-    const receiptTemplatesUnsubscribe = onSnapshot(receiptTemplatesQ, (querySnapshot) => {
-      const templatesData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-      })) as ReceiptTemplate[];
-      setReceiptTemplates(templatesData);
-    });
-
-    fetchAdditionalData();
-
-    return () => {
-      paymentTypesUnsubscribe();
-      orderTypesUnsubscribe();
-      receiptTemplatesUnsubscribe();
-    };
-  }, [organizationId, selectedOrderType]);
+    }
+  }, [orderTypes, selectedOrderType, organizationId, setSelectedOrderType]);
 
 
   // Calculate cart total
   const cartTotal = cart.reduce((sum: number, item: CartItem) => sum + item.total, 0);
 
-  // Update loading state based on all data sources
-  useEffect(() => {
-    const allDataLoaded = !productsLoading && !servicesLoading && !categoriesLoading && 
-                         !tablesLoading && !customersLoading && !ordersLoading;
-    setLoading(!allDataLoaded);
-  }, [productsLoading, servicesLoading, categoriesLoading, tablesLoading, customersLoading, ordersLoading]);
+
 
   // Debug cart persistence
   useEffect(() => {
