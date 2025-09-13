@@ -7,7 +7,7 @@ import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePOSPersistence, CartItem } from '@/hooks/use-pos-persistence';
 import { Product, Service, Category, Table, Customer, Order, OrderPayment, PaymentType, OrderType, ReceiptTemplate, PrinterSettings, Tenant } from '@/types';
-import { POSHeader } from '@/components/POSHeader';
+
 import { POSBreadcrumb } from '@/components/POSBreadcrumb';
 import { POSCategoriesGrid } from '@/components/POSCategoriesGrid';
 import { POSItemsGrid } from '@/components/POSItemsGrid';
@@ -20,6 +20,8 @@ import { OrderTypeSelectionDialog } from '@/components/OrderTypeSelectionDialog'
 import { ReceiptPrintDialog } from '@/components/ReceiptPrintDialog';
 import { CartItemModal } from '@/components/CartItemModal';
 import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { ShoppingCart, LayoutGrid, Users, ShoppingBag, FileText } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -69,6 +71,7 @@ export default function POSPage() {
   const [receiptTemplates, setReceiptTemplates] = useState<ReceiptTemplate[]>([]);
   const [printerSettings, setPrinterSettings] = useState<PrinterSettings | null>(null);
   const [tenant, setTenant] = useState<Tenant | null>(null);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   // Fetch data from Firebase
   useEffect(() => {
@@ -524,31 +527,188 @@ export default function POSPage() {
   if (loading) return <div className="flex items-center justify-center h-screen">Loading...</div>;
 
   return (
-    <div className="flex h-screen bg-background">
-      {/* Content Area - takes remaining space */}
-      <div className="flex flex-col flex-1 min-w-0">
-        <POSHeader
-          cart={cart}
-          cartTotal={cartTotal}
-          selectedTable={selectedTable}
-          selectedCustomer={selectedCustomer}
-          orderTypes={orderTypes}
-          selectedOrderType={selectedOrderType}
-          onTableSelect={handleTableSelect}
-          onCustomerSelect={handleCustomerSelect}
-          onOrdersClick={handleOrdersClick}
-          onOrderTypeSelect={handleOrderTypeSelect}
-          onTableDeselect={handleTableDeselect}
-          onCustomerDeselect={handleCustomerDeselect}
-          onOrderTypeDeselect={handleOrderTypeDeselect}
-        />
+    <div className="h-screen bg-background grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-0">
+      {/* Left Column - Header + Main Content */}
+      <div className="flex flex-col min-h-0">
+        {/* Header */}
+        <div className="bg-card shadow p-4 border-b border-r lg:border-r-0">
+          <div className="flex justify-between items-center max-w-7xl mx-auto">
+            <h1 className="text-2xl font-bold text-foreground">POS</h1>
+            <div className="flex items-center space-x-4">
+              {/* Mobile Cart Toggle */}
+              <div className="lg:hidden">
+                <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
+                  <SheetTrigger asChild>
+                    <Button variant="outline" size="sm" className="relative">
+                      <ShoppingCart className="h-4 w-4" />
+                      {cart.length > 0 && (
+                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                          {cart.length}
+                        </span>
+                      )}
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="right" className="w-full max-w-sm p-0">
+                    <POSCartSidebar
+                      cart={cart}
+                      cartTotal={cartTotal}
+                      onCheckout={() => {
+                        setIsCartOpen(false);
+                      }}
+                      onSaveOrder={() => {
+                        handleSaveOrder();
+                        setIsCartOpen(false);
+                      }}
+                      onPrintReceipt={async () => {
+                        // Check if receipt templates exist, create a default one if not
+                        if (receiptTemplates.length === 0 && tenantId) {
+                          try {
+                            const defaultTemplateContent = '<!DOCTYPE html>\\n<html>\\n<head>\\n  <meta charset="utf-8">\\n  <title>Receipt</title>\\n  <style>\\n    body { font-family: monospace; margin: 0; padding: 10px; }\\n    .header { text-align: center; margin-bottom: 10px; }\\n    .content { margin-bottom: 10px; }\\n    .footer { text-align: center; margin-top: 10px; }\\n    .line { display: flex; justify-content: space-between; }\\n    .total { font-weight: bold; border-top: 1px dashed; padding-top: 5px; }\\n  </style>\\n</head>\\n<body>\\n  <div class="header">\\n    <h2>{{companyName}}</h2>\\n    <p>{{companyAddress}}</p>\\n    <p>Tel: {{companyPhone}}</p>\\n    <p>VAT: {{companyVat}}</p>\\n    <hr>\\n    <p>Order #: {{orderNumber}}</p>\\n    <p>Date: {{orderDate}}</p>\\n    <p>Table: {{tableName}}</p>\\n    <p>Customer: {{customerName}}</p>\\n    <hr>\\n  </div>\\n  \\n  <div class="content">\\n    {{#each items}}\\n    <div class="line">\\n      <span>{{name}} ({{quantity}}x)</span>\\n      <span>{{total}}</span>\\n    </div>\\n    {{/each}}\\n  </div>\\n  \\n  <div class="total">\\n    <div class="line">\\n      <span>Subtotal:</span>\\n      <span>{{subtotal}}</span>\\n    </div>\\n    <div class="line">\\n      <span>VAT ({{vatRate}}%):</span>\\n      <span>{{vatAmount}}</span>\\n    </div>\\n    <div class="line">\\n      <span>TOTAL:</span>\\n      <span>{{total}}</span>\\n    </div>\\n  </div>\\n  \\n  <div class="footer">\\n    <p>Payment: {{paymentMethod}}</p>\\n    <p>Thank you for your business!</p>\\n  </div>\\n</body>\\n</html>';
 
-      {/* Main Content */}
-      <div className="flex flex-1 overflow-hidden h-full">
+                            await addDoc(collection(db, 'tenants', tenantId, 'receiptTemplates'), {
+                              name: 'Default Receipt',
+                              description: 'Default receipt template',
+                              content: defaultTemplateContent,
+                              type: 'thermal',
+                              isDefault: true,
+                              tenantId,
+                              createdAt: new Date(),
+                              updatedAt: new Date(),
+                            });
+
+                            // Show success message
+                            alert('Default receipt template created successfully. Please try printing again.');
+                            return;
+                          } catch (error) {
+                            console.error('Error creating default receipt template:', error);
+                            alert('Error creating default receipt template. Please try again.');
+                            return;
+                          }
+                        }
+
+                        // Create a temporary order from cart for printing
+                        const tempOrder: Order = {
+                          id: 'temp',
+                          tenantId: tenantId || '',
+                          orderNumber: `TEMP-${Date.now()}`,
+                          items: cart.map(item => ({
+                            id: `${item.type}-${item.id}`,
+                            type: item.type,
+                            productId: item.type === 'product' ? item.id : undefined,
+                            serviceId: item.type === 'service' ? item.id : undefined,
+                            name: item.name,
+                            quantity: item.quantity,
+                            unitPrice: item.price,
+                            total: item.total,
+                          })),
+                          subtotal: cartTotal,
+                          taxRate: 0,
+                          taxAmount: 0,
+                          total: cartTotal,
+                          status: 'open',
+                          orderType: selectedOrderType?.name || 'dine-in',
+                          customerName: selectedCustomer?.name,
+                          customerPhone: selectedCustomer?.phone,
+                          customerEmail: selectedCustomer?.email,
+                          tableId: selectedTable?.id,
+                          tableName: selectedTable?.name,
+                          createdAt: new Date(),
+                          updatedAt: new Date(),
+                        };
+                        setSelectedOrder(tempOrder);
+                        // Open the print dialog immediately after setting the order
+                        setTimeout(() => {
+                          const printTrigger = document.querySelector('[data-print-receipt-trigger]') as HTMLElement;
+                          if (printTrigger) {
+                            printTrigger.click();
+                          }
+                        }, 100);
+                        setIsCartOpen(false);
+                      }}
+                      onClearCart={() => {
+                        handleClearCart();
+                        setIsCartOpen(false);
+                      }}
+                    />
+                  </SheetContent>
+                </Sheet>
+              </div>
+
+              {/* Table Selection */}
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant={selectedTable ? "default" : "outline"}
+                  size="sm"
+                  onClick={handleTableSelect}
+                  onDoubleClick={handleTableDeselect}
+                  className={`flex items-center space-x-2 ${selectedTable ? 'bg-green-600 hover:bg-green-700 text-white' : ''}`}
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                  <span>
+                    {selectedTable ? selectedTable.name : 'Table'}
+                  </span>
+                </Button>
+              </div>
+
+              {/* Customer Selection */}
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant={selectedCustomer ? "default" : "outline"}
+                  size="sm"
+                  onClick={handleCustomerSelect}
+                  onDoubleClick={handleCustomerDeselect}
+                  className={`flex items-center space-x-2 ${selectedCustomer ? 'bg-green-600 hover:bg-green-700 text-white' : ''}`}
+                >
+                  <Users className="h-4 w-4" />
+                  <span>
+                    {selectedCustomer ? selectedCustomer.name : 'Customer'}
+                  </span>
+                </Button>
+              </div>
+
+              {/* Order Type Selection */}
+              <div className="flex items-center space-x-2">
+                <OrderTypeSelectionDialog
+                  orderTypes={orderTypes}
+                  selectedOrderType={selectedOrderType}
+                  onOrderTypeSelect={handleOrderTypeSelect}
+                >
+                  <Button
+                    variant={selectedOrderType ? "default" : "outline"}
+                    size="sm"
+                    onDoubleClick={handleOrderTypeDeselect}
+                    className={`flex items-center space-x-2 ${selectedOrderType ? 'bg-green-600 hover:bg-green-700 text-white' : ''}`}
+                  >
+                    <ShoppingBag className="h-4 w-4" />
+                    <span>
+                      {selectedOrderType ? selectedOrderType.name : 'Order Type'}
+                    </span>
+                  </Button>
+                </OrderTypeSelectionDialog>
+              </div>
+
+              {/* Orders Button */}
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleOrdersClick}
+                  className="flex items-center space-x-2"
+                >
+                  <FileText className="h-4 w-4" />
+                  <span>Orders</span>
+                </Button>
+              </div>
+            </div>
+           </div>
+         </div>
+
+         {/* Main Content Area */}
+         <div className="flex-1 overflow-hidden">
         {currentView === 'items' && (
-          <>
+          <div className="h-full grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-0">
             {/* Items Grid */}
-            <div className="flex-1 overflow-auto bg-background">
+            <div className="overflow-auto bg-background">
               {/* Breadcrumb - only shown in items view */}
               <POSBreadcrumb
                 categoryPath={categoryPath}
@@ -570,7 +730,7 @@ export default function POSPage() {
                       onCategoryClick={navigateToCategory}
                     />
                   </div>
-                  
+
                   {/* Uncategorized Items Section at Root Level */}
                   {(products.filter(p => !p.categoryId).length > 0 || services.filter(s => !s.categoryId).length > 0) && (
                     <POSItemsGrid
@@ -596,146 +756,120 @@ export default function POSPage() {
               </div>
             </div>
 
-            <POSCartSidebar
-              cart={cart}
-              cartTotal={cartTotal}
-              onCheckout={() => {}}
-              onSaveOrder={handleSaveOrder}
-              onPrintReceipt={async () => {
-                // Check if receipt templates exist, create a default one if not
-                if (receiptTemplates.length === 0 && tenantId) {
-                  try {
-                    const defaultTemplateContent = '<!DOCTYPE html>\\n<html>\\n<head>\\n  <meta charset="utf-8">\\n  <title>Receipt</title>\\n  <style>\\n    body { font-family: monospace; margin: 0; padding: 10px; }\\n    .header { text-align: center; margin-bottom: 10px; }\\n    .content { margin-bottom: 10px; }\\n    .footer { text-align: center; margin-top: 10px; }\\n    .line { display: flex; justify-content: space-between; }\\n    .total { font-weight: bold; border-top: 1px dashed; padding-top: 5px; }\\n  </style>\\n</head>\\n<body>\\n  <div class="header">\\n    <h2>{{companyName}}</h2>\\n    <p>{{companyAddress}}</p>\\n    <p>Tel: {{companyPhone}}</p>\\n    <p>VAT: {{companyVat}}</p>\\n    <hr>\\n    <p>Order #: {{orderNumber}}</p>\\n    <p>Date: {{orderDate}}</p>\\n    <p>Table: {{tableName}}</p>\\n    <p>Customer: {{customerName}}</p>\\n    <hr>\\n  </div>\\n  \\n  <div class="content">\\n    {{#each items}}\\n    <div class="line">\\n      <span>{{name}} ({{quantity}}x)</span>\\n      <span>{{total}}</span>\\n    </div>\\n    {{/each}}\\n  </div>\\n  \\n  <div class="total">\\n    <div class="line">\\n      <span>Subtotal:</span>\\n      <span>{{subtotal}}</span>\\n    </div>\\n    <div class="line">\\n      <span>VAT ({{vatRate}}%):</span>\\n      <span>{{vatAmount}}</span>\\n    </div>\\n    <div class="line">\\n      <span>TOTAL:</span>\\n      <span>{{total}}</span>\\n    </div>\\n  </div>\\n  \\n  <div class="footer">\\n    <p>Payment: {{paymentMethod}}</p>\\n    <p>Thank you for your business!</p>\\n  </div>\\n</body>\\n</html>';
-                    
-                    await addDoc(collection(db, 'tenants', tenantId, 'receiptTemplates'), {
-                      name: 'Default Receipt',
-                      description: 'Default receipt template',
-                      content: defaultTemplateContent,
-                      type: 'thermal',
-                      isDefault: true,
-                      tenantId,
-                      createdAt: new Date(),
-                      updatedAt: new Date(),
-                    });
-                    
-                    // Show success message
-                    alert('Default receipt template created successfully. Please try printing again.');
-                    return;
-                  } catch (error) {
-                    console.error('Error creating default receipt template:', error);
-                    alert('Error creating default receipt template. Please try again.');
-                    return;
-                  }
-                }
-                
-                // Create a temporary order from cart for printing
-                const tempOrder: Order = {
-                  id: 'temp',
-                  tenantId: tenantId || '',
-                  orderNumber: `TEMP-${Date.now()}`,
-                  items: cart.map(item => ({
-                    id: `${item.type}-${item.id}`,
-                    type: item.type,
-                    productId: item.type === 'product' ? item.id : undefined,
-                    serviceId: item.type === 'service' ? item.id : undefined,
-                    name: item.name,
-                    quantity: item.quantity,
-                    unitPrice: item.price,
-                    total: item.total,
-                  })),
-                  subtotal: cartTotal,
-                  taxRate: 0,
-                  taxAmount: 0,
-                  total: cartTotal,
-                  status: 'open',
-                  orderType: selectedOrderType?.name || 'dine-in',
-                  customerName: selectedCustomer?.name,
-                  customerPhone: selectedCustomer?.phone,
-                  customerEmail: selectedCustomer?.email,
-                  tableId: selectedTable?.id,
-                  tableName: selectedTable?.name,
-                  createdAt: new Date(),
-                  updatedAt: new Date(),
-                };
-                setSelectedOrder(tempOrder);
-                // Open the print dialog immediately after setting the order
-                setTimeout(() => {
-                  const printTrigger = document.querySelector('[data-print-receipt-trigger]') as HTMLElement;
-                  if (printTrigger) {
-                    printTrigger.click();
-                  }
-                }, 100);
-              }}
-              onClearCart={handleClearCart}
-            />
-          </>
+
+          </div>
         )}
 
         {currentView === 'tables' && (
-          <div className="flex-1 flex overflow-hidden">
-            <POSTableGrid
-              tables={tables}
-              onTableSelect={handleTableSelected}
-              onBack={handleBackToItems}
-            />
-            <POSCartSidebar
-              cart={cart}
-              cartTotal={cartTotal}
-              onCheckout={() => {}}
-              onSaveOrder={handleSaveOrder}
-            />
-          </div>
+          <POSTableGrid
+            tables={tables}
+            onTableSelect={handleTableSelected}
+            onBack={handleBackToItems}
+          />
         )}
 
         {currentView === 'customers' && (
-          <div className="flex-1 flex overflow-hidden">
-            <POSCustomerGrid
-              customers={customers}
-              onCustomerSelect={handleCustomerSelected}
-              onBack={handleBackToItems}
-            />
-            <POSCartSidebar
-              cart={cart}
-              cartTotal={cartTotal}
-              onCheckout={() => {}}
-              onSaveOrder={handleSaveOrder}
-            />
-          </div>
+          <POSCustomerGrid
+            customers={customers}
+            onCustomerSelect={handleCustomerSelected}
+            onBack={handleBackToItems}
+          />
         )}
 
         {currentView === 'orders' && (
-          <div className="flex-1 flex overflow-hidden">
-            <POSOrderGrid
-              orders={orders.filter(order => order.status === 'saved')}
-              onOrderSelect={handleOrderReopen}
-              onPaymentClick={handlePaymentClick}
-              onBack={handleBackToItems}
-            />
-            <POSCartSidebar
-              cart={cart}
-              cartTotal={cartTotal}
-              onCheckout={() => {}}
-              onSaveOrder={handleSaveOrder}
-            />
-          </div>
+          <POSOrderGrid
+            orders={orders.filter(order => order.status === 'saved')}
+            onOrderSelect={handleOrderReopen}
+            onPaymentClick={handlePaymentClick}
+            onBack={handleBackToItems}
+          />
         )}
 
         {currentView === 'payment' && selectedOrder && (
-          <div className="flex-1 flex overflow-hidden">
-            <POSPaymentGrid
-              order={selectedOrder}
-              paymentTypes={paymentTypes}
-              onPaymentProcessed={handlePaymentProcessed}
-              onBack={() => setCurrentView('orders')}
-            />
-            <POSCartSidebar
-              cart={cart}
-              cartTotal={cartTotal}
-              onCheckout={() => {}}
-              onSaveOrder={handleSaveOrder}
-            />
-          </div>
+          <POSPaymentGrid
+            order={selectedOrder}
+            paymentTypes={paymentTypes}
+            onPaymentProcessed={handlePaymentProcessed}
+            onBack={() => setCurrentView('orders')}
+          />
         )}
+        </div>
+      </div>
+
+      {/* Right Column - Full Height Sidebar */}
+      <div className="hidden lg:block h-screen">
+        <POSCartSidebar
+          cart={cart}
+          cartTotal={cartTotal}
+          onCheckout={() => {}}
+          onSaveOrder={handleSaveOrder}
+          onPrintReceipt={async () => {
+            // Check if receipt templates exist, create a default one if not
+            if (receiptTemplates.length === 0 && tenantId) {
+              try {
+                const defaultTemplateContent = '<!DOCTYPE html>\\n<html>\\n<head>\\n  <meta charset="utf-8">\\n  <title>Receipt</title>\\n  <style>\\n    body { font-family: monospace; margin: 0; padding: 10px; }\\n    .header { text-align: center; margin-bottom: 10px; }\\n    .content { margin-bottom: 10px; }\\n    .footer { text-align: center; margin-top: 10px; }\\n    .line { display: flex; justify-content: space-between; }\\n    .total { font-weight: bold; border-top: 1px dashed; padding-top: 5px; }\\n  </style>\\n</head>\\n<body>\\n  <div class="header">\\n    <h2>{{companyName}}</h2>\\n    <p>{{companyAddress}}</p>\\n    <p>Tel: {{companyPhone}}</p>\\n    <p>VAT: {{companyVat}}</p>\\n    <hr>\\n    <p>Order #: {{orderNumber}}</p>\\n    <p>Date: {{orderDate}}</p>\\n    <p>Table: {{tableName}}</p>\\n    <p>Customer: {{customerName}}</p>\\n    <hr>\\n  </div>\\n  \\n  <div class="content">\\n    {{#each items}}\\n    <div class="line">\\n      <span>{{name}} ({{quantity}}x)</span>\\n      <span>{{total}}</span>\\n    </div>\\n    {{/each}}\\n  </div>\\n  \\n  <div class="total">\\n    <div class="line">\\n      <span>Subtotal:</span>\\n      <span>{{subtotal}}</span>\\n    </div>\\n    <div class="line">\\n      <span>VAT ({{vatRate}}%):</span>\\n      <span>{{vatAmount}}</span>\\n    </div>\\n    <div class="line">\\n      <span>TOTAL:</span>\\n      <span>{{total}}</span>\\n    </div>\\n  </div>\\n  \\n  <div class="footer">\\n    <p>Payment: {{paymentMethod}}</p>\\n    <p>Thank you for your business!</p>\\n  </div>\\n</body>\\n</html>';
+
+                await addDoc(collection(db, 'tenants', tenantId, 'receiptTemplates'), {
+                  name: 'Default Receipt',
+                  description: 'Default receipt template',
+                  content: defaultTemplateContent,
+                  type: 'thermal',
+                  isDefault: true,
+                  tenantId,
+                  createdAt: new Date(),
+                  updatedAt: new Date(),
+                });
+
+                // Show success message
+                alert('Default receipt template created successfully. Please try printing again.');
+                return;
+              } catch (error) {
+                console.error('Error creating default receipt template:', error);
+                alert('Error creating default receipt template. Please try again.');
+                return;
+              }
+            }
+
+            // Create a temporary order from cart for printing
+            const tempOrder: Order = {
+              id: 'temp',
+              tenantId: tenantId || '',
+              orderNumber: `TEMP-${Date.now()}`,
+              items: cart.map(item => ({
+                id: `${item.type}-${item.id}`,
+                type: item.type,
+                productId: item.type === 'product' ? item.id : undefined,
+                serviceId: item.type === 'service' ? item.id : undefined,
+                name: item.name,
+                quantity: item.quantity,
+                unitPrice: item.price,
+                total: item.total,
+              })),
+              subtotal: cartTotal,
+              taxRate: 0,
+              taxAmount: 0,
+              total: cartTotal,
+              status: 'open',
+              orderType: selectedOrderType?.name || 'dine-in',
+              customerName: selectedCustomer?.name,
+              customerPhone: selectedCustomer?.phone,
+              customerEmail: selectedCustomer?.email,
+              tableId: selectedTable?.id,
+              tableName: selectedTable?.name,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            };
+            setSelectedOrder(tempOrder);
+            // Open the print dialog immediately after setting the order
+            setTimeout(() => {
+              const printTrigger = document.querySelector('[data-print-receipt-trigger]') as HTMLElement;
+              if (printTrigger) {
+                printTrigger.click();
+              }
+            }, 100);
+          }}
+          onClearCart={handleClearCart}
+        />
       </div>
 
       {/* Order Reopen Confirmation Dialog */}
@@ -744,7 +878,7 @@ export default function POSPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
             <AlertDialogDescription>
-              You have {cart.length} item(s) in your current cart. Reopening another order will replace your current cart. 
+              You have {cart.length} item(s) in your current cart. Reopening another order will replace your current cart.
               Would you like to save your current order first, or discard it?
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -786,6 +920,5 @@ export default function POSPage() {
         }}
       />
     </div>
-  </div>
-   );
+  );
 }
