@@ -27,7 +27,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     <ProtectedRoute>
       <div className="flex h-screen bg-background">
         <CollapsibleSidebar />
-        <main className={`flex-1 overflow-auto ${isCollapsed ? 'md:ml-16' : 'md:ml-64'}`}>
+        <main className={`flex-1 overflow-auto pt-16 md:pt-0 ${isCollapsed ? 'md:ml-16' : 'md:ml-64'}`}>
           {children}
         </main>
       </div>

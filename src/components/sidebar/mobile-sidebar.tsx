@@ -36,6 +36,11 @@ const navigationItems: NavigationItem[] = [
     icon: Home,
   },
   {
+    title: "Point of Sale",
+    href: "/pos",
+    icon: Receipt,
+  },
+  {
     title: "Sales",
     icon: Receipt,
     children: [
