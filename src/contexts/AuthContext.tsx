@@ -92,6 +92,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setOrganizationUser(organizationAssociation);
         setOrganizationId(selectedOrganizationId);
 
+        // Persist selected organization to localStorage
+        localStorage.setItem('selectedOrganizationId', selectedOrganizationId);
+
         // Fetch organization details from Firebase
         const organizationDoc = await getDoc(doc(db, 'organizations', selectedOrganizationId));
         if (organizationDoc.exists()) {
@@ -119,6 +122,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUserOrganizations([]);
       setOrganizationId(null);
       setEmailVerified(false);
+      // Clear stored organization when user logs out
+      localStorage.removeItem('selectedOrganizationId');
     } catch (error) {
       console.error('Error signing out:', error);
       throw error;
@@ -151,13 +156,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
            setUserOrganizations(organizationAssociations);
 
-           // Don't auto-select organization on login - let user choose from select-organization page
+           // Check if there's a previously selected organization in localStorage
+           const storedOrganizationId = localStorage.getItem('selectedOrganizationId');
+           if (storedOrganizationId && organizationAssociations.some(ou => ou.organizationId === storedOrganizationId)) {
+             // Auto-select the stored organization
+             await selectOrganization(storedOrganizationId);
+           }
         } else {
           setOrganizationId(null);
           setOrganizationUser(null);
           setCurrentOrganization(null);
           setUserOrganizations([]);
           setEmailVerified(false);
+          // Clear stored organization when user logs out
+          localStorage.removeItem('selectedOrganizationId');
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An unknown error occurred');
@@ -168,7 +180,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
 
     return () => unsubscribe();
-  }, [organizationId]);
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, organizationUser, currentOrganization, userOrganizations, loading, organizationId, error, emailVerified, selectOrganization, refreshUserOrganizations, logout }}>
