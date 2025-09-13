@@ -5,13 +5,14 @@ import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSidebar } from "@/contexts/SidebarContext";
 import { auth } from "@/lib/firebase";
 import { DesktopSidebar } from "./desktop-sidebar";
 import { MobileSidebar } from "./mobile-sidebar";
 import { SidebarProps } from "./sidebar-types";
 
 export function CollapsibleSidebar({ className }: SidebarProps) {
-  const [isCollapsed, setIsCollapsed] = React.useState(false);
+  const { isCollapsed, toggleCollapse } = useSidebar();
   const [openSections, setOpenSections] = React.useState<{
     [key: string]: boolean;
   }>({
@@ -42,7 +43,7 @@ export function CollapsibleSidebar({ className }: SidebarProps) {
   const sidebarProps = {
     className,
     isCollapsed,
-    onToggleCollapse: () => setIsCollapsed(!isCollapsed),
+    onToggleCollapse: toggleCollapse,
     onThemeToggle: toggleTheme,
     theme,
     pathname,
@@ -53,6 +54,7 @@ export function CollapsibleSidebar({ className }: SidebarProps) {
     tenantId: tenantId || undefined,
     onLogout: handleLogout,
     onSectionToggle: toggleSection,
+    onExpandSidebar: isCollapsed ? toggleCollapse : undefined,
     openSections,
   };
 

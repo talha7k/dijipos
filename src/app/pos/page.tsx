@@ -1,22 +1,15 @@
-'use client';
+n'use client';
 
 import { useState, useEffect } from 'react';
 import { collection, query, onSnapshot, QuerySnapshot, DocumentData } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
-import { Product, Service } from '@/types';
+import { Product, Service, Category } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ShoppingCart, ArrowLeft } from 'lucide-react';
 
-// Define types for POS
-interface Category {
-  id: string;
-  name: string;
-  description?: string;
-  order: number;
-}
 
 interface Subcategory {
   id: string;
@@ -70,32 +63,26 @@ export default function POSPage() {
       setServices(servicesData);
     });
 
-    // For demo purposes, let's create some sample categories and subcategories
-    // In a real app, these would be fetched from Firebase
-    const sampleCategories: Category[] = [
-      { id: 'cat1', name: 'Food & Beverages', description: 'Food and drink items', order: 1 },
-      { id: 'cat2', name: 'Electronics', description: 'Electronic devices', order: 2 },
-      { id: 'cat3', name: 'Services', description: 'Various services', order: 3 },
-    ];
-
-    const sampleSubcategories: Subcategory[] = [
-      { id: 'sub1', name: 'Hot Drinks', categoryId: 'cat1', order: 1 },
-      { id: 'sub2', name: 'Cold Drinks', categoryId: 'cat1', order: 2 },
-      { id: 'sub3', name: 'Snacks', categoryId: 'cat1', order: 3 },
-      { id: 'sub4', name: 'Phones', categoryId: 'cat2', order: 1 },
-      { id: 'sub5', name: 'Laptops', categoryId: 'cat2', order: 2 },
-      { id: 'sub6', name: 'Consulting', categoryId: 'cat3', order: 1 },
-      { id: 'sub7', name: 'Repair', categoryId: 'cat3', order: 2 },
-    ];
-
-    setCategories(sampleCategories);
-    setSubcategories(sampleSubcategories);
-    setLoading(false);
+    // Fetch categories from Firebase
+    const categoriesQ = query(collection(db, 'tenants', tenantId, 'categories'));
+    const categoriesUnsubscribe = onSnapshot(categoriesQ, (querySnapshot) => {
+      const categoriesData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate(),
+        updatedAt: doc.data().updatedAt?.toDate(),
+      })) as Category[];
+      
+      setCategories(categoriesData);
+      setLoading(false);
+    });
 
     return () => {
       productsUnsubscribe();
       servicesUnsubscribe();
+      categoriesUnsubscribe();
     };
+
   }, [tenantId]);
 
   // Filter subcategories based on selected category
@@ -103,10 +90,10 @@ export default function POSPage() {
     ? subcategories.filter((sub: Subcategory) => sub.categoryId === selectedCategory)
     : [];
 
-  // Filter products and services based on selected subcategory
-  const filteredItems = selectedSubcategory ? [
-    ...products.filter((p: Product) => p.category === subcategories.find((s: Subcategory) => s.id === selectedSubcategory)?.name),
-    ...services.filter((s: Service) => s.category === subcategories.find((s: Subcategory) => s.id === selectedSubcategory)?.name)
+  // Filter products and services based on selected category
+  const filteredItems = selectedCategory ? [
+    ...products.filter((p: Product) => p.categoryId === selectedCategory),
+    ...services.filter((s: Service) => s.categoryId === selectedCategory)
   ] : [];
 
   // Add item to cart
@@ -150,11 +137,11 @@ export default function POSPage() {
   if (loading) return <div className="flex items-center justify-center h-screen">Loading...</div>;
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col h-screen bg-background">
       {/* Header */}
-      <div className="bg-white shadow p-4">
+      <div className="bg-card shadow p-4 border-b">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Point of Sale</h1>
+          <h1 className="text-2xl font-bold text-foreground">Point of Sale</h1>
           <div className="flex items-center space-x-2">
             <Badge variant="outline" className="text-lg px-3 py-1">
               {cart.length} items
@@ -167,7 +154,7 @@ export default function POSPage() {
       </div>
 
       {/* Navigation Breadcrumb */}
-      <div className="bg-white border-b p-4 flex items-center space-x-2">
+      <div className="bg-card border-b p-4 flex items-center space-x-2">
         {selectedCategory ? (
           <>
             <Button
@@ -207,21 +194,21 @@ export default function POSPage() {
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">
         {/* Items Grid */}
-        <div className="flex-1 overflow-auto p-4">
+        <div className="flex-1 overflow-auto p-4 bg-background">
           {!selectedCategory ? (
             // Categories Grid
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {categories.map((category: Category) => (
                 <Card
                   key={category.id}
-                  className="cursor-pointer hover:shadow-lg transition-all duration-200 transform hover:scale-105 h-48 flex flex-col active:scale-95 active:bg-blue-50"
+                  className="cursor-pointer hover:shadow-lg transition-all duration-200 transform hover:scale-105 h-48 flex flex-col active:scale-95 active:bg-accent"
                   onClick={() => setSelectedCategory(category.id)}
                 >
                   <CardHeader className="pb-2 flex-1 flex items-center justify-center">
-                    <CardTitle className="text-xl text-center font-bold">{category.name}</CardTitle>
+                    <CardTitle className="text-xl text-center font-bold text-foreground">{category.name}</CardTitle>
                   </CardHeader>
                   <CardContent className="flex-1 flex items-center justify-center p-4">
-                    <div className="text-center text-gray-600 text-sm">
+                    <div className="text-center text-muted-foreground text-sm">
                       {category.description}
                     </div>
                   </CardContent>
@@ -234,14 +221,14 @@ export default function POSPage() {
               {filteredSubcategories.map((subcategory: Subcategory) => (
                 <Card
                   key={subcategory.id}
-                  className="cursor-pointer hover:shadow-lg transition-all duration-200 transform hover:scale-105 h-48 flex flex-col active:scale-95 active:bg-blue-50"
+                  className="cursor-pointer hover:shadow-lg transition-all duration-200 transform hover:scale-105 h-48 flex flex-col active:scale-95 active:bg-accent"
                   onClick={() => setSelectedSubcategory(subcategory.id)}
                 >
                   <CardHeader className="pb-2 flex-1 flex items-center justify-center">
-                    <CardTitle className="text-xl text-center font-bold">{subcategory.name}</CardTitle>
+                    <CardTitle className="text-xl text-center font-bold text-foreground">{subcategory.name}</CardTitle>
                   </CardHeader>
                   <CardContent className="flex-1 flex items-center justify-center p-4">
-                    <div className="text-center text-gray-600 text-sm">
+                    <div className="text-center text-muted-foreground text-sm">
                       {subcategory.description}
                     </div>
                   </CardContent>
@@ -249,46 +236,46 @@ export default function POSPage() {
               ))}
             </div>
           ) : (
-            // Products/Services Grid
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {filteredItems.map((item) => {
-                const isProduct = 'price' in item;
-                const price = isProduct ? item.price : (item as Service).price;
-                
-                return (
-                  <Card
-                    key={item.id}
-                    className="cursor-pointer hover:shadow-lg transition-all duration-200 transform hover:scale-105 h-48 flex flex-col active:scale-95 active:bg-green-50"
-                    onClick={() => addToCart(item, isProduct ? 'product' : 'service')}
-                  >
-                    <CardHeader className="pb-2 flex-1 flex items-center justify-center">
-                      <CardTitle className="text-lg text-center font-bold">{item.name}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="flex-1 flex flex-col items-center justify-center p-4">
-                      <div className="text-center text-gray-600 text-sm mb-3 line-clamp-2">
-                        {item.description}
-                      </div>
-                      <Badge variant="outline" className="text-lg px-4 py-2 font-bold text-green-700 border-green-300">
-                        ${price.toFixed(2)}
-                      </Badge>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-              
-              {filteredItems.length === 0 && (
-                <div className="col-span-full text-center py-12 text-gray-500 bg-gray-100 rounded-lg">
-                  No items found in this subcategory
-                </div>
-              )}
-            </div>
+           // Products/Services Grid
+           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+             {filteredItems.map((item) => {
+               const isProduct = 'price' in item;
+               const price = isProduct ? item.price : (item as Service).price;
+               
+               return (
+                 <Card
+                   key={item.id}
+                   className="cursor-pointer hover:shadow-lg transition-all duration-200 transform hover:scale-105 h-48 flex flex-col active:scale-95 active:bg-primary/10"
+                   onClick={() => addToCart(item, isProduct ? 'product' : 'service')}
+                 >
+                   <CardHeader className="pb-2 flex-1 flex items-center justify-center">
+                     <CardTitle className="text-lg text-center font-bold text-foreground">{item.name}</CardTitle>
+                   </CardHeader>
+                   <CardContent className="flex-1 flex flex-col items-center justify-center p-4">
+                     <div className="text-center text-muted-foreground text-sm mb-3 line-clamp-2">
+                       {item.description}
+                     </div>
+                     <Badge variant="outline" className="text-lg px-4 py-2 font-bold text-primary border-primary">
+                       ${price.toFixed(2)}
+                     </Badge>
+                   </CardContent>
+                 </Card>
+               );
+             })}
+             
+             {filteredItems.length === 0 && (
+               <div className="col-span-full text-center py-12 text-muted-foreground bg-muted rounded-lg">
+                 No items found in this category
+               </div>
+             )}
+           </div>
           )}
         </div>
 
         {/* Cart Sidebar */}
-        <div className="w-80 bg-white border-l flex flex-col">
+        <div className="w-80 bg-card border-l flex flex-col">
           <div className="p-4 border-b">
-            <h2 className="text-xl font-semibold flex items-center space-x-2">
+            <h2 className="text-xl font-semibold flex items-center space-x-2 text-foreground">
               <ShoppingCart className="h-5 w-5" />
               <span>Cart</span>
             </h2>
@@ -296,21 +283,21 @@ export default function POSPage() {
           
           <div className="flex-1 overflow-auto p-4">
             {cart.length === 0 ? (
-              <div className="text-center text-gray-500 py-8">
-                <ShoppingCart className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+              <div className="text-center text-muted-foreground py-8">
+                <ShoppingCart className="h-12 w-12 mx-auto mb-4 text-muted-foreground/30" />
                 <p>Your cart is empty</p>
               </div>
             ) : (
               <div className="space-y-3">
                 {cart.map((item) => (
-                  <div key={`${item.type}-${item.id}`} className="flex justify-between items-center p-3 border rounded">
+                  <div key={`${item.type}-${item.id}`} className="flex justify-between items-center p-3 border rounded bg-card">
                     <div>
-                      <div className="font-medium">{item.name}</div>
-                      <div className="text-sm text-gray-500">
+                      <div className="font-medium text-foreground">{item.name}</div>
+                      <div className="text-sm text-muted-foreground">
                         ${item.price.toFixed(2)} × {item.quantity}
                       </div>
                     </div>
-                    <div className="font-medium">
+                    <div className="font-medium text-foreground">
                       ${item.total.toFixed(2)}
                     </div>
                   </div>
@@ -319,10 +306,10 @@ export default function POSPage() {
             )}
           </div>
           
-          <div className="border-t p-4">
+          <div className="border-t p-4 bg-card">
             <div className="flex justify-between mb-4">
-              <span className="font-medium text-lg">Total:</span>
-              <span className="font-bold text-xl">${cartTotal.toFixed(2)}</span>
+              <span className="font-medium text-lg text-foreground">Total:</span>
+              <span className="font-bold text-xl text-foreground">${cartTotal.toFixed(2)}</span>
             </div>
             <Button
               className="w-full h-14 text-lg font-bold"

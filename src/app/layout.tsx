@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Amiri } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { SidebarProvider } from "@/contexts/SidebarContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -42,10 +43,12 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <AuthProvider>
-            <AppLayout>
-              {children}
-            </AppLayout>
-            <Toaster />
+            <SidebarProvider>
+              <AppLayout>
+                {children}
+              </AppLayout>
+              <Toaster />
+            </SidebarProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

@@ -19,6 +19,7 @@ interface SidebarNavSectionProps {
   hasActiveChild?: boolean;
   pathname?: string;
   onToggle?: () => void;
+  onExpandSidebar?: () => void;
   className?: string;
 }
 
@@ -29,12 +30,13 @@ export function SidebarNavSection({
   hasActiveChild = false,
   pathname = "",
   onToggle,
+  onExpandSidebar,
   className,
 }: SidebarNavSectionProps) {
   if (!item.children) return null;
 
   return (
-    <Collapsible open={isSectionOpen} onOpenChange={onToggle}>
+    <Collapsible open={isSectionOpen} onOpenChange={isCollapsed ? onExpandSidebar : onToggle}>
       <CollapsibleTrigger asChild>
         <Button
           variant="ghost"

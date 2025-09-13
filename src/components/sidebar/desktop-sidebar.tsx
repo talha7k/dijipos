@@ -109,6 +109,7 @@ export function DesktopSidebar({
   user,
   onLogout,
   onSectionToggle,
+  onExpandSidebar,
   openSections = {},
 }: SidebarProps) {
   return (
@@ -135,17 +136,18 @@ export function DesktopSidebar({
                 const hasActiveChild = item.children.some(
                   (child) => pathname === child.href
                 );
-                return (
-                  <SidebarNavSection
-                    key={item.title}
-                    item={item}
-                    isSectionOpen={isSectionOpen}
-                    isCollapsed={isCollapsed}
-                    hasActiveChild={hasActiveChild}
-                    pathname={pathname}
-                    onToggle={() => onSectionToggle && onSectionToggle(item.title)}
-                  />
-                );
+                 return (
+                   <SidebarNavSection
+                     key={item.title}
+                     item={item}
+                     isSectionOpen={isSectionOpen}
+                     isCollapsed={isCollapsed}
+                     hasActiveChild={hasActiveChild}
+                     pathname={pathname}
+                     onToggle={() => onSectionToggle && onSectionToggle(item.title)}
+                     onExpandSidebar={onExpandSidebar}
+                   />
+                 );
               } else {
                 const isActive = pathname === item.href;
                 return (

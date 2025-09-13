@@ -21,5 +21,6 @@ export interface SidebarProps {
   tenantId?: string;
   onLogout?: () => void;
   onSectionToggle?: (title: string) => void;
+  onExpandSidebar?: () => void;
   openSections?: { [key: string]: boolean };
 }

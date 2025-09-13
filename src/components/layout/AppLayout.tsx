@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSidebar } from '@/contexts/SidebarContext';
 import { CollapsibleSidebar } from '@/components/sidebar/collapsible-sidebar';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 
@@ -12,6 +13,7 @@ interface AppLayoutProps {
 export function AppLayout({ children }: AppLayoutProps) {
   const pathname = usePathname();
   const { loading } = useAuth();
+  const { isCollapsed } = useSidebar();
 
   const isPublicRoute = pathname === '/login' || pathname === '/register' || pathname === '/verify-email' || pathname === '/reset-password' || pathname.startsWith('/auth');
 
@@ -25,7 +27,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     <ProtectedRoute>
       <div className="flex h-screen bg-background">
         <CollapsibleSidebar />
-        <main className="flex-1 md:ml-16 lg:ml-64 overflow-auto">
+        <main className={`flex-1 overflow-auto ${isCollapsed ? 'md:ml-16' : 'md:ml-64'}`}>
           {children}
         </main>
       </div>

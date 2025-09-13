@@ -1,9 +1,20 @@
+export interface Category {
+  id: string;
+  name: string;
+  description?: string;
+  parentId?: string; // For hierarchical categories
+  type: 'product' | 'service' | 'both'; // Category can be for products, services, or both
+  tenantId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface Product {
   id: string;
   name: string;
   description?: string;
   price: number;
-  category?: string;
+  categoryId?: string; // Reference to Category ID
   tenantId: string;
   createdAt: Date;
   updatedAt: Date;
@@ -14,7 +25,7 @@ export interface Service {
   name: string;
   description?: string;
   price: number; // total price
-  category?: string;
+  categoryId?: string; // Reference to Category ID
   tenantId: string;
   createdAt: Date;
   updatedAt: Date;
