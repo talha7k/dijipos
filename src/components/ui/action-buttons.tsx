@@ -28,7 +28,10 @@ export function ActionButtons({
         <Button
           variant="ghost"
           size="sm"
-          onClick={onEdit}
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit?.();
+          }}
           title="Edit"
           loading={isEditing}
         >
@@ -39,7 +42,10 @@ export function ActionButtons({
         <Button
           variant="ghost"
           size="sm"
-          onClick={onDelete}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete?.();
+          }}
           title="Delete"
           loading={isDeleting}
         >

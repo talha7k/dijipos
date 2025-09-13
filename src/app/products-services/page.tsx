@@ -263,9 +263,18 @@ function ProductsContent() {
             <div className="w-full md:w-1/3">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Wrench className="h-5 w-5" />
-                    Service Categories
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Wrench className="h-5 w-5" />
+                      Service Categories
+                    </div>
+                    <AddCategoryDialog
+                      open={categoryDialogOpen}
+                      onOpenChange={setCategoryDialogOpen}
+                      onAddCategory={handleAddCategory}
+                      categories={categories}
+                      defaultType="service"
+                    />
                   </CardTitle>
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />

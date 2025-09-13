@@ -73,74 +73,99 @@ export function AddCategoryDialog({
           <DialogTitle>Add New Category</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="categoryName">Name</Label>
-            <Input
-              id="categoryName"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Category name"
-              required
-            />
-          </div>
-          <div>
-            <Label htmlFor="categoryDescription">Description</Label>
-            <Textarea
-              id="categoryDescription"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Category description"
-            />
-          </div>
-          <div>
-            <Label htmlFor="categoryType">Type</Label>
-            <Select value={type} onValueChange={(value: 'product' | 'service') => {
-              setType(value);
-              setSelectedParentId(null); // Reset parent selection when type changes
-            }}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="product">Products</SelectItem>
-                <SelectItem value="service">Services</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div>
-            <Label>Parent Category (Optional)</Label>
-            <Card className="mt-2">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm">Select where to add this category</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <Button
-                  variant={selectedParentId === null ? "default" : "ghost"}
-                  size="sm"
-                  className="w-full justify-start"
-                  onClick={() => setSelectedParentId(null)}
-                >
-                  <div className="flex items-center gap-2 flex-1">
-                    <div className="w-3" />
-                    <span>Root Level (No Parent)</span>
-                  </div>
-                  <Badge variant={selectedParentId === null ? "default" : "secondary"}>
-                    Top Level
-                  </Badge>
-                </Button>
-                
-                <CategoryTree
-                  categories={filteredCategories}
-                  products={[]}
-                  services={[]}
-                  selectedCategory={selectedParentId}
-                  onCategorySelect={setSelectedParentId}
-                  onCategoryDelete={() => {}} // No delete functionality in this context
-                  type={type}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Left Column - Category Tree */}
+            <div>
+              <Label>Parent Category (Optional)</Label>
+              <Card className="mt-2 h-96">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm">Select where to add this category</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2 overflow-auto max-h-64">
+                  <Button
+                    variant={selectedParentId === null ? "default" : "ghost"}
+                    size="sm"
+                    className="w-full justify-start"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedParentId(null);
+                    }}
+                  >
+                    <div className="flex items-center gap-2 flex-1">
+                      <div className="w-3" />
+                      <span>Root Level (No Parent)</span>
+                    </div>
+                    <Badge variant={selectedParentId === null ? "default" : "secondary"}>
+                      Top Level
+                    </Badge>
+                  </Button>
+                  
+                  <CategoryTree
+                    categories={filteredCategories}
+                    products={[]}
+                    services={[]}
+                    selectedCategory={selectedParentId}
+                    onCategorySelect={setSelectedParentId}
+                    onCategoryDelete={() => {}} // No delete functionality in this context
+                    type={type}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Right Column - Form Fields */}
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="categoryName">Name</Label>
+                <Input
+                  id="categoryName"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Category name"
+                  required
                 />
-              </CardContent>
-            </Card>
+              </div>
+              <div>
+                <Label htmlFor="categoryDescription">Description</Label>
+                <Textarea
+                  id="categoryDescription"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Category description"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="categoryType">Type</Label>
+                  <Select value={type} onValueChange={(value: 'product' | 'service') => {
+                    setType(value);
+                    setSelectedParentId(null); // Reset parent selection when type changes
+                  }}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="product">Products</SelectItem>
+                      <SelectItem value="service">Services</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label>Parent Category</Label>
+                  <div className="mt-2">
+                    <Input
+                      value={selectedParentId 
+                        ? filteredCategories.find(c => c.id === selectedParentId)?.name || 'Unknown Category'
+                        : 'Root Level (No Parent)'
+                      }
+                      readOnly
+                      className="bg-muted/50"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
           
           <div className="flex justify-end space-x-2">

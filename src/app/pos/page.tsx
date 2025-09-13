@@ -272,9 +272,11 @@ export default function POSPage() {
                               {subcategory.description}
                             </div>
                             {itemsCount > 0 && (
-                              <Badge variant="outline" className="text-xs">
-                                {itemsCount} items
-                              </Badge>
+                              <div className="flex justify-center">
+                                <Badge variant="outline" className="text-xs">
+                                  {itemsCount} items
+                                </Badge>
+                              </div>
                             )}
                           </CardContent>
                         </Card>
