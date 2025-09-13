@@ -1,15 +1,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, query, onSnapshot, addDoc, doc, deleteDoc, updateDoc } from 'firebase/firestore';
+import { collection, query, onSnapshot, addDoc, doc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
-import { Table } from '@/types';
+import { Table as TableType } from '@/types';
 import { useTablesData } from '@/hooks/use-tables-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Plus, Trash2, Table as TableIcon } from 'lucide-react';
+import { toast } from 'sonner';
 import { Search, Users } from 'lucide-react';
 import { TableList } from '@/components/TableList';
 import { AddTableDialog } from '@/components/AddTableDialog';
@@ -65,9 +71,8 @@ export default function TablesPage() {
 
   const handleDeleteTable = async (tableId: string) => {
     if (!organizationId) return;
-    if (confirm('Are you sure you want to delete this table?')) {
-      await deleteDoc(doc(db, 'organizations', organizationId, 'tables', tableId));
-    }
+    await deleteDoc(doc(db, 'organizations', organizationId, 'tables', tableId));
+    toast.success('Table deleted successfully');
   };
 
   const getStatusStats = () => {
@@ -78,7 +83,7 @@ export default function TablesPage() {
       maintenance: 0,
     };
 
-    tables.forEach((table: Table) => {
+    tables.forEach((table: TableType) => {
       stats[table.status as keyof typeof stats]++;
     });
 

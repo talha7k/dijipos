@@ -4,23 +4,19 @@ import { useState, useEffect } from 'react';
 import { collection, query, onSnapshot, addDoc, doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
+import { Customer } from '@/types';
+import { useCustomersData } from '@/hooks/use-customers-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Plus, Users, Upload, X } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Plus, Trash2, Edit, Search, Phone, Mail, MapPin, Users, X, Upload } from 'lucide-react';
+import { toast } from 'sonner';
 import { ActionButtons } from '@/components/ui/action-buttons';
-import { Customer } from '@/types';
-import { useCustomersData } from '@/hooks/use-customers-data';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/lib/firebase';
 
@@ -73,11 +69,13 @@ export default function CustomersPage() {
     setIsDialogOpen(true);
   };
 
+  const [deleteCustomerId, setDeleteCustomerId] = useState<string | null>(null);
+
   const handleDeleteCustomer = async (id: string) => {
     if (!organizationId) return;
-    if (confirm('Are you sure you want to delete this customer?')) {
-      await deleteDoc(doc(db, 'organizations', organizationId, 'customers', id));
-    }
+    await deleteDoc(doc(db, 'organizations', organizationId, 'customers', id));
+    toast.success('Customer deleted successfully');
+    setDeleteCustomerId(null);
   };
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -94,7 +92,7 @@ export default function CustomersPage() {
       setFormData(prev => ({ ...prev, logoUrl: downloadUrl }));
     } catch (error) {
       console.error('Error uploading logo:', error);
-      alert('Failed to upload logo.');
+      toast.error('Failed to upload logo.');
     } finally {
       setUploadingLogo(false);
     }
@@ -170,10 +168,39 @@ export default function CustomersPage() {
                     <TableCell>{customer.address || '-'}</TableCell>
                     <TableCell>{customer.vatNumber || '-'}</TableCell>
                     <TableCell>
-                      <ActionButtons
-                        onEdit={() => handleEditCustomer(customer)}
-                        onDelete={() => handleDeleteCustomer(customer.id)}
-                      />
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEditCustomer(customer)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Customer</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete this customer? This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDeleteCustomer(customer.id)}
+                                className="bg-red-600 hover:bg-red-700"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

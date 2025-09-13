@@ -11,6 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Building2, Plus, Users, ArrowRight, Link } from 'lucide-react';
 import { collection, query, where, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { toast } from 'sonner';
 
 interface OrganizationSelectorProps {
   children: React.ReactNode;
@@ -138,7 +139,7 @@ export function OrganizationSelector({ children }: OrganizationSelectorProps) {
       setIsOpen(false);
     } catch (error) {
       console.error('Error creating organization:', error);
-      alert('Failed to create organization. Please try again.');
+      toast.error('Failed to create organization. Please try again.');
     } finally {
       setLoading(false);
     }

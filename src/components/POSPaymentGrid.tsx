@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, CreditCard, DollarSign, Receipt } from 'lucide-react';
 import { Order, OrderPayment, PaymentType } from '@/types';
+import { toast } from 'sonner';
 
 interface POSPaymentGridProps {
   order: Order;
@@ -71,7 +72,7 @@ export function POSPaymentGrid({ order, paymentTypes, onPaymentProcessed, onBack
 
   const processPayment = () => {
     if (totalPaid < order.total) {
-      alert('Payment amount does not cover the full order total.');
+      toast.error('Payment amount does not cover the full order total.');
       return;
     }
 

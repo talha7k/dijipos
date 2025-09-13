@@ -4,59 +4,59 @@ import { useState } from 'react';
 import { collection, addDoc, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
-import { OrderType } from '@/types';
+import { PaymentType } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { UtensilsCrossed, Plus, Trash2 } from 'lucide-react';
+import { CreditCard, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-interface OrderTypesTabProps {
-  orderTypes: OrderType[];
+interface PaymentTypesTabProps {
+  paymentTypes: PaymentType[];
   onRefresh?: () => void;
 }
 
-export function OrderTypesTab({ orderTypes, onRefresh }: OrderTypesTabProps) {
+export function PaymentTypesTab({ paymentTypes, onRefresh }: PaymentTypesTabProps) {
   const { organizationId } = useAuth();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [deleteOrderTypeId, setDeleteOrderTypeId] = useState<string | null>(null);
-  const [newOrderType, setNewOrderType] = useState({ name: '', description: '' });
+  const [deletePaymentTypeId, setDeletePaymentTypeId] = useState<string | null>(null);
+  const [newPaymentType, setNewPaymentType] = useState({ name: '', description: '' });
 
-  const handleAddOrderType = async () => {
-    if (!organizationId || !newOrderType.name.trim()) return;
+  const handleAddPaymentType = async () => {
+    if (!organizationId || !newPaymentType.name.trim()) return;
 
-    await addDoc(collection(db, 'organizations', organizationId, 'orderTypes'), {
-      ...newOrderType,
+    await addDoc(collection(db, 'organizations', organizationId, 'paymentTypes'), {
+      ...newPaymentType,
       organizationId,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
 
-    setNewOrderType({ name: '', description: '' });
+    setNewPaymentType({ name: '', description: '' });
     setDialogOpen(false);
     onRefresh?.();
-    toast.success('Order type added successfully');
+    toast.success('Payment type added successfully');
   };
 
-  const handleDeleteOrderType = (id: string) => {
-    setDeleteOrderTypeId(id);
+  const handleDeletePaymentType = (id: string) => {
+    setDeletePaymentTypeId(id);
   };
 
-  const confirmDeleteOrderType = async () => {
-    if (!organizationId || !deleteOrderTypeId) return;
+  const confirmDeletePaymentType = async () => {
+    if (!organizationId || !deletePaymentTypeId) return;
     
     try {
-      await deleteDoc(doc(db, 'organizations', organizationId, 'orderTypes', deleteOrderTypeId));
-      toast.success('Order type deleted successfully');
+      await deleteDoc(doc(db, 'organizations', organizationId, 'paymentTypes', deletePaymentTypeId));
+      toast.success('Payment type deleted successfully');
       onRefresh?.();
     } catch (error) {
-      console.error('Error deleting order type:', error);
-      toast.error('Failed to delete order type');
+      console.error('Error deleting payment type:', error);
+      toast.error('Failed to delete payment type');
     } finally {
-      setDeleteOrderTypeId(null);
+      setDeletePaymentTypeId(null);
     }
   };
 
@@ -65,41 +65,41 @@ export function OrderTypesTab({ orderTypes, onRefresh }: OrderTypesTabProps) {
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <UtensilsCrossed className="h-5 w-5" />
-            Order Types
+            <CreditCard className="h-5 w-5" />
+            Payment Types
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
-                Add Order Type
+                Add Payment Type
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Add Order Type</DialogTitle>
+                <DialogTitle>Add Payment Type</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="order-name">Name</Label>
+                  <Label htmlFor="payment-name">Name</Label>
                   <Input
-                    id="order-name"
-                    placeholder="e.g., Dine In, Take Away, Delivery"
-                    value={newOrderType.name}
-                    onChange={(e) => setNewOrderType({ ...newOrderType, name: e.target.value })}
+                    id="payment-name"
+                    placeholder="e.g., Cash, Card, Online"
+                    value={newPaymentType.name}
+                    onChange={(e) => setNewPaymentType({ ...newPaymentType, name: e.target.value })}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="order-description">Description (Optional)</Label>
+                  <Label htmlFor="payment-description">Description (Optional)</Label>
                   <Input
-                    id="order-description"
-                    placeholder="Description for this order type"
-                    value={newOrderType.description}
-                    onChange={(e) => setNewOrderType({ ...newOrderType, description: e.target.value })}
+                    id="payment-description"
+                    placeholder="Description for this payment type"
+                    value={newPaymentType.description}
+                    onChange={(e) => setNewPaymentType({ ...newPaymentType, description: e.target.value })}
                   />
                 </div>
-                <Button onClick={handleAddOrderType} className="w-full">
-                  Add Order Type
+                <Button onClick={handleAddPaymentType} className="w-full">
+                  Add Payment Type
                 </Button>
               </div>
             </DialogContent>
@@ -107,11 +107,11 @@ export function OrderTypesTab({ orderTypes, onRefresh }: OrderTypesTabProps) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {orderTypes.length === 0 ? (
-          <p className="text-muted-foreground">No order types added yet.</p>
+        {paymentTypes.length === 0 ? (
+          <p className="text-muted-foreground">No payment types added yet.</p>
         ) : (
           <div className="grid gap-2">
-            {orderTypes.map((type) => (
+            {paymentTypes.map((type) => (
               <div key={type.id} className="flex items-center justify-between p-3 border rounded">
                 <div>
                   <h3 className="font-medium">{type.name}</h3>
@@ -119,12 +119,12 @@ export function OrderTypesTab({ orderTypes, onRefresh }: OrderTypesTabProps) {
                     <p className="text-sm text-muted-foreground">{type.description}</p>
                   )}
                 </div>
-                <AlertDialog open={deleteOrderTypeId === type.id} onOpenChange={(open) => !open && setDeleteOrderTypeId(null)}>
+                <AlertDialog open={deletePaymentTypeId === type.id} onOpenChange={(open) => !open && setDeletePaymentTypeId(null)}>
                   <AlertDialogTrigger asChild>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleDeleteOrderType(type.id)}
+                      onClick={() => handleDeletePaymentType(type.id)}
                       className="text-destructive hover:text-destructive"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -134,12 +134,12 @@ export function OrderTypesTab({ orderTypes, onRefresh }: OrderTypesTabProps) {
                     <AlertDialogHeader>
                       <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        This will permanently delete the order type "{type.name}". This action cannot be undone.
+                        This will permanently delete the payment type "{type.name}". This action cannot be undone.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel onClick={() => setDeleteOrderTypeId(null)}>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={confirmDeleteOrderType} className="bg-destructive text-destructive-foreground">
+                      <AlertDialogCancel onClick={() => setDeletePaymentTypeId(null)}>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={confirmDeletePaymentType} className="bg-destructive text-destructive-foreground">
                         Delete
                       </AlertDialogAction>
                     </AlertDialogFooter>

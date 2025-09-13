@@ -21,6 +21,7 @@ import { Switch } from '@/components/ui/switch';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ImageUpload } from '@/components/ui/image-upload';
+import { toast } from 'sonner';
 
 
 
@@ -85,7 +86,7 @@ function CompanyContent() {
       setLogoUrl('');
     } catch (error) {
       console.error('Error removing logo:', error);
-      alert('Failed to remove logo.');
+      toast.error('Failed to remove logo.');
     }
   };
 
@@ -101,7 +102,7 @@ function CompanyContent() {
       setStampUrl('');
     } catch (error) {
       console.error('Error removing stamp:', error);
-      alert('Failed to remove stamp.');
+      toast.error('Failed to remove stamp.');
     }
   };
 
@@ -124,10 +125,10 @@ function CompanyContent() {
 
       // Organization data will be updated via the hook automatically
 
-      alert('Company information updated successfully!');
+      toast.success('Company information updated successfully!');
     } catch (error) {
       console.error('Error updating company info:', error);
-      alert('Failed to update company information.');
+      toast.error('Failed to update company information.');
     } finally {
       setSaving(false);
     }
@@ -164,7 +165,7 @@ function CompanyContent() {
       });
     } catch (error) {
       console.error('Error creating invitation code:', error);
-      alert('Failed to create invitation code. Please try again.');
+      toast.error('Failed to create invitation code. Please try again.');
     }
   };
 
@@ -175,17 +176,17 @@ function CompanyContent() {
       await deleteDoc(doc(db, 'invitationCodes', codeId));
     } catch (error) {
       console.error('Error deleting invitation code:', error);
-      alert('Failed to delete invitation code. Please try again.');
+      toast.error('Failed to delete invitation code. Please try again.');
     }
   };
 
   const handleCopyInvitationCode = async (code: string) => {
     try {
       await navigator.clipboard.writeText(code);
-      alert('Invitation code copied to clipboard!');
+      toast.success('Invitation code copied to clipboard!');
     } catch (error) {
       console.error('Error copying code:', error);
-      alert('Failed to copy code to clipboard.');
+      toast.error('Failed to copy code to clipboard.');
     }
   };
 
@@ -207,22 +208,18 @@ function CompanyContent() {
       });
     } catch (error) {
       console.error('Error updating user:', error);
-      alert('Failed to update user. Please try again.');
+      toast.error('Failed to update user. Please try again.');
     }
   };
 
-  const handleToggleUserStatus = async (userId: string, currentStatus: boolean) => {
-    if (!organizationId) return;
-
+  const handleToggleUserStatus = async (userId: string, isActive: boolean) => {
     try {
-      const userRef = doc(db, 'organizationUsers', userId);
-      await updateDoc(userRef, {
-        isActive: !currentStatus,
-        updatedAt: new Date(),
-      });
+      const userRef = doc(db, 'users', userId);
+      await updateDoc(userRef, { isActive });
+      toast.success('User status updated successfully');
     } catch (error) {
-      console.error('Error toggling user status:', error);
-      alert('Failed to update user status. Please try again.');
+      console.error('Error updating user status:', error);
+      toast.error('Failed to update user status. Please try again.');
     }
   };
 

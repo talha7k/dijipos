@@ -1,10 +1,13 @@
 'use client';
 
+import { useState } from 'react';
 import { Table as TableType } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Trash2, Users } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface TableListProps {
   tables: TableType[];
@@ -17,6 +20,8 @@ export function TableList({
   searchTerm,
   onDeleteTable
 }: TableListProps) {
+  const [deleteTableId, setDeleteTableId] = useState<string | null>(null);
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'available':
@@ -29,6 +34,20 @@ export function TableList({
         return 'bg-gray-100 text-gray-800 border-gray-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const handleDeleteTable = async () => {
+    if (!deleteTableId) return;
+    
+    try {
+      await onDeleteTable(deleteTableId);
+      toast.success('Table deleted successfully');
+    } catch (error) {
+      console.error('Error deleting table:', error);
+      toast.error('Failed to delete table');
+    } finally {
+      setDeleteTableId(null);
     }
   };
 
@@ -68,14 +87,32 @@ export function TableList({
                     </span>
                   </div>
                   <div className="flex justify-end">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onDeleteTable(table.id)}
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <AlertDialog open={deleteTableId === table.id} onOpenChange={(open) => !open && setDeleteTableId(null)}>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setDeleteTableId(table.id)}
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will permanently delete the table "{table.name}". This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel onClick={() => setDeleteTableId(null)}>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleDeleteTable} className="bg-destructive text-destructive-foreground">
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </CardContent>
               </Card>

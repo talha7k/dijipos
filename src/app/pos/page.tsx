@@ -43,6 +43,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { toast } from 'sonner';
 
 
 export default function POSPage() {
@@ -311,12 +312,12 @@ export default function POSPage() {
         updatedAt: new Date(),
       });
 
-      alert('Payment processed successfully! Order marked as completed.');
+      toast.success('Payment processed successfully! Order marked as completed.');
       setSelectedOrder(null);
       setCurrentView('orders');
     } catch (error) {
       console.error('Error processing payment:', error);
-      alert('Failed to process payment. Please try again.');
+      toast.error('Failed to process payment. Please try again.');
     }
   };
 
@@ -389,14 +390,14 @@ export default function POSPage() {
 
     try {
       await addDoc(collection(db, 'organizations', organizationId, 'orders'), orderData);
-      alert('Order saved successfully!');
+      toast.success('Order saved successfully!');
       // Clear all POS data after successful save
       clearPOSData();
       // Clear cart after saving
       setCart([]);
     } catch (error) {
       console.error('Error saving order:', error);
-      alert('Failed to save order. Please try again.');
+      toast.error('Failed to save order. Please try again.');
     }
   };
 
@@ -454,11 +455,11 @@ export default function POSPage() {
                             });
 
                             // Show success message
-                            alert('Default receipt template created successfully. Please try printing again.');
+                            toast.success('Default receipt template created successfully. Please try printing again.');
                             return;
                           } catch (error) {
                             console.error('Error creating default receipt template:', error);
-                            alert('Error creating default receipt template. Please try again.');
+                            toast.error('Error creating default receipt template. Please try again.');
                             return;
                           }
                         }
@@ -700,11 +701,11 @@ export default function POSPage() {
                 });
 
                 // Show success message
-                alert('Default receipt template created successfully. Please try printing again.');
+                toast.success('Default receipt template created successfully. Please try printing again.');
                 return;
               } catch (error) {
                 console.error('Error creating default receipt template:', error);
-                alert('Error creating default receipt template. Please try again.');
+                toast.error('Error creating default receipt template. Please try again.');
                 return;
               }
             }

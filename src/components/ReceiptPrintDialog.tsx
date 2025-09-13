@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Printer, Download } from 'lucide-react';
 import { Order, ReceiptTemplate, PrinterSettings, Organization } from '@/types';
 import thermalPrinter from '@/lib/thermal-printer';
+import { toast } from 'sonner';
 
 interface ReceiptPrintDialogProps {
   order: Order;
@@ -60,79 +61,79 @@ export function ReceiptPrintDialog({
           await thermalPrinter.printReceipt({ order, organization });
           setIsGenerating(false);
           setOpen(false);
-          alert('Receipt printed successfully!');
+          toast.success('Receipt printed successfully!');
         } catch (error) {
           console.error('Printing failed:', error);
           setIsGenerating(false);
-          alert(error instanceof Error ? error.message : 'Failed to print receipt. Please check printer connection.');
+          toast.error(error instanceof Error ? error.message : 'Failed to print receipt. Please check printer connection.');
         }
       } else {
         // Prepare template data for A4 templates
         const templateData = {
-        companyName: organization?.name || '',
-        companyAddress: organization?.address || '',
-        companyPhone: organization?.phone || '',
-        companyVat: organization?.vatNumber || '',
-        orderNumber: order.orderNumber,
-        orderDate: new Date(order.createdAt).toLocaleDateString(),
-        tableName: order.tableName || '',
-        customerName: order.customerName || '',
-        items: order.items,
-        subtotal: order.subtotal.toFixed(2),
-        vatRate: order.taxRate,
-        vatAmount: order.taxAmount.toFixed(2),
-        total: order.total.toFixed(2),
-        paymentMethod: 'Cash' // Default, can be enhanced later
-      };
-
-      // Simple template replacement
-      let htmlContent = template.content;
-      
-      // Replace simple placeholders
-      Object.entries(templateData).forEach(([key, value]) => {
-        if (key !== 'items') {
-          const regex = new RegExp(`{{${key}}}`, 'g');
-          htmlContent = htmlContent.replace(regex, String(value));
-        }
-      });
-
-      // Handle items loop
-      const itemsRegex = /{{#each items}}([\s\S]*?){{\/each}}/;
-      const itemsMatch = htmlContent.match(itemsRegex);
-      if (itemsMatch && templateData.items) {
-        const itemTemplate = itemsMatch[1];
-        const itemsHtml = templateData.items.map(item => {
-          let itemHtml = itemTemplate;
-          Object.entries(item).forEach(([key, value]) => {
-            const regex = new RegExp(`{{${key}}}`, 'g');
-            itemHtml = itemHtml.replace(regex, String(value));
-          });
-          return itemHtml;
-        }).join('');
-        htmlContent = htmlContent.replace(itemsRegex, itemsHtml);
-      }
-
-      // Create and open print window
-      const printWindow = window.open('', '_blank');
-      if (printWindow) {
-        printWindow.document.write(htmlContent);
-        printWindow.document.close();
-        
-        // Wait for content to load then print
-        printWindow.onload = () => {
-          printWindow.print();
-          setIsGenerating(false);
-          setOpen(false);
+          companyName: organization?.name || '',
+          companyAddress: organization?.address || '',
+          companyPhone: organization?.phone || '',
+          companyVat: organization?.vatNumber || '',
+          orderNumber: order.orderNumber,
+          orderDate: new Date(order.createdAt).toLocaleDateString(),
+          tableName: order.tableName || '',
+          customerName: order.customerName || '',
+          items: order.items,
+          subtotal: order.subtotal.toFixed(2),
+          vatRate: order.taxRate,
+          vatAmount: order.taxAmount.toFixed(2),
+          total: order.total.toFixed(2),
+          paymentMethod: 'Cash' // Default, can be enhanced later
         };
+
+        // Simple template replacement
+        let htmlContent = template.content;
+
+        // Replace simple placeholders
+        Object.entries(templateData).forEach(([key, value]) => {
+          if (key !== 'items') {
+            const regex = new RegExp(`{{${key}}}`, 'g');
+            htmlContent = htmlContent.replace(regex, String(value));
+          }
+        });
+
+        // Handle items loop
+        const itemsRegex = /{{#each items}}([\s\S]*?){{\/each}}/;
+        const itemsMatch = htmlContent.match(itemsRegex);
+        if (itemsMatch && templateData.items) {
+          const itemTemplate = itemsMatch[1];
+          const itemsHtml = templateData.items.map(item => {
+            let itemHtml = itemTemplate;
+            Object.entries(item).forEach(([key, value]) => {
+              const regex = new RegExp(`{{${key}}}`, 'g');
+              itemHtml = itemHtml.replace(regex, String(value));
+            });
+            return itemHtml;
+          }).join('');
+          htmlContent = htmlContent.replace(itemsRegex, itemsHtml);
+        }
+
+        // Create and open print window
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+          printWindow.document.write(htmlContent);
+          printWindow.document.close();
+
+          // Wait for content to load then print
+          printWindow.onload = () => {
+            printWindow.print();
+            setIsGenerating(false);
+            setOpen(false);
+          };
         } else {
           setIsGenerating(false);
-          alert('Please allow popups to print receipts');
+          toast.error('Please allow popups to print receipts');
         }
       }
     } catch (error) {
       console.error('Error generating receipt:', error);
       setIsGenerating(false);
-      alert('Error generating receipt. Please try again.');
+      toast.error('Error generating receipt. Please try again.');
     }
   };
 
@@ -196,7 +197,7 @@ export function ReceiptPrintDialog({
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error downloading receipt:', error);
-      alert('Error downloading receipt. Please try again.');
+      toast.error('Error downloading receipt. Please try again.');
     }
   };
 

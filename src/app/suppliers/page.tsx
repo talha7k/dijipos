@@ -1,23 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { collection, query, onSnapshot, addDoc, doc, deleteDoc, updateDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { useAuth } from '@/contexts/AuthContext';
+import { Supplier } from '@/types';
+import { useSuppliersData } from '@/hooks/use-suppliers-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Plus, Users, Upload, X } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import { Plus, Trash2, Edit, Search, Users, X, Upload } from 'lucide-react';
+import { toast } from 'sonner';
 import { ActionButtons } from '@/components/ui/action-buttons';
 import { sampleSuppliers } from '@/lib/sample-data';
-import { Supplier } from '@/types';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/lib/firebase';
 
@@ -101,7 +100,7 @@ export default function SuppliersPage() {
       setFormData(prev => ({ ...prev, logoUrl: downloadUrl }));
     } catch (error) {
       console.error('Error uploading logo:', error);
-      alert('Failed to upload logo.');
+      toast.error('Failed to upload logo.');
     } finally {
       setUploadingLogo(false);
     }
