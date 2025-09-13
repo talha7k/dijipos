@@ -299,6 +299,29 @@ export default function POSPage() {
     if (!selectedOrder || !organizationId) return;
 
     try {
+      let orderToUpdate = selectedOrder;
+
+      // If this is a temporary order (from checkout), save it first
+      if (selectedOrder.id.startsWith('temp')) {
+        const orderData = {
+          ...selectedOrder,
+          status: 'saved' as const,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        delete (orderData as any).id; // Remove temp ID so Firebase can generate a real one
+
+        const orderRef = await addDoc(collection(db, 'organizations', organizationId, 'orders'), orderData);
+        const savedOrder = { ...orderData, id: orderRef.id };
+
+        // Update payments to reference the real order ID
+        payments.forEach(payment => {
+          payment.orderId = savedOrder.id;
+        });
+
+        orderToUpdate = savedOrder;
+      }
+
       // Save payments to Firebase
       const paymentPromises = payments.map(payment =>
         addDoc(collection(db, 'organizations', organizationId, 'orderPayments'), payment)
@@ -307,14 +330,16 @@ export default function POSPage() {
 
       // Update order status to completed
       await addDoc(collection(db, 'organizations', organizationId, 'orders'), {
-        ...selectedOrder,
+        ...orderToUpdate,
         status: 'completed' as const,
         updatedAt: new Date(),
       });
 
       toast.success('Payment processed successfully! Order marked as completed.');
       setSelectedOrder(null);
-      setCurrentView('orders');
+      setCurrentView('items');
+      // Clear the cart after successful payment
+      clearCart();
     } catch (error) {
       console.error('Error processing payment:', error);
       toast.error('Failed to process payment. Please try again.');
@@ -430,9 +455,45 @@ export default function POSPage() {
                     <POSCartSidebar
                       cart={cart}
                       cartTotal={cartTotal}
-                      onCheckout={() => {
-                        setIsCartOpen(false);
-                      }}
+                       onCheckout={() => {
+                         if (cart.length === 0) return;
+
+                         // Create a temporary order from cart for payment processing
+                         const tempOrder: Order = {
+                           id: 'temp-checkout',
+                           organizationId: organizationId || '',
+                           orderNumber: `TEMP-${Date.now()}`,
+                           items: cart.map(item => ({
+                             id: `${item.type}-${item.id}`,
+                             type: item.type,
+                             productId: item.type === 'product' ? item.id : undefined,
+                             serviceId: item.type === 'service' ? item.id : undefined,
+                             name: item.name,
+                             quantity: item.quantity,
+                             unitPrice: item.price,
+                             total: item.total,
+                           })),
+                           subtotal: cartTotal,
+                           taxRate: 0, // TODO: Get from settings
+                           taxAmount: 0, // TODO: Calculate based on tax rate
+                           total: cartTotal,
+                           status: 'open',
+                           orderType: selectedOrderType?.name || 'dine-in',
+                           customerName: selectedCustomer?.name,
+                           customerPhone: selectedCustomer?.phone,
+                           customerEmail: selectedCustomer?.email,
+                           tableId: selectedTable?.id,
+                           tableName: selectedTable?.name,
+                           createdById: user?.uid || 'unknown',
+                           createdByName: user?.displayName || user?.email || 'Unknown User',
+                           createdAt: new Date(),
+                           updatedAt: new Date(),
+                         };
+
+                         setSelectedOrder(tempOrder);
+                         setCurrentView('payment');
+                         setIsCartOpen(false);
+                       }}
                       onSaveOrder={() => {
                         handleSaveOrder();
                         setIsCartOpen(false);
@@ -681,7 +742,44 @@ export default function POSPage() {
         <POSCartSidebar
           cart={cart}
           cartTotal={cartTotal}
-          onCheckout={() => {}}
+           onCheckout={() => {
+             if (cart.length === 0) return;
+
+             // Create a temporary order from cart for payment processing
+             const tempOrder: Order = {
+               id: 'temp-checkout',
+               organizationId: organizationId || '',
+               orderNumber: `TEMP-${Date.now()}`,
+               items: cart.map(item => ({
+                 id: `${item.type}-${item.id}`,
+                 type: item.type,
+                 productId: item.type === 'product' ? item.id : undefined,
+                 serviceId: item.type === 'service' ? item.id : undefined,
+                 name: item.name,
+                 quantity: item.quantity,
+                 unitPrice: item.price,
+                 total: item.total,
+               })),
+               subtotal: cartTotal,
+               taxRate: 0, // TODO: Get from settings
+               taxAmount: 0, // TODO: Calculate based on tax rate
+               total: cartTotal,
+               status: 'open',
+               orderType: selectedOrderType?.name || 'dine-in',
+               customerName: selectedCustomer?.name,
+               customerPhone: selectedCustomer?.phone,
+               customerEmail: selectedCustomer?.email,
+               tableId: selectedTable?.id,
+               tableName: selectedTable?.name,
+               createdById: user?.uid || 'unknown',
+               createdByName: user?.displayName || user?.email || 'Unknown User',
+               createdAt: new Date(),
+               updatedAt: new Date(),
+             };
+
+             setSelectedOrder(tempOrder);
+             setCurrentView('payment');
+           }}
           onSaveOrder={handleSaveOrder}
           onPrintReceipt={async () => {
             // Check if receipt templates exist, create a default one if not
