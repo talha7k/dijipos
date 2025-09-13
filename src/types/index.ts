@@ -269,6 +269,29 @@ export interface PaymentType {
   updatedAt: Date;
 }
 
+export interface PrinterSettings {
+  id: string;
+  paperWidth: number; // Width in mm (e.g., 48, 58, 80 for common thermal printer widths)
+  fontSize: 'small' | 'medium' | 'large';
+  characterPerLine: number; // Characters per line based on paper width
+  autoCut: boolean;
+  tenantId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ReceiptTemplate {
+  id: string;
+  name: string;
+  description?: string;
+  type: 'thermal' | 'a4';
+  content: string; // HTML template content
+  isDefault: boolean;
+  tenantId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface VATSettings {
   id: string;
   rate: number; // VAT rate in percentage (e.g., 15 for 15%)

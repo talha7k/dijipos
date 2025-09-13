@@ -1,7 +1,8 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Table, Customer } from '@/types';
-import { Users, LayoutGrid, FileText } from 'lucide-react';
+import { Table, Customer, OrderType } from '@/types';
+import { Users, LayoutGrid, FileText, ShoppingBag } from 'lucide-react';
+import { OrderTypeSelectionDialog } from './OrderTypeSelectionDialog';
 
 interface CartItem {
   id: string;
@@ -17,9 +18,12 @@ interface POSHeaderProps {
   cartTotal: number;
   selectedTable?: Table | null;
   selectedCustomer?: Customer | null;
+  orderTypes: OrderType[];
+  selectedOrderType: OrderType | null;
   onTableSelect: () => void;
   onCustomerSelect: () => void;
   onOrdersClick: () => void;
+  onOrderTypeSelect: (orderType: OrderType) => void;
 }
 
 export function POSHeader({
@@ -27,9 +31,12 @@ export function POSHeader({
   cartTotal,
   selectedTable,
   selectedCustomer,
+  orderTypes,
+  selectedOrderType,
   onTableSelect,
   onCustomerSelect,
-  onOrdersClick
+  onOrdersClick,
+  onOrderTypeSelect
 }: POSHeaderProps) {
   return (
     <div className="bg-card shadow p-4 border-b">
@@ -64,6 +71,26 @@ export function POSHeader({
                 {selectedCustomer ? selectedCustomer.name : 'Select Customer'}
               </span>
             </Button>
+          </div>
+
+          {/* Order Type Selection */}
+          <div className="flex items-center space-x-2">
+            <OrderTypeSelectionDialog
+              orderTypes={orderTypes}
+              selectedOrderType={selectedOrderType}
+              onOrderTypeSelect={onOrderTypeSelect}
+            >
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center space-x-2"
+              >
+                <ShoppingBag className="h-4 w-4" />
+                <span>
+                  {selectedOrderType ? selectedOrderType.name : 'Order Type'}
+                </span>
+              </Button>
+            </OrderTypeSelectionDialog>
           </div>
 
           {/* Orders Button */}

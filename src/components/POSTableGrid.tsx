@@ -67,23 +67,12 @@ export function POSTableGrid({ tables, onTableSelect, onBack }: POSTableGridProp
                   </div>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <div className="flex items-center gap-2 mb-4">
+                  <div className="flex items-center gap-2">
                     <Users className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm text-muted-foreground">
                       Capacity: {table.capacity}
                     </span>
                   </div>
-                  <Button 
-                    variant="default" 
-                    size="sm" 
-                    className="w-full"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onTableSelect(table);
-                    }}
-                  >
-                    Select Table
-                  </Button>
                 </CardContent>
               </Card>
             ))}

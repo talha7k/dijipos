@@ -5,7 +5,7 @@ import React from 'react';
 import { collection, query, onSnapshot, QuerySnapshot, DocumentData, addDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
-import { Product, Service, Category, Table, Customer, Order, OrderPayment, PaymentType } from '@/types';
+import { Product, Service, Category, Table, Customer, Order, OrderPayment, PaymentType, OrderType } from '@/types';
 import { POSHeader } from '@/components/POSHeader';
 import { POSBreadcrumb } from '@/components/POSBreadcrumb';
 import { POSCategoriesGrid } from '@/components/POSCategoriesGrid';
@@ -15,6 +15,17 @@ import { POSTableGrid } from '@/components/POSTableGrid';
 import { POSCustomerGrid } from '@/components/POSCustomerGrid';
 import { POSOrderGrid } from '@/components/POSOrderGrid';
 import { POSPaymentGrid } from '@/components/POSPaymentGrid';
+import { OrderTypeSelectionDialog } from '@/components/OrderTypeSelectionDialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface CartItem {
   id: string;
@@ -41,6 +52,10 @@ export default function POSPage() {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [currentView, setCurrentView] = useState<'items' | 'tables' | 'customers' | 'orders' | 'payment'>('items');
+  const [orderTypes, setOrderTypes] = useState<OrderType[]>([]);
+  const [selectedOrderType, setSelectedOrderType] = useState<OrderType | null>(null);
+  const [pendingOrderToReopen, setPendingOrderToReopen] = useState<Order | null>(null);
+  const [showOrderConfirmationDialog, setShowOrderConfirmationDialog] = useState(false);
 
   // Fetch data from Firebase
   useEffect(() => {
@@ -101,6 +116,48 @@ export default function POSPage() {
         updatedAt: doc.data().updatedAt?.toDate(),
       })) as Customer[];
       setCustomers(customersData);
+    });
+
+    // Fetch orders
+    const ordersQ = query(collection(db, 'tenants', tenantId, 'orders'));
+    const ordersUnsubscribe = onSnapshot(ordersQ, (querySnapshot) => {
+      const ordersData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate(),
+        updatedAt: doc.data().updatedAt?.toDate(),
+      })) as Order[];
+      setOrders(ordersData);
+    });
+
+    // Fetch payment types
+    const paymentTypesQ = query(collection(db, 'tenants', tenantId, 'paymentTypes'));
+    const paymentTypesUnsubscribe = onSnapshot(paymentTypesQ, (querySnapshot) => {
+      const paymentTypesData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate(),
+        updatedAt: doc.data().updatedAt?.toDate(),
+      })) as PaymentType[];
+      setPaymentTypes(paymentTypesData);
+    });
+
+    // Fetch order types
+    const orderTypesQ = query(collection(db, 'tenants', tenantId, 'orderTypes'));
+    const orderTypesUnsubscribe = onSnapshot(orderTypesQ, (querySnapshot) => {
+      const orderTypesData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate(),
+        updatedAt: doc.data().updatedAt?.toDate(),
+      })) as OrderType[];
+      setOrderTypes(orderTypesData);
+
+      // Set default order type if none selected and order types exist
+      if (orderTypesData.length > 0 && !selectedOrderType) {
+        setSelectedOrderType(orderTypesData[0]);
+      }
+
       setLoading(false);
     });
 
@@ -110,6 +167,9 @@ export default function POSPage() {
       categoriesUnsubscribe();
       tablesUnsubscribe();
       customersUnsubscribe();
+      ordersUnsubscribe();
+      paymentTypesUnsubscribe();
+      orderTypesUnsubscribe();
     };
 
   }, [tenantId]);
@@ -183,6 +243,87 @@ export default function POSPage() {
     setCurrentView('orders');
   };
 
+  const handleOrderTypeSelect = (orderType: OrderType) => {
+    setSelectedOrderType(orderType);
+  };
+
+  const handleOrderReopen = (order: Order) => {
+    // Check if there are items in the current cart
+    if (cart.length > 0) {
+      // Show confirmation dialog
+      setPendingOrderToReopen(order);
+      setShowOrderConfirmationDialog(true);
+    } else {
+      // No items in cart, proceed directly
+      proceedWithOrderReopen(order);
+    }
+  };
+
+  const proceedWithOrderReopen = (order: Order) => {
+    // Convert order items back to cart items
+    const cartItems: CartItem[] = order.items.map(orderItem => ({
+      id: orderItem.productId || orderItem.serviceId || orderItem.id,
+      type: orderItem.type,
+      name: orderItem.name,
+      price: orderItem.unitPrice,
+      quantity: orderItem.quantity,
+      total: orderItem.total,
+    }));
+
+    setCart(cartItems);
+    setCurrentView('items');
+    setPendingOrderToReopen(null);
+    setShowOrderConfirmationDialog(false);
+  };
+
+  const handleSaveCurrentOrder = async () => {
+    if (!pendingOrderToReopen || !tenantId) return;
+    
+    // Save the current cart first
+    await handleSaveOrder();
+    
+    // Then reopen the selected order
+    proceedWithOrderReopen(pendingOrderToReopen);
+  };
+
+  const handleDiscardCurrentOrder = () => {
+    if (!pendingOrderToReopen) return;
+    
+    // Discard current cart and reopen the selected order
+    proceedWithOrderReopen(pendingOrderToReopen);
+  };
+
+  const handlePaymentClick = (order: Order) => {
+    setSelectedOrder(order);
+    setCurrentView('payment');
+  };
+
+  const handlePaymentProcessed = async (payments: OrderPayment[]) => {
+    if (!selectedOrder || !tenantId) return;
+
+    try {
+      // Save payments to Firebase
+      const paymentPromises = payments.map(payment =>
+        addDoc(collection(db, 'tenants', tenantId, 'orderPayments'), payment)
+      );
+      await Promise.all(paymentPromises);
+
+      // Update order status to completed
+      await addDoc(collection(db, 'tenants', tenantId, 'orders'), {
+        ...selectedOrder,
+        status: 'completed' as const,
+        updatedAt: new Date(),
+      });
+
+      alert('Payment processed successfully! Order marked as completed.');
+      setSelectedOrder(null);
+      setCurrentView('orders');
+    } catch (error) {
+      console.error('Error processing payment:', error);
+      alert('Failed to process payment. Please try again.');
+    }
+  };
+
   const handleSaveOrder = async () => {
     if (cart.length === 0 || !tenantId) return;
 
@@ -190,16 +331,33 @@ export default function POSPage() {
     const orderNumber = `ORD-${Date.now()}`;
 
     // Convert cart items to order items
-    const orderItems = cart.map(cartItem => ({
-      id: `${cartItem.type}-${cartItem.id}`,
-      type: cartItem.type,
-      productId: cartItem.type === 'product' ? cartItem.id : undefined,
-      serviceId: cartItem.type === 'service' ? cartItem.id : undefined,
-      name: cartItem.name,
-      quantity: cartItem.quantity,
-      unitPrice: cartItem.price,
-      total: cartItem.total,
-    }));
+    const orderItems = cart.map(cartItem => {
+      const orderItem: {
+        id: string;
+        type: 'product' | 'service';
+        name: string;
+        quantity: number;
+        unitPrice: number;
+        total: number;
+        productId?: string;
+        serviceId?: string;
+      } = {
+        id: `${cartItem.type}-${cartItem.id}`,
+        type: cartItem.type,
+        name: cartItem.name,
+        quantity: cartItem.quantity,
+        unitPrice: cartItem.price,
+        total: cartItem.total,
+      };
+      
+      if (cartItem.type === 'product') {
+        orderItem.productId = cartItem.id;
+      } else if (cartItem.type === 'service') {
+        orderItem.serviceId = cartItem.id;
+      }
+      
+      return orderItem;
+    });
 
     // Calculate totals
     const subtotal = cartTotal;
@@ -215,12 +373,16 @@ export default function POSPage() {
       taxAmount,
       total,
       status: 'saved' as const,
-      customerName: selectedCustomer?.name,
-      customerPhone: selectedCustomer?.phone,
-      customerEmail: selectedCustomer?.email,
-      tableId: selectedTable?.id,
-      tableName: selectedTable?.name,
-      orderType: 'dine-in', // TODO: Make this configurable
+      ...(selectedCustomer && {
+        customerName: selectedCustomer.name,
+        customerPhone: selectedCustomer.phone,
+        customerEmail: selectedCustomer.email,
+      }),
+      ...(selectedTable && {
+        tableId: selectedTable.id,
+        tableName: selectedTable.name,
+      }),
+      orderType: selectedOrderType?.name || 'dine-in',
       tenantId,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -246,9 +408,12 @@ export default function POSPage() {
         cartTotal={cartTotal}
         selectedTable={selectedTable}
         selectedCustomer={selectedCustomer}
+        orderTypes={orderTypes}
+        selectedOrderType={selectedOrderType}
         onTableSelect={handleTableSelect}
         onCustomerSelect={handleCustomerSelect}
         onOrdersClick={handleOrdersClick}
+        onOrderTypeSelect={handleOrderTypeSelect}
       />
 
       {/* Breadcrumb - only shown in items view */}
@@ -348,8 +513,9 @@ export default function POSPage() {
         {currentView === 'orders' && (
           <div className="flex-1 flex overflow-hidden">
             <POSOrderGrid
-              orders={[]} // TODO: Add orders data
-              onOrderSelect={() => {}} // TODO: Implement order reopening
+              orders={orders.filter(order => order.status === 'saved')}
+              onOrderSelect={handleOrderReopen}
+              onPaymentClick={handlePaymentClick}
               onBack={handleBackToItems}
             />
             <POSCartSidebar
@@ -360,7 +526,45 @@ export default function POSPage() {
             />
           </div>
         )}
+
+        {currentView === 'payment' && selectedOrder && (
+          <div className="flex-1 flex overflow-hidden">
+            <POSPaymentGrid
+              order={selectedOrder}
+              paymentTypes={paymentTypes}
+              onPaymentProcessed={handlePaymentProcessed}
+              onBack={() => setCurrentView('orders')}
+            />
+            <POSCartSidebar
+              cart={cart}
+              cartTotal={cartTotal}
+              onCheckout={() => {}}
+              onSaveOrder={handleSaveOrder}
+            />
+          </div>
+        )}
       </div>
+
+      {/* Order Reopen Confirmation Dialog */}
+      <AlertDialog open={showOrderConfirmationDialog} onOpenChange={setShowOrderConfirmationDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
+            <AlertDialogDescription>
+              You have {cart.length} item(s) in your current cart. Reopening another order will replace your current cart. 
+              Would you like to save your current order first, or discard it?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleDiscardCurrentOrder}>
+              Discard Current Order
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleSaveCurrentOrder}>
+              Save & Reopen Order
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

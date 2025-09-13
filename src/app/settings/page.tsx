@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { collection, query, onSnapshot, addDoc, doc, deleteDoc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
-import { OrderType, PaymentType, VATSettings } from '@/types';
+import { OrderType, PaymentType, VATSettings, PrinterSettings, ReceiptTemplate } from '@/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Settings, Plus, Trash2, UtensilsCrossed, CreditCard, Percent } from 'lucide-react';
+import { Settings, Plus, Trash2, UtensilsCrossed, CreditCard, Percent, Printer, FileText } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 function SettingsContent() {
@@ -20,17 +20,23 @@ function SettingsContent() {
   const [orderTypes, setOrderTypes] = useState<OrderType[]>([]);
   const [paymentTypes, setPaymentTypes] = useState<PaymentType[]>([]);
   const [vatSettings, setVatSettings] = useState<VATSettings | null>(null);
+  const [printerSettings, setPrinterSettings] = useState<PrinterSettings | null>(null);
+  const [receiptTemplates, setReceiptTemplates] = useState<ReceiptTemplate[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Dialog states
   const [orderTypeDialogOpen, setOrderTypeDialogOpen] = useState(false);
   const [paymentTypeDialogOpen, setPaymentTypeDialogOpen] = useState(false);
   const [vatDialogOpen, setVatDialogOpen] = useState(false);
+  const [printerDialogOpen, setPrinterDialogOpen] = useState(false);
+  const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
 
   // Form states
   const [newOrderType, setNewOrderType] = useState({ name: '', description: '' });
   const [newPaymentType, setNewPaymentType] = useState({ name: '', description: '' });
   const [newVatSettings, setNewVatSettings] = useState({ rate: 0, isEnabled: true });
+  const [newPrinterSettings, setNewPrinterSettings] = useState({ paperWidth: 58, fontSize: 'medium' as const, autoCut: true });
+  const [newReceiptTemplate, setNewReceiptTemplate] = useState({ name: '', description: '', content: '', type: 'thermal' as const });
 
   useEffect(() => {
     if (!tenantId) return;
@@ -85,11 +91,53 @@ function SettingsContent() {
     };
 
     fetchVatSettings();
+
+    // Fetch printer settings
+    const fetchPrinterSettings = async () => {
+      const printerDoc = await getDoc(doc(db, 'tenants', tenantId, 'settings', 'printer'));
+      if (printerDoc.exists()) {
+        const printerData = printerDoc.data() as PrinterSettings;
+        setPrinterSettings({
+          ...printerData,
+          createdAt: printerData.createdAt,
+          updatedAt: printerData.updatedAt,
+        });
+      } else {
+        // Create default printer settings
+        const defaultPrinter: PrinterSettings = {
+          id: 'printer',
+          paperWidth: 58, // 58mm thermal printer
+          fontSize: 'medium',
+          characterPerLine: 32, // Approximate for 58mm paper
+          autoCut: true,
+          tenantId,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        await setDoc(doc(db, 'tenants', tenantId, 'settings', 'printer'), defaultPrinter);
+        setPrinterSettings(defaultPrinter);
+      }
+    };
+
+    // Fetch receipt templates
+    const templatesQ = query(collection(db, 'tenants', tenantId, 'receiptTemplates'));
+    const templatesUnsubscribe = onSnapshot(templatesQ, (querySnapshot) => {
+      const templatesData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate(),
+        updatedAt: doc.data().updatedAt?.toDate(),
+      })) as ReceiptTemplate[];
+      setReceiptTemplates(templatesData);
+    });
+
+    fetchPrinterSettings();
     setLoading(false);
 
     return () => {
       orderTypesUnsubscribe();
       paymentTypesUnsubscribe();
+      templatesUnsubscribe();
     };
   }, [tenantId]);
 
@@ -151,6 +199,72 @@ function SettingsContent() {
     }
   };
 
+  const handleUpdatePrinterSettings = async () => {
+    if (!tenantId) return;
+
+    const calculateCharactersPerLine = (width: number) => {
+      // Approximate characters per line based on paper width in mm
+      if (width <= 48) return 24;
+      if (width <= 58) return 32;
+      if (width <= 80) return 48;
+      return 64;
+    };
+
+    const updatedPrinter: PrinterSettings = {
+      id: 'printer',
+      ...newPrinterSettings,
+      characterPerLine: calculateCharactersPerLine(newPrinterSettings.paperWidth),
+      tenantId,
+      createdAt: printerSettings?.createdAt || new Date(),
+      updatedAt: new Date(),
+    };
+
+    await setDoc(doc(db, 'tenants', tenantId, 'settings', 'printer'), updatedPrinter);
+    setPrinterSettings(updatedPrinter);
+    setPrinterDialogOpen(false);
+  };
+
+  const handleAddReceiptTemplate = async () => {
+    if (!tenantId || !newReceiptTemplate.name.trim()) return;
+
+    const defaultTemplateContent = '<!DOCTYPE html>\\n<html>\\n<head>\\n  <meta charset="utf-8">\\n  <title>Receipt</title>\\n  <style>\\n    body { font-family: monospace; margin: 0; padding: 10px; }\\n    .header { text-align: center; margin-bottom: 10px; }\\n    .content { margin-bottom: 10px; }\\n    .footer { text-align: center; margin-top: 10px; }\\n    .line { display: flex; justify-content: space-between; }\\n    .total { font-weight: bold; border-top: 1px dashed; padding-top: 5px; }\\n  </style>\\n</head>\\n<body>\\n  <div class="header">\\n    <h2>{{companyName}}</h2>\\n    <p>{{companyAddress}}</p>\\n    <p>Tel: {{companyPhone}}</p>\\n    <p>VAT: {{companyVat}}</p>\\n    <hr>\\n    <p>Order #: {{orderNumber}}</p>\\n    <p>Date: {{orderDate}}</p>\\n    <p>Table: {{tableName}}</p>\\n    <p>Customer: {{customerName}}</p>\\n    <hr>\\n  </div>\\n  \\n  <div class="content">\\n    {{#each items}}\\n    <div class="line">\\n      <span>{{name}} ({{quantity}}x)</span>\\n      <span>{{total}}</span>\\n    </div>\\n    {{/each}}\\n  </div>\\n  \\n  <div class="total">\\n    <div class="line">\\n      <span>Subtotal:</span>\\n      <span>{{subtotal}}</span>\\n    </div>\\n    <div class="line">\\n      <span>VAT ({{vatRate}}%):</span>\\n      <span>{{vatAmount}}</span>\\n    </div>\\n    <div class="line">\\n      <span>TOTAL:</span>\\n      <span>{{total}}</span>\\n    </div>\\n  </div>\\n  \\n  <div class="footer">\\n    <p>Payment: {{paymentMethod}}</p>\\n    <p>Thank you for your business!</p>\\n  </div>\\n</body>\\n</html>';
+
+    await addDoc(collection(db, 'tenants', tenantId, 'receiptTemplates'), {
+      ...newReceiptTemplate,
+      content: newReceiptTemplate.content || defaultTemplateContent,
+      isDefault: receiptTemplates.length === 0, // First template is default
+      tenantId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    setNewReceiptTemplate({ name: '', description: '', content: '', type: 'thermal' });
+    setTemplateDialogOpen(false);
+  };
+
+  const handleSetDefaultTemplate = async (templateId: string) => {
+    if (!tenantId) return;
+
+    // Update all templates to set isDefault: false
+    const updatePromises = receiptTemplates.map(template => {
+      const templateRef = doc(db, 'tenants', tenantId, 'receiptTemplates', template.id);
+      return setDoc(templateRef, { 
+        ...template, 
+        isDefault: template.id === templateId,
+        updatedAt: new Date()
+      });
+    });
+
+    await Promise.all(updatePromises);
+  };
+
+  const handleDeleteTemplate = async (id: string) => {
+    if (!tenantId) return;
+    if (confirm('Are you sure you want to delete this receipt template?')) {
+      await deleteDoc(doc(db, 'tenants', tenantId, 'receiptTemplates', id));
+    }
+  };
+
   if (loading) return <div className="flex justify-center items-center h-64">Loading...</div>;
 
   return (
@@ -160,10 +274,12 @@ function SettingsContent() {
       </div>
 
       <Tabs defaultValue="order-types" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="order-types">Order Types</TabsTrigger>
           <TabsTrigger value="payment-types">Payment Types</TabsTrigger>
           <TabsTrigger value="vat-settings">VAT Settings</TabsTrigger>
+          <TabsTrigger value="printer-settings">Printer</TabsTrigger>
+          <TabsTrigger value="receipt-templates">Receipts</TabsTrigger>
         </TabsList>
 
         <TabsContent value="order-types" className="space-y-4">
@@ -382,6 +498,212 @@ function SettingsContent() {
                 </div>
               ) : (
                 <p className="text-muted-foreground">VAT settings not configured.</p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="printer-settings" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Printer className="h-5 w-5" />
+                  Printer Settings
+                </div>
+                <Dialog open={printerDialogOpen} onOpenChange={setPrinterDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Settings className="h-4 w-4 mr-2" />
+                      Configure Printer
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Printer Settings</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="paper-width">Paper Width (mm)</Label>
+                        <select
+                          id="paper-width"
+                          className="w-full p-2 border rounded"
+                          value={newPrinterSettings.paperWidth}
+                          onChange={(e) => setNewPrinterSettings({ ...newPrinterSettings, paperWidth: parseInt(e.target.value) })}
+                        >
+                          <option value={48}>48mm</option>
+                          <option value={58}>58mm</option>
+                          <option value={80}>80mm</option>
+                        </select>
+                      </div>
+                      <div>
+                        <Label htmlFor="font-size">Font Size</Label>
+                        <select
+                          id="font-size"
+                          className="w-full p-2 border rounded"
+                          value={newPrinterSettings.fontSize}
+                          onChange={(e) => setNewPrinterSettings({ ...newPrinterSettings, fontSize: e.target.value as any })}
+                        >
+                          <option value="small">Small</option>
+                          <option value="medium">Medium</option>
+                          <option value="large">Large</option>
+                        </select>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          id="auto-cut"
+                          checked={newPrinterSettings.autoCut}
+                          onCheckedChange={(checked) => setNewPrinterSettings({ ...newPrinterSettings, autoCut: checked })}
+                        />
+                        <Label htmlFor="auto-cut">Auto Cut (if supported)</Label>
+                      </div>
+                      <Button onClick={handleUpdatePrinterSettings} className="w-full">
+                        Update Settings
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {printerSettings ? (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span>Paper Width:</span>
+                    <span className="font-medium">{printerSettings.paperWidth}mm</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>Font Size:</span>
+                    <span className="font-medium">{printerSettings.fontSize}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>Characters per Line:</span>
+                    <span className="font-medium">{printerSettings.characterPerLine}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>Auto Cut:</span>
+                    <Badge variant={printerSettings.autoCut ? "default" : "secondary"}>
+                      {printerSettings.autoCut ? "Enabled" : "Disabled"}
+                    </Badge>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-muted-foreground">Printer settings not configured.</p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="receipt-templates" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Receipt Templates
+                </div>
+                <Dialog open={templateDialogOpen} onOpenChange={setTemplateDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Template
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>Add Receipt Template</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="template-name">Template Name</Label>
+                        <Input
+                          id="template-name"
+                          placeholder="e.g., Thermal Receipt, A4 Receipt"
+                          value={newReceiptTemplate.name}
+                          onChange={(e) => setNewReceiptTemplate({ ...newReceiptTemplate, name: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="template-description">Description (Optional)</Label>
+                        <Input
+                          id="template-description"
+                          placeholder="Description for this template"
+                          value={newReceiptTemplate.description}
+                          onChange={(e) => setNewReceiptTemplate({ ...newReceiptTemplate, description: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="template-type">Template Type</Label>
+                        <select
+                          id="template-type"
+                          className="w-full p-2 border rounded"
+                          value={newReceiptTemplate.type}
+                          onChange={(e) => setNewReceiptTemplate({ ...newReceiptTemplate, type: e.target.value as any })}
+                        >
+                          <option value="thermal">Thermal Printer</option>
+                          <option value="a4">A4 Printer</option>
+                        </select>
+                      </div>
+                      <div>
+                        <Label htmlFor="template-content">HTML Template Content</Label>
+                        <textarea
+                          id="template-content"
+                          className="w-full h-64 p-2 border rounded font-mono text-sm"
+                          placeholder="Enter HTML template with placeholders like {{companyName}}, {{orderNumber}}, etc."
+                          value={newReceiptTemplate.content}
+                          onChange={(e) => setNewReceiptTemplate({ ...newReceiptTemplate, content: e.target.value })}
+                        />
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Available placeholders: {'{{companyName}}'}, {'{{companyAddress}}'}, {'{{companyPhone}}'}, {'{{companyVat}}'}, {'{{orderNumber}}'}, {'{{orderDate}}'}, {'{{tableName}}'}, {'{{customerName}}'}, {'{{#each items}}...{{/each}}'}, {'{{subtotal}}'}, {'{{vatRate}}'}, {'{{vatAmount}}'}, {'{{total}}'}, {'{{paymentMethod}}'}
+                        </p>
+                      </div>
+                      <Button onClick={handleAddReceiptTemplate} className="w-full">
+                        Add Template
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {receiptTemplates.length === 0 ? (
+                <p className="text-muted-foreground">No receipt templates added yet.</p>
+              ) : (
+                <div className="grid gap-2">
+                  {receiptTemplates.map((template) => (
+                    <div key={template.id} className="flex items-center justify-between p-3 border rounded">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-medium">{template.name}</h3>
+                          {template.isDefault && <Badge variant="default">Default</Badge>}
+                          <Badge variant="outline">{template.type}</Badge>
+                        </div>
+                        {template.description && (
+                          <p className="text-sm text-muted-foreground">{template.description}</p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {!template.isDefault && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleSetDefaultTemplate(template.id)}
+                          >
+                            Set Default
+                          </Button>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteTemplate(template.id)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               )}
             </CardContent>
           </Card>

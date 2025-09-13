@@ -51,6 +51,37 @@ export function POSCategoriesGrid({
     return categories.find(c => c.id === categoryId)?.name || '';
   };
 
+  // Get hierarchy level for styling
+  const getCategoryHierarchyLevel = (categoryId: string) => {
+    let level = 0;
+    let currentId = categoryId;
+    
+    while (currentId) {
+      const category = categories.find(c => c.id === currentId);
+      if (!category || !category.parentId) break;
+      currentId = category.parentId;
+      level++;
+    }
+    
+    return level;
+  };
+
+  // Get styling based on hierarchy level
+  const getCategoryStyling = (categoryId: string) => {
+    const level = getCategoryHierarchyLevel(categoryId);
+    
+    switch (level) {
+      case 0: // Root level
+        return "bg-secondary/50 hover:bg-secondary/70 border-secondary/50";
+      case 1: // First level child
+        return "bg-accent/30 hover:bg-accent/50 border-accent/50";
+      case 2: // Second level child
+        return "bg-secondary/10 hover:bg-secondary/20 border-primary/30";
+      default: // Deeper levels
+        return "bg-secondary/50 hover:bg-secondary/70 border-muted/50";
+    }
+  };
+
   const currentCategories = getCurrentChildCategories();
 
   // Debug logging
@@ -78,7 +109,7 @@ export function POSCategoriesGrid({
         return (
           <Card
             key={category.id}
-            className="cursor-pointer hover:shadow-lg transition-all duration-200 transform hover:scale-105 h-48 flex flex-col active:scale-95 active:bg-accent"
+            className={`cursor-pointer hover:shadow-lg transition-all duration-200 transform hover:scale-105 h-48 flex flex-col active:scale-95 ${getCategoryStyling(category.id)}`}
             onClick={() => onCategoryClick(category.id)}
           >
             <CardHeader className="pb-2 flex-1 flex items-center justify-center">

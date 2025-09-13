@@ -71,7 +71,7 @@ export function POSCustomerGrid({ customers, onCustomerSelect, onBack }: POSCust
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <div className="space-y-2 mb-4">
+                  <div className="space-y-2">
                     <div className="text-sm text-muted-foreground truncate" title={customer.email}>
                       {customer.email}
                     </div>
@@ -91,17 +91,6 @@ export function POSCustomerGrid({ customers, onCustomerSelect, onBack }: POSCust
                       </div>
                     )}
                   </div>
-                  <Button 
-                    variant="default" 
-                    size="sm" 
-                    className="w-full"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onCustomerSelect(customer);
-                    }}
-                  >
-                    Select Customer
-                  </Button>
                 </CardContent>
               </Card>
             ))}

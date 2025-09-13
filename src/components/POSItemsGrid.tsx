@@ -50,6 +50,37 @@ export function POSItemsGrid({
     return categories.find(c => c.id === categoryId)?.name || '';
   };
 
+  // Get hierarchy level for styling
+  const getCategoryHierarchyLevel = (categoryId: string) => {
+    let level = 0;
+    let currentId = categoryId;
+    
+    while (currentId) {
+      const category = categories.find(c => c.id === currentId);
+      if (!category || !category.parentId) break;
+      currentId = category.parentId;
+      level++;
+    }
+    
+    return level;
+  };
+
+  // Get styling based on hierarchy level
+  const getCategoryStyling = (categoryId: string) => {
+    const level = getCategoryHierarchyLevel(categoryId);
+    
+    switch (level) {
+      case 0: // Root level
+        return "bg-secondary/50 hover:bg-secondary/70 border-secondary/50";
+      case 1: // First level child
+        return "bg-accent/30 hover:bg-accent/50 border-accent/50";
+      case 2: // Second level child
+        return "bg-secondary/10 hover:bg-secondary/20 border-primary/30";
+      default: // Deeper levels
+        return "bg-secondary/50 hover:bg-secondary/70 border-muted/50";
+    }
+  };
+
   const currentCategoryId = getCurrentCategoryId();
   const currentChildCategories = currentCategoryId ? getChildCategories(currentCategoryId) : [];
   
@@ -82,7 +113,7 @@ export function POSItemsGrid({
               return (
                 <Card
                   key={subcategory.id}
-                  className="cursor-pointer hover:shadow-lg transition-all duration-200 transform hover:scale-105 h-48 flex flex-col active:scale-95 active:bg-accent"
+                  className={`cursor-pointer hover:shadow-lg transition-all duration-200 transform hover:scale-105 h-48 flex flex-col active:scale-95 ${getCategoryStyling(subcategory.id)}`}
                   onClick={() => onCategoryClick(subcategory.id)}
                 >
                   <CardHeader className="pb-2 flex-1 flex items-center justify-center">
@@ -128,7 +159,7 @@ export function POSItemsGrid({
             return (
               <Card
                 key={item.id}
-                className="cursor-pointer hover:shadow-lg transition-all duration-200 transform hover:scale-105 h-48 flex flex-col active:scale-95 active:bg-primary/10"
+                className="cursor-pointer hover:shadow-lg transition-all duration-200 transform hover:scale-105 h-48 flex flex-col active:scale-95 bg-background hover:bg-accent/50"
                 onClick={() => onItemClick(item, isProduct ? 'product' : 'service')}
               >
                 <CardHeader className="pb-2 flex-1 flex items-center justify-center">
@@ -143,12 +174,12 @@ export function POSItemsGrid({
                     {item.name}
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="flex-1 flex flex-col items-center justify-center p-4">
-                  <div className="text-center text-muted-foreground text-sm mb-3 line-clamp-2">
+                <CardContent className="flex-1 flex flex-col relative p-0">
+                  <div className="text-center text-muted-foreground text-sm line-clamp-3 flex-1 flex items-center px-4 pt-4">
                     {item.description}
                   </div>
-                  <Badge variant="outline" className="text-lg px-4 py-2 font-bold text-primary border-primary">
-                    ${price.toFixed(2)}
+                  <Badge variant="outline" className="text-lg px-4 py-2 font-bold text-primary border-primary w-full text-center absolute bottom-0 left-0 right-0 rounded-none rounded-b-md border-t-0 border-l-0 border-r-0">
+                    {price.toFixed(2)}
                   </Badge>
                 </CardContent>
               </Card>
