@@ -13,8 +13,8 @@ import FormSummary from '@/components/FormSummary';
 import { Invoice, Item } from '@/types';
 import {
   sampleProductsServices,
-  getProductOptions,
-  getServiceOptions,
+  getProductOptionsFromMixed,
+  getServiceOptionsFromMixed,
   getProductServiceById
 } from '@/lib/sample-data';
 
@@ -220,7 +220,7 @@ export default function InvoiceForm({ onSubmit, defaultType = 'sales' }: Invoice
           <Label className="text-sm text-muted-foreground">Add from catalog:</Label>
           <div className="grid grid-cols-2 gap-2">
             <Combobox
-              options={getProductOptions(sampleProductsServices)}
+              options={getProductOptionsFromMixed(sampleProductsServices)}
               value=""
               onValueChange={(value) => {
                 addItemFromCatalog(value);
@@ -231,7 +231,7 @@ export default function InvoiceForm({ onSubmit, defaultType = 'sales' }: Invoice
               buttonWidth="w-full"
             />
             <Combobox
-              options={getServiceOptions(sampleProductsServices)}
+              options={getServiceOptionsFromMixed(sampleProductsServices)}
               value=""
               onValueChange={(value) => {
                 addItemFromCatalog(value);

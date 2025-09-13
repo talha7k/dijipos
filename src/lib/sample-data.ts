@@ -1,153 +1,450 @@
 // Sample data for customers, products, and services
 // This would typically come from a database
 
-import { Invoice } from '@/types';
+import { Invoice, Category, Product, Service, Table, Order, Customer, Supplier, OrderType, PaymentType } from '@/types';
 
-export interface Customer {
-  id: string
-  name: string
-  email: string
-  address?: string
-  phone?: string
-}
-
-export interface ProductService {
-  id: string
-  name: string
-  description?: string
-  price: number
-  type: 'product' | 'service'
-  category?: string
-}
-
-// Sample customers
-export const sampleCustomers: Customer[] = [
+// Sample categories
+export const sampleCategories: Omit<Category, 'tenantId'>[] = [
   {
-    id: '1',
-    name: 'ABC Corporation',
-    email: 'contact@abc.com',
-    address: '123 Business St, City, Country',
-    phone: '+1-234-567-8900'
+    id: 'cat1',
+    name: 'Food & Beverages',
+    description: 'Food and drink items',
+    type: 'product',
+    createdAt: new Date(),
+    updatedAt: new Date(),
   },
   {
-    id: '2',
-    name: 'XYZ Industries',
-    email: 'info@xyz.com',
-    address: '456 Industrial Ave, City, Country',
-    phone: '+1-234-567-8901'
+    id: 'cat2',
+    name: 'Appetizers',
+    description: 'Starters and small plates',
+    type: 'product',
+    createdAt: new Date(),
+    updatedAt: new Date(),
   },
   {
-    id: '3',
-    name: 'Tech Solutions Ltd',
-    email: 'hello@techsolutions.com',
-    address: '789 Tech Park, City, Country',
-    phone: '+1-234-567-8902'
+    id: 'cat3',
+    name: 'Main Courses',
+    description: 'Main dishes',
+    type: 'product',
+    createdAt: new Date(),
+    updatedAt: new Date(),
   },
   {
-    id: '4',
-    name: 'Global Services Inc',
-    email: 'support@globalservices.com',
-    address: '321 Service Rd, City, Country',
-    phone: '+1-234-567-8903'
+    id: 'cat4',
+    name: 'Desserts',
+    description: 'Sweet treats and desserts',
+    type: 'product',
+    createdAt: new Date(),
+    updatedAt: new Date(),
   },
   {
-    id: '5',
-    name: 'Local Business Co',
-    email: 'admin@localbusiness.com',
-    address: '654 Main St, City, Country',
-    phone: '+1-234-567-8904'
+    id: 'cat5',
+    name: 'Beverages',
+    description: 'Drinks and refreshments',
+    type: 'product',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'cat6',
+    name: 'IT Services',
+    description: 'Information technology services',
+    type: 'service',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'cat7',
+    name: 'Consulting',
+    description: 'Business consulting services',
+    type: 'service',
+    createdAt: new Date(),
+    updatedAt: new Date(),
   }
-]
+];
 
-// Sample products and services
-export const sampleProductsServices: ProductService[] = [
-  // Products
+// Sample products
+export const sampleProducts: Omit<Product, 'tenantId'>[] = [
   {
     id: 'p1',
-    name: 'Laptop Computer',
-    description: 'High-performance laptop for business use',
-    price: 1200.00,
-    type: 'product',
-    category: 'Electronics'
+    name: 'Margherita Pizza',
+    description: 'Classic pizza with tomato sauce, mozzarella, and basil',
+    price: 15.99,
+    categoryId: 'cat3',
+    createdAt: new Date(),
+    updatedAt: new Date(),
   },
   {
     id: 'p2',
-    name: 'Office Chair',
-    description: 'Ergonomic office chair with lumbar support',
-    price: 350.00,
-    type: 'product',
-    category: 'Furniture'
+    name: 'Caesar Salad',
+    description: 'Fresh romaine lettuce with Caesar dressing and croutons',
+    price: 12.50,
+    categoryId: 'cat2',
+    createdAt: new Date(),
+    updatedAt: new Date(),
   },
   {
     id: 'p3',
-    name: 'Wireless Mouse',
-    description: 'Bluetooth wireless mouse with ergonomic design',
-    price: 45.00,
-    type: 'product',
-    category: 'Electronics'
+    name: 'Grilled Salmon',
+    description: 'Fresh Atlantic salmon grilled to perfection',
+    price: 24.99,
+    categoryId: 'cat3',
+    createdAt: new Date(),
+    updatedAt: new Date(),
   },
   {
     id: 'p4',
-    name: 'Printer Paper (500 sheets)',
-    description: 'A4 size printer paper, 80gsm',
-    price: 12.50,
-    type: 'product',
-    category: 'Office Supplies'
+    name: 'Chocolate Cake',
+    description: 'Rich chocolate cake with vanilla frosting',
+    price: 8.99,
+    categoryId: 'cat4',
+    createdAt: new Date(),
+    updatedAt: new Date(),
   },
   {
     id: 'p5',
-    name: 'External Hard Drive',
-    description: '2TB external hard drive for data backup',
-    price: 89.99,
-    type: 'product',
-    category: 'Electronics'
+    name: 'Cappuccino',
+    description: 'Espresso with steamed milk and foam',
+    price: 4.50,
+    categoryId: 'cat5',
+    createdAt: new Date(),
+    updatedAt: new Date(),
   },
+  {
+    id: 'p6',
+    name: 'French Fries',
+    description: 'Crispy golden french fries',
+    price: 6.99,
+    categoryId: 'cat2',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'p7',
+    name: 'Chicken Burger',
+    description: 'Grilled chicken burger with lettuce and tomato',
+    price: 13.99,
+    categoryId: 'cat3',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'p8',
+    name: 'Ice Cream Sundae',
+    description: 'Vanilla ice cream with chocolate sauce and nuts',
+    price: 7.50,
+    categoryId: 'cat4',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }
+];
 
-  // Services
+// Sample services
+export const sampleServices: Omit<Service, 'tenantId'>[] = [
   {
     id: 's1',
-    name: 'Web Development',
-    description: 'Custom website development service',
-    price: 150.00,
-    type: 'service',
-    category: 'Development'
-  },
-  {
-    id: 's2',
-    name: 'Graphic Design',
-    description: 'Logo and branding design service',
-    price: 120.00,
-    type: 'service',
-    category: 'Design'
-  },
-  {
-    id: 's3',
     name: 'IT Support',
     description: 'Technical support and maintenance',
     price: 85.00,
-    type: 'service',
-    category: 'IT Services'
+    categoryId: 'cat6',
+    createdAt: new Date(),
+    updatedAt: new Date(),
   },
   {
-    id: 's4',
-    name: 'Consulting',
-    description: 'Business consulting services',
+    id: 's2',
+    name: 'Business Consulting',
+    description: 'Strategic business consulting services',
     price: 200.00,
-    type: 'service',
-    category: 'Consulting'
+    categoryId: 'cat7',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }
+];
+
+// Sample customers
+export const sampleCustomers: Omit<Customer, 'tenantId'>[] = [
+  {
+    id: 'c1',
+    name: 'John Smith',
+    email: 'john.smith@email.com',
+    address: '123 Main St, City, Country',
+    phone: '+1-234-567-8900',
+    createdAt: new Date(),
+    updatedAt: new Date(),
   },
   {
-    id: 's5',
-    name: 'SEO Optimization',
-    description: 'Search engine optimization service',
-    price: 175.00,
-    type: 'service',
-    category: 'Marketing'
+    id: 'c2',
+    name: 'Sarah Johnson',
+    email: 'sarah.j@email.com',
+    address: '456 Oak Ave, City, Country',
+    phone: '+1-234-567-8901',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'c3',
+    name: 'Mike Davis',
+    email: 'mike.davis@company.com',
+    address: '789 Pine St, City, Country',
+    phone: '+1-234-567-8902',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'c4',
+    name: 'Emma Wilson',
+    email: 'emma.wilson@email.com',
+    address: '321 Elm Dr, City, Country',
+    phone: '+1-234-567-8903',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'c5',
+    name: 'David Brown',
+    email: 'david.brown@business.com',
+    address: '654 Maple Ln, City, Country',
+    phone: '+1-234-567-8904',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }
+]
+
+// Sample suppliers
+export const sampleSuppliers: Omit<Supplier, 'tenantId'>[] = [
+  {
+    id: 'sup1',
+    name: 'Fresh Foods Co',
+    email: 'orders@freshfoods.com',
+    address: '123 Supply St, City, Country',
+    phone: '+1-234-567-8905',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'sup2',
+    name: 'Beverage Distributors',
+    email: 'sales@beverages.com',
+    address: '456 Drink Ave, City, Country',
+    phone: '+1-234-567-8906',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'sup3',
+    name: 'Bakery Supplies Ltd',
+    email: 'info@bakery.com',
+    address: '789 Bread Blvd, City, Country',
+    phone: '+1-234-567-8907',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'sup4',
+    name: 'Dairy Products Inc',
+    email: 'contact@dairy.com',
+    address: '321 Milk Ln, City, Country',
+    phone: '+1-234-567-8908',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'sup5',
+    name: 'Meat & Poultry Corp',
+    email: 'support@meat.com',
+    address: '654 Protein Drive, City, Country',
+    phone: '+1-234-567-8909',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }
+]
+
+// Sample tables
+export const sampleTables: Omit<Table, 'tenantId'>[] = [
+  {
+    id: 't1',
+    name: 'Table 1',
+    capacity: 4,
+    status: 'available',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 't2',
+    name: 'Table 2',
+    capacity: 2,
+    status: 'available',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 't3',
+    name: 'Table 3',
+    capacity: 6,
+    status: 'available',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 't4',
+    name: 'Table 4',
+    capacity: 4,
+    status: 'available',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 't5',
+    name: 'Bar Counter',
+    capacity: 8,
+    status: 'available',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }
+]
+
+// Sample order types
+export const sampleOrderTypes: Omit<OrderType, 'tenantId'>[] = [
+  {
+    id: 'ot1',
+    name: 'Dine In',
+    description: 'Customer dining in the restaurant',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'ot2',
+    name: 'Take Away',
+    description: 'Customer taking food to go',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'ot3',
+    name: 'Delivery',
+    description: 'Food delivered to customer address',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }
+]
+
+// Sample payment types
+export const samplePaymentTypes: Omit<PaymentType, 'tenantId'>[] = [
+  {
+    id: 'pt1',
+    name: 'Cash',
+    description: 'Payment in cash',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'pt2',
+    name: 'Credit Card',
+    description: 'Payment by credit card',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'pt3',
+    name: 'Debit Card',
+    description: 'Payment by debit card',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'pt4',
+    name: 'Online Payment',
+    description: 'Payment through online gateway',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }
+]
+
+// Sample orders
+export const sampleOrders: Omit<Order, 'tenantId'>[] = [
+  {
+    id: 'o1',
+    orderNumber: 'ORD-001',
+    items: [
+      {
+        id: 'oi1',
+        type: 'product',
+        productId: 'p1',
+        name: 'Margherita Pizza',
+        quantity: 2,
+        unitPrice: 15.99,
+        total: 31.98,
+      },
+      {
+        id: 'oi2',
+        type: 'product',
+        productId: 'p5',
+        name: 'Cappuccino',
+        quantity: 2,
+        unitPrice: 4.50,
+        total: 9.00,
+      }
+    ],
+    subtotal: 40.98,
+    taxRate: 15,
+    taxAmount: 6.15,
+    total: 47.13,
+    status: 'completed',
+    customerName: 'John Smith',
+    customerPhone: '+1-234-567-8900',
+    tableId: 't1',
+    tableName: 'Table 1',
+    orderType: 'Dine In',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'o2',
+    orderNumber: 'ORD-002',
+    items: [
+      {
+        id: 'oi3',
+        type: 'product',
+        productId: 'p7',
+        name: 'Chicken Burger',
+        quantity: 1,
+        unitPrice: 13.99,
+        total: 13.99,
+      },
+      {
+        id: 'oi4',
+        type: 'product',
+        productId: 'p6',
+        name: 'French Fries',
+        quantity: 1,
+        unitPrice: 6.99,
+        total: 6.99,
+      },
+      {
+        id: 'oi5',
+        type: 'product',
+        productId: 'p8',
+        name: 'Ice Cream Sundae',
+        quantity: 1,
+        unitPrice: 7.50,
+        total: 7.50,
+      }
+    ],
+    subtotal: 28.48,
+    taxRate: 15,
+    taxAmount: 4.27,
+    total: 32.75,
+    status: 'completed',
+    customerName: 'Sarah Johnson',
+    customerPhone: '+1-234-567-8901',
+    orderType: 'Take Away',
+    createdAt: new Date(),
+    updatedAt: new Date(),
   }
 ]
 
 // Helper functions to get combobox options
-export const getCustomerOptions = (customers: Customer[]) => {
+export const getCustomerOptions = (customers: Omit<Customer, 'tenantId'>[]) => {
   return customers.map(customer => ({
     value: customer.id,
     label: customer.name,
@@ -155,15 +452,24 @@ export const getCustomerOptions = (customers: Customer[]) => {
   }))
 }
 
-export const getProductServiceOptions = (items: ProductService[]) => {
-  return items.map(item => ({
-    value: item.id,
-    label: item.name,
-    description: `${item.type === 'product' ? 'Product' : 'Service'} - $${item.price.toFixed(2)}`
+export const getProductOptions = (products: Omit<Product, 'tenantId'>[]) => {
+  return products.map(product => ({
+    value: product.id,
+    label: product.name,
+    description: `$${product.price.toFixed(2)}`
   }))
 }
 
-export const getProductOptions = (items: ProductService[]) => {
+export const getServiceOptions = (services: Omit<Service, 'tenantId'>[]) => {
+  return services.map(service => ({
+    value: service.id,
+    label: service.name,
+    description: `$${service.price.toFixed(2)}`
+  }))
+}
+
+// Helper functions for mixed product/service arrays
+export const getProductOptionsFromMixed = (items: (Omit<Product, 'tenantId'> & { type: 'product' } | Omit<Service, 'tenantId'> & { type: 'service' })[]) => {
   return items.filter(item => item.type === 'product').map(item => ({
     value: item.id,
     label: item.name,
@@ -171,7 +477,7 @@ export const getProductOptions = (items: ProductService[]) => {
   }))
 }
 
-export const getServiceOptions = (items: ProductService[]) => {
+export const getServiceOptionsFromMixed = (items: (Omit<Product, 'tenantId'> & { type: 'product' } | Omit<Service, 'tenantId'> & { type: 'service' })[]) => {
   return items.filter(item => item.type === 'service').map(item => ({
     value: item.id,
     label: item.name,
@@ -179,50 +485,7 @@ export const getServiceOptions = (items: ProductService[]) => {
   }))
 }
 
-export const getCustomerById = (customers: Customer[], id: string) => {
-  return customers.find(customer => customer.id === id)
-}
-
-// Sample suppliers
-export const sampleSuppliers: Customer[] = [
-  {
-    id: 's1',
-    name: 'Office Supplies Co',
-    email: 'orders@officesupplies.com',
-    address: '123 Supply St, City, Country',
-    phone: '+1-234-567-8905'
-  },
-  {
-    id: 's2',
-    name: 'Tech Equipment Ltd',
-    email: 'sales@techequipment.com',
-    address: '456 Tech Ave, City, Country',
-    phone: '+1-234-567-8906'
-  },
-  {
-    id: 's3',
-    name: 'Furniture Wholesale',
-    email: 'info@furniturewholesale.com',
-    address: '789 Furniture Blvd, City, Country',
-    phone: '+1-234-567-8907'
-  },
-  {
-    id: 's4',
-    name: 'Print Services Inc',
-    email: 'contact@printservices.com',
-    address: '321 Print Ln, City, Country',
-    phone: '+1-234-567-8908'
-  },
-  {
-    id: 's5',
-    name: 'IT Solutions Corp',
-    email: 'support@itsolutions.com',
-    address: '654 IT Drive, City, Country',
-    phone: '+1-234-567-8909'
-  }
-]
-
-export const getSupplierOptions = (suppliers: Customer[]) => {
+export const getSupplierOptions = (suppliers: Omit<Supplier, 'tenantId'>[]) => {
   return suppliers.map(supplier => ({
     value: supplier.id,
     label: supplier.name,
@@ -230,19 +493,46 @@ export const getSupplierOptions = (suppliers: Customer[]) => {
   }))
 }
 
-export const getSupplierById = (suppliers: Customer[], id: string) => {
+export const getTableOptions = (tables: Table[]) => {
+  return tables.map(table => ({
+    value: table.id,
+    label: table.name,
+    description: `Capacity: ${table.capacity}`
+  }))
+}
+
+export const getOrderTypeOptions = (orderTypes: OrderType[]) => {
+  return orderTypes.map(type => ({
+    value: type.id,
+    label: type.name,
+    description: type.description
+  }))
+}
+
+export const getPaymentTypeOptions = (paymentTypes: PaymentType[]) => {
+  return paymentTypes.map(type => ({
+    value: type.id,
+    label: type.name,
+    description: type.description
+  }))
+}
+
+export const getCustomerById = (customers: Omit<Customer, 'tenantId'>[], id: string) => {
+  return customers.find(customer => customer.id === id)
+}
+
+export const getSupplierById = (suppliers: Omit<Supplier, 'tenantId'>[], id: string) => {
   return suppliers.find(supplier => supplier.id === id)
 }
 
 // Sample purchase invoices
-export const samplePurchaseInvoices: Invoice[] = [
+export const samplePurchaseInvoices: Omit<Invoice, 'tenantId'>[] = [
   {
     id: 'pi1',
-    tenantId: 'tenant1',
     type: 'purchase',
-    supplierId: 's1',
-    supplierName: 'Office Supplies Co',
-    supplierEmail: 'orders@officesupplies.com',
+    supplierId: 'sup1',
+    supplierName: 'Fresh Foods Co',
+    supplierEmail: 'orders@freshfoods.com',
     supplierAddress: '123 Supply St, City, Country',
     supplierVAT: 'VAT123456',
     invoiceNumber: 'SUP-2024-001',
@@ -251,31 +541,31 @@ export const samplePurchaseInvoices: Invoice[] = [
       {
         id: 'item1',
         type: 'product',
-        productId: 'p4',
-        name: 'Printer Paper (500 sheets)',
-        description: 'A4 size printer paper, 80gsm',
-        quantity: 10,
-        unitPrice: 12.50,
-        total: 125.00,
+        productId: 'p1',
+        name: 'Margherita Pizza Ingredients',
+        description: 'Tomatoes, cheese, dough supplies',
+        quantity: 50,
+        unitPrice: 25.00,
+        total: 1250.00,
       },
       {
         id: 'item2',
         type: 'product',
-        productId: 'p3',
-        name: 'Wireless Mouse',
-        description: 'Bluetooth wireless mouse with ergonomic design',
-        quantity: 5,
-        unitPrice: 45.00,
-        total: 225.00,
+        productId: 'p2',
+        name: 'Fresh Vegetables',
+        description: 'Lettuce, tomatoes, herbs for salads',
+        quantity: 30,
+        unitPrice: 15.00,
+        total: 450.00,
       }
     ],
-    subtotal: 350.00,
+    subtotal: 1700.00,
     taxRate: 15,
-    taxAmount: 52.50,
-    total: 402.50,
+    taxAmount: 255.00,
+    total: 1955.00,
     status: 'paid',
     dueDate: new Date('2024-02-14'),
-    notes: 'Bulk office supplies purchase',
+    notes: 'Weekly food supplies',
     template: 'english',
     includeQR: false,
     createdAt: new Date('2024-01-15'),
@@ -283,44 +573,43 @@ export const samplePurchaseInvoices: Invoice[] = [
   },
   {
     id: 'pi2',
-    tenantId: 'tenant1',
     type: 'purchase',
-    supplierId: 's2',
-    supplierName: 'Tech Equipment Ltd',
-    supplierEmail: 'sales@techequipment.com',
-    supplierAddress: '456 Tech Ave, City, Country',
+    supplierId: 'sup2',
+    supplierName: 'Beverage Distributors',
+    supplierEmail: 'sales@beverages.com',
+    supplierAddress: '456 Drink Ave, City, Country',
     supplierVAT: 'VAT789012',
-    invoiceNumber: 'TECH-2024-045',
+    invoiceNumber: 'BEV-2024-045',
     invoiceDate: new Date('2024-02-01'),
     items: [
       {
         id: 'item3',
         type: 'product',
-        productId: 'p1',
-        name: 'Laptop Computer',
-        description: 'High-performance laptop for business use',
-        quantity: 2,
-        unitPrice: 1200.00,
-        total: 2400.00,
+        productId: 'p5',
+        name: 'Coffee Beans',
+        description: 'Premium arabica coffee beans',
+        quantity: 20,
+        unitPrice: 45.00,
+        total: 900.00,
       },
       {
         id: 'item4',
         type: 'product',
         productId: 'p5',
-        name: 'External Hard Drive',
-        description: '2TB external hard drive for data backup',
-        quantity: 3,
-        unitPrice: 89.99,
-        total: 269.97,
+        name: 'Soft Drinks',
+        description: 'Assorted soft drinks and juices',
+        quantity: 100,
+        unitPrice: 2.50,
+        total: 250.00,
       }
     ],
-    subtotal: 2669.97,
+    subtotal: 1150.00,
     taxRate: 15,
-    taxAmount: 400.50,
-    total: 3070.47,
+    taxAmount: 172.50,
+    total: 1322.50,
     status: 'paid',
     dueDate: new Date('2024-03-01'),
-    notes: 'IT equipment for new hires',
+    notes: 'Monthly beverage supplies',
     template: 'english',
     includeQR: false,
     createdAt: new Date('2024-02-01'),
@@ -328,12 +617,122 @@ export const samplePurchaseInvoices: Invoice[] = [
   }
 ]
 
-// Combined sample invoices (both sales and purchase)
-export const sampleInvoices: Invoice[] = [
-  ...samplePurchaseInvoices,
-  // Add sales invoices here when available
+// Sample sales invoices
+export const sampleSalesInvoices: Omit<Invoice, 'tenantId'>[] = [
+  {
+    id: 'si1',
+    type: 'sales',
+    clientName: 'John Smith',
+    clientEmail: 'john.smith@email.com',
+    clientAddress: '123 Main St, City, Country',
+    clientVAT: 'VAT987654',
+    items: [
+      {
+        id: 'item5',
+        type: 'product',
+        productId: 'p1',
+        name: 'Margherita Pizza',
+        description: 'Classic pizza with tomato sauce, mozzarella, and basil',
+        quantity: 3,
+        unitPrice: 15.99,
+        total: 47.97,
+      },
+      {
+        id: 'item6',
+        type: 'product',
+        productId: 'p5',
+        name: 'Cappuccino',
+        description: 'Espresso with steamed milk and foam',
+        quantity: 2,
+        unitPrice: 4.50,
+        total: 9.00,
+      }
+    ],
+    subtotal: 56.97,
+    taxRate: 15,
+    taxAmount: 8.55,
+    total: 65.52,
+    status: 'paid',
+    dueDate: new Date('2024-01-25'),
+    notes: 'Dinner order',
+    template: 'english',
+    includeQR: true,
+    createdAt: new Date('2024-01-20'),
+    updatedAt: new Date('2024-01-20'),
+  },
+  {
+    id: 'si2',
+    type: 'sales',
+    clientName: 'Sarah Johnson',
+    clientEmail: 'sarah.j@email.com',
+    clientAddress: '456 Oak Ave, City, Country',
+    clientVAT: 'VAT654321',
+    items: [
+      {
+        id: 'item7',
+        type: 'product',
+        productId: 'p7',
+        name: 'Chicken Burger',
+        description: 'Grilled chicken burger with lettuce and tomato',
+        quantity: 2,
+        unitPrice: 13.99,
+        total: 27.98,
+      },
+      {
+        id: 'item8',
+        type: 'product',
+        productId: 'p6',
+        name: 'French Fries',
+        description: 'Crispy golden french fries',
+        quantity: 2,
+        unitPrice: 6.99,
+        total: 13.98,
+      },
+      {
+        id: 'item9',
+        type: 'product',
+        productId: 'p8',
+        name: 'Ice Cream Sundae',
+        description: 'Vanilla ice cream with chocolate sauce and nuts',
+        quantity: 1,
+        unitPrice: 7.50,
+        total: 7.50,
+      }
+    ],
+    subtotal: 49.46,
+    taxRate: 15,
+    taxAmount: 7.42,
+    total: 56.88,
+    status: 'paid',
+    dueDate: new Date('2024-02-05'),
+    notes: 'Take away order',
+    template: 'english',
+    includeQR: true,
+    createdAt: new Date('2024-02-01'),
+    updatedAt: new Date('2024-02-01'),
+  }
 ]
 
-export const getProductServiceById = (items: ProductService[], id: string) => {
+// Combined sample products and services (for backward compatibility)
+export const sampleProductsServices = [
+  ...sampleProducts.map(p => ({ ...p, type: 'product' as const })),
+  ...sampleServices.map(s => ({ ...s, type: 'service' as const }))
+];
+
+// Combined sample invoices (both sales and purchase)
+export const sampleInvoices: Omit<Invoice, 'tenantId'>[] = [
+  ...samplePurchaseInvoices,
+  ...sampleSalesInvoices,
+]
+
+export const getProductById = (products: Product[], id: string) => {
+  return products.find(product => product.id === id)
+}
+
+export const getServiceById = (services: Service[], id: string) => {
+  return services.find(service => service.id === id)
+}
+
+export const getProductServiceById = (items: ((Omit<Product, 'tenantId'> & { type: 'product' }) | (Omit<Service, 'tenantId'> & { type: 'service' }))[], id: string) => {
   return items.find(item => item.id === id)
 }

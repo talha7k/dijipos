@@ -317,12 +317,12 @@ function SettingsContent() {
 
       <Tabs defaultValue="order-types" className="w-full">
         <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="order-types">Order Types</TabsTrigger>
-          <TabsTrigger value="payment-types">Payment Types</TabsTrigger>
-          <TabsTrigger value="vat-settings">VAT Settings</TabsTrigger>
-          <TabsTrigger value="printer-settings">Printer</TabsTrigger>
-          <TabsTrigger value="receipt-templates">Receipts</TabsTrigger>
-        </TabsList>
+           <TabsTrigger value="order-types">Order Types</TabsTrigger>
+           <TabsTrigger value="payment-types">Payment Types</TabsTrigger>
+           <TabsTrigger value="store-settings">Store Settings</TabsTrigger>
+           <TabsTrigger value="printer-settings">Printer</TabsTrigger>
+           <TabsTrigger value="receipt-templates">Receipts</TabsTrigger>
+         </TabsList>
 
         <TabsContent value="order-types" className="space-y-4">
           <Card>
@@ -474,76 +474,125 @@ function SettingsContent() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="vat-settings" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Percent className="h-5 w-5" />
-                  VAT Settings
-                </div>
-                <Dialog open={vatDialogOpen} onOpenChange={setVatDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button>
-                      <Settings className="h-4 w-4 mr-2" />
-                      Update VAT Settings
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Update VAT Settings</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div className="flex items-center space-x-2">
-                        <Switch
-                          id="vat-enabled"
-                          checked={newVatSettings.isEnabled}
-                          onCheckedChange={(checked) => setNewVatSettings({ ...newVatSettings, isEnabled: checked })}
-                        />
-                        <Label htmlFor="vat-enabled">Enable VAT</Label>
-                      </div>
-                      {newVatSettings.isEnabled && (
-                        <div>
-                          <Label htmlFor="vat-rate">VAT Rate (%)</Label>
-                          <Input
-                            id="vat-rate"
-                            type="number"
-                            placeholder="15"
-                            value={newVatSettings.rate}
-                            onChange={(e) => setNewVatSettings({ ...newVatSettings, rate: parseFloat(e.target.value) || 0 })}
-                          />
-                        </div>
-                      )}
-                      <Button onClick={handleUpdateVatSettings} className="w-full">
-                        Update Settings
-                      </Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {vatSettings ? (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span>Status:</span>
-                    <Badge variant={vatSettings.isEnabled ? "default" : "secondary"}>
-                      {vatSettings.isEnabled ? "Enabled" : "Disabled"}
-                    </Badge>
-                  </div>
-                  {vatSettings.isEnabled && (
-                    <div className="flex items-center justify-between">
-                      <span>VAT Rate:</span>
-                      <span className="font-medium">{vatSettings.rate}%</span>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <p className="text-muted-foreground">VAT settings not configured.</p>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+         <TabsContent value="store-settings" className="space-y-4">
+           <Card>
+             <CardHeader>
+               <CardTitle className="flex items-center justify-between">
+                 <div className="flex items-center gap-2">
+                   <Percent className="h-5 w-5" />
+                   VAT Settings
+                 </div>
+                 <Dialog open={vatDialogOpen} onOpenChange={setVatDialogOpen}>
+                   <DialogTrigger asChild>
+                     <Button>
+                       <Settings className="h-4 w-4 mr-2" />
+                       Update VAT Settings
+                     </Button>
+                   </DialogTrigger>
+                   <DialogContent>
+                     <DialogHeader>
+                       <DialogTitle>Update VAT Settings</DialogTitle>
+                     </DialogHeader>
+                     <div className="space-y-4">
+                       <div className="flex items-center space-x-2">
+                         <Switch
+                           id="vat-enabled"
+                           checked={newVatSettings.isEnabled}
+                           onCheckedChange={(checked) => setNewVatSettings({ ...newVatSettings, isEnabled: checked })}
+                         />
+                         <Label htmlFor="vat-enabled">Enable VAT</Label>
+                       </div>
+                       {newVatSettings.isEnabled && (
+                         <div>
+                           <Label htmlFor="vat-rate">VAT Rate (%)</Label>
+                           <Input
+                             id="vat-rate"
+                             type="number"
+                             placeholder="15"
+                             value={newVatSettings.rate}
+                             onChange={(e) => setNewVatSettings({ ...newVatSettings, rate: parseFloat(e.target.value) || 0 })}
+                           />
+                         </div>
+                       )}
+                       <Button onClick={handleUpdateVatSettings} className="w-full">
+                         Update Settings
+                       </Button>
+                     </div>
+                   </DialogContent>
+                 </Dialog>
+               </CardTitle>
+             </CardHeader>
+             <CardContent>
+               {vatSettings ? (
+                 <div className="space-y-4">
+                   <div className="flex items-center justify-between">
+                     <span>Status:</span>
+                     <Badge variant={vatSettings.isEnabled ? "default" : "secondary"}>
+                       {vatSettings.isEnabled ? "Enabled" : "Disabled"}
+                     </Badge>
+                   </div>
+                   {vatSettings.isEnabled && (
+                     <div className="flex items-center justify-between">
+                       <span>VAT Rate:</span>
+                       <span className="font-medium">{vatSettings.rate}%</span>
+                     </div>
+                   )}
+                 </div>
+               ) : (
+                 <p className="text-muted-foreground">VAT settings not configured.</p>
+               )}
+             </CardContent>
+           </Card>
+
+           <Card>
+             <CardHeader>
+               <CardTitle className="flex items-center justify-between">
+                 <div className="flex items-center gap-2">
+                   <FileText className="h-5 w-5" />
+                   Sample Data
+                 </div>
+                 <Button
+                   onClick={async () => {
+                     if (confirm('This will populate your database with sample data. This action cannot be undone. Continue?')) {
+                       try {
+                         // Import sample data generation function
+                         const { generateSampleData } = await import('@/lib/sample-data-generator');
+                         await generateSampleData(tenantId!);
+                         alert('Sample data generated successfully!');
+                         // Refresh the page to show new data
+                         window.location.reload();
+                       } catch (error) {
+                         console.error('Failed to generate sample data:', error);
+                         alert('Failed to generate sample data. Please try again.');
+                       }
+                     }
+                   }}
+                   variant="outline"
+                 >
+                   Generate Sample Data
+                 </Button>
+               </CardTitle>
+             </CardHeader>
+             <CardContent>
+               <div className="space-y-2 text-sm text-muted-foreground">
+                 <p>Generate comprehensive sample data to test the application:</p>
+                 <ul className="list-disc list-inside space-y-1">
+                   <li>Tables (5 tables with different capacities)</li>
+                   <li>Product categories (Food, Beverages, Desserts, etc.)</li>
+                   <li>Products (8 food and beverage items)</li>
+                   <li>Customers (5 sample customers)</li>
+                   <li>Suppliers (5 food and beverage suppliers)</li>
+                   <li>Orders (2 completed orders)</li>
+                   <li>Purchase invoices (2 supplier invoices)</li>
+                   <li>Sales invoices (2 customer invoices)</li>
+                 </ul>
+                 <p className="font-medium text-amber-600 mt-2">
+                   ⚠️ This will add data to your database. Make sure this is a test environment.
+                 </p>
+               </div>
+             </CardContent>
+           </Card>
+         </TabsContent>
 
         <TabsContent value="printer-settings" className="space-y-4">
           <Card>
