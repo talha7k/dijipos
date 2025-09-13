@@ -1,21 +1,24 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
-import { Building2, Plus, Users, ArrowRight, Crown, Settings, Trash2, Shield, Globe, Mail, Phone, MapPin } from 'lucide-react';
+import { Building2, Plus, Users, ArrowRight, Crown, Mail, LogOut } from 'lucide-react';
 import { collection, query, where, getDocs, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Organization } from '@/types';
 import { useTheme } from '@/contexts/ThemeContext';
+import { auth } from '@/lib/firebase';
 
 export function OrganizationManager() {
   const { user, organizationId, userOrganizations, selectOrganization, refreshUserOrganizations } = useAuth();
   const { theme } = useTheme();
+  const router = useRouter();
   const [showJoinForm, setShowJoinForm] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [joinCode, setJoinCode] = useState('');
@@ -122,6 +125,7 @@ export function OrganizationManager() {
       
       setShowJoinForm(false);
       setJoinCode('');
+      router.push('/dashboard');
     } catch (error) {
       console.error('Error joining organization:', error);
       setJoinError('Failed to join organization. Please check the code and try again.');
@@ -163,6 +167,7 @@ export function OrganizationManager() {
       setShowCreateForm(false);
       setNewOrganizationName('');
       setNewOrganizationEmail('');
+      router.push('/dashboard');
     } catch (error) {
       console.error('Error creating organization:', error);
       alert('Failed to create organization. Please try again.');
@@ -173,6 +178,7 @@ export function OrganizationManager() {
 
   const handleSwitchOrganization = async (organizationUserId: string) => {
     await selectOrganization(organizationUserId);
+    router.push('/dashboard');
   };
 
   if (!user) {
@@ -183,14 +189,30 @@ export function OrganizationManager() {
     <div className={`min-h-screen ${isDark ? 'bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900' : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'} flex items-center justify-center p-4`}>
       <div className="w-full max-w-7xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-12">
-          <div className="flex items-center justify-center gap-4 mb-6">
-            <div className={`p-4 rounded-2xl ${isDark ? 'bg-gradient-to-r from-purple-600 to-blue-600' : 'bg-gradient-to-r from-blue-600 to-indigo-600'}`}>
-              <Building2 className="h-12 w-12 text-white" />
+        <div className="flex justify-between items-start mb-12">
+          <div className="text-center flex-1">
+            <div className="flex items-center justify-center gap-4 mb-6">
+              <div className={`p-4 rounded-2xl ${isDark ? 'bg-gradient-to-r from-purple-600 to-blue-600' : 'bg-gradient-to-r from-blue-600 to-indigo-600'}`}>
+                <Building2 className="h-12 w-12 text-white" />
+              </div>
+              <h1 className={`text-5xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>DijiPOS</h1>
             </div>
-            <h1 className={`text-5xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>DijiPOS</h1>
+            <p className={`text-xl ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Manage your organizations with ease</p>
           </div>
-          <p className={`text-xl ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Manage your organizations with ease</p>
+          
+          {/* Logout Button */}
+          <Button
+            onClick={() => auth.signOut()}
+            variant="outline"
+            className={`flex items-center gap-2 ${
+              isDark 
+                ? 'border-gray-600 text-gray-300 hover:bg-gray-700' 
+                : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            <LogOut className="h-4 w-4" />
+            Logout
+          </Button>
         </div>
 
         <div className="space-y-12">

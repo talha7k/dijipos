@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { OrganizationSelector } from '@/components/OrganizationSelector';
 import { Building2, LogOut, ChevronDown, ChevronUp, User } from 'lucide-react';
 
 interface UserProfileWithOrganizationProps {
@@ -31,17 +30,19 @@ export function UserProfileWithOrganization({
     router.push('/company?tab=account');
   };
 
+  const handleSwitchOrganization = () => {
+    router.push('/select-organization');
+  };
+
   if (!user) return null;
 
   if (isCollapsed) {
     return (
       <div className="border-t p-3">
         <div className="flex flex-col items-center space-y-2">
-          <OrganizationSelector>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={handleSwitchOrganization}>
               <Building2 className="h-4 w-4" />
             </Button>
-          </OrganizationSelector>
           <div
             onClick={handleProfileClick}
             className="w-8 h-8 bg-primary rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/90 transition-colors"
@@ -112,15 +113,14 @@ export function UserProfileWithOrganization({
                 )}
                 
                 <div className="px-2">
-                  <OrganizationSelector>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="w-full h-8 text-sm"
-                    >
-                      {currentOrganization ? 'Switch Organization' : 'Select Organization'}
-                    </Button>
-                  </OrganizationSelector>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full h-8 text-sm"
+                    onClick={handleSwitchOrganization}
+                  >
+                    {currentOrganization ? 'Switch Organization' : 'Select Organization'}
+                  </Button>
                 </div>
               </div>
 

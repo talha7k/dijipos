@@ -18,8 +18,8 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   const isPublicRoute = pathname === '/login' || pathname === '/register' || pathname === '/verify-email' || pathname === '/reset-password' || pathname.startsWith('/auth');
 
-  if (isPublicRoute) {
-    // For public pages, don't show sidebar
+  if (isPublicRoute || pathname === '/select-organization') {
+    // For public pages and select-organization page, don't show sidebar
     return <>{children}</>;
   }
 

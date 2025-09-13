@@ -11,7 +11,7 @@ import { Suspense } from 'react';
 import { toast } from 'sonner';
 
 function HomeContent() {
-  const { user, loading, organizationId, emailVerified } = useAuth();
+  const { user, loading, emailVerified } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -31,12 +31,10 @@ function HomeContent() {
       if (!oobCode || !mode) {
         // No action code, proceed with normal routing
         if (!loading) {
-          if (user && organizationId) {
-            if (emailVerified) {
-              router.push('/dashboard');
-            } else {
-              router.push('/login?verification=true');
-            }
+          if (user && emailVerified) {
+            router.push('/select-organization');
+          } else if (user && !emailVerified) {
+            router.push('/login?verification=true');
           } else if (!user) {
             router.push('/login');
           }
