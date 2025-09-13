@@ -20,7 +20,7 @@ import { OrderTypeSelectionDialog } from '@/components/OrderTypeSelectionDialog'
 import { ReceiptPrintDialog } from '@/components/ReceiptPrintDialog';
 import { CartItemModal } from '@/components/CartItemModal';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import { ShoppingCart, LayoutGrid, Users, ShoppingBag, FileText } from 'lucide-react';
 import {
   AlertDialog,
@@ -549,6 +549,7 @@ export default function POSPage() {
                     </Button>
                   </SheetTrigger>
                   <SheetContent side="right" className="w-full max-w-sm p-0">
+                    <SheetTitle className="sr-only">Shopping Cart</SheetTitle>
                     <POSCartSidebar
                       cart={cart}
                       cartTotal={cartTotal}
