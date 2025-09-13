@@ -22,6 +22,24 @@ function HomeContent() {
   const [resetSuccess, setResetSuccess] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
 
+
+
+  // Handle authentication-based routing
+  // Only redirect if we're not processing an action code
+  useEffect(() => {
+    if (loading || resetMode || isProcessing) return; // Wait for auth to finish loading or action processing
+
+    if (user && emailVerified) {
+      router.push('/select-organization');
+    } else if (user && !emailVerified) {
+      router.push('/login?verification=true');
+    } else if (!user) {
+      router.push('/login');
+    }
+  }, [loading, user, emailVerified, router, resetMode, isProcessing]);
+
+  // Handle Firebase action codes (email verification, password reset)
+  // These are links that Firebase redirects to the root URL
   useEffect(() => {
     const checkForActionCode = async () => {
       // Check if there's an action code in the URL
@@ -29,19 +47,11 @@ function HomeContent() {
       const mode = searchParams.get('mode');
 
       if (!oobCode || !mode) {
-        // No action code, proceed with normal routing
-        if (!loading) {
-          if (user && emailVerified) {
-            router.push('/select-organization');
-          } else if (user && !emailVerified) {
-            router.push('/login?verification=true');
-          } else if (!user) {
-            router.push('/login');
-          }
-        }
+        // No action code, let the auth routing handle it
         return;
       }
 
+      console.log('HomeContent: Processing action code, mode:', mode);
       setIsProcessing(true);
 
       try {
@@ -49,11 +59,11 @@ function HomeContent() {
           // Handle email verification
           await checkActionCode(auth, oobCode);
           await applyActionCode(auth, oobCode);
-          
+
           toast.success('Email Verified Successfully!', {
             description: 'Your email has been verified. You can now log in to your account.',
           });
-          
+
           router.push('/login?verification=success');
         } else if (mode === 'resetPassword') {
           // Handle password reset
@@ -62,7 +72,7 @@ function HomeContent() {
         }
       } catch (error) {
         console.error('Action code error:', error);
-        
+
         if (mode === 'verifyEmail') {
           toast.error('Email Verification Failed', {
             description: 'The verification link may have expired or is invalid.',
@@ -76,9 +86,8 @@ function HomeContent() {
       }
     };
 
-    // Always run the check for action codes
     checkForActionCode();
-  }, [searchParams]);
+  }, [searchParams, router]);
 
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -211,27 +220,7 @@ function HomeContent() {
     );
   }
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl">DijiInvoice</CardTitle>
-          <CardDescription>
-            Multi-organization invoice management platform
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Button onClick={() => router.push('/login')} className="w-full">
-            Sign In
-          </Button>
-          <Button onClick={() => router.push('/register')} variant="outline" className="w-full">
-            Sign Up
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
+ }
 
 export default function Home() {
   return (

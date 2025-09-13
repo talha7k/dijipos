@@ -15,11 +15,8 @@ export default function SelectOrganizationPage() {
       return;
     }
 
-    // Only auto-redirect if user has exactly one organization
-    // This allows users with multiple organizations to access the selection page
-    if (userOrganizations.length === 1) {
-      router.push('/dashboard');
-    }
+    // Allow access to organization selection page regardless of organization count
+    // Users can switch organizations or create new ones from here
   }, [user, userOrganizations, organizationId, router]);
 
   if (!user) {

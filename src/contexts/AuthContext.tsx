@@ -46,6 +46,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [error, setError] = useState<string | null>(null);
   const [emailVerified, setEmailVerified] = useState(false);
 
+  // Add a timeout to prevent infinite loading
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (loading) {
+        console.warn('AuthContext: Loading timeout reached, forcing loading to false');
+        setLoading(false);
+        setError('Authentication timeout - please refresh the page');
+      }
+    }, 10000); // 10 second timeout
+
+    return () => clearTimeout(timeout);
+  }, [loading]);
+
   const refreshUserOrganizations = async () => {
     if (!user) return;
     
@@ -71,17 +84,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const selectOrganization = async (selectedOrganizationId: string) => {
     if (!user) return;
-    
+
     try {
-      // Refresh organizations first to ensure we have the latest data
-      await refreshUserOrganizations();
-      
-      // Find the organization user association
+      // Find the organization user association from current state
       const organizationAssociation = userOrganizations.find(ou => ou.organizationId === selectedOrganizationId);
       if (organizationAssociation) {
         setOrganizationUser(organizationAssociation);
         setOrganizationId(selectedOrganizationId);
-        
+
         // Fetch organization details from Firebase
         const organizationDoc = await getDoc(doc(db, 'organizations', selectedOrganizationId));
         if (organizationDoc.exists()) {
@@ -119,12 +129,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setLoading(true);
       setError(null);
-      
+
       try {
         setUser(user);
         if (user) {
           setEmailVerified(user.emailVerified || false);
-          
+
           // Fetch user's organization associations from Firebase
           const organizationUsersQuery = query(
             collection(db, 'organizationUsers'),
@@ -138,13 +148,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             createdAt: doc.data().createdAt?.toDate(),
             updatedAt: doc.data().updatedAt?.toDate(),
           })) as OrganizationUser[];
-          
-          setUserOrganizations(organizationAssociations);
-          
-          // Auto-select first organization if available
-          if (organizationAssociations.length > 0 && !organizationId) {
-            await selectOrganization(organizationAssociations[0].organizationId);
-          }
+
+           setUserOrganizations(organizationAssociations);
+
+           // Don't auto-select organization on login - let user choose from select-organization page
         } else {
           setOrganizationId(null);
           setOrganizationUser(null);
@@ -161,7 +168,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [organizationId]);
 
   return (
     <AuthContext.Provider value={{ user, organizationUser, currentOrganization, userOrganizations, loading, organizationId, error, emailVerified, selectOrganization, refreshUserOrganizations, logout }}>

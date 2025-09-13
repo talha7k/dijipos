@@ -207,19 +207,30 @@ export function OrganizationManager() {
               <p className={`text-xl ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Manage your organizations with ease</p>
             </div>
           
-          {/* Logout Button */}
-          <Button
-            onClick={() => auth.signOut()}
-            variant="outline"
-            className={`flex items-center gap-2 ${
-              isDark 
-                ? 'border-gray-600 text-gray-300 hover:bg-gray-700' 
-                : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-            }`}
-          >
-            <LogOut className="h-4 w-4" />
-            Logout
-          </Button>
+          {/* Action Buttons */}
+          <div className="flex gap-3">
+            {organizationId && (
+              <Button
+                onClick={() => router.push('/dashboard')}
+                className={`flex items-center gap-2 ${isDark ? 'bg-purple-600 hover:bg-purple-700' : 'bg-blue-600 hover:bg-blue-700'}`}
+              >
+                <ArrowRight className="h-4 w-4" />
+                Continue to Dashboard
+              </Button>
+            )}
+            <Button
+              onClick={() => auth.signOut()}
+              variant="outline"
+              className={`flex items-center gap-2 ${
+                isDark
+                  ? 'border-gray-600 text-gray-300 hover:bg-gray-700'
+                  : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <LogOut className="h-4 w-4" />
+              Logout
+            </Button>
+          </div>
         </div>
 
         <div className="space-y-12">

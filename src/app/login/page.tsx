@@ -46,11 +46,11 @@ function LoginContent() {
         return;
       }
 
-      toast.success('Welcome back!', {
-        description: 'You have successfully logged in to your account.',
-      });
+       toast.success('Welcome back!', {
+         description: 'You have successfully logged in to your account.',
+       });
 
-      router.push('/dashboard');
+       router.push('/select-organization');
     } catch (err: unknown) {
       console.error('Login error:', err);
       
@@ -213,9 +213,9 @@ function LoginContent() {
           createdAt: new Date(),
           subscriptionStatus: 'trial',
         });
-      }
+       }
 
-      router.push('/dashboard');
+       router.push('/select-organization');
     } catch (err: unknown) {
       console.error('Google sign-in error:', err);
       
