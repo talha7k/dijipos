@@ -35,7 +35,7 @@ import {
 
 
 export default function POSPage() {
-  const { tenantId } = useAuth();
+  const { tenantId, user } = useAuth();
 
   // Use the POS persistence hook for all POS state
   const {
@@ -507,6 +507,8 @@ export default function POSPage() {
       }),
       orderType: selectedOrderType?.name || 'dine-in',
       tenantId,
+      createdById: user?.uid || 'unknown',
+      createdByName: user?.displayName || user?.email || 'Unknown User',
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -613,6 +615,8 @@ export default function POSPage() {
                           customerEmail: selectedCustomer?.email,
                           tableId: selectedTable?.id,
                           tableName: selectedTable?.name,
+                          createdById: user?.uid || 'unknown',
+                          createdByName: user?.displayName || user?.email || 'Unknown User',
                           createdAt: new Date(),
                           updatedAt: new Date(),
                         };
@@ -857,6 +861,8 @@ export default function POSPage() {
               customerEmail: selectedCustomer?.email,
               tableId: selectedTable?.id,
               tableName: selectedTable?.name,
+              createdById: user?.uid || 'unknown',
+              createdByName: user?.displayName || user?.email || 'Unknown User',
               createdAt: new Date(),
               updatedAt: new Date(),
             };

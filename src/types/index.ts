@@ -243,6 +243,8 @@ export interface Order {
   tableName?: string;
   orderType: string; // dine-in, take-away, delivery
   notes?: string;
+  createdById: string; // ID of user who created the order
+  createdByName: string; // Name of user who created the order
   createdAt: Date;
   updatedAt: Date;
 }
@@ -319,6 +321,25 @@ export interface StoreSettings {
   vatSettings: VATSettings;
   orderTypes: OrderType[];
   paymentTypes: PaymentType[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface TenantUser {
+  id: string;
+  userId: string;
+  tenantId: string;
+  role: 'admin' | 'manager' | 'waiter' | 'cashier';
+  isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

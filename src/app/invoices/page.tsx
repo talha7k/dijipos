@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { collection, query, onSnapshot, updateDoc, doc, getDoc, addDoc, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
-import { Invoice, Tenant, Customer, Supplier } from '@/types';
+import { Invoice, Tenant, Customer, Supplier, Payment } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -12,7 +12,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Printer } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Printer, Eye, CreditCard } from 'lucide-react';
 import EnglishInvoice from '@/components/templates/EnglishInvoice';
 import ArabicInvoice from '@/components/templates/ArabicInvoice';
 import InvoiceForm from '@/components/InvoiceForm';
@@ -24,6 +25,7 @@ function InvoicesContent() {
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [payments, setPayments] = useState<{ [invoiceId: string]: Payment[] }>({});
   const [loading, setLoading] = useState(true);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -71,6 +73,27 @@ function InvoicesContent() {
     };
     fetchSuppliers();
 
+    // Fetch payments
+    const paymentsQ = query(collection(db, 'tenants', tenantId, 'payments'));
+    const paymentsUnsubscribe = onSnapshot(paymentsQ, (querySnapshot) => {
+      const paymentsData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        paymentDate: doc.data().paymentDate?.toDate(),
+        createdAt: doc.data().createdAt?.toDate(),
+      })) as Payment[];
+
+      // Group payments by invoiceId
+      const paymentsByInvoice: { [invoiceId: string]: Payment[] } = {};
+      paymentsData.forEach(payment => {
+        if (!paymentsByInvoice[payment.invoiceId]) {
+          paymentsByInvoice[payment.invoiceId] = [];
+        }
+        paymentsByInvoice[payment.invoiceId].push(payment);
+      });
+      setPayments(paymentsByInvoice);
+    });
+
     const q = query(collection(db, 'tenants', tenantId, 'invoices'));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const invoicesData = querySnapshot.docs.map(doc => ({
@@ -84,7 +107,10 @@ function InvoicesContent() {
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      paymentsUnsubscribe();
+    };
   }, [tenantId]);
 
   const handleStatusChange = async (invoiceId: string, status: Invoice['status']) => {
@@ -533,75 +559,231 @@ function InvoicesContent() {
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button variant="outline" size="sm" onClick={() => setSelectedInvoice(invoice)}>
-                            View Details
+                            <Printer className="h-4 w-4 mr-2" />
+                            Print Preview
                           </Button>
                         </DialogTrigger>
                         <DialogContent className="max-w-6xl max-h-[80vh] overflow-y-auto">
                           <DialogHeader>
-                            <DialogTitle>Invoice Preview</DialogTitle>
+                            <DialogTitle>Invoice Details - {selectedInvoice?.id.slice(-8)}</DialogTitle>
                           </DialogHeader>
                           {selectedInvoice && tenant && (
-                            <div>
-                              <div className="flex gap-4 mb-4 items-center">
-                                <Button
-                                  variant={selectedInvoice.template === 'english' ? 'default' : 'outline'}
-                                  onClick={() => {
-                                    const updatedInvoice = { ...selectedInvoice, template: 'english' as const };
-                                    setSelectedInvoice(updatedInvoice);
-                                    updateDoc(doc(db, 'tenants', tenantId!, 'invoices', selectedInvoice.id), {
-                                      template: 'english'
-                                    });
-                                  }}
-                                >
-                                  English Template
-                                </Button>
-                                <Button
-                                  variant={selectedInvoice.template === 'arabic' ? 'default' : 'outline'}
-                                  onClick={() => {
-                                    const updatedInvoice = { ...selectedInvoice, template: 'arabic' as const };
-                                    setSelectedInvoice(updatedInvoice);
-                                    updateDoc(doc(db, 'tenants', tenantId!, 'invoices', selectedInvoice.id), {
-                                      template: 'arabic'
-                                    });
-                                  }}
-                                >
-                                  Arabic Template
-                                </Button>
-                                <Button variant="outline" onClick={() => handlePrintInvoice(selectedInvoice, tenant)}>
-                                  <Printer className="h-4 w-4 mr-2" />
-                                  Print
-                                </Button>
-                                <div className="flex items-center gap-2">
-                                  <Label htmlFor="qr-toggle">Show ZATCA QR</Label>
-                                  <Switch
-                                    id="qr-toggle"
-                                    checked={selectedInvoice.includeQR}
-                                    onCheckedChange={(checked) => {
-                                      const updatedInvoice = { ...selectedInvoice, includeQR: checked };
-                                      setSelectedInvoice(updatedInvoice);
-                                      updateDoc(doc(db, 'tenants', tenantId!, 'invoices', selectedInvoice.id), {
-                                        includeQR: checked
-                                      });
-                                    }}
-                                  />
+                            <div className="space-y-6">
+                              {/* Invoice Header Information */}
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <h3 className="font-semibold mb-2">Invoice Information</h3>
+                                  <div className="space-y-1 text-sm">
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-600">Status:</span>
+                                      <Badge variant={
+                                        selectedInvoice.status === 'paid' ? 'default' :
+                                        selectedInvoice.status === 'overdue' ? 'destructive' :
+                                        'secondary'
+                                      } className="capitalize">
+                                        {selectedInvoice.status}
+                                      </Badge>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-600">Invoice Date:</span>
+                                      <span>{selectedInvoice.createdAt.toLocaleDateString()}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-600">Due Date:</span>
+                                      <span>{selectedInvoice.dueDate?.toLocaleDateString()}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div>
+                                  <h3 className="font-semibold mb-2">Client Information</h3>
+                                  <div className="space-y-1 text-sm">
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-600">Client:</span>
+                                      <span>{selectedInvoice.clientName}</span>
+                                    </div>
+                                    {selectedInvoice.clientEmail && (
+                                      <div className="flex justify-between">
+                                        <span className="text-gray-600">Email:</span>
+                                        <span>{selectedInvoice.clientEmail}</span>
+                                      </div>
+                                    )}
+                                    {selectedInvoice.clientAddress && (
+                                      <div className="flex justify-between">
+                                        <span className="text-gray-600">Address:</span>
+                                        <span>{selectedInvoice.clientAddress}</span>
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
-                              <div className="border rounded-lg p-4 bg-white">
-                                {selectedInvoice.template === 'english' ? (
-                                  <EnglishInvoice 
-                                    invoice={selectedInvoice} 
-                                    tenant={tenant} 
-                                    customer={customers.find(c => c.name === selectedInvoice.clientName)}
-                                    supplier={suppliers.find(s => s.id === selectedInvoice.supplierId)}
-                                  />
-                                ) : (
-                                  <ArabicInvoice 
-                                    invoice={selectedInvoice} 
-                                    tenant={tenant} 
-                                    customer={customers.find(c => c.name === selectedInvoice.clientName)}
-                                    supplier={suppliers.find(s => s.id === selectedInvoice.supplierId)}
-                                  />
-                                )}
+
+                              {/* Invoice Items Table */}
+                              <div>
+                                <h3 className="font-semibold mb-3">Invoice Items</h3>
+                                <Table>
+                                  <TableHeader>
+                                    <TableRow>
+                                      <TableHead>Item</TableHead>
+                                      <TableHead className="text-right">Qty</TableHead>
+                                      <TableHead className="text-right">Unit Price</TableHead>
+                                      <TableHead className="text-right">Total</TableHead>
+                                    </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                    {selectedInvoice.items.map((item, index) => (
+                                      <TableRow key={index}>
+                                        <TableCell>
+                                          <div>
+                                            <p className="font-medium">{item.name}</p>
+                                            {item.description && (
+                                              <p className="text-sm text-gray-600">{item.description}</p>
+                                            )}
+                                          </div>
+                                        </TableCell>
+                                        <TableCell className="text-right">{item.quantity}</TableCell>
+                                        <TableCell className="text-right">${item.unitPrice.toFixed(2)}</TableCell>
+                                        <TableCell className="text-right font-medium">${item.total.toFixed(2)}</TableCell>
+                                      </TableRow>
+                                    ))}
+                                  </TableBody>
+                                </Table>
+                              </div>
+
+                              {/* Invoice Summary */}
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <h3 className="font-semibold mb-3">Invoice Summary</h3>
+                                  <div className="space-y-2">
+                                    <div className="flex justify-between">
+                                      <span>Subtotal:</span>
+                                      <span>${selectedInvoice.subtotal.toFixed(2)}</span>
+                                    </div>
+                                    {selectedInvoice.taxAmount > 0 && (
+                                      <div className="flex justify-between">
+                                        <span>Tax ({selectedInvoice.taxRate}%):</span>
+                                        <span>${selectedInvoice.taxAmount.toFixed(2)}</span>
+                                      </div>
+                                    )}
+                                    <div className="flex justify-between font-bold text-lg border-t pt-2">
+                                      <span>Total:</span>
+                                      <span>${selectedInvoice.total.toFixed(2)}</span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Payment Information Accordion */}
+                                <div>
+                                  <Accordion type="single" collapsible className="w-full">
+                                    <AccordionItem value="payments">
+                                      <AccordionTrigger className="font-semibold">
+                                        <div className="flex items-center gap-2">
+                                          <CreditCard className="h-4 w-4" />
+                                          Payments Made
+                                        </div>
+                                      </AccordionTrigger>
+                                      <AccordionContent>
+                                        {payments[selectedInvoice.id] && payments[selectedInvoice.id].length > 0 ? (
+                                          <div className="space-y-2">
+                                            {payments[selectedInvoice.id].map((payment, index) => (
+                                              <div key={index} className="flex justify-between text-sm border-b pb-2">
+                                                <div>
+                                                  <p className="font-medium">{payment.paymentMethod}</p>
+                                                  <p className="text-gray-600">{payment.paymentDate.toLocaleDateString()}</p>
+                                                  {payment.reference && (
+                                                    <p className="text-gray-500 text-xs">Ref: {payment.reference}</p>
+                                                  )}
+                                                </div>
+                                                <div className="text-right">
+                                                  <p className="font-medium">${payment.amount.toFixed(2)}</p>
+                                                  {payment.notes && (
+                                                    <p className="text-gray-500 text-xs">{payment.notes}</p>
+                                                  )}
+                                                </div>
+                                              </div>
+                                            ))}
+                                            <div className="flex justify-between font-medium border-t pt-2">
+                                              <span>Total Paid:</span>
+                                              <span>${payments[selectedInvoice.id].reduce((sum, p) => sum + p.amount, 0).toFixed(2)}</span>
+                                            </div>
+                                            {payments[selectedInvoice.id].reduce((sum, p) => sum + p.amount, 0) < selectedInvoice.total && (
+                                              <div className="flex justify-between text-orange-600">
+                                                <span>Remaining Balance:</span>
+                                                <span>${(selectedInvoice.total - payments[selectedInvoice.id].reduce((sum, p) => sum + p.amount, 0)).toFixed(2)}</span>
+                                              </div>
+                                            )}
+                                          </div>
+                                        ) : (
+                                          <p className="text-gray-500 text-sm">No payments recorded for this invoice</p>
+                                        )}
+                                      </AccordionContent>
+                                    </AccordionItem>
+                                  </Accordion>
+                                </div>
+                              </div>
+
+                              {/* Print Preview Section */}
+                              <div>
+                                <div className="flex gap-4 mb-4 items-center">
+                                  <Button
+                                    variant={selectedInvoice.template === 'english' ? 'default' : 'outline'}
+                                    onClick={() => {
+                                      const updatedInvoice = { ...selectedInvoice, template: 'english' as const };
+                                      setSelectedInvoice(updatedInvoice);
+                                      updateDoc(doc(db, 'tenants', tenantId!, 'invoices', selectedInvoice.id), {
+                                        template: 'english'
+                                      });
+                                    }}
+                                  >
+                                    English Template
+                                  </Button>
+                                  <Button
+                                    variant={selectedInvoice.template === 'arabic' ? 'default' : 'outline'}
+                                    onClick={() => {
+                                      const updatedInvoice = { ...selectedInvoice, template: 'arabic' as const };
+                                      setSelectedInvoice(updatedInvoice);
+                                      updateDoc(doc(db, 'tenants', tenantId!, 'invoices', selectedInvoice.id), {
+                                        template: 'arabic'
+                                      });
+                                    }}
+                                  >
+                                    Arabic Template
+                                  </Button>
+                                  <Button variant="outline" onClick={() => handlePrintInvoice(selectedInvoice, tenant)}>
+                                    <Printer className="h-4 w-4 mr-2" />
+                                    Print Invoice
+                                  </Button>
+                                  <div className="flex items-center gap-2">
+                                    <Label htmlFor="qr-toggle">Show ZATCA QR</Label>
+                                    <Switch
+                                      id="qr-toggle"
+                                      checked={selectedInvoice.includeQR}
+                                      onCheckedChange={(checked) => {
+                                        const updatedInvoice = { ...selectedInvoice, includeQR: checked };
+                                        setSelectedInvoice(updatedInvoice);
+                                        updateDoc(doc(db, 'tenants', tenantId!, 'invoices', selectedInvoice.id), {
+                                          includeQR: checked
+                                        });
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+                                <div className="border rounded-lg p-4 bg-white">
+                                  {selectedInvoice.template === 'english' ? (
+                                    <EnglishInvoice
+                                      invoice={selectedInvoice}
+                                      tenant={tenant}
+                                      customer={customers.find(c => c.name === selectedInvoice.clientName)}
+                                      supplier={suppliers.find(s => s.id === selectedInvoice.supplierId)}
+                                    />
+                                  ) : (
+                                    <ArabicInvoice
+                                      invoice={selectedInvoice}
+                                      tenant={tenant}
+                                      customer={customers.find(c => c.name === selectedInvoice.clientName)}
+                                      supplier={suppliers.find(s => s.id === selectedInvoice.supplierId)}
+                                    />
+                                  )}
+                                </div>
                               </div>
                             </div>
                           )}

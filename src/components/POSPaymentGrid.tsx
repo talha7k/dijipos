@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,6 +35,14 @@ export function POSPaymentGrid({ order, paymentTypes, onPaymentProcessed, onBack
 
   const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
   const remainingAmount = order.total - totalPaid;
+  const changeDue = totalPaid > order.total ? totalPaid - order.total : 0;
+
+  // Auto-fill amount with remaining amount when payment method is selected
+  useEffect(() => {
+    if (paymentMethod && remainingAmount > 0 && !amount) {
+      setAmount(remainingAmount.toFixed(2));
+    }
+  }, [paymentMethod, remainingAmount, amount]);
 
   const addPayment = () => {
     if (!amount || !paymentMethod) return;
@@ -54,6 +62,7 @@ export function POSPaymentGrid({ order, paymentTypes, onPaymentProcessed, onBack
     setAmount('');
     setReference('');
     setNotes('');
+    setPaymentMethod('');
   };
 
   const removePayment = (paymentId: string) => {
@@ -74,8 +83,8 @@ export function POSPaymentGrid({ order, paymentTypes, onPaymentProcessed, onBack
       amount: payment.amount,
       paymentMethod: payment.paymentMethod,
       paymentDate: new Date(),
-      reference: payment.reference,
-      notes: payment.notes,
+      reference: payment.reference || undefined,
+      notes: payment.notes || undefined,
       createdAt: new Date(),
     }));
 
@@ -83,7 +92,7 @@ export function POSPaymentGrid({ order, paymentTypes, onPaymentProcessed, onBack
   };
 
   return (
-    <div className="flex-1 overflow-auto p-4 bg-background">
+    <div className="h-screen overflow-auto p-4 bg-background">
       <div className="flex items-center gap-4 mb-6">
         <Button variant="ghost" onClick={onBack}>
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -116,6 +125,12 @@ export function POSPaymentGrid({ order, paymentTypes, onPaymentProcessed, onBack
                 ${remainingAmount.toFixed(2)}
               </span>
             </div>
+            {changeDue > 0 && (
+              <div className="flex justify-between">
+                <span className="font-bold text-green-600">Change Due:</span>
+                <span className="font-bold text-green-600">${changeDue.toFixed(2)}</span>
+              </div>
+            )}
             <div className="flex justify-between">
               <span>Customer:</span>
               <span>{order.customerName || 'Walk-in'}</span>
@@ -142,7 +157,7 @@ export function POSPaymentGrid({ order, paymentTypes, onPaymentProcessed, onBack
                 id="amount"
                 type="number"
                 step="0.01"
-                placeholder="0.00"
+                placeholder={remainingAmount > 0 ? remainingAmount.toFixed(2) : "0.00"}
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
               />
@@ -236,7 +251,7 @@ export function POSPaymentGrid({ order, paymentTypes, onPaymentProcessed, onBack
           className="px-8"
         >
           <CreditCard className="h-5 w-5 mr-2" />
-          Process Payment & Complete Order
+          {changeDue > 0 ? 'Process Payment & Give Change' : 'Process Payment & Complete Order'}
         </Button>
       </div>
     </div>
