@@ -50,7 +50,7 @@ const generateProductsAndServices = (productCount: number, serviceCount: number)
   return { products, services };
 };
 
-const generateCustomers = (count: number): Omit<Customer, 'organizationId' | 'createdAt' | 'updatedAt'>[] => {
+const generateCustomers = (count: number): Omit<Customer, 'organizationId'>[] => {
     return Array.from({ length: count }, () => {
         const firstName = getRandomElement(firstNames);
         const lastName = getRandomElement(lastNames);
@@ -60,11 +60,13 @@ const generateCustomers = (count: number): Omit<Customer, 'organizationId' | 'cr
             email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}${getRandomInt(1,99)}@example.com`,
             phone: `+966-5${getRandomInt(0,9)}${getRandomInt(100,999)}${getRandomInt(1000,9999)}`,
             address: `${getRandomInt(100, 9999)} King Fahd Rd, Riyadh, Saudi Arabia`,
+            createdAt: new Date(),
+            updatedAt: new Date(),
         };
     });
 };
 
-const generateSuppliers = (count: number): Omit<Supplier, 'organizationId' | 'createdAt' | 'updatedAt'>[] => {
+const generateSuppliers = (count: number): Omit<Supplier, 'organizationId'>[] => {
      return Array.from({ length: count }, () => {
         const name = `${getRandomElement(companyNames)} ${getRandomElement(companySuffixes)}`;
         return {
@@ -73,6 +75,8 @@ const generateSuppliers = (count: number): Omit<Supplier, 'organizationId' | 'cr
             email: `contact@${name.toLowerCase().replace(/\s+/g, '')}.com`,
             phone: `+966-11-${getRandomInt(100,999)}-${getRandomInt(1000,9999)}`,
             address: `${getRandomInt(10, 800)} Industrial City, Riyadh, Saudi Arabia`,
+            createdAt: new Date(),
+            updatedAt: new Date(),
         };
     });
 };
@@ -150,6 +154,8 @@ const generateInvoices = (count: number, customers: Omit<Customer, 'organization
         const total = subtotal + taxAmount;
         const status = getRandomElement<'sent' | 'paid' | 'overdue'>(['sent', 'paid', 'overdue']);
 
+        const invoiceId = generateId('inv');
+        
         // Generate payments based on invoice status
         const payments: Payment[] = [];
         if (status === 'paid') {
@@ -161,17 +167,18 @@ const generateInvoices = (count: number, customers: Omit<Customer, 'organization
                 remainingTotal -= paymentAmount;
                 payments.push({
                     id: generateId('pay'),
-                    invoiceId: baseInvoice.id,
+                    invoiceId: invoiceId,
                     organizationId: 'temp-org-id', // Will be replaced with actual orgId
                     amount: paymentAmount,
                     paymentDate: new Date(),
                     paymentMethod: getRandomElement(['Bank Transfer', 'Credit Card', 'Cash']),
+                    notes: '',
                 });
             }
         } else if (status === 'sent' && Math.random() > 0.6) { // 40% chance of a partial payment on a sent invoice
             payments.push({
                 id: generateId('pay'),
-                invoiceId: baseInvoice.id,
+                invoiceId: invoiceId,
                 organizationId: 'temp-org-id', // Will be replaced with actual orgId
                 amount: getRandomFloat(0.1, 0.5, 2) * total,
                 paymentDate: new Date(),
@@ -180,8 +187,8 @@ const generateInvoices = (count: number, customers: Omit<Customer, 'organization
             });
         }
         
-        const baseInvoice: Omit<BaseInvoice, 'organizationId'> = {
-            id: generateId('inv'),
+        const baseInvoice = {
+            id: invoiceId,
             items,
             subtotal,
             taxRate,
@@ -247,7 +254,8 @@ export async function generateSampleData(organizationId: string) {
     const invoices = generateInvoices(COUNTS.INVOICES, customers, suppliers, products, services);
     
     // 3. Prepare data for batch write
-    const collections: { [key: string]: (Product | Service | Customer | Supplier | Quote | SalesInvoice | PurchaseInvoice)[] } = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const collections: { [key: string]: any[] } = {
         products,
         services,
         customers,
