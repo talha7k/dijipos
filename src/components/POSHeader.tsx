@@ -29,6 +29,8 @@ interface POSHeaderProps {
 }
 
 export function POSHeader({
+  cart,
+  cartTotal,
   selectedTable,
   selectedCustomer,
   orderTypes,

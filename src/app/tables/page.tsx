@@ -58,6 +58,27 @@ export default function TablesPage() {
     });
   };
 
+  const handleAddMultipleTables = async (tables: Array<{
+    name: string;
+    capacity: number;
+    status: 'available' | 'occupied' | 'reserved' | 'maintenance';
+  }>) => {
+    if (!tenantId) return;
+
+    const promises = tables.map(table =>
+      addDoc(collection(db, 'tenants', tenantId, 'tables'), {
+        name: table.name,
+        capacity: table.capacity,
+        status: table.status,
+        tenantId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+    );
+
+    await Promise.all(promises);
+  };
+
   const handleDeleteTable = async (tableId: string) => {
     if (!tenantId) return;
     if (confirm('Are you sure you want to delete this table?')) {
@@ -153,6 +174,7 @@ export default function TablesPage() {
           open={dialogOpen}
           onOpenChange={setDialogOpen}
           onAddTable={handleAddTable}
+          onAddMultipleTables={handleAddMultipleTables}
         />
       </div>
 

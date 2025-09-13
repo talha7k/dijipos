@@ -526,7 +526,7 @@ export default function POSPage() {
   return (
     <div className="flex h-screen bg-background">
       {/* Content Area - takes remaining space */}
-      <div className="flex flex-col flex-1 min-w-0 pr-80">
+      <div className="flex flex-col flex-1 min-w-0">
         <POSHeader
           cart={cart}
           cartTotal={cartTotal}
@@ -601,7 +601,33 @@ export default function POSPage() {
               cartTotal={cartTotal}
               onCheckout={() => {}}
               onSaveOrder={handleSaveOrder}
-              onPrintReceipt={() => {
+              onPrintReceipt={async () => {
+                // Check if receipt templates exist, create a default one if not
+                if (receiptTemplates.length === 0 && tenantId) {
+                  try {
+                    const defaultTemplateContent = '<!DOCTYPE html>\\n<html>\\n<head>\\n  <meta charset="utf-8">\\n  <title>Receipt</title>\\n  <style>\\n    body { font-family: monospace; margin: 0; padding: 10px; }\\n    .header { text-align: center; margin-bottom: 10px; }\\n    .content { margin-bottom: 10px; }\\n    .footer { text-align: center; margin-top: 10px; }\\n    .line { display: flex; justify-content: space-between; }\\n    .total { font-weight: bold; border-top: 1px dashed; padding-top: 5px; }\\n  </style>\\n</head>\\n<body>\\n  <div class="header">\\n    <h2>{{companyName}}</h2>\\n    <p>{{companyAddress}}</p>\\n    <p>Tel: {{companyPhone}}</p>\\n    <p>VAT: {{companyVat}}</p>\\n    <hr>\\n    <p>Order #: {{orderNumber}}</p>\\n    <p>Date: {{orderDate}}</p>\\n    <p>Table: {{tableName}}</p>\\n    <p>Customer: {{customerName}}</p>\\n    <hr>\\n  </div>\\n  \\n  <div class="content">\\n    {{#each items}}\\n    <div class="line">\\n      <span>{{name}} ({{quantity}}x)</span>\\n      <span>{{total}}</span>\\n    </div>\\n    {{/each}}\\n  </div>\\n  \\n  <div class="total">\\n    <div class="line">\\n      <span>Subtotal:</span>\\n      <span>{{subtotal}}</span>\\n    </div>\\n    <div class="line">\\n      <span>VAT ({{vatRate}}%):</span>\\n      <span>{{vatAmount}}</span>\\n    </div>\\n    <div class="line">\\n      <span>TOTAL:</span>\\n      <span>{{total}}</span>\\n    </div>\\n  </div>\\n  \\n  <div class="footer">\\n    <p>Payment: {{paymentMethod}}</p>\\n    <p>Thank you for your business!</p>\\n  </div>\\n</body>\\n</html>';
+                    
+                    await addDoc(collection(db, 'tenants', tenantId, 'receiptTemplates'), {
+                      name: 'Default Receipt',
+                      description: 'Default receipt template',
+                      content: defaultTemplateContent,
+                      type: 'thermal',
+                      isDefault: true,
+                      tenantId,
+                      createdAt: new Date(),
+                      updatedAt: new Date(),
+                    });
+                    
+                    // Show success message
+                    alert('Default receipt template created successfully. Please try printing again.');
+                    return;
+                  } catch (error) {
+                    console.error('Error creating default receipt template:', error);
+                    alert('Error creating default receipt template. Please try again.');
+                    return;
+                  }
+                }
+                
                 // Create a temporary order from cart for printing
                 const tempOrder: Order = {
                   id: 'temp',
@@ -632,9 +658,15 @@ export default function POSPage() {
                   updatedAt: new Date(),
                 };
                 setSelectedOrder(tempOrder);
+                // Open the print dialog immediately after setting the order
+                setTimeout(() => {
+                  const printTrigger = document.querySelector('[data-print-receipt-trigger]') as HTMLElement;
+                  if (printTrigger) {
+                    printTrigger.click();
+                  }
+                }, 100);
               }}
               onClearCart={handleClearCart}
-              onItemClick={handleCartItemClick}
             />
           </>
         )}
@@ -651,7 +683,6 @@ export default function POSPage() {
               cartTotal={cartTotal}
               onCheckout={() => {}}
               onSaveOrder={handleSaveOrder}
-              onItemClick={handleCartItemClick}
             />
           </div>
         )}
@@ -668,7 +699,6 @@ export default function POSPage() {
               cartTotal={cartTotal}
               onCheckout={() => {}}
               onSaveOrder={handleSaveOrder}
-              onItemClick={handleCartItemClick}
             />
           </div>
         )}
@@ -686,7 +716,6 @@ export default function POSPage() {
               cartTotal={cartTotal}
               onCheckout={() => {}}
               onSaveOrder={handleSaveOrder}
-              onItemClick={handleCartItemClick}
             />
           </div>
         )}
@@ -704,7 +733,6 @@ export default function POSPage() {
               cartTotal={cartTotal}
               onCheckout={() => {}}
               onSaveOrder={handleSaveOrder}
-              onItemClick={handleCartItemClick}
             />
           </div>
         )}

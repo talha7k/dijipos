@@ -16,29 +16,58 @@ interface AddTableDialogProps {
     capacity: number;
     status: 'available' | 'occupied' | 'reserved' | 'maintenance';
   }) => void;
+  onAddMultipleTables?: (tables: Array<{
+    name: string;
+    capacity: number;
+    status: 'available' | 'occupied' | 'reserved' | 'maintenance';
+  }>) => void;
 }
 
 export function AddTableDialog({
   open,
   onOpenChange,
   onAddTable,
+  onAddMultipleTables,
 }: AddTableDialogProps) {
+  const [mode, setMode] = useState<'single' | 'bulk'>('single');
   const [name, setName] = useState('');
   const [capacity, setCapacity] = useState('');
+  const [bulkCount, setBulkCount] = useState('');
+  const [bulkCapacity, setBulkCapacity] = useState('');
   const [status, setStatus] = useState<'available' | 'occupied' | 'reserved' | 'maintenance'>('available');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    onAddTable({
-      name,
-      capacity: parseInt(capacity),
-      status,
-    });
+    if (mode === 'single') {
+      onAddTable({
+        name,
+        capacity: parseInt(capacity),
+        status,
+      });
 
-    // Reset form
-    setName('');
-    setCapacity('');
+      // Reset form
+      setName('');
+      setCapacity('');
+    } else if (mode === 'bulk' && onAddMultipleTables) {
+      const count = parseInt(bulkCount);
+      const tables = [];
+
+      for (let i = 1; i <= count; i++) {
+        tables.push({
+          name: `Table ${i}`,
+          capacity: parseInt(bulkCapacity),
+          status,
+        });
+      }
+
+      onAddMultipleTables(tables);
+
+      // Reset form
+      setBulkCount('');
+      setBulkCapacity('');
+    }
+
     setStatus('available');
     onOpenChange(false);
   };
@@ -51,33 +80,93 @@ export function AddTableDialog({
           Add Table
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Add New Table</DialogTitle>
+          <DialogTitle>Add New Table{mode === 'bulk' ? 's' : ''}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Mode Selection */}
           <div>
-            <Label htmlFor="tableName">Table Name</Label>
-            <Input
-              id="tableName"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Table 1"
-              required
-            />
+            <Label>Creation Mode</Label>
+            <div className="flex gap-2 mt-2">
+              <Button
+                type="button"
+                variant={mode === 'single' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setMode('single')}
+                className="flex-1"
+              >
+                Single Table
+              </Button>
+              <Button
+                type="button"
+                variant={mode === 'bulk' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setMode('bulk')}
+                className="flex-1"
+                disabled={!onAddMultipleTables}
+              >
+                Bulk Create
+              </Button>
+            </div>
           </div>
-          <div>
-            <Label htmlFor="tableCapacity">Capacity</Label>
-            <Input
-              id="tableCapacity"
-              type="number"
-              min="1"
-              value={capacity}
-              onChange={(e) => setCapacity(e.target.value)}
-              placeholder="Number of seats"
-              required
-            />
-          </div>
+          {mode === 'single' ? (
+            <>
+              <div>
+                <Label htmlFor="tableName">Table Name</Label>
+                <Input
+                  id="tableName"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. Table 1"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="tableCapacity">Capacity</Label>
+                <Input
+                  id="tableCapacity"
+                  type="number"
+                  min="1"
+                  value={capacity}
+                  onChange={(e) => setCapacity(e.target.value)}
+                  placeholder="Number of seats"
+                  required
+                />
+              </div>
+            </>
+          ) : (
+            <>
+              <div>
+                <Label htmlFor="bulkCount">Number of Tables</Label>
+                <Input
+                  id="bulkCount"
+                  type="number"
+                  min="1"
+                  max="50"
+                  value={bulkCount}
+                  onChange={(e) => setBulkCount(e.target.value)}
+                  placeholder="How many tables to create?"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="bulkCapacity">Default Capacity</Label>
+                <Input
+                  id="bulkCapacity"
+                  type="number"
+                  min="1"
+                  value={bulkCapacity}
+                  onChange={(e) => setBulkCapacity(e.target.value)}
+                  placeholder="Seats per table"
+                  required
+                />
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Tables will be named: Table 1, Table 2, Table 3, etc.
+              </div>
+            </>
+          )}
           <div>
             <Label htmlFor="tableStatus">Status</Label>
             <Select value={status} onValueChange={(value: 'available' | 'occupied' | 'reserved' | 'maintenance') => setStatus(value)}>
@@ -96,7 +185,9 @@ export function AddTableDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit">Add Table</Button>
+            <Button type="submit">
+              {mode === 'single' ? 'Add Table' : `Add ${bulkCount || 0} Tables`}
+            </Button>
           </div>
         </form>
       </DialogContent>

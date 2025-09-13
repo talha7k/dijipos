@@ -178,7 +178,9 @@ export function ReceiptPrintDialog({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        {children}
+        <span data-print-receipt-trigger className="hidden">
+          {children}
+        </span>
       </DialogTrigger>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
