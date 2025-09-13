@@ -157,7 +157,8 @@ export function MobileSidebar({
             }}
           />
 
-          <ScrollArea className="flex-1 px-3 py-4">
+          <div className="flex-1 overflow-hidden">
+            <ScrollArea className="h-full px-3 py-4">
             <nav className="space-y-2">
               {navigationItems.map((item) => {
                 if (item.children) {
@@ -188,8 +189,12 @@ export function MobileSidebar({
               })}
             </nav>
           </ScrollArea>
+          </div>
 
-          <UserProfileWithOrganization />
+          {/* Footer - Fixed */}
+          <div className="flex-shrink-0">
+            <UserProfileWithOrganization />
+          </div>
         </div>
       </SheetContent>
     </Sheet>

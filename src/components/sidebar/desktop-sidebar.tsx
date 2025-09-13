@@ -160,7 +160,8 @@ export function DesktopSidebar({
         className
       )}
     >
-      <div className="flex flex-col flex-grow border-r bg-background">
+      <div className="flex flex-col h-full border-r bg-background">
+        {/* Header - Fixed */}
         <SidebarHeader
           isCollapsed={isCollapsed}
           onToggleCollapse={onToggleCollapse}
@@ -168,45 +169,51 @@ export function DesktopSidebar({
           theme={theme}
         />
 
-        <ScrollArea className="flex-1 px-3 py-4">
-          <nav className="space-y-2">
-            {navigationItems.map((item) => {
-              if (item.children) {
-                const isSectionOpen = openSections[item.title];
-                const hasActiveChild = item.children.some(
-                  (child) => pathname === child.href
-                );
-                 return (
-                   <SidebarNavSection
-                     key={item.title}
-                     item={item}
-                     isSectionOpen={isSectionOpen}
-                     isCollapsed={isCollapsed}
-                     hasActiveChild={hasActiveChild}
-                     pathname={pathname}
-                     onToggle={() => onSectionToggle && onSectionToggle(item.title)}
-                     onExpandSidebar={onExpandSidebar}
-                   />
-                 );
-              } else {
-                const isActive = pathname === item.href;
-                return (
-                  <SidebarNavItem
-                    key={item.href}
-                    item={item}
-                    isActive={isActive}
-                    isCollapsed={isCollapsed}
-                  />
-                );
-              }
-            })}
-          </nav>
-        </ScrollArea>
+        {/* Middle Section - Scrollable */}
+        <div className="flex-1 overflow-hidden">
+          <ScrollArea className="h-full px-3 py-4">
+            <nav className="space-y-2">
+              {navigationItems.map((item) => {
+                if (item.children) {
+                  const isSectionOpen = openSections[item.title];
+                  const hasActiveChild = item.children.some(
+                    (child) => pathname === child.href
+                  );
+                   return (
+                     <SidebarNavSection
+                       key={item.title}
+                       item={item}
+                       isSectionOpen={isSectionOpen}
+                       isCollapsed={isCollapsed}
+                       hasActiveChild={hasActiveChild}
+                       pathname={pathname}
+                       onToggle={() => onSectionToggle && onSectionToggle(item.title)}
+                       onExpandSidebar={onExpandSidebar}
+                     />
+                   );
+                } else {
+                  const isActive = pathname === item.href;
+                  return (
+                    <SidebarNavItem
+                      key={item.href}
+                      item={item}
+                      isActive={isActive}
+                      isCollapsed={isCollapsed}
+                    />
+                  );
+                }
+              })}
+            </nav>
+          </ScrollArea>
+        </div>
 
+        {/* Footer - Fixed */}
         {user && (
-          <UserProfileWithOrganization
-            isCollapsed={isCollapsed}
-          />
+          <div className="flex-shrink-0">
+            <UserProfileWithOrganization
+              isCollapsed={isCollapsed}
+            />
+          </div>
         )}
       </div>
     </div>

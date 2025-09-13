@@ -35,6 +35,7 @@ export function ImageUpload({
 }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const inputId = `image-upload-${Math.random().toString(36).substring(2, 11)}`;
 
   const handleFileSelect = async (file: File) => {
     if (!file) return;
@@ -122,7 +123,7 @@ export function ImageUpload({
   return (
     <div className={className}>
       <input
-        id="image-upload"
+        id={inputId}
         type="file"
         accept={accept}
         onChange={handleFileInput}
@@ -162,7 +163,7 @@ export function ImageUpload({
           onDrop={handleDrop}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
-          onClick={() => !disabled && !uploading && document.getElementById('image-upload')?.click()}
+          onClick={() => !disabled && !uploading && document.getElementById(inputId)?.click()}
         >
           <CardContent className="p-8 text-center">
             <div className="flex flex-col items-center space-y-4">
