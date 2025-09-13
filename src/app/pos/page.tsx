@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import React from 'react';
-import { collection, query, onSnapshot, QuerySnapshot, DocumentData, addDoc } from 'firebase/firestore';
+import { collection, query, onSnapshot, QuerySnapshot, DocumentData, addDoc, getDoc, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
-import { Product, Service, Category, Table, Customer, Order, OrderPayment, PaymentType, OrderType } from '@/types';
+import { Product, Service, Category, Table, Customer, Order, OrderPayment, PaymentType, OrderType, ReceiptTemplate, PrinterSettings, Tenant } from '@/types';
 import { POSHeader } from '@/components/POSHeader';
 import { POSBreadcrumb } from '@/components/POSBreadcrumb';
 import { POSCategoriesGrid } from '@/components/POSCategoriesGrid';
@@ -16,6 +16,8 @@ import { POSCustomerGrid } from '@/components/POSCustomerGrid';
 import { POSOrderGrid } from '@/components/POSOrderGrid';
 import { POSPaymentGrid } from '@/components/POSPaymentGrid';
 import { OrderTypeSelectionDialog } from '@/components/OrderTypeSelectionDialog';
+import { ReceiptPrintDialog } from '@/components/ReceiptPrintDialog';
+import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -56,6 +58,9 @@ export default function POSPage() {
   const [selectedOrderType, setSelectedOrderType] = useState<OrderType | null>(null);
   const [pendingOrderToReopen, setPendingOrderToReopen] = useState<Order | null>(null);
   const [showOrderConfirmationDialog, setShowOrderConfirmationDialog] = useState(false);
+  const [receiptTemplates, setReceiptTemplates] = useState<ReceiptTemplate[]>([]);
+  const [printerSettings, setPrinterSettings] = useState<PrinterSettings | null>(null);
+  const [tenant, setTenant] = useState<Tenant | null>(null);
 
   // Fetch data from Firebase
   useEffect(() => {
@@ -144,7 +149,7 @@ export default function POSPage() {
 
     // Fetch order types
     const orderTypesQ = query(collection(db, 'tenants', tenantId, 'orderTypes'));
-    const orderTypesUnsubscribe = onSnapshot(orderTypesQ, (querySnapshot) => {
+    const orderTypesUnsubscribe = onSnapshot(orderTypesQ, async (querySnapshot) => {
       const orderTypesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
@@ -158,7 +163,46 @@ export default function POSPage() {
         setSelectedOrderType(orderTypesData[0]);
       }
 
-      setLoading(false);
+    // Fetch printer settings
+    const fetchPrinterSettings = async () => {
+      const printerDoc = await getDoc(doc(db, 'tenants', tenantId, 'settings', 'printer'));
+      if (printerDoc.exists()) {
+        const printerData = printerDoc.data() as PrinterSettings;
+        setPrinterSettings({
+          ...printerData,
+          createdAt: printerData.createdAt,
+          updatedAt: printerData.updatedAt,
+        });
+      }
+    };
+
+    // Fetch tenant data
+    const fetchTenantData = async () => {
+      const tenantDoc = await getDoc(doc(db, 'tenants', tenantId));
+      if (tenantDoc.exists()) {
+        const tenantData = tenantDoc.data() as Tenant;
+        setTenant({
+          ...tenantData,
+          createdAt: tenantData.createdAt,
+          updatedAt: tenantData.updatedAt,
+        });
+      }
+    };
+
+    // Fetch receipt templates
+    const receiptTemplatesQ = query(collection(db, 'tenants', tenantId, 'receiptTemplates'));
+    const receiptTemplatesUnsubscribe = onSnapshot(receiptTemplatesQ, (querySnapshot) => {
+      const templatesData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate(),
+        updatedAt: doc.data().updatedAt?.toDate(),
+      })) as ReceiptTemplate[];
+      setReceiptTemplates(templatesData);
+    });
+
+    await Promise.all([fetchPrinterSettings(), fetchTenantData()]);
+    setLoading(false);
     });
 
     return () => {
@@ -408,12 +452,9 @@ export default function POSPage() {
         cartTotal={cartTotal}
         selectedTable={selectedTable}
         selectedCustomer={selectedCustomer}
-        orderTypes={orderTypes}
-        selectedOrderType={selectedOrderType}
         onTableSelect={handleTableSelect}
         onCustomerSelect={handleCustomerSelect}
         onOrdersClick={handleOrdersClick}
-        onOrderTypeSelect={handleOrderTypeSelect}
       />
 
       {/* Breadcrumb - only shown in items view */}
@@ -474,6 +515,38 @@ export default function POSPage() {
               cartTotal={cartTotal}
               onCheckout={() => {}}
               onSaveOrder={handleSaveOrder}
+              onPrintReceipt={() => {
+                // Create a temporary order from cart for printing
+                const tempOrder: Order = {
+                  id: 'temp',
+                  tenantId: tenantId || '',
+                  orderNumber: `TEMP-${Date.now()}`,
+                  items: cart.map(item => ({
+                    id: `${item.type}-${item.id}`,
+                    type: item.type,
+                    productId: item.type === 'product' ? item.id : undefined,
+                    serviceId: item.type === 'service' ? item.id : undefined,
+                    name: item.name,
+                    quantity: item.quantity,
+                    unitPrice: item.price,
+                    total: item.total,
+                  })),
+                  subtotal: cartTotal,
+                  taxRate: 0,
+                  taxAmount: 0,
+                  total: cartTotal,
+                  status: 'open',
+                  orderType: selectedOrderType?.name || 'dine-in',
+                  customerName: selectedCustomer?.name,
+                  customerPhone: selectedCustomer?.phone,
+                  customerEmail: selectedCustomer?.email,
+                  tableId: selectedTable?.id,
+                  tableName: selectedTable?.name,
+                  createdAt: new Date(),
+                  updatedAt: new Date(),
+                };
+                setSelectedOrder(tempOrder);
+              }}
             />
           </>
         )}
@@ -565,6 +638,18 @@ export default function POSPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Receipt Print Dialog - for completed orders */}
+      {selectedOrder && (
+        <ReceiptPrintDialog
+          order={selectedOrder}
+          tenant={tenant}
+          receiptTemplates={receiptTemplates}
+          printerSettings={printerSettings}
+        >
+          <Button className="hidden" />
+        </ReceiptPrintDialog>
+      )}
     </div>
   );
 }

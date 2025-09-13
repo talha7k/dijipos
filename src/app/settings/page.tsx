@@ -542,7 +542,7 @@ function SettingsContent() {
                           id="font-size"
                           className="w-full p-2 border rounded"
                           value={newPrinterSettings.fontSize}
-                          onChange={(e) => setNewPrinterSettings({ ...newPrinterSettings, fontSize: e.target.value as any })}
+                          onChange={(e) => setNewPrinterSettings({ ...newPrinterSettings, fontSize: e.target.value as 'small' | 'medium' | 'large' })}
                         >
                           <option value="small">Small</option>
                           <option value="medium">Medium</option>

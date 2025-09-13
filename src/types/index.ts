@@ -322,5 +322,6 @@ export interface Tenant {
   logoUrl?: string; // Company logo URL
   stampUrl?: string; // Company stamp URL
   createdAt: Date;
+  updatedAt: Date;
   subscriptionStatus: 'active' | 'inactive' | 'trial';
 }

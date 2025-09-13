@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { ShoppingCart, Save } from 'lucide-react';
+import { ShoppingCart, Save, Printer } from 'lucide-react';
 import { POSCartItem } from './POSCartItem';
 
 interface CartItem {
@@ -16,9 +16,10 @@ interface POSCartSidebarProps {
   cartTotal: number;
   onCheckout: () => void;
   onSaveOrder?: () => void;
+  onPrintReceipt?: () => void;
 }
 
-export function POSCartSidebar({ cart, cartTotal, onCheckout, onSaveOrder }: POSCartSidebarProps) {
+export function POSCartSidebar({ cart, cartTotal, onCheckout, onSaveOrder, onPrintReceipt }: POSCartSidebarProps) {
   return (
     <div className="w-80 bg-card border-l flex flex-col">
       <div className="p-4 border-b">
@@ -58,6 +59,17 @@ export function POSCartSidebar({ cart, cartTotal, onCheckout, onSaveOrder }: POS
             >
               <Save className="h-4 w-4 mr-2" />
               Save Order
+            </Button>
+          )}
+          {onPrintReceipt && (
+            <Button
+              variant="outline"
+              className="w-full h-12 text-sm font-medium"
+              disabled={cart.length === 0}
+              onClick={onPrintReceipt}
+            >
+              <Printer className="h-4 w-4 mr-2" />
+              Print Receipt
             </Button>
           )}
           <Button
