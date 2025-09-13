@@ -1,6 +1,6 @@
 import { db } from '@/lib/firebase';
 import { collection, doc, writeBatch } from 'firebase/firestore';
-import { Product, Service, Quote, Customer, Supplier, Item, Payment, PurchaseInvoice, Invoice, Category, Order, OrderPayment, OrderItem } from '@/types';
+import { Product, Service, Quote, Customer, Supplier, Item, Payment, PurchaseInvoice, Invoice, Category, Order, OrderPayment, OrderItem, OrderType, PaymentType } from '@/types';
  
 // --- HELPER FUNCTIONS ---
 
@@ -139,6 +139,46 @@ const generateSuppliers = (count: number): Omit<Supplier, 'organizationId'>[] =>
     });
 };
 
+const generateOrderTypes = (): Omit<OrderType, 'organizationId'>[] => {
+    const orderTypes = [
+        { name: 'Dine-in', description: 'Customer eating at the restaurant' },
+        { name: 'Take-away', description: 'Customer taking food to go' },
+        { name: 'Delivery', description: 'Food delivered to customer location' },
+        { name: 'Drive-thru', description: 'Quick service through drive-thru' },
+        { name: 'Room Service', description: 'Service delivered to hotel room' },
+        { name: 'Catering', description: 'Large order for events' }
+    ];
+
+    return orderTypes.map(type => ({
+        id: generateId('ord-type'),
+        name: type.name,
+        description: type.description,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+    }));
+};
+
+const generatePaymentTypes = (): Omit<PaymentType, 'organizationId'>[] => {
+    const paymentTypes = [
+        { name: 'Cash', description: 'Cash payment' },
+        { name: 'Credit Card', description: 'Credit card payment' },
+        { name: 'Debit Card', description: 'Debit card payment' },
+        { name: 'Digital Wallet', description: 'Mobile payment apps' },
+        { name: 'Bank Transfer', description: 'Direct bank transfer' },
+        { name: 'Gift Card', description: 'Gift card payment' },
+        { name: 'Check', description: 'Check payment' },
+        { name: 'Points', description: 'Loyalty points redemption' }
+    ];
+
+    return paymentTypes.map(type => ({
+        id: generateId('pay-type'),
+        name: type.name,
+        description: type.description,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+    }));
+};
+
 const generateOrderItems = (products: Omit<Product, 'organizationId'>[], services: Omit<Service, 'organizationId'>[]): OrderItem[] => {
     const items: OrderItem[] = [];
     const itemCount = getRandomInt(1, 4);
@@ -176,7 +216,7 @@ const generateOrderItems = (products: Omit<Product, 'organizationId'>[], service
     return items;
 };
 
-const generateOrders = (count: number, customers: Omit<Customer, 'organizationId'>[], products: Omit<Product, 'organizationId'>[], services: Omit<Service, 'organizationId'>[]): { orders: Omit<Order, 'organizationId'>[], orderPayments: OrderPayment[] } => {
+const generateOrders = (count: number, customers: Omit<Customer, 'organizationId'>[], products: Omit<Product, 'organizationId'>[], services: Omit<Service, 'organizationId'>[], orderTypes: Omit<OrderType, 'organizationId'>[], paymentTypes: Omit<PaymentType, 'organizationId'>[]): { orders: Omit<Order, 'organizationId'>[], orderPayments: OrderPayment[] } => {
     const orders: Omit<Order, 'organizationId'>[] = [];
     const orderPayments: OrderPayment[] = [];
 
@@ -200,7 +240,7 @@ const generateOrders = (count: number, customers: Omit<Customer, 'organizationId
             taxAmount,
             total,
             status,
-            orderType: getRandomElement(['dine-in', 'take-away', 'delivery']),
+             orderType: getRandomElement(orderTypes).name,
             createdById: 'temp-user-id', // Will be replaced with actual userId
             createdByName: 'System Generated',
             createdAt: new Date(),
@@ -234,7 +274,7 @@ const generateOrders = (count: number, customers: Omit<Customer, 'organizationId
                     orderId: orderId,
                     organizationId: 'temp-org-id', // Will be replaced with actual orgId
                     amount: paymentAmount,
-                    paymentMethod: getRandomElement(['Cash', 'Credit Card', 'Digital Wallet']),
+                     paymentMethod: getRandomElement(paymentTypes).name,
                     paymentDate: new Date(),
                     reference: `REF-${getRandomInt(100000, 999999)}`,
                     notes: p === 0 ? 'Payment for order' : 'Additional payment',
@@ -311,7 +351,7 @@ const generateQuotes = (count: number, customers: Omit<Customer, 'organizationId
     });
 };
 
-const generateInvoices = (count: number, customers: Omit<Customer, 'organizationId'>[], suppliers: Omit<Supplier, 'organizationId'>[], products: Omit<Product, 'organizationId'>[], services: Omit<Service, 'organizationId'>[]): { invoices: Omit<Invoice, 'organizationId'>[], payments: Payment[] } => {
+const generateInvoices = (count: number, customers: Omit<Customer, 'organizationId'>[], suppliers: Omit<Supplier, 'organizationId'>[], products: Omit<Product, 'organizationId'>[], services: Omit<Service, 'organizationId'>[], paymentTypes: Omit<PaymentType, 'organizationId'>[]): { invoices: Omit<Invoice, 'organizationId'>[], payments: Payment[] } => {
     const allInvoices: Omit<Invoice, 'organizationId'>[] = [];
     const allPayments: Payment[] = [];
 
@@ -340,7 +380,7 @@ const generateInvoices = (count: number, customers: Omit<Customer, 'organization
                     organizationId: 'temp-org-id', // Will be replaced with actual orgId
                     amount: paymentAmount,
                     paymentDate: new Date(),
-                    paymentMethod: getRandomElement(['Bank Transfer', 'Credit Card', 'Cash']),
+                     paymentMethod: getRandomElement(paymentTypes).name,
                     notes: '',
                     createdAt: new Date(),
                 };
@@ -431,11 +471,13 @@ export async function generateSampleData(organizationId: string) {
     const { products, services } = generateProductsAndServices(COUNTS.PRODUCTS, COUNTS.SERVICES, categories);
     const customers = generateCustomers(COUNTS.CUSTOMERS);
     const suppliers = generateSuppliers(COUNTS.SUPPLIERS);
+    const orderTypes = generateOrderTypes();
+    const paymentTypes = generatePaymentTypes();
 
     // 2. Generate dependent data
     const quotes = generateQuotes(COUNTS.QUOTES, customers, products, services);
-    const { invoices, payments } = generateInvoices(COUNTS.INVOICES, customers, suppliers, products, services);
-    const { orders, orderPayments } = generateOrders(COUNTS.ORDERS, customers, products, services);
+    const { invoices, payments } = generateInvoices(COUNTS.INVOICES, customers, suppliers, products, services, paymentTypes);
+    const { orders, orderPayments } = generateOrders(COUNTS.ORDERS, customers, products, services, orderTypes, paymentTypes);
     
     // 3. Prepare data for batch write
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -445,6 +487,8 @@ export async function generateSampleData(organizationId: string) {
         services,
         customers,
         suppliers,
+        orderTypes,
+        paymentTypes,
         quotes,
         invoices,
         payments,
@@ -466,6 +510,9 @@ export async function generateSampleData(organizationId: string) {
             } else if (name === 'payments' || name === 'orderPayments') {
                 // Payments already have organizationId set
                 batch.set(docRef, item);
+            } else if (name === 'orderTypes' || name === 'paymentTypes') {
+                // Order types and payment types already have timestamps, just add orgId
+                batch.set(docRef, { ...item, organizationId });
             } else {
                 // Other collections just need organizationId
                 batch.set(docRef, { ...item, organizationId });
