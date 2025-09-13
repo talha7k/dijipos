@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { Route } from "next";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { NavigationItem } from "./sidebar-types";
@@ -21,7 +22,7 @@ export function SidebarNavItem({
   if (!item.href) return null;
 
   return (
-    <Link href={item.href}>
+    <Link href={item.href as Route}>
       <Button
         variant={isActive ? "secondary" : "ghost"}
         className={cn(

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { Route } from "next";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
@@ -68,7 +69,7 @@ export function SidebarNavSection({
           {item.children.map((child) => {
             const isActive = pathname === child.href;
             return (
-              <Link key={child.href} href={child.href || "#"}>
+              <Link key={child.href} href={(child.href || "#") as Route}>
                 <Button
                   variant={isActive ? "secondary" : "ghost"}
                   size="sm"

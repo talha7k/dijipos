@@ -140,7 +140,7 @@ function DashboardContent() {
           </Card>
         </Link>
 
-        <Link href="/products">
+        <Link href="/products-services">
           <Card className="cursor-pointer hover:shadow-lg transition-shadow">
             <CardHeader>
               <CardTitle>Products & Services</CardTitle>

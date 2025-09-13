@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Invoice, Organization, Customer, Supplier, Payment } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { InvoiceList } from './InvoiceList';
 import { InvoiceDetails } from './InvoiceDetails';
 import { InvoicePrint } from './InvoicePrint';
@@ -469,11 +469,14 @@ export function InvoicesManager() {
               Create Invoice
             </Button>
           </DialogTrigger>
-          <InvoiceForm
-            open={formOpen}
-            onOpenChange={setFormOpen}
-            onSubmit={handleCreateInvoice}
-          />
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Create New Invoice</DialogTitle>
+            </DialogHeader>
+            <InvoiceForm
+              onSubmit={handleCreateInvoice}
+            />
+          </DialogContent>
         </Dialog>
       </div>
 

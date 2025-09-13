@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import type { Route } from 'next';
 import { useAuth } from '@/contexts/AuthContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
@@ -17,7 +18,7 @@ export function ProtectedRoute({ children, redirectTo = '/login' }: ProtectedRou
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push(redirectTo);
+      router.push(redirectTo as Route);
     } else if (!loading && user && !emailVerified) {
       toast.error('Email Verification Required', {
         description: 'Please check your email and click the verification link to access your account.',

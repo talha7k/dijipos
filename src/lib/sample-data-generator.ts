@@ -1,6 +1,6 @@
 import { db } from '@/lib/firebase';
 import { collection, doc, writeBatch } from 'firebase/firestore';
-import { Product, Service, Quote, Customer, Supplier, Item, Payment, Invoice } from '@/types';
+import { Product, Service,Quote, Customer, Supplier, Item, Payment, PurchaseInvoice, SalesInvoice } from '@/lib/types';
  
 // --- HELPER FUNCTIONS ---
 
@@ -14,7 +14,7 @@ const generateId = (prefix: string) => `${prefix}-${++idCounter}-${Date.now() % 
 
 const productAdjectives = ['Organic', 'Premium', 'Hand-Crafted', 'Ergonomic', 'Heavy-Duty', 'Artisanal', 'Imported'];
 const productNouns = ['Coffee Beans', 'Olive Oil', 'Office Chair', 'Keyboard', 'Steel Pipes', 'Fabric', 'Software License'];
-
+const productUnits = ['kg', 'liter', 'piece', 'box', 'meter', 'license', 'pallet'];
 const serviceAdjectives = ['Strategic', 'Technical', 'Creative', 'Financial', 'Legal', 'Operational'];
 const serviceNouns = ['Consulting', 'Support', 'Design', 'Auditing', 'Development', 'Analysis'];
 const firstNames = ['Aisha', 'Fatima', 'Omar', 'Yusuf', 'Layla', 'Zayn', 'Noor', 'Amir'];
@@ -34,8 +34,7 @@ const generateProductsAndServices = (productCount: number, serviceCount: number)
       name: `${getRandomElement(productAdjectives)} ${getRandomElement(productNouns)}`,
       description: 'High-quality item.',
       price: getRandomFloat(10, 500, 2),
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      unit: getRandomElement(productUnits),
     });
   }
 
@@ -44,16 +43,14 @@ const generateProductsAndServices = (productCount: number, serviceCount: number)
       id: generateId('serv'),
       name: `${getRandomElement(serviceAdjectives)} ${getRandomElement(serviceNouns)}`,
       description: 'Professional service offering.',
-      price: getRandomFloat(50, 400, 2), // Total price for service
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      rate: getRandomFloat(50, 400, 2), // Per hour
     });
   }
 
   return { products, services };
 };
 
-const generateCustomers = (count: number): Omit<Customer, 'organizationId'>[] => {
+const generateCustomers = (count: number): Omit<Customer, 'organizationId' | 'createdAt' | 'updatedAt'>[] => {
     return Array.from({ length: count }, () => {
         const firstName = getRandomElement(firstNames);
         const lastName = getRandomElement(lastNames);
@@ -63,14 +60,12 @@ const generateCustomers = (count: number): Omit<Customer, 'organizationId'>[] =>
             email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}${getRandomInt(1,99)}@example.com`,
             phone: `+966-5${getRandomInt(0,9)}${getRandomInt(100,999)}${getRandomInt(1000,9999)}`,
             address: `${getRandomInt(100, 9999)} King Fahd Rd, Riyadh, Saudi Arabia`,
-            createdAt: new Date(),
-            updatedAt: new Date(),
         };
     });
 };
 
-const generateSuppliers = (count: number): Omit<Supplier, 'organizationId'>[] => {
-      return Array.from({ length: count }, () => {
+const generateSuppliers = (count: number): Omit<Supplier, 'organizationId' | 'createdAt' | 'updatedAt'>[] => {
+     return Array.from({ length: count }, () => {
         const name = `${getRandomElement(companyNames)} ${getRandomElement(companySuffixes)}`;
         return {
             id: generateId('sup'),
@@ -78,8 +73,6 @@ const generateSuppliers = (count: number): Omit<Supplier, 'organizationId'>[] =>
             email: `contact@${name.toLowerCase().replace(/\s+/g, '')}.com`,
             phone: `+966-11-${getRandomInt(100,999)}-${getRandomInt(1000,9999)}`,
             address: `${getRandomInt(10, 800)} Industrial City, Riyadh, Saudi Arabia`,
-            createdAt: new Date(),
-            updatedAt: new Date(),
         };
     });
 };
@@ -98,14 +91,14 @@ const generateItems = (products: Omit<Product, 'organizationId'>[], services: Om
                 type: 'product',
                 productId: product.id,
                 name: product.name,
-                description: 'High-quality product item.',
+                description: `Unit: ${product.unit}`,
                 quantity,
                 unitPrice: product.price,
                 total: quantity * product.price,
             });
         } else {
             const service = getRandomElement(services);
-            const quantity = getRandomInt(1, 5); // Service quantity
+            const quantity = getRandomInt(2, 20); // Hours
             items.push({
                 id: generateId('item'),
                 type: 'service',
@@ -113,8 +106,8 @@ const generateItems = (products: Omit<Product, 'organizationId'>[], services: Om
                 name: service.name,
                 description: 'Professional services rendered.',
                 quantity,
-                unitPrice: service.price,
-                total: quantity * service.price,
+                unitPrice: service.rate,
+                total: quantity * service.rate,
             });
         }
     }
@@ -148,22 +141,17 @@ const generateQuotes = (count: number, customers: Omit<Customer, 'organizationId
     });
 };
 
-const generateInvoices = (count: number, customers: Omit<Customer, 'organizationId'>[], suppliers: Omit<Supplier, 'organizationId'>[], products: Omit<Product, 'organizationId'>[], services: Omit<Service, 'organizationId'>[]): { invoices: Omit<Invoice, 'organizationId'>[], payments: Omit<Payment, 'organizationId'>[] } => {
-    const invoices: Omit<Invoice, 'organizationId'>[] = [];
-    const payments: Omit<Payment, 'organizationId'>[] = [];
-    
-    for (let i = 0; i < count; i++) {
+const generateInvoices = (count: number, customers: Omit<Customer, 'organizationId'>[], suppliers: Omit<Supplier, 'organizationId'>[], products: Omit<Product, 'organizationId'>[], services: Omit<Service, 'organizationId'>[]): Omit<SalesInvoice | PurchaseInvoice, 'organizationId'>[] => {
+    return Array.from({ length: count }, () => {
         const items = generateItems(products, services);
         const subtotal = items.reduce((sum, item) => sum + item.total, 0);
         const taxRate = 15;
         const taxAmount = subtotal * (taxRate / 100);
         const total = subtotal + taxAmount;
-        const status = getRandomElement<'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled'>(['draft', 'sent', 'paid', 'overdue']);
-
-        const invoiceId = generateId('inv');
-        const invoicePayments: Omit<Payment, 'organizationId'>[] = [];
+        const status = getRandomElement<'sent' | 'paid' | 'overdue'>(['sent', 'paid', 'overdue']);
 
         // Generate payments based on invoice status
+        const payments: Payment[] = [];
         if (status === 'paid') {
             const paymentCount = getRandomInt(1, 2);
             let remainingTotal = total;
@@ -171,75 +159,64 @@ const generateInvoices = (count: number, customers: Omit<Customer, 'organization
                 const isLastPayment = p === paymentCount - 1;
                 const paymentAmount = isLastPayment ? remainingTotal : getRandomFloat(0.3, 0.7, 2) * remainingTotal;
                 remainingTotal -= paymentAmount;
-                invoicePayments.push({
+                payments.push({
                     id: generateId('pay'),
-                    invoiceId: invoiceId,
+                    invoiceId: baseInvoice.id,
+                    organizationId: 'temp-org-id', // Will be replaced with actual orgId
                     amount: paymentAmount,
                     paymentDate: new Date(),
                     paymentMethod: getRandomElement(['Bank Transfer', 'Credit Card', 'Cash']),
-                    createdAt: new Date(),
                 });
             }
         } else if (status === 'sent' && Math.random() > 0.6) { // 40% chance of a partial payment on a sent invoice
-            invoicePayments.push({
+            payments.push({
                 id: generateId('pay'),
-                invoiceId: invoiceId,
+                invoiceId: baseInvoice.id,
+                organizationId: 'temp-org-id', // Will be replaced with actual orgId
                 amount: getRandomFloat(0.1, 0.5, 2) * total,
                 paymentDate: new Date(),
                 paymentMethod: 'Bank Transfer',
-                notes: 'Initial deposit.',
-                createdAt: new Date(),
+                notes: 'Initial deposit.'
             });
         }
-
-        payments.push(...invoicePayments);
+        
+        const baseInvoice: Omit<BaseInvoice, 'organizationId'> = {
+            id: generateId('inv'),
+            items,
+            subtotal,
+            taxRate,
+            taxAmount,
+            total,
+            status,
+            payments,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+        };
 
         const isSales = Math.random() > 0.2; // 80% of invoices are sales
         if (isSales) {
             const customer = getRandomElement(customers);
-            invoices.push({
-                id: invoiceId,
+            const salesInvoice: Omit<SalesInvoice, 'organizationId'> = {
+                ...baseInvoice,
                 type: 'sales',
                 clientName: customer.name,
                 clientEmail: customer.email,
                 clientAddress: customer.address,
-                items,
-                subtotal,
-                taxRate,
-                taxAmount,
-                total,
-                status,
-                dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
-                template: 'english',
-                includeQR: true,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            });
+            };
+            return salesInvoice;
         } else {
             const supplier = getRandomElement(suppliers);
-            invoices.push({
-                id: invoiceId,
+            const purchaseInvoice: Omit<PurchaseInvoice, 'organizationId'> = {
+                ...baseInvoice,
                 type: 'purchase',
-                supplierId: supplier.id,
                 supplierName: supplier.name,
                 supplierEmail: supplier.email,
                 supplierAddress: supplier.address,
-                items,
-                subtotal,
-                taxRate,
-                taxAmount,
-                total,
-                status,
-                dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
-                template: 'english',
-                includeQR: false,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            });
+            };
+            return purchaseInvoice;
         }
-    }
-    
-    return { invoices, payments };
+    });
 };
 
 
@@ -267,10 +244,10 @@ export async function generateSampleData(organizationId: string) {
 
     // 2. Generate dependent data
     const quotes = generateQuotes(COUNTS.QUOTES, customers, products, services);
-    const { invoices, payments: invoicePayments } = generateInvoices(COUNTS.INVOICES, customers, suppliers, products, services);
+    const invoices = generateInvoices(COUNTS.INVOICES, customers, suppliers, products, services);
     
     // 3. Prepare data for batch write
-    const collections: { [key: string]: Array<Omit<Product | Service | Customer | Supplier | Quote | Invoice | Payment, 'organizationId'>> } = {
+    const collections: { [key: string]: (Product | Service | Customer | Supplier | Quote | SalesInvoice | PurchaseInvoice)[] } = {
         products,
         services,
         customers,
@@ -279,15 +256,10 @@ export async function generateSampleData(organizationId: string) {
         invoices
     };
 
-    // Add payments to collections if any were generated
-    if (invoicePayments.length > 0) {
-        collections.payments = invoicePayments;
-    }
-
     for (const [name, data] of Object.entries(collections)) {
         console.log(`-> Preparing ${data.length} documents for '${name}' collection...`);
         for (const item of data) {
-            const docRef = doc(collection(db, 'tenants', organizationId, name), item.id);
+            const docRef = doc(collection(db, 'organizations', organizationId, name), item.id);
             // Add timestamps and orgId for customers/suppliers
             if (['customers', 'suppliers'].includes(name)) {
                 batch.set(docRef, { ...item, organizationId, createdAt: new Date(), updatedAt: new Date() });
