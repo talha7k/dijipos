@@ -147,6 +147,22 @@ function DashboardContent() {
           </Card>
         </Link>
       </div>
+
+      <div className="mt-6">
+        <Link href="/settings">
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow max-w-xs">
+            <CardHeader>
+              <CardTitle>Store Settings</CardTitle>
+              <CardDescription>Configure order types, payment methods, and VAT</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Manage your store configuration
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+      </div>
     </div>
   );
 }

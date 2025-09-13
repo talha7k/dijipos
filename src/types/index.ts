@@ -195,6 +195,53 @@ export interface PurchaseInvoice {
   updatedAt: Date;
 }
 
+export interface Table {
+  id: string;
+  name: string;
+  capacity: number; // Number of seats
+  status: 'available' | 'occupied' | 'reserved' | 'maintenance';
+  tenantId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface OrderType {
+  id: string;
+  name: string;
+  description?: string;
+  tenantId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface PaymentType {
+  id: string;
+  name: string;
+  description?: string;
+  tenantId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface VATSettings {
+  id: string;
+  rate: number; // VAT rate in percentage (e.g., 15 for 15%)
+  isEnabled: boolean;
+  tenantId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface StoreSettings {
+  id: string;
+  tenantId: string;
+  vatSettings: VATSettings;
+  orderTypes: OrderType[];
+  paymentTypes: PaymentType[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface Tenant {
   id: string;
   name: string;

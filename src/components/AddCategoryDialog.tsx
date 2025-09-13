@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,6 +24,7 @@ interface AddCategoryDialogProps {
   }) => void;
   categories: Category[];
   defaultType?: 'product' | 'service';
+  selectedParentId?: string | null;
 }
 
 export function AddCategoryDialog({
@@ -31,12 +32,20 @@ export function AddCategoryDialog({
   onOpenChange,
   onAddCategory,
   categories,
-  defaultType = 'product'
+  defaultType = 'product',
+  selectedParentId: propSelectedParentId
 }: AddCategoryDialogProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [type, setType] = useState<'product' | 'service'>(defaultType);
-  const [selectedParentId, setSelectedParentId] = useState<string | null>(null);
+  const [selectedParentId, setSelectedParentId] = useState<string | null>(propSelectedParentId || null);
+
+  // Update selectedParentId when prop changes
+  useEffect(() => {
+    if (propSelectedParentId) {
+      setSelectedParentId(propSelectedParentId);
+    }
+  }, [propSelectedParentId]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

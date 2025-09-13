@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,18 +20,27 @@ interface AddProductDialogProps {
     categoryId: string | null;
   }) => void;
   categories: Category[];
+  selectedCategory?: string | null;
 }
 
 export function AddProductDialog({
   open,
   onOpenChange,
   onAddProduct,
-  categories
+  categories,
+  selectedCategory
 }: AddProductDialogProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
-  const [categoryId, setCategoryId] = useState<string>('');
+  const [categoryId, setCategoryId] = useState<string>(selectedCategory || '');
+
+  // Update categoryId when selectedCategory changes
+  useEffect(() => {
+    if (selectedCategory) {
+      setCategoryId(selectedCategory);
+    }
+  }, [selectedCategory]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

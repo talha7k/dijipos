@@ -1,340 +1,396 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { collection, query, onSnapshot, addDoc, doc, deleteDoc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
+import { OrderType, PaymentType, VATSettings } from '@/types';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Settings, Receipt, Palette, Bell } from 'lucide-react';
+import { Settings, Plus, Trash2, UtensilsCrossed, CreditCard, Percent } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
-interface AppSettings {
-  defaultVatRate: number;
-  defaultCurrency: string;
-  defaultLanguage: string;
-  defaultTemplate: 'english' | 'arabic';
-  includeQRByDefault: boolean;
-  autoSaveDrafts: boolean;
-  emailNotifications: boolean;
-  invoicePrefix: string;
-  quotePrefix: string;
-}
-
-const currencies = [
-  { value: 'SAR', label: 'Saudi Riyal (SAR)' },
-  { value: 'USD', label: 'US Dollar (USD)' },
-  { value: 'EUR', label: 'Euro (EUR)' },
-  { value: 'GBP', label: 'British Pound (GBP)' },
-  { value: 'AED', label: 'UAE Dirham (AED)' },
-];
-
-const languages = [
-  { value: 'en', label: 'English' },
-  { value: 'ar', label: 'Arabic' },
-];
-
-export default function SettingsPage() {
-  const { user, tenantId } = useAuth();
+function SettingsContent() {
+  const { tenantId } = useAuth();
+  const [orderTypes, setOrderTypes] = useState<OrderType[]>([]);
+  const [paymentTypes, setPaymentTypes] = useState<PaymentType[]>([]);
+  const [vatSettings, setVatSettings] = useState<VATSettings | null>(null);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [settings, setSettings] = useState<AppSettings>({
-    defaultVatRate: 15,
-    defaultCurrency: 'SAR',
-    defaultLanguage: 'en',
-    defaultTemplate: 'english',
-    includeQRByDefault: false,
-    autoSaveDrafts: true,
-    emailNotifications: true,
-    invoicePrefix: 'INV-',
-    quotePrefix: 'QUO-',
-  });
+
+  // Dialog states
+  const [orderTypeDialogOpen, setOrderTypeDialogOpen] = useState(false);
+  const [paymentTypeDialogOpen, setPaymentTypeDialogOpen] = useState(false);
+  const [vatDialogOpen, setVatDialogOpen] = useState(false);
+
+  // Form states
+  const [newOrderType, setNewOrderType] = useState({ name: '', description: '' });
+  const [newPaymentType, setNewPaymentType] = useState({ name: '', description: '' });
+  const [newVatSettings, setNewVatSettings] = useState({ rate: 0, isEnabled: true });
 
   useEffect(() => {
     if (!tenantId) return;
 
-    const fetchSettings = async () => {
-      try {
-        const settingsDoc = await getDoc(doc(db, 'tenants', tenantId, 'settings', 'app'));
-        if (settingsDoc.exists()) {
-          setSettings(prev => ({
-            ...prev,
-            ...settingsDoc.data(),
-          } as AppSettings));
-        }
-      } catch (error) {
-        console.error('Error fetching settings:', error);
-      } finally {
-        setLoading(false);
+    // Fetch order types
+    const orderTypesQ = query(collection(db, 'tenants', tenantId, 'orderTypes'));
+    const orderTypesUnsubscribe = onSnapshot(orderTypesQ, (querySnapshot) => {
+      const orderTypesData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate(),
+        updatedAt: doc.data().updatedAt?.toDate(),
+      })) as OrderType[];
+      setOrderTypes(orderTypesData);
+    });
+
+    // Fetch payment types
+    const paymentTypesQ = query(collection(db, 'tenants', tenantId, 'paymentTypes'));
+    const paymentTypesUnsubscribe = onSnapshot(paymentTypesQ, (querySnapshot) => {
+      const paymentTypesData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate(),
+        updatedAt: doc.data().updatedAt?.toDate(),
+      })) as PaymentType[];
+      setPaymentTypes(paymentTypesData);
+    });
+
+    // Fetch VAT settings
+    const fetchVatSettings = async () => {
+      const vatDoc = await getDoc(doc(db, 'tenants', tenantId, 'settings', 'vat'));
+      if (vatDoc.exists()) {
+        const vatData = vatDoc.data() as VATSettings;
+        setVatSettings({
+          ...vatData,
+          createdAt: vatData.createdAt,
+          updatedAt: vatData.updatedAt,
+        });
+      } else {
+        // Create default VAT settings
+        const defaultVat: VATSettings = {
+          id: 'vat',
+          rate: 15,
+          isEnabled: true,
+          tenantId,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        await setDoc(doc(db, 'tenants', tenantId, 'settings', 'vat'), defaultVat);
+        setVatSettings(defaultVat);
       }
     };
 
-    fetchSettings();
+    fetchVatSettings();
+    setLoading(false);
+
+    return () => {
+      orderTypesUnsubscribe();
+      paymentTypesUnsubscribe();
+    };
   }, [tenantId]);
 
-  const handleSaveSettings = async () => {
+  const handleAddOrderType = async () => {
+    if (!tenantId || !newOrderType.name.trim()) return;
+
+    await addDoc(collection(db, 'tenants', tenantId, 'orderTypes'), {
+      ...newOrderType,
+      tenantId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    setNewOrderType({ name: '', description: '' });
+    setOrderTypeDialogOpen(false);
+  };
+
+  const handleAddPaymentType = async () => {
+    if (!tenantId || !newPaymentType.name.trim()) return;
+
+    await addDoc(collection(db, 'tenants', tenantId, 'paymentTypes'), {
+      ...newPaymentType,
+      tenantId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    setNewPaymentType({ name: '', description: '' });
+    setPaymentTypeDialogOpen(false);
+  };
+
+  const handleUpdateVatSettings = async () => {
     if (!tenantId) return;
 
-    setSaving(true);
-    try {
-      await updateDoc(doc(db, 'tenants', tenantId, 'settings', 'app'), {
-        ...settings,
-        updatedAt: new Date(),
-      });
+    const updatedVat: VATSettings = {
+      id: 'vat',
+      ...newVatSettings,
+      tenantId,
+      createdAt: vatSettings?.createdAt || new Date(),
+      updatedAt: new Date(),
+    };
 
-      alert('Settings saved successfully!');
-    } catch (error) {
-      console.error('Error saving settings:', error);
-      alert('Failed to save settings.');
-    } finally {
-      setSaving(false);
+    await setDoc(doc(db, 'tenants', tenantId, 'settings', 'vat'), updatedVat);
+    setVatSettings(updatedVat);
+    setVatDialogOpen(false);
+  };
+
+  const handleDeleteOrderType = async (id: string) => {
+    if (!tenantId) return;
+    if (confirm('Are you sure you want to delete this order type?')) {
+      await deleteDoc(doc(db, 'tenants', tenantId, 'orderTypes', id));
     }
   };
 
-  const updateSetting = (key: keyof AppSettings, value: string | number | boolean) => {
-    setSettings(prev => ({
-      ...prev,
-      [key]: value,
-    }));
+  const handleDeletePaymentType = async (id: string) => {
+    if (!tenantId) return;
+    if (confirm('Are you sure you want to delete this payment type?')) {
+      await deleteDoc(doc(db, 'tenants', tenantId, 'paymentTypes', id));
+    }
   };
 
-  if (!user) return <div>Please log in</div>;
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div className="flex justify-center items-center h-64">Loading...</div>;
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center space-x-2">
-        <Settings className="h-6 w-6" />
-        <h1 className="text-3xl font-bold">Settings</h1>
+    <div className="container mx-auto p-4">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Store Settings</h1>
       </div>
 
-      <Tabs defaultValue="invoice" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="invoice">Invoice Defaults</TabsTrigger>
-          <TabsTrigger value="appearance">Appearance</TabsTrigger>
-          <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          <TabsTrigger value="advanced">Advanced</TabsTrigger>
+      <Tabs defaultValue="order-types" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="order-types">Order Types</TabsTrigger>
+          <TabsTrigger value="payment-types">Payment Types</TabsTrigger>
+          <TabsTrigger value="vat-settings">VAT Settings</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="invoice" className="space-y-6">
+        <TabsContent value="order-types" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Receipt className="h-5 w-5" />
-                <span>Invoice Default Settings</span>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <UtensilsCrossed className="h-5 w-5" />
+                  Order Types
+                </div>
+                <Dialog open={orderTypeDialogOpen} onOpenChange={setOrderTypeDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Order Type
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add Order Type</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="order-name">Name</Label>
+                        <Input
+                          id="order-name"
+                          placeholder="e.g., Dine In, Take Away, Delivery"
+                          value={newOrderType.name}
+                          onChange={(e) => setNewOrderType({ ...newOrderType, name: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="order-description">Description (Optional)</Label>
+                        <Input
+                          id="order-description"
+                          placeholder="Description for this order type"
+                          value={newOrderType.description}
+                          onChange={(e) => setNewOrderType({ ...newOrderType, description: e.target.value })}
+                        />
+                      </div>
+                      <Button onClick={handleAddOrderType} className="w-full">
+                        Add Order Type
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="vatRate">Default VAT Rate (%)</Label>
-                  <Input
-                    id="vatRate"
-                    type="number"
-                    step="0.01"
-                    value={settings.defaultVatRate}
-                    onChange={(e) => updateSetting('defaultVatRate', parseFloat(e.target.value) || 0)}
-                  />
+            <CardContent>
+              {orderTypes.length === 0 ? (
+                <p className="text-muted-foreground">No order types added yet.</p>
+              ) : (
+                <div className="grid gap-2">
+                  {orderTypes.map((type) => (
+                    <div key={type.id} className="flex items-center justify-between p-3 border rounded">
+                      <div>
+                        <h3 className="font-medium">{type.name}</h3>
+                        {type.description && (
+                          <p className="text-sm text-muted-foreground">{type.description}</p>
+                        )}
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteOrderType(type.id)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="currency">Default Currency</Label>
-                  <Select
-                    value={settings.defaultCurrency}
-                    onValueChange={(value) => updateSetting('defaultCurrency', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {currencies.map((currency) => (
-                        <SelectItem key={currency.value} value={currency.value}>
-                          {currency.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="language">Default Language</Label>
-                  <Select
-                    value={settings.defaultLanguage}
-                    onValueChange={(value) => updateSetting('defaultLanguage', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {languages.map((language) => (
-                        <SelectItem key={language.value} value={language.value}>
-                          {language.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="template">Default Template</Label>
-                  <Select
-                    value={settings.defaultTemplate}
-                    onValueChange={(value) => updateSetting('defaultTemplate', value as 'english' | 'arabic')}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="english">English</SelectItem>
-                      <SelectItem value="arabic">Arabic</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="invoicePrefix">Invoice Number Prefix</Label>
-                  <Input
-                    id="invoicePrefix"
-                    value={settings.invoicePrefix}
-                    onChange={(e) => updateSetting('invoicePrefix', e.target.value)}
-                    placeholder="INV-"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="quotePrefix">Quote Number Prefix</Label>
-                  <Input
-                    id="quotePrefix"
-                    value={settings.quotePrefix}
-                    onChange={(e) => updateSetting('quotePrefix', e.target.value)}
-                    placeholder="QUO-"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="includeQR"
-                  checked={settings.includeQRByDefault}
-                  onCheckedChange={(checked) => updateSetting('includeQRByDefault', checked)}
-                />
-                <Label htmlFor="includeQR">Include ZATCA QR code by default</Label>
-              </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="appearance" className="space-y-6">
+        <TabsContent value="payment-types" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Palette className="h-5 w-5" />
-                <span>Appearance Settings</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>Theme</Label>
-                <p className="text-sm text-muted-foreground">
-                  Theme settings will be available in a future update.
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Language</Label>
-                <Select
-                  value={settings.defaultLanguage}
-                  onValueChange={(value) => updateSetting('defaultLanguage', value)}
-                >
-                  <SelectTrigger className="w-48">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {languages.map((language) => (
-                      <SelectItem key={language.value} value={language.value}>
-                        {language.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="notifications" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Bell className="h-5 w-5" />
-                <span>Notification Settings</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="emailNotifications"
-                  checked={settings.emailNotifications}
-                  onCheckedChange={(checked) => updateSetting('emailNotifications', checked)}
-                />
-                <Label htmlFor="emailNotifications">Email notifications for new invoices</Label>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="autoSave"
-                  checked={settings.autoSaveDrafts}
-                  onCheckedChange={(checked) => updateSetting('autoSaveDrafts', checked)}
-                />
-                <Label htmlFor="autoSave">Auto-save drafts</Label>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="advanced" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Advanced Settings</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>Export Data</Label>
-                <p className="text-sm text-muted-foreground">
-                  Export all your data for backup purposes.
-                </p>
-                <Button variant="outline">Export Data</Button>
-              </div>
-
-              <div className="space-y-2 pt-4 border-t">
-                <Label className="text-destructive">Danger Zone</Label>
-                <p className="text-sm text-muted-foreground">
-                  These actions cannot be undone.
-                </p>
-                <div className="space-y-2">
-                  <Button variant="destructive" className="w-full">
-                    Reset All Settings
-                  </Button>
-                  <Button variant="destructive" className="w-full">
-                    Delete All Data
-                  </Button>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CreditCard className="h-5 w-5" />
+                  Payment Types
                 </div>
-              </div>
+                <Dialog open={paymentTypeDialogOpen} onOpenChange={setPaymentTypeDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Payment Type
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add Payment Type</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="payment-name">Name</Label>
+                        <Input
+                          id="payment-name"
+                          placeholder="e.g., Cash, Card, Online"
+                          value={newPaymentType.name}
+                          onChange={(e) => setNewPaymentType({ ...newPaymentType, name: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="payment-description">Description (Optional)</Label>
+                        <Input
+                          id="payment-description"
+                          placeholder="Description for this payment type"
+                          value={newPaymentType.description}
+                          onChange={(e) => setNewPaymentType({ ...newPaymentType, description: e.target.value })}
+                        />
+                      </div>
+                      <Button onClick={handleAddPaymentType} className="w-full">
+                        Add Payment Type
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {paymentTypes.length === 0 ? (
+                <p className="text-muted-foreground">No payment types added yet.</p>
+              ) : (
+                <div className="grid gap-2">
+                  {paymentTypes.map((type) => (
+                    <div key={type.id} className="flex items-center justify-between p-3 border rounded">
+                      <div>
+                        <h3 className="font-medium">{type.name}</h3>
+                        {type.description && (
+                          <p className="text-sm text-muted-foreground">{type.description}</p>
+                        )}
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeletePaymentType(type.id)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="vat-settings" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Percent className="h-5 w-5" />
+                  VAT Settings
+                </div>
+                <Dialog open={vatDialogOpen} onOpenChange={setVatDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Settings className="h-4 w-4 mr-2" />
+                      Update VAT Settings
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Update VAT Settings</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          id="vat-enabled"
+                          checked={newVatSettings.isEnabled}
+                          onCheckedChange={(checked) => setNewVatSettings({ ...newVatSettings, isEnabled: checked })}
+                        />
+                        <Label htmlFor="vat-enabled">Enable VAT</Label>
+                      </div>
+                      {newVatSettings.isEnabled && (
+                        <div>
+                          <Label htmlFor="vat-rate">VAT Rate (%)</Label>
+                          <Input
+                            id="vat-rate"
+                            type="number"
+                            placeholder="15"
+                            value={newVatSettings.rate}
+                            onChange={(e) => setNewVatSettings({ ...newVatSettings, rate: parseFloat(e.target.value) || 0 })}
+                          />
+                        </div>
+                      )}
+                      <Button onClick={handleUpdateVatSettings} className="w-full">
+                        Update Settings
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {vatSettings ? (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span>Status:</span>
+                    <Badge variant={vatSettings.isEnabled ? "default" : "secondary"}>
+                      {vatSettings.isEnabled ? "Enabled" : "Disabled"}
+                    </Badge>
+                  </div>
+                  {vatSettings.isEnabled && (
+                    <div className="flex items-center justify-between">
+                      <span>VAT Rate:</span>
+                      <span className="font-medium">{vatSettings.rate}%</span>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="text-muted-foreground">VAT settings not configured.</p>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
-
-      <div className="flex justify-end">
-        <Button onClick={handleSaveSettings} disabled={saving}>
-          {saving ? 'Saving...' : 'Save All Settings'}
-        </Button>
-      </div>
     </div>
   );
+}
+
+export default function SettingsPage() {
+  return <SettingsContent />;
 }

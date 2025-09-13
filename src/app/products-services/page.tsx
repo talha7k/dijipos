@@ -196,6 +196,7 @@ function ProductsContent() {
                       onAddCategory={handleAddCategory}
                       categories={categories}
                       defaultType="product"
+                      selectedParentId={selectedCategory}
                     />
                   </CardTitle>
                   <div className="relative">
@@ -243,6 +244,7 @@ function ProductsContent() {
                   onOpenChange={setProductDialogOpen}
                   onAddProduct={handleAddProduct}
                   categories={categories}
+                  selectedCategory={selectedCategory}
                 />
               </div>
               
@@ -274,6 +276,7 @@ function ProductsContent() {
                       onAddCategory={handleAddCategory}
                       categories={categories}
                       defaultType="service"
+                      selectedParentId={selectedCategory}
                     />
                   </CardTitle>
                   <div className="relative">
@@ -321,6 +324,7 @@ function ProductsContent() {
                   onOpenChange={setServiceDialogOpen}
                   onAddService={handleAddService}
                   categories={categories}
+                  selectedCategory={selectedCategory}
                 />
               </div>
               

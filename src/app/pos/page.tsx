@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import React from 'react';
 import { collection, query, onSnapshot, QuerySnapshot, DocumentData } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
@@ -26,8 +27,7 @@ export default function POSPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
+  const [categoryPath, setCategoryPath] = useState<string[]>([]);
 
   // Fetch data from Firebase
   useEffect(() => {
@@ -80,16 +80,22 @@ export default function POSPage() {
     return categories.filter(c => c.parentId === parentId);
   };
 
-  // Get subcategories for selected category
-  const subcategories = selectedCategory ? getChildCategories(selectedCategory) : [];
+  // Get current category ID (last in path)
+  const getCurrentCategoryId = () => {
+    return categoryPath.length > 0 ? categoryPath[categoryPath.length - 1] : null;
+  };
 
-  // Filter products and services based on selected subcategory or category
-  const filteredItems = selectedSubcategory ? [
-    ...products.filter((p: Product) => p.categoryId === selectedSubcategory),
-    ...services.filter((s: Service) => s.categoryId === selectedSubcategory)
-  ] : selectedCategory ? [
-    ...products.filter((p: Product) => p.categoryId === selectedCategory),
-    ...services.filter((s: Service) => s.categoryId === selectedCategory)
+  // Get child categories for current category
+  const getCurrentChildCategories = () => {
+    const currentCategoryId = getCurrentCategoryId();
+    return currentCategoryId ? getChildCategories(currentCategoryId) : categories.filter(c => !c.parentId);
+  };
+
+  // Filter products and services based on current category
+  const currentCategoryId = getCurrentCategoryId();
+  const filteredItems = currentCategoryId ? [
+    ...products.filter((p: Product) => p.categoryId === currentCategoryId),
+    ...services.filter((s: Service) => s.categoryId === currentCategoryId)
   ] : [];
 
   // Add item to cart
@@ -121,13 +127,16 @@ export default function POSPage() {
   const cartTotal = cart.reduce((sum: number, item: CartItem) => sum + item.total, 0);
 
   // Navigation handlers
-  const handleBackToCategories = () => {
-    setSelectedCategory(null);
-    setSelectedSubcategory(null);
+  const navigateToCategory = (categoryId: string) => {
+    setCategoryPath([...categoryPath, categoryId]);
   };
 
-  const handleBackToCategory = () => {
-    setSelectedSubcategory(null);
+  const navigateBack = () => {
+    setCategoryPath(categoryPath.slice(0, -1));
+  };
+
+  const navigateToRoot = () => {
+    setCategoryPath([]);
   };
 
   // Get category name by ID
@@ -168,36 +177,35 @@ export default function POSPage() {
 
       {/* Navigation Breadcrumb */}
       <div className="bg-card border-b p-4 flex items-center space-x-2">
-        {selectedCategory ? (
+        {categoryPath.length > 0 ? (
           <>
             <Button
               variant="ghost"
               size="sm"
-              onClick={handleBackToCategories}
+              onClick={navigateToRoot}
               className="flex items-center space-x-1 h-10 px-4"
             >
               <ArrowLeft className="h-5 w-5" />
               <span className="font-medium">Categories</span>
             </Button>
-            <span className="text-gray-400 text-lg">/</span>
-            <span className="font-medium text-lg">{getCategoryName(selectedCategory)}</span>
-            
-            {selectedSubcategory && (
-              <>
+            {categoryPath.map((categoryId, index) => (
+              <React.Fragment key={categoryId}>
                 <span className="text-gray-400 text-lg">/</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleBackToCategory}
-                  className="flex items-center space-x-1 h-10 px-4"
-                >
-                  <ArrowLeft className="h-5 w-5" />
-                  <span className="font-medium">Subcategories</span>
-                </Button>
-                <span className="text-gray-400 text-lg">/</span>
-                <span className="font-medium text-lg">{getCategoryName(selectedSubcategory)}</span>
-              </>
-            )}
+                {index === categoryPath.length - 1 ? (
+                  <span className="font-medium text-lg">{getCategoryName(categoryId)}</span>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setCategoryPath(categoryPath.slice(0, index + 1))}
+                    className="flex items-center space-x-1 h-10 px-4"
+                  >
+                    <ArrowLeft className="h-5 w-5" />
+                    <span className="font-medium">{getCategoryName(categoryId)}</span>
+                  </Button>
+                )}
+              </React.Fragment>
+            ))}
           </>
         ) : (
           <span className="font-medium text-lg">Categories</span>
@@ -208,61 +216,59 @@ export default function POSPage() {
       <div className="flex flex-1 overflow-hidden">
         {/* Items Grid */}
         <div className="flex-1 overflow-auto p-4 bg-background">
-          {!selectedCategory ? (
-            // Categories Grid
+          {categoryPath.length === 0 ? (
+            // Root Categories Grid
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {categories
-                .filter(c => !c.parentId) // Only show top-level categories
-                .map((category: Category) => {
-                  const subcategoriesCount = getSubcategoriesCount(category.id);
-                  const itemsCount = getItemsCount(category.id);
-                  
-                  return (
-                    <Card
-                      key={category.id}
-                      className="cursor-pointer hover:shadow-lg transition-all duration-200 transform hover:scale-105 h-48 flex flex-col active:scale-95 active:bg-accent"
-                      onClick={() => setSelectedCategory(category.id)}
-                    >
-                      <CardHeader className="pb-2 flex-1 flex items-center justify-center">
-                        <CardTitle className="text-xl text-center font-bold text-foreground">{category.name}</CardTitle>
-                      </CardHeader>
-                      <CardContent className="flex-1 flex flex-col items-center justify-center p-4">
-                        <div className="text-center text-muted-foreground text-sm mb-2">
-                          {category.description}
-                        </div>
-                        <div className="flex flex-col gap-1 items-center">
-                          {subcategoriesCount > 0 && (
-                            <Badge variant="secondary" className="text-xs">
-                              {subcategoriesCount} subcategories
-                            </Badge>
-                          )}
-                          {itemsCount > 0 && (
-                            <Badge variant="outline" className="text-xs">
-                              {itemsCount} items
-                            </Badge>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
+              {getCurrentChildCategories().map((category: Category) => {
+                const subcategoriesCount = getSubcategoriesCount(category.id);
+                const itemsCount = getItemsCount(category.id);
+                
+                return (
+                  <Card
+                    key={category.id}
+                    className="cursor-pointer hover:shadow-lg transition-all duration-200 transform hover:scale-105 h-48 flex flex-col active:scale-95 active:bg-accent"
+                    onClick={() => navigateToCategory(category.id)}
+                  >
+                    <CardHeader className="pb-2 flex-1 flex items-center justify-center">
+                      <CardTitle className="text-xl text-center font-bold text-foreground">{category.name}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-1 flex flex-col items-center justify-center p-4">
+                      <div className="text-center text-muted-foreground text-sm mb-2">
+                        {category.description}
+                      </div>
+                      <div className="flex flex-col gap-1 items-center">
+                        {subcategoriesCount > 0 && (
+                          <Badge variant="secondary" className="text-xs">
+                            {subcategoriesCount} subcategories
+                          </Badge>
+                        )}
+                        {itemsCount > 0 && (
+                          <Badge variant="outline" className="text-xs">
+                            {itemsCount} items
+                          </Badge>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
-          ) : !selectedSubcategory ? (
-            // Subcategories and Items Grid
+          ) : (
+            // Current Level: Subcategories and Items Grid
             <div className="space-y-6">
               {/* Subcategories Section */}
-              {subcategories.length > 0 && (
+              {getCurrentChildCategories().length > 0 && (
                 <div>
                   <h3 className="text-lg font-semibold mb-4">Subcategories</h3>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    {subcategories.map((subcategory: Category) => {
+                    {getCurrentChildCategories().map((subcategory: Category) => {
                       const itemsCount = getItemsCount(subcategory.id);
                       
                       return (
                         <Card
                           key={subcategory.id}
                           className="cursor-pointer hover:shadow-lg transition-all duration-200 transform hover:scale-105 h-48 flex flex-col active:scale-95 active:bg-accent"
-                          onClick={() => setSelectedSubcategory(subcategory.id)}
+                          onClick={() => navigateToCategory(subcategory.id)}
                         >
                           <CardHeader className="pb-2 flex-1 flex items-center justify-center">
                             <CardTitle className="text-xl text-center font-bold text-foreground">{subcategory.name}</CardTitle>
@@ -286,95 +292,49 @@ export default function POSPage() {
                 </div>
               )}
 
-              {/* Direct Items in Category */}
+              {/* Direct Items in Current Category */}
               <div>
-                <h3 className="text-lg font-semibold mb-4">Items in this Category</h3>
+                <h3 className="text-lg font-semibold mb-4">Items in {getCategoryName(getCurrentCategoryId()!)}</h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                  {filteredItems
-                    .filter(item => item.categoryId === selectedCategory)
-                    .map((item) => {
-                      const isProduct = 'price' in item;
-                      const price = isProduct ? item.price : (item as Service).price;
-                      
-                      return (
-                        <Card
-                          key={item.id}
-                          className="cursor-pointer hover:shadow-lg transition-all duration-200 transform hover:scale-105 h-48 flex flex-col active:scale-95 active:bg-primary/10"
-                          onClick={() => addToCart(item, isProduct ? 'product' : 'service')}
-                        >
-                          <CardHeader className="pb-2 flex-1 flex items-center justify-center">
-                            <div className="flex items-center gap-2 mb-2">
-                              {isProduct ? (
-                                <Package className="h-5 w-5 text-primary" />
-                              ) : (
-                                <Wrench className="h-5 w-5 text-primary" />
-                              )}
-                            </div>
-                            <CardTitle className="text-lg text-center font-bold text-foreground">{item.name}</CardTitle>
-                          </CardHeader>
-                          <CardContent className="flex-1 flex flex-col items-center justify-center p-4">
-                            <div className="text-center text-muted-foreground text-sm mb-3 line-clamp-2">
-                              {item.description}
-                            </div>
-                            <Badge variant="outline" className="text-lg px-4 py-2 font-bold text-primary border-primary">
-                              ${price.toFixed(2)}
-                            </Badge>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
+                  {filteredItems.map((item) => {
+                    const isProduct = 'price' in item;
+                    const price = isProduct ? item.price : (item as Service).price;
+                    
+                    return (
+                      <Card
+                        key={item.id}
+                        className="cursor-pointer hover:shadow-lg transition-all duration-200 transform hover:scale-105 h-48 flex flex-col active:scale-95 active:bg-primary/10"
+                        onClick={() => addToCart(item, isProduct ? 'product' : 'service')}
+                      >
+                        <CardHeader className="pb-2 flex-1 flex items-center justify-center">
+                          <div className="flex items-center gap-2 mb-2">
+                            {isProduct ? (
+                              <Package className="h-5 w-5 text-primary" />
+                            ) : (
+                              <Wrench className="h-5 w-5 text-primary" />
+                            )}
+                          </div>
+                          <CardTitle className="text-lg text-center font-bold text-foreground">{item.name}</CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex-1 flex flex-col items-center justify-center p-4">
+                          <div className="text-center text-muted-foreground text-sm mb-3 line-clamp-2">
+                            {item.description}
+                          </div>
+                          <Badge variant="outline" className="text-lg px-4 py-2 font-bold text-primary border-primary">
+                            ${price.toFixed(2)}
+                          </Badge>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>
                 
-                {filteredItems.filter(item => item.categoryId === selectedCategory).length === 0 && (
+                {filteredItems.length === 0 && (
                   <div className="col-span-full text-center py-12 text-muted-foreground bg-muted rounded-lg">
-                    No direct items in this category
+                    No items found in this category
                   </div>
                 )}
               </div>
-            </div>
-          ) : (
-            // Items in Subcategory Grid
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Items in {getCategoryName(selectedSubcategory)}</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {filteredItems.map((item) => {
-                  const isProduct = 'price' in item;
-                  const price = isProduct ? item.price : (item as Service).price;
-                  
-                  return (
-                    <Card
-                      key={item.id}
-                      className="cursor-pointer hover:shadow-lg transition-all duration-200 transform hover:scale-105 h-48 flex flex-col active:scale-95 active:bg-primary/10"
-                      onClick={() => addToCart(item, isProduct ? 'product' : 'service')}
-                    >
-                      <CardHeader className="pb-2 flex-1 flex items-center justify-center">
-                        <div className="flex items-center gap-2 mb-2">
-                          {isProduct ? (
-                            <Package className="h-5 w-5 text-primary" />
-                          ) : (
-                            <Wrench className="h-5 w-5 text-primary" />
-                          )}
-                        </div>
-                        <CardTitle className="text-lg text-center font-bold text-foreground">{item.name}</CardTitle>
-                      </CardHeader>
-                      <CardContent className="flex-1 flex flex-col items-center justify-center p-4">
-                        <div className="text-center text-muted-foreground text-sm mb-3 line-clamp-2">
-                          {item.description}
-                        </div>
-                        <Badge variant="outline" className="text-lg px-4 py-2 font-bold text-primary border-primary">
-                          ${price.toFixed(2)}
-                        </Badge>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-              
-              {filteredItems.length === 0 && (
-                <div className="col-span-full text-center py-12 text-muted-foreground bg-muted rounded-lg">
-                  No items found in this subcategory
-                </div>
-              )}
             </div>
           )}
         </div>
