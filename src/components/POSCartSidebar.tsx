@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Save } from 'lucide-react';
 import { POSCartItem } from './POSCartItem';
 
 interface CartItem {
@@ -15,9 +15,10 @@ interface POSCartSidebarProps {
   cart: CartItem[];
   cartTotal: number;
   onCheckout: () => void;
+  onSaveOrder?: () => void;
 }
 
-export function POSCartSidebar({ cart, cartTotal, onCheckout }: POSCartSidebarProps) {
+export function POSCartSidebar({ cart, cartTotal, onCheckout, onSaveOrder }: POSCartSidebarProps) {
   return (
     <div className="w-80 bg-card border-l flex flex-col">
       <div className="p-4 border-b">
@@ -47,13 +48,26 @@ export function POSCartSidebar({ cart, cartTotal, onCheckout }: POSCartSidebarPr
           <span className="font-medium text-lg text-foreground">Total:</span>
           <span className="font-bold text-xl text-foreground">${cartTotal.toFixed(2)}</span>
         </div>
-        <Button
-          className="w-full h-14 text-lg font-bold"
-          disabled={cart.length === 0}
-          onClick={onCheckout}
-        >
-          Checkout
-        </Button>
+        <div className="space-y-2">
+          {onSaveOrder && (
+            <Button
+              variant="outline"
+              className="w-full h-12 text-sm font-medium"
+              disabled={cart.length === 0}
+              onClick={onSaveOrder}
+            >
+              <Save className="h-4 w-4 mr-2" />
+              Save Order
+            </Button>
+          )}
+          <Button
+            className="w-full h-14 text-lg font-bold"
+            disabled={cart.length === 0}
+            onClick={onCheckout}
+          >
+            Checkout
+          </Button>
+        </div>
       </div>
     </div>
   );

@@ -30,11 +30,19 @@ export function POSItemsGrid({
     return categoryPath.length > 0 ? categoryPath[categoryPath.length - 1] : null;
   };
 
+  // Check if we're viewing uncategorized items
+  const isViewingUncategorized = categoryPath.length === 1 && categoryPath[0] === 'uncategorized';
+
   // Get items count for a category
   const getItemsCount = (categoryId: string) => {
     const productCount = products.filter(p => p.categoryId === categoryId).length;
     const serviceCount = services.filter(s => s.categoryId === categoryId).length;
     return productCount + serviceCount;
+  };
+
+  // Get subcategories count for a category
+  const getSubcategoriesCount = (categoryId: string) => {
+    return getChildCategories(categoryId).length;
   };
 
   // Get category name by ID
@@ -45,11 +53,20 @@ export function POSItemsGrid({
   const currentCategoryId = getCurrentCategoryId();
   const currentChildCategories = currentCategoryId ? getChildCategories(currentCategoryId) : [];
   
-  // Get items for current category - include items that don't have a category assigned
-  const filteredItems = currentCategoryId ? [
-    ...products.filter((p: Product) => p.categoryId === currentCategoryId || !p.categoryId),
-    ...services.filter((s: Service) => s.categoryId === currentCategoryId || !s.categoryId)
-  ] : [];
+  // Get items for current category
+  const filteredItems = isViewingUncategorized ? [
+    // Show uncategorized items
+    ...products.filter((p: Product) => !p.categoryId),
+    ...services.filter((s: Service) => !s.categoryId)
+  ] : currentCategoryId ? [
+    // Show items in specific category
+    ...products.filter((p: Product) => p.categoryId === currentCategoryId),
+    ...services.filter((s: Service) => s.categoryId === currentCategoryId)
+  ] : [
+    // At root level, show items that don't have a category assigned
+    ...products.filter((p: Product) => !p.categoryId),
+    ...services.filter((s: Service) => !s.categoryId)
+  ];
 
   return (
     <div className="space-y-8">
@@ -60,6 +77,7 @@ export function POSItemsGrid({
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
             {currentChildCategories.map((subcategory: Category) => {
               const itemsCount = getItemsCount(subcategory.id);
+              const subcategoriesCount = getSubcategoriesCount(subcategory.id);
 
               return (
                 <Card
@@ -74,13 +92,18 @@ export function POSItemsGrid({
                     <div className="text-center text-muted-foreground text-sm mb-2 line-clamp-2">
                       {subcategory.description}
                     </div>
-                    {itemsCount > 0 && (
-                      <div className="flex justify-center">
+                    <div className="flex flex-col gap-1 items-center">
+                      {subcategoriesCount > 0 && (
+                        <Badge variant="secondary" className="text-xs">
+                          {subcategoriesCount} subcategories
+                        </Badge>
+                      )}
+                      {itemsCount > 0 && (
                         <Badge variant="outline" className="text-xs">
                           {itemsCount} items
                         </Badge>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               );
@@ -91,9 +114,12 @@ export function POSItemsGrid({
 
       {/* Direct Items in Current Category */}
       <div>
-        <h3 className="text-xl font-semibold mb-6">
-          Items in {getCategoryName(currentCategoryId!)}
-        </h3>
+        {(filteredItems.length > 0 || currentCategoryId || isViewingUncategorized || (!currentCategoryId && !isViewingUncategorized)) && (
+          <h3 className="text-xl font-semibold mb-6">
+            {isViewingUncategorized ? 'Uncategorized Items' : 
+             currentCategoryId ? `Items in ${getCategoryName(currentCategoryId!)}` : 'Uncategorized Items'}
+          </h3>
+        )}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
           {filteredItems.map((item) => {
             const isProduct = 'price' in item;
@@ -130,9 +156,21 @@ export function POSItemsGrid({
           })}
         </div>
 
-        {filteredItems.length === 0 && (
+        {filteredItems.length === 0 && currentCategoryId && !isViewingUncategorized && (
           <div className="col-span-full text-center py-12 text-muted-foreground bg-muted rounded-lg">
             No items found in this category
+          </div>
+        )}
+        
+        {isViewingUncategorized && filteredItems.length === 0 && (
+          <div className="col-span-full text-center py-12 text-muted-foreground bg-muted rounded-lg">
+            No uncategorized items found
+          </div>
+        )}
+        
+        {!currentCategoryId && !isViewingUncategorized && filteredItems.length === 0 && (
+          <div className="col-span-full text-center py-12 text-muted-foreground bg-muted rounded-lg">
+            No uncategorized items found
           </div>
         )}
       </div>

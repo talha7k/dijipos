@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, Customer } from '@/types';
-import { Users, LayoutGrid } from 'lucide-react';
+import { Users, LayoutGrid, FileText } from 'lucide-react';
 
 interface CartItem {
   id: string;
@@ -19,15 +19,17 @@ interface POSHeaderProps {
   selectedCustomer?: Customer | null;
   onTableSelect: () => void;
   onCustomerSelect: () => void;
+  onOrdersClick: () => void;
 }
 
-export function POSHeader({ 
-  cart, 
-  cartTotal, 
-  selectedTable, 
-  selectedCustomer, 
-  onTableSelect, 
-  onCustomerSelect 
+export function POSHeader({
+  cart,
+  cartTotal,
+  selectedTable,
+  selectedCustomer,
+  onTableSelect,
+  onCustomerSelect,
+  onOrdersClick
 }: POSHeaderProps) {
   return (
     <div className="bg-card shadow p-4 border-b">
@@ -61,6 +63,19 @@ export function POSHeader({
               <span>
                 {selectedCustomer ? selectedCustomer.name : 'Select Customer'}
               </span>
+            </Button>
+          </div>
+
+          {/* Orders Button */}
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onOrdersClick}
+              className="flex items-center space-x-2"
+            >
+              <FileText className="h-4 w-4" />
+              <span>Orders</span>
             </Button>
           </div>
 

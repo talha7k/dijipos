@@ -17,43 +17,46 @@ export function POSBreadcrumb({
   onNavigateToPath
 }: POSBreadcrumbProps) {
   const getCategoryName = (categoryId: string) => {
+    if (categoryId === 'uncategorized') {
+      return 'Uncategorized Items';
+    }
     return categories.find(c => c.id === categoryId)?.name || '';
   };
 
   return (
-    <div className="bg-card border-b p-4 flex items-center space-x-2">
+    <div className="bg-card border-b p-3 flex items-center space-x-2">
       {categoryPath.length > 0 ? (
         <>
           <Button
             variant="ghost"
             size="sm"
             onClick={onNavigateToRoot}
-            className="flex items-center space-x-1 h-10 px-4"
+            className="flex items-center space-x-1 h-8 px-3"
           >
-            <ArrowLeft className="h-5 w-5" />
-            <span className="font-medium">Categories</span>
+            <ArrowLeft className="h-4 w-4" />
+            <span className="font-medium text-sm">Categories</span>
           </Button>
           {categoryPath.map((categoryId, index) => (
             <React.Fragment key={categoryId}>
-              <span className="text-gray-400 text-lg">/</span>
+              <span className="text-gray-400 text-sm">/</span>
               {index === categoryPath.length - 1 ? (
-                <span className="font-medium text-lg">{getCategoryName(categoryId)}</span>
+                <span className="font-medium text-sm">{getCategoryName(categoryId)}</span>
               ) : (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => onNavigateToPath(categoryPath.slice(0, index + 1))}
-                  className="flex items-center space-x-1 h-10 px-4"
+                  className="flex items-center space-x-1 h-8 px-3"
                 >
-                  <ArrowLeft className="h-5 w-5" />
-                  <span className="font-medium">{getCategoryName(categoryId)}</span>
+                  <ArrowLeft className="h-4 w-4" />
+                  <span className="font-medium text-sm">{getCategoryName(categoryId)}</span>
                 </Button>
               )}
             </React.Fragment>
           ))}
         </>
       ) : (
-        <span className="font-medium text-lg">Categories</span>
+        <span className="font-medium text-sm">Categories</span>
       )}
     </div>
   );

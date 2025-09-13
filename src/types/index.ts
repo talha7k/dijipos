@@ -205,6 +205,52 @@ export interface Table {
   updatedAt: Date;
 }
 
+export interface OrderItem {
+  id: string;
+  type: 'product' | 'service';
+  productId?: string;
+  serviceId?: string;
+  name: string;
+  description?: string;
+  quantity: number;
+  unitPrice: number;
+  total: number;
+  notes?: string;
+}
+
+export interface Order {
+  id: string;
+  tenantId: string;
+  orderNumber: string;
+  items: OrderItem[];
+  subtotal: number;
+  taxRate: number;
+  taxAmount: number;
+  total: number;
+  status: 'open' | 'completed' | 'cancelled' | 'saved';
+  customerName?: string;
+  customerPhone?: string;
+  customerEmail?: string;
+  tableId?: string;
+  tableName?: string;
+  orderType: string; // dine-in, take-away, delivery
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface OrderPayment {
+  id: string;
+  tenantId: string;
+  orderId: string;
+  amount: number;
+  paymentMethod: string; // cash, card, online, etc.
+  paymentDate: Date;
+  reference?: string; // receipt number, transaction ID, etc.
+  notes?: string;
+  createdAt: Date;
+}
+
 export interface OrderType {
   id: string;
   name: string;
