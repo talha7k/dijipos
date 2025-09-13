@@ -31,7 +31,7 @@ export function POSCartSidebar({
   onItemClick
 }: POSCartSidebarProps) {
   return (
-    <div className="w-80 bg-card border-l flex flex-col h-full">
+    <div className="w-80 bg-card border-l flex flex-col h-screen fixed right-0 top-0">
 
       <div className="flex-1 overflow-auto p-4">
         {cart.length === 0 ? (

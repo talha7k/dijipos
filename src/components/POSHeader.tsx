@@ -43,8 +43,8 @@ export function POSHeader({
 }: POSHeaderProps) {
   return (
     <div className="bg-card shadow p-4 border-b">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-foreground">Point of Sale</h1>
+      <div className="flex justify-between items-center max-w-7xl mx-auto">
+        <h1 className="text-2xl font-bold text-foreground">POS</h1>
         <div className="flex items-center space-x-4">
           {/* Table Selection */}
           <div className="flex items-center space-x-2">

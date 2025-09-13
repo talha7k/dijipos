@@ -168,8 +168,23 @@ export default function POSPage() {
       setOrderTypes(orderTypesData);
 
       // Set default order type if none selected and order types exist
+      // Only set if there's no saved order type in localStorage
       if (orderTypesData.length > 0 && !selectedOrderType) {
-        setSelectedOrderType(orderTypesData[0]);
+        // Check if there's a saved order type in localStorage
+        const savedOrderTypeKey = tenantId ? `${tenantId}_posOrderType` : 'posOrderType';
+        const savedOrderType = localStorage.getItem(savedOrderTypeKey);
+        
+        if (savedOrderType) {
+          try {
+            const parsedOrderType = JSON.parse(savedOrderType);
+            setSelectedOrderType(parsedOrderType);
+          } catch (error) {
+            console.error('Error loading order type from localStorage:', error);
+            setSelectedOrderType(orderTypesData[0]);
+          }
+        } else {
+          setSelectedOrderType(orderTypesData[0]);
+        }
       }
 
     // Fetch printer settings
@@ -230,6 +245,15 @@ export default function POSPage() {
 
   // Calculate cart total
   const cartTotal = cart.reduce((sum: number, item: CartItem) => sum + item.total, 0);
+
+  // Debug cart persistence
+  useEffect(() => {
+    console.log('POSPage: Cart state changed:', cart);
+    console.log('POSPage: tenantId:', tenantId);
+    const cartKey = tenantId ? `${tenantId}_posCart` : 'posCart';
+    console.log('POSPage: Looking for cart with key:', cartKey);
+    console.log('POSPage: Cart in localStorage:', localStorage.getItem(cartKey));
+  }, [cart, tenantId]);
 
   // Add item to cart
   const addToCart = (item: Product | Service, type: 'product' | 'service') => {
@@ -502,7 +526,7 @@ export default function POSPage() {
   return (
     <div className="flex h-screen bg-background">
       {/* Content Area - takes remaining space */}
-      <div className="flex flex-col flex-1 min-w-0">
+      <div className="flex flex-col flex-1 min-w-0 pr-80">
         <POSHeader
           cart={cart}
           cartTotal={cartTotal}
@@ -520,7 +544,7 @@ export default function POSPage() {
         />
 
       {/* Main Content */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden h-full">
         {currentView === 'items' && (
           <>
             {/* Items Grid */}
