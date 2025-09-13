@@ -1,0 +1,51 @@
+"use client";
+
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Receipt, Moon, Sun, ChevronLeft, ChevronRight } from "lucide-react";
+import { SidebarProps } from "./sidebar-types";
+
+export function SidebarHeader({
+  isCollapsed = false,
+  onToggleCollapse,
+  onThemeToggle,
+  theme = "light",
+  className,
+}: Partial<SidebarProps>) {
+  return (
+    <div className="flex items-center justify-between p-4 border-b">
+      {!isCollapsed && (
+        <div className="flex items-center space-x-2">
+          <Receipt className="h-6 w-6" />
+          <span className="font-semibold">DijiInvoice</span>
+        </div>
+      )}
+      <div className="flex items-center space-1">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onThemeToggle}
+          className="h-8 w-8 p-0"
+        >
+          {theme === "light" ? (
+            <Moon className="h-4 w-4" />
+          ) : (
+            <Sun className="h-4 w-4" />
+          )}
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onToggleCollapse}
+          className="h-8 w-8 p-0 bg-input hover:bg-primary"
+        >
+          {isCollapsed ? (
+            <ChevronRight className="h-4 w-4" />
+          ) : (
+            <ChevronLeft className="h-4 w-4" />
+          )}
+        </Button>
+      </div>
+    </div>
+  );
+}
