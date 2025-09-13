@@ -191,7 +191,7 @@ const generateOrders = (count: number, customers: Omit<Customer, 'organizationId
         const orderId = generateId('ord');
         const status = getRandomElement(['open', 'completed', 'cancelled', 'saved'] as const);
 
-        const orderData: any = {
+        const orderData: Omit<Order, 'organizationId'> = {
             id: orderId,
             orderNumber: `ORD-${Date.now()}-${getRandomInt(100, 999)}`,
             items: orderItems,
@@ -205,7 +205,7 @@ const generateOrders = (count: number, customers: Omit<Customer, 'organizationId
             createdByName: 'System Generated',
             createdAt: new Date(),
             updatedAt: new Date(),
-        };
+        } as Omit<Order, 'organizationId'>;
 
         // Only add customer fields if customer exists
         if (customer) {
