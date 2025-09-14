@@ -77,13 +77,22 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
             <Printer className="h-5 w-5" />
             Printer Settings
           </div>
-          <Dialog open={printerDialogOpen} onOpenChange={setPrinterDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Settings className="h-4 w-4 mr-2" />
-                Configure Printer
-              </Button>
-            </DialogTrigger>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleTestPrint}
+            >
+              <Printer className="h-4 w-4 mr-2" />
+              Test Print
+            </Button>
+              <Dialog open={printerDialogOpen} onOpenChange={setPrinterDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Settings className="h-4 w-4 mr-2" />
+                    Configure Printer
+                  </Button>
+                </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Printer Settings</DialogTitle>
@@ -137,7 +146,8 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
                 </Button>
               </div>
             </DialogContent>
-          </Dialog>
+            </Dialog>
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent>
