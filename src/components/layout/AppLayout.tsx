@@ -4,7 +4,6 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSidebar } from '@/contexts/SidebarContext';
 import { CollapsibleSidebar } from '@/components/sidebar/collapsible-sidebar';
-import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { OrganizationManager } from '@/components/organization/OrganizationManager';
 
 interface AppLayoutProps {
@@ -18,8 +17,13 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   const isPublicRoute = pathname === '/login' || pathname === '/register' || pathname === '/verify-email' || pathname === '/reset-password' || pathname.startsWith('/auth');
 
-  if (isPublicRoute || pathname === '/select-organization') {
-    // For public pages and select-organization page, don't show sidebar
+  if (isPublicRoute) {
+    // For public pages, don't show sidebar
+    return <>{children}</>;
+  }
+
+  if (pathname === '/select-organization') {
+    // For select-organization page, don't show sidebar
     return <>{children}</>;
   }
 
@@ -29,20 +33,18 @@ export function AppLayout({ children }: AppLayoutProps) {
   const shouldShowOrganizationSelector = !loading && user && userOrganizations.length > 0 && !currentOrganization && !hasStoredOrganization;
 
   // For protected pages, check if organization is selected
+  if (shouldShowOrganizationSelector) {
+    // Show full-page organization manager when no organization is selected
+    return <OrganizationManager />;
+  }
+
+  // Show normal app layout with sidebar when organization is selected or loading
   return (
-    <ProtectedRoute>
-      {shouldShowOrganizationSelector ? (
-        // Show full-page organization manager when no organization is selected
-        <OrganizationManager />
-      ) : (
-        // Show normal app layout with sidebar when organization is selected or loading
-        <div className="flex h-screen bg-background">
-          <CollapsibleSidebar />
-          <main className={`flex-1 overflow-auto pt-16 md:pt-0 ${isCollapsed ? 'md:ml-16' : 'md:ml-64'}`}>
-            {children}
-          </main>
-        </div>
-      )}
-    </ProtectedRoute>
+    <div className="flex h-screen bg-background">
+      <CollapsibleSidebar />
+      <main className={`flex-1 overflow-auto pt-16 md:pt-0 ${isCollapsed ? 'md:ml-16' : 'md:ml-64'}`}>
+        {children}
+      </main>
+    </div>
   );
 }

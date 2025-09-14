@@ -5,6 +5,7 @@ import { AuthProvider } from '@/contexts/AuthContext'
 import { SidebarProvider } from '@/contexts/SidebarContext'
 import { ThemeProvider } from '@/contexts/ThemeContext'
 import { Toaster } from '@/components/ui/sonner'
+import { RouteGuard } from '@/components/auth/RouteGuard'
 import { AppLayout } from '@/components/layout/AppLayout'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -25,7 +26,11 @@ export default function RootLayout({
         <ThemeProvider>
           <AuthProvider>
             <SidebarProvider>
-              {children}
+              <RouteGuard>
+                <AppLayout>
+                  {children}
+                </AppLayout>
+              </RouteGuard>
               <Toaster />
             </SidebarProvider>
           </AuthProvider>
