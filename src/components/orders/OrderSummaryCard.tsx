@@ -3,6 +3,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Receipt,
   CheckCircle,
@@ -10,9 +11,14 @@ import {
   Clock,
   XCircle,
   Save,
+  Printer,
 } from "lucide-react";
 import { Order, OrderStatus, OrderPayment } from "@/types";
 import { OrderActionsDialog } from "./OrderStatusActionsDialog";
+import { ReceiptPrintDialog } from "@/components/ReceiptPrintDialog";
+import { useAuth } from "@/contexts/AuthContext";
+import { usePrinterSettingsData } from "@/hooks/organization/use-printer-settings-data";
+import { useReceiptTemplatesData } from "@/hooks/use-receipt-templates-data";
 
 interface OrderSummaryCardProps {
   order: Order;
@@ -46,6 +52,10 @@ export function OrderSummaryCard({
   onCompleteOrder,
   className = "",
 }: OrderSummaryCardProps) {
+  const { currentOrganization } = useAuth();
+  const { printerSettings } = usePrinterSettingsData(currentOrganization?.id || undefined);
+  const { receiptTemplates = [] } = useReceiptTemplatesData(currentOrganization?.id || '');
+
   // Calculate payment amounts for display, but use order.paid for status
   const calculatedTotalPaid =
     totalPaid !== undefined
@@ -146,6 +156,28 @@ export function OrderSummaryCard({
             </Badge>
           </div>
         </div>
+
+        {/* Print Button */}
+        {currentOrganization && (
+          <div className="flex justify-center">
+            <ReceiptPrintDialog
+              order={order}
+              organization={currentOrganization}
+              receiptTemplates={receiptTemplates}
+              printerSettings={printerSettings || null}
+            >
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full"
+              >
+                <Printer className="h-4 w-4 mr-2" />
+                Print Receipt
+              </Button>
+            </ReceiptPrintDialog>
+          </div>
+        )}
+
         <div onClick={onClick ? () => onClick(order) : undefined}className="space-y-2 cursor-pointer">
           <div className="flex-row justify-center text-center items-center bg-muted/70 rounded-lg py-2 my-4">
             <span className="text-center">Order Number:</span>

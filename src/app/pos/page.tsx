@@ -11,9 +11,7 @@ import { useOrdersData } from '@/hooks/orders/use-order-data';
 import { useOrderTypesData } from '@/hooks/orders/use-order-types-data';
 import { usePaymentTypesData } from '@/hooks/use-payment-types-data';
 import { useOrderPayments } from '@/hooks/orders/use-order-payments';
-import { useReceiptTemplatesData } from '@/hooks/use-receipt-templates-data';
-import { useOrganizationData } from '@/hooks/organization/use-organization-data';
-import { usePrinterSettingsData } from '@/hooks/organization/use-printer-settings-data';
+
 
 import { POSLayout, POSLeftColumn, POSHeaderContainer, POSMainContent, POSRightColumn } from './components/POSLayout';
 import { POSHeader } from '@/components/orders/POSHeader';
@@ -37,10 +35,7 @@ export default function SimplifiedPOSPage() {
   const { orders = [], loading: ordersLoading } = useOrdersData(organizationId || '');
   const { paymentTypes = [], loading: paymentTypesLoading } = usePaymentTypesData(organizationId || '');
   const { orderPayments, loading: orderPaymentsLoading } = useOrderPayments({ organizationId: organizationId || undefined });
-  const { receiptTemplates = [], loading: receiptTemplatesLoading } = useReceiptTemplatesData(organizationId || '');
   const { orderTypes = [] } = useOrderTypesData(organizationId || '');
-  const { organization, loading: organizationLoading } = useOrganizationData(organizationId || undefined);
-  const { printerSettings, loading: printerSettingsLoading } = usePrinterSettingsData(organizationId || undefined);
 
   // Use the custom POS logic hook
   const {
@@ -78,7 +73,6 @@ export default function SimplifiedPOSPage() {
     handleNavigateToRoot,
     handleNavigateToPath,
      handlePayOrder,
-     createTempOrderForPayment,
      updateCartItem,
      removeFromCart,
      setShowOrderConfirmationDialog,
@@ -90,8 +84,7 @@ export default function SimplifiedPOSPage() {
   // Loading state
   const loading = productsLoading || servicesLoading || categoriesLoading ||
                   tablesLoading || customersLoading || ordersLoading ||
-                  paymentTypesLoading || orderPaymentsLoading || receiptTemplatesLoading ||
-                  organizationLoading || printerSettingsLoading;
+                  paymentTypesLoading || orderPaymentsLoading;
 
   if (loading) {
     return (
@@ -164,10 +157,6 @@ export default function SimplifiedPOSPage() {
           onSaveOrder={handleSaveOrder}
           onPrintReceipt={() => {}}
           onClearCart={handleClearCart}
-          organization={organization}
-          printerSettings={printerSettings}
-          receiptTemplates={receiptTemplates}
-          createTempOrderForPayment={createTempOrderForPayment}
         />
       </POSRightColumn>
 

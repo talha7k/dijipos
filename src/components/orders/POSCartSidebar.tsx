@@ -2,7 +2,11 @@ import { Button } from '@/components/ui/button';
 import { ShoppingCart, Save, Printer, Trash2 } from 'lucide-react';
 import { POSCartItem } from './POSCartItem';
 import { ReceiptPrintDialog } from '@/components/ReceiptPrintDialog';
-import { Organization, ReceiptTemplate, PrinterSettings, Order } from '@/types';
+import { Order, OrderStatus, ItemType } from '@/types';
+import { useAuth } from '@/contexts/AuthContext';
+import { useOrderContext } from '@/contexts/OrderContext';
+import { usePrinterSettingsData } from '@/hooks/organization/use-printer-settings-data';
+import { useReceiptTemplatesData } from '@/hooks/use-receipt-templates-data';
 
 interface CartItem {
   id: string;
@@ -21,10 +25,6 @@ interface POSCartSidebarProps {
   onPrintReceipt?: () => void;
   onClearCart?: () => void;
   onItemClick?: (item: CartItem) => void;
-  organization?: Organization | null;
-  printerSettings?: PrinterSettings | null;
-  receiptTemplates?: ReceiptTemplate[];
-  createTempOrderForPayment?: () => Order | null;
 }
 
 export function POSCartSidebar({
@@ -34,12 +34,48 @@ export function POSCartSidebar({
   onSaveOrder,
   onPrintReceipt,
   onClearCart,
-  onItemClick,
-  organization,
-  printerSettings,
-  receiptTemplates = [],
-  createTempOrderForPayment
+  onItemClick
 }: POSCartSidebarProps) {
+  const { currentOrganization } = useAuth();
+  const { selectedTable, selectedCustomer, selectedOrderType, organizationId } = useOrderContext();
+  const { printerSettings } = usePrinterSettingsData(currentOrganization?.id || undefined);
+  const { receiptTemplates = [] } = useReceiptTemplatesData(currentOrganization?.id || '');
+
+  const createTempOrderForPayment = () => {
+    if (cart.length === 0) return null;
+
+    return {
+      id: 'temp-checkout',
+      organizationId: organizationId || '',
+      orderNumber: `TEMP-${Date.now()}`,
+      items: cart.map(item => ({
+        id: `${item.type}-${item.id}`,
+        type: item.type === 'product' ? ItemType.PRODUCT : ItemType.SERVICE,
+        productId: item.type === 'product' ? item.id : undefined,
+        serviceId: item.type === 'service' ? item.id : undefined,
+        name: item.name,
+        quantity: item.quantity,
+        unitPrice: item.price,
+        total: item.total,
+      })),
+      subtotal: cartTotal,
+      taxRate: 0,
+      taxAmount: 0,
+      total: cartTotal,
+      status: OrderStatus.OPEN,
+      paid: false,
+      orderType: selectedOrderType?.name || 'dine-in',
+      customerName: selectedCustomer?.name,
+      customerPhone: selectedCustomer?.phone,
+      customerEmail: selectedCustomer?.email,
+      tableId: selectedTable?.id,
+      tableName: selectedTable?.name,
+      createdById: 'temp-user',
+      createdByName: 'POS User',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+  };
   return (
     <div className="w-full min-w-80 bg-card border-l flex flex-col h-full">
 
@@ -82,13 +118,13 @@ export function POSCartSidebar({
               <Save className="h-5 w-5" />
             </Button>
           )}
-           {onPrintReceipt && createTempOrderForPayment && (
-             <ReceiptPrintDialog
-               order={createTempOrderForPayment() || {} as Order}
-               organization={organization || null}
-               receiptTemplates={receiptTemplates}
-               printerSettings={printerSettings || null}
-             >
+            {onPrintReceipt && (
+              <ReceiptPrintDialog
+                order={createTempOrderForPayment() || {} as Order}
+                organization={currentOrganization || null}
+                receiptTemplates={receiptTemplates}
+                printerSettings={printerSettings || null}
+              >
                <Button
                  variant="outline"
                  className="flex-1 h-12 text-sm font-medium"
