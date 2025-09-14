@@ -43,7 +43,7 @@ export interface ThermalPrinterConfig {
   baudRate?: number;
   usbVendorId?: number;
   usbProductId?: number;
-  connectionType?: 'serial' | 'usb';
+  connectionType?: 'serial' | 'usb' | 'browser';
 }
 
 export interface ReceiptData {
@@ -100,7 +100,7 @@ export class ThermalPrinterService {
     width: 48,
     characterSet: 'korea',
     baudRate: 9600,
-    connectionType: 'serial',
+    connectionType: 'browser', // Default to browser native printing
   };
 
   /**
@@ -379,17 +379,16 @@ export class ThermalPrinterService {
    * Print a receipt
    */
   async printReceipt(receiptData: ReceiptData): Promise<void> {
-    if (!this.port && !this.usbDevice) {
-      throw new Error('Printer not connected. Please connect to a thermal printer first.');
-    }
-
     try {
-      const receiptContent = this.createReceiptComponent(receiptData);
-      const data = await render(receiptContent);
-
-      if (this.config.connectionType === 'usb' && this.usbDevice) {
+      if (this.config.connectionType === 'browser') {
+        await this.printViaBrowser(receiptData);
+      } else if (this.config.connectionType === 'usb' && this.usbDevice) {
+        const receiptContent = this.createReceiptComponent(receiptData);
+        const data = await render(receiptContent);
         await this.printViaUSB(data);
-      } else if (this.port) {
+      } else if (this.config.connectionType === 'serial' && this.port) {
+        const receiptContent = this.createReceiptComponent(receiptData);
+        const data = await render(receiptContent);
         await this.printViaSerial(data);
       } else {
         throw new Error('No valid printer connection available');
@@ -448,6 +447,138 @@ export class ThermalPrinterService {
   }
 
   /**
+   * Print via browser native print dialog
+   */
+  private async printViaBrowser(receiptData: ReceiptData): Promise<void> {
+    return new Promise((resolve, reject) => {
+      try {
+        // Create a new window for printing
+        const printWindow = window.open('', '_blank', 'width=400,height=600');
+
+        if (!printWindow) {
+          reject(new Error('Unable to open print window. Please allow popups for this site.'));
+          return;
+        }
+
+        // Generate HTML content for thermal printer format
+        const htmlContent = this.generatePrintHTML(receiptData);
+
+        printWindow.document.write(htmlContent);
+        printWindow.document.close();
+
+        // Wait for content to load, then print
+        printWindow.onload = () => {
+          printWindow.print();
+
+          // Close the window after printing (with a delay to allow print dialog)
+          setTimeout(() => {
+            printWindow.close();
+            resolve();
+          }, 1000);
+        };
+
+        // Handle print window close without printing
+        const checkClosed = setInterval(() => {
+          if (printWindow.closed) {
+            clearInterval(checkClosed);
+            resolve(); // Consider it successful even if window was closed
+          }
+        }, 500);
+
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  /**
+   * Generate HTML content optimized for thermal printers
+   */
+  private generatePrintHTML({ order, organization }: ReceiptData): string {
+    const items = order.items.map(item => `
+      <div class="item">
+        <span class="item-name">${item.name} (x${item.quantity})</span>
+        <span class="item-price">${item.total.toFixed(2)}</span>
+      </div>
+    `).join('');
+
+    return `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Receipt</title>
+          <style>
+            @media print {
+              @page {
+                size: 80mm auto;
+                margin: 0;
+              }
+              body {
+                width: 80mm;
+                font-family: 'Courier New', monospace;
+                font-size: 12px;
+                line-height: 1.2;
+                margin: 0;
+                padding: 5mm;
+              }
+            }
+
+            body {
+              font-family: 'Courier New', monospace;
+              font-size: 12px;
+              line-height: 1.2;
+              margin: 0;
+              padding: 10px;
+              max-width: 80mm;
+            }
+
+            .center { text-align: center; }
+            .bold { font-weight: bold; }
+            .line { border-top: 1px dashed #000; margin: 5px 0; }
+            .item { display: flex; justify-content: space-between; margin: 2px 0; }
+            .item-name { flex: 1; }
+            .item-price { margin-left: 10px; }
+            .total-line { font-weight: bold; border-top: 1px solid #000; padding-top: 5px; }
+          </style>
+        </head>
+        <body>
+          <div class="center bold">${organization?.name || ''}</div>
+          <div class="center">${organization?.address || ''}</div>
+          <div class="center">Tel: ${organization?.phone || ''}</div>
+          ${organization?.vatNumber ? `<div class="center">VAT: ${organization.vatNumber}</div>` : ''}
+          <div class="line"></div>
+
+          <div class="center">Order #: ${order.orderNumber}</div>
+          <div class="center">Date: ${new Date(order.createdAt).toLocaleDateString()}</div>
+          ${order.tableName ? `<div class="center">Table: ${order.tableName}</div>` : ''}
+          ${order.customerName ? `<div class="center">Customer: ${order.customerName}</div>` : ''}
+          <div class="line"></div>
+
+          ${items}
+
+          <div class="line"></div>
+          <div class="item">
+            <span>Subtotal:</span>
+            <span>${order.subtotal.toFixed(2)}</span>
+          </div>
+          <div class="item">
+            <span>VAT (${order.taxRate}%):</span>
+            <span>${order.taxAmount.toFixed(2)}</span>
+          </div>
+          <div class="item total-line">
+            <span>TOTAL:</span>
+            <span>${order.total.toFixed(2)}</span>
+          </div>
+          <div class="line"></div>
+
+          <div class="center">Payment: Cash</div>
+          <div class="center">Thank you for your business!</div>
+        </body>
+      </html>
+    `;
+  }
+
+  /**
    * Create the receipt React component
    */
   private createReceiptComponent({ order, organization }: ReceiptData) {
@@ -495,29 +626,88 @@ export class ThermalPrinterService {
    * Print test receipt
    */
   async printTest(): Promise<void> {
-    if (!this.isConnected()) {
-      throw new Error('Printer not connected. Please connect to a thermal printer first.');
-    }
-
     try {
-      const testContent = (
-        <Printer type={this.config.type || 'epson'} width={this.config.width || 48} debug={false}>
-          <Text align="center" bold>Test Receipt</Text>
-          <Line />
-          <Text>This is a test print</Text>
-          <Text>Printer is working correctly!</Text>
-          <Text>Connection: {this.config.connectionType?.toUpperCase() || 'SERIAL'}</Text>
-          <Line />
-          <Text align="center">Thank you</Text>
-          <Cut />
-        </Printer>
-      );
-
-      const data = await render(testContent);
-
-      if (this.config.connectionType === 'usb' && this.usbDevice) {
+      if (this.config.connectionType === 'browser') {
+        // Create test receipt data
+        const testReceiptData: ReceiptData = {
+          order: {
+            id: 'test-order',
+            organizationId: 'test-org',
+            orderNumber: 'TEST-001',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            items: [
+              {
+                id: 'test-item-1',
+                type: 'product' as any,
+                name: 'Test Item 1',
+                quantity: 2,
+                unitPrice: 5.00,
+                total: 10.00
+              },
+              {
+                id: 'test-item-2',
+                type: 'product' as any,
+                name: 'Test Item 2',
+                quantity: 1,
+                unitPrice: 15.00,
+                total: 15.00
+              }
+            ],
+            subtotal: 25.00,
+            taxRate: 10,
+            taxAmount: 2.50,
+            total: 27.50,
+            status: 'completed' as any,
+            paid: true,
+            orderType: 'dine-in',
+            createdById: 'test-user',
+            createdByName: 'Test User',
+            tableName: 'Test Table',
+            customerName: 'Test Customer'
+          },
+          organization: {
+            id: 'test-org',
+            name: 'Test Restaurant',
+            email: 'test@example.com',
+            address: '123 Test Street',
+            phone: '555-0123',
+            vatNumber: 'TEST123',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            subscriptionStatus: 'active' as any
+          }
+        };
+        await this.printViaBrowser(testReceiptData);
+      } else if (this.config.connectionType === 'usb' && this.usbDevice) {
+        const testContent = (
+          <Printer type={this.config.type || 'epson'} width={this.config.width || 48} debug={false}>
+            <Text align="center" bold>Test Receipt</Text>
+            <Line />
+            <Text>This is a test print</Text>
+            <Text>Printer is working correctly!</Text>
+            <Text>Connection: USB</Text>
+            <Line />
+            <Text align="center">Thank you</Text>
+            <Cut />
+          </Printer>
+        );
+        const data = await render(testContent);
         await this.printViaUSB(data);
-      } else if (this.port) {
+      } else if (this.config.connectionType === 'serial' && this.port) {
+        const testContent = (
+          <Printer type={this.config.type || 'epson'} width={this.config.width || 48} debug={false}>
+            <Text align="center" bold>Test Receipt</Text>
+            <Line />
+            <Text>This is a test print</Text>
+            <Text>Printer is working correctly!</Text>
+            <Text>Connection: SERIAL</Text>
+            <Line />
+            <Text align="center">Thank you</Text>
+            <Cut />
+          </Printer>
+        );
+        const data = await render(testContent);
         await this.printViaSerial(data);
       } else {
         throw new Error('No valid printer connection available');

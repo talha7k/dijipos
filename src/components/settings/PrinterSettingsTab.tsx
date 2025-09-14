@@ -36,6 +36,7 @@ interface ThermalPrinterService {
   isWebUSBSupported(): boolean;
   getConnectedUSBPrinters(): Promise<ConnectedPrinter[]>;
   requestUSBPrinterConnection(): Promise<ConnectedPrinter | null>;
+  config: any; // Access to printer configuration
 }
 
 interface PrinterSettingsTabProps {
@@ -298,31 +299,119 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
               <span className="font-medium">{printerSettings.baudRate || 9600}</span>
             </div>
 
-            {/* Connected Printers Section */}
-            <div className="border-t pt-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-medium">Connected Printers:</span>
-                <div className="flex gap-2">
+            {/* Print Method Selection */}
+            <div className="border-t pt-4 mb-4">
+              <h4 className="text-sm font-medium mb-3">Print Method:</h4>
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="radio"
+                    id="browser-print"
+                    name="print-method"
+                    checked={(thermalPrinter as unknown as { config: { connectionType?: string } }).config?.connectionType === 'browser'}
+                    onChange={() => {
+                      (thermalPrinter as unknown as { config: { connectionType?: string } }).config.connectionType = 'browser';
+                      toast.success('Switched to browser printing');
+                    }}
+                  />
+                  <Label htmlFor="browser-print" className="text-sm">
+                    <strong>Browser Print (Recommended)</strong> - Use your browser's native print dialog.
+                    Works with any printer including thermal printers.
+                  </Label>
+                </div>
+
+                {isWebSerialSupported && (
+                  <div className="flex items-center space-x-2">
+                  <input
+                    type="radio"
+                    id="serial-print"
+                    name="print-method"
+                    checked={(thermalPrinter as unknown as { config: { connectionType?: string } }).config?.connectionType === 'serial'}
+                    onChange={() => {
+                      (thermalPrinter as unknown as { config: { connectionType?: string } }).config.connectionType = 'serial';
+                      toast.success('Switched to serial printing');
+                    }}
+                  />
+                    <Label htmlFor="serial-print" className="text-sm">
+                      Serial Printer - Direct connection to thermal printers via serial/USB
+                    </Label>
+                  </div>
+                )}
+
+                {isWebUSBSupported && (
+                  <div className="flex items-center space-x-2">
+                  <input
+                    type="radio"
+                    id="usb-print"
+                    name="print-method"
+                    checked={(thermalPrinter as unknown as { config: { connectionType?: string } }).config?.connectionType === 'usb'}
+                    onChange={() => {
+                      (thermalPrinter as unknown as { config: { connectionType?: string } }).config.connectionType = 'usb';
+                      toast.success('Switched to USB printing');
+                    }}
+                  />
+                    <Label htmlFor="usb-print" className="text-sm">
+                      USB Printer - Direct USB connection to thermal printers
+                    </Label>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Browser Print Section */}
+            {(thermalPrinter as any).config?.connectionType === 'browser' && (
+              <div className="border-t pt-4 mb-4">
+                <h4 className="text-sm font-medium mb-2">Browser Printing:</h4>
+                <div className="bg-blue-50 border border-blue-200 rounded p-3">
+                  <div className="flex items-center gap-2 text-blue-700 mb-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span className="text-sm font-medium">Ready to Print</span>
+                  </div>
+                  <p className="text-sm text-blue-600 mb-3">
+                    Browser printing is active. Receipts will open in a print dialog optimized for thermal printers.
+                  </p>
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={fetchConnectedPrinters}
-                    disabled={!isWebSerialSupported}
+                    onClick={handleTestPrint}
+                    className="w-full"
                   >
-                    <RefreshCw className="h-4 w-4 mr-1" />
-                    Refresh Serial
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={fetchConnectedUSBPrinters}
-                    disabled={!isWebUSBSupported}
-                  >
-                    <RefreshCw className="h-4 w-4 mr-1" />
-                    Refresh USB
+                    <Printer className="h-4 w-4 mr-2" />
+                    Test Browser Print
                   </Button>
                 </div>
               </div>
+            )}
+
+            {/* Connected Printers Section */}
+            {((thermalPrinter as any).config?.connectionType === 'serial' ||
+              (thermalPrinter as any).config?.connectionType === 'usb') && (
+              <div className="border-t pt-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-medium">Connected Printers:</span>
+                  <div className="flex gap-2">
+                    {(thermalPrinter as any).config?.connectionType === 'serial' && isWebSerialSupported && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={fetchConnectedPrinters}
+                      >
+                        <RefreshCw className="h-4 w-4 mr-1" />
+                        Refresh Serial
+                      </Button>
+                    )}
+                    {(thermalPrinter as any).config?.connectionType === 'usb' && isWebUSBSupported && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={fetchConnectedUSBPrinters}
+                      >
+                        <RefreshCw className="h-4 w-4 mr-1" />
+                        Refresh USB
+                      </Button>
+                    )}
+                  </div>
+                </div>
 
               {/* API Support Warnings */}
               {(!isWebSerialSupported && !isWebUSBSupported) && (
@@ -463,6 +552,7 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
                 </div>
               )}
             </div>
+            )}
           </div>
         ) : (
           <p className="text-muted-foreground">Printer settings not configured.</p>
