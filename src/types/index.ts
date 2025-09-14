@@ -401,7 +401,16 @@ export interface PrinterSettings {
   updatedAt: Date;
 }
 
-// Character set constants
+// Add new enums for thermal printer configuration
+export enum PaperWidth {
+  MM_48 = 48,
+  MM_58 = 58,
+  MM_80 = 80,
+  MM_82 = 82,
+  MM_112 = 112
+}
+
+// Character set constants - already exists but keeping for reference
 export const CHARACTER_SETS = {
   MULTILINGUAL: 'multilingual',
   KOREA: 'korea',

@@ -1,14 +1,12 @@
 import React from 'react';
 import { Printer, Text, Line, Cut, Row, PrinterType } from 'react-thermal-printer';
 import QRCode from 'qrcode';
-import { Order, Organization, ItemType, OrderStatus, SubscriptionStatus, CHARACTER_SETS } from '@/types';
-
-
+import { Order, Organization, ItemType, OrderStatus, SubscriptionStatus, CHARACTER_SETS, FontSize, PaperWidth, CharacterSet } from '@/types';
 
 export interface ThermalPrinterConfig {
-  paperWidth?: number;
-  fontSize?: string;
-  characterSet?: string;
+  paperWidth?: PaperWidth;
+  fontSize?: FontSize;
+  characterSet?: CharacterSet;
 }
 
 export interface ReceiptData {
@@ -16,12 +14,10 @@ export interface ReceiptData {
   organization: Organization | null;
 }
 
-
-
 export class ThermalPrinterService {
   private config: ThermalPrinterConfig = {
-    paperWidth: 80,
-    fontSize: 'medium',
+    paperWidth: PaperWidth.MM_80,
+    fontSize: FontSize.MEDIUM,
     characterSet: CHARACTER_SETS.MULTILINGUAL,
   };
 
@@ -107,9 +103,9 @@ export class ThermalPrinterService {
    */
   private getFontSize(): number {
     switch (this.config.fontSize) {
-      case 'small': return 10;
-      case 'large': return 14;
-      case 'medium':
+      case FontSize.SMALL: return 10;
+      case FontSize.LARGE: return 14;
+      case FontSize.MEDIUM:
       default: return 12;
     }
   }
@@ -155,7 +151,7 @@ export class ThermalPrinterService {
 
     // Get font size from config
     const fontSize = this.getFontSize();
-    const paperWidth = this.config.paperWidth || 80;
+    const paperWidth = this.config.paperWidth ?? PaperWidth.MM_80;
 
     const items = order.items.map(item => `
       <div class="item">
