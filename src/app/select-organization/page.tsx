@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@/contexts/AuthContext';
-import { OrganizationManager } from '@/components/OrganizationManager';
+import { OrganizationManager } from '@/components/organization/OrganizationManager';
 
 export default function SelectOrganizationPage() {
   const { loading } = useAuth();

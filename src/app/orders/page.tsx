@@ -16,7 +16,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { ArrowLeft, Receipt, CreditCard, Users, LayoutGrid, ShoppingBag, Calendar, DollarSign, User, CheckCircle, Save, Settings } from 'lucide-react';
 import { toast } from 'sonner';
-import { OrderStatusSelectionDialog } from '@/components/OrderStatusSelectionDialog';
+import { OrderActionsDialog } from '@/components/orders/OrderStatusActionsDialog';
+
 
 function OrdersContent() {
   const { user, organizationId } = useAuth();
@@ -28,8 +29,8 @@ function OrdersContent() {
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [showOrderStatusDialog, setShowOrderStatusDialog] = useState(false);
-  const [orderForStatusUpdate, setOrderForStatusUpdate] = useState<Order | null>(null);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+  
 
   useEffect(() => {
     if (!organizationId) return;
@@ -135,30 +136,59 @@ function OrdersContent() {
     }
   };
 
-  const handleOrderStatusSelect = async (status: OrderStatus) => {
-    if (!orderForStatusUpdate || !organizationId) return;
+  const markOrderAsPaid = async (orderId: string) => {
+    if (!organizationId) return;
 
     try {
-      const orderRef = doc(db, 'organizations', organizationId, 'orders', orderForStatusUpdate.id);
+      const orderRef = doc(
+        db,
+        "organizations",
+        organizationId,
+        "orders",
+        orderId
+      );
       await updateDoc(orderRef, {
-        status,
+        paid: true,
         updatedAt: serverTimestamp(),
       });
 
-      const statusMessages = {
-        [OrderStatus.OPEN]: 'Order reopened successfully!',
-        [OrderStatus.COMPLETED]: 'Order completed successfully!',
-        [OrderStatus.PREPARING]: 'Order marked as preparing successfully!',
-        [OrderStatus.CANCELLED]: 'Order cancelled successfully!',
-        [OrderStatus.ON_HOLD]: 'Order placed on hold successfully!',
-      };
-
-      toast.success(statusMessages[status] || 'Order status updated successfully!');
-      setShowOrderStatusDialog(false);
-      setOrderForStatusUpdate(null);
+       toast.success("Order marked as paid successfully!");
+       setSelectedOrder(null);
     } catch (error) {
-      console.error('Error updating order status:', error);
-      toast.error('Failed to update order status. Please try again.');
+      console.error("Error marking order as paid:", error);
+      toast.error("Failed to mark order as paid");
+    }
+  };
+
+  const completeOrder = async (orderId: string) => {
+    if (!organizationId || !selectedOrder) return;
+
+    // Check if order is paid before completing
+    if (!selectedOrder.paid) {
+      toast.error(
+        "Cannot complete an unpaid order. Please process payment first."
+      );
+      return;
+    }
+
+    try {
+      const orderRef = doc(
+        db,
+        "organizations",
+        organizationId,
+        "orders",
+        orderId
+      );
+      await updateDoc(orderRef, {
+        status: OrderStatus.COMPLETED,
+        updatedAt: serverTimestamp(),
+      });
+
+       toast.success("Order completed successfully!");
+       setSelectedOrder(null);
+    } catch (error) {
+      console.error("Error completing order:", error);
+      toast.error("Failed to complete order");
     }
   };
 
@@ -439,17 +469,22 @@ function OrdersContent() {
 </DialogContent>
                        </Dialog>
                        
-                       <Button
-                         variant="outline"
-                         size="sm"
-                         onClick={() => {
-                           setOrderForStatusUpdate(order);
-                           setShowOrderStatusDialog(true);
-                         }}
-                       >
-                         <Settings className="h-4 w-4 mr-1" />
-                         Status
-                       </Button>
+<OrderActionsDialog
+                          order={order}
+                          payments={payments[order.id] || []}
+                          updatingStatus={updatingStatus}
+                          onMarkAsPaid={markOrderAsPaid}
+                          onCompleteOrder={completeOrder}
+                          onUpdateStatus={updateOrderStatus}
+                        >
+                          <Button
+                            variant="outline"
+                            size="sm"
+                          >
+                            <Settings className="h-4 w-4 mr-1" />
+                            Status
+                          </Button>
+                        </OrderActionsDialog>
                      </div>
                    </TableCell>
                   </TableRow>
@@ -470,16 +505,7 @@ function OrdersContent() {
         </CardContent>
       </Card>
       
-      {/* Order Status Selection Dialog */}
-      {orderForStatusUpdate && (
-        <OrderStatusSelectionDialog
-          open={showOrderStatusDialog}
-          onOpenChange={setShowOrderStatusDialog}
-          onStatusSelect={handleOrderStatusSelect}
-          currentStatus={orderForStatusUpdate.status}
-          isPaid={orderForStatusUpdate.paid}
-        />
-      )}
+      
     </div>
   );
 }

@@ -13,12 +13,12 @@ import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Package, Wrench, Search, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { AddProductDialog } from '@/components/AddProductDialog';
-import { AddServiceDialog } from '@/components/AddServiceDialog';
-import { AddCategoryDialog } from '@/components/AddCategoryDialog';
-import { ProductList } from '@/components/ProductList';
-import { ServiceList } from '@/components/ServiceList';
-import { CategoryTree } from '@/components/CategoryTree';
+import { AddProductDialog } from '@/components/products_services/AddProductDialog';
+import { AddServiceDialog } from '@/components/products_services/AddServiceDialog';
+import { AddCategoryDialog } from '@/components/products_services/AddCategoryDialog';
+import { ProductList } from '@/components/products_services/ProductList';
+import { ServiceList } from '@/components/products_services/ServiceList';
+import { CategoryTree } from '@/components/products_services/CategoryTree';
 
 export default function ProductsServicesPage() {
   const { organizationId } = useAuth();

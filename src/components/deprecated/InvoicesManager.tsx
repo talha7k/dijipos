@@ -11,7 +11,7 @@ import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from 
 import { InvoiceList } from './InvoiceList';
 import { InvoiceDetails } from './InvoiceDetails';
 import { InvoicePrint } from './InvoicePrint';
-import InvoiceForm from '@/components/InvoiceForm';
+import InvoiceForm from '@/components/invoices_quotes/InvoiceForm';
 import { Receipt } from 'lucide-react';
 
 export function InvoicesManager() {

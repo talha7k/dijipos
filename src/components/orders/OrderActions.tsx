@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Save } from "lucide-react";
 import { Order, OrderStatus, OrderPayment } from "@/types";
-import { OrderActionsDialog } from "./OrderActionsDialog";
+import { OrderActionsDialog } from "./OrderStatusActionsDialog";
 
 interface OrderActionsProps {
   order: Order;

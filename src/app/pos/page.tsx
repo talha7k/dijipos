@@ -21,18 +21,18 @@ import { useOrganizationData } from '@/hooks/use-organization-data';
 import { useOrderPayments } from '@/hooks/use-order-payments';
 import { Product, Service, Category, Table, Customer, Order, OrderPayment, PaymentType, OrderType, ReceiptTemplate, PrinterSettings, Organization } from '@/types';
 
-import { POSBreadcrumb } from '@/components/POSBreadcrumb';
-import { POSCategoriesGrid } from '@/components/POSCategoriesGrid';
-import { POSItemsGrid } from '@/components/POSItemsGrid';
-import { POSCartSidebar } from '@/components/POSCartSidebar';
-import { POSTableGrid } from '@/components/POSTableGrid';
-import { POSCustomerGrid } from '@/components/POSCustomerGrid';
-import { POSOrderGrid } from '@/components/POSOrderGrid';
-import { POSPaymentGrid } from '@/components/POSPaymentGrid';
-import { OrderTypeSelectionDialog } from '@/components/OrderTypeSelectionDialog';
+import { POSBreadcrumb } from '@/components/orders/POSBreadcrumb';
+import { POSCategoriesGrid } from '@/components/orders/POSCategoriesGrid';
+import { POSItemsGrid } from '@/components/orders/POSItemsGrid';
+import { POSCartSidebar } from '@/components/orders/POSCartSidebar';
+import { POSTableGrid } from '@/components/orders/POSTableGrid';
+import { POSCustomerGrid } from '@/components/orders/POSCustomerGrid';
+import { POSOrderGrid } from '@/components/orders/POSOrderGrid';
+import { POSPaymentGrid } from '@/components/orders/POSPaymentGrid';
+import { OrderTypeSelectionDialog } from '@/components/orders/OrderTypeSelectionDialog';
 import { ReceiptPrintDialog } from '@/components/ReceiptPrintDialog';
-import { CartItemModal } from '@/components/CartItemModal';
-import { OrderStatusSelectionDialog } from '@/components/OrderStatusSelectionDialog';
+import { CartItemModal } from '@/components/orders/CartItemModal';
+
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import { ShoppingCart, LayoutGrid, Users, ShoppingBag, FileText } from 'lucide-react';
@@ -76,8 +76,7 @@ export default function POSPage() {
   const [pendingOrderToReopen, setPendingOrderToReopen] = useState<Order | null>(null);
   const [showOrderConfirmationDialog, setShowOrderConfirmationDialog] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [showOrderStatusDialog, setShowOrderStatusDialog] = useState(false);
-  const [orderForStatusUpdate, setOrderForStatusUpdate] = useState<Order | null>(null);
+  
   
   // Use new hooks for data management
   const { products, loading: productsLoading } = useProductsData(organizationId || undefined);
@@ -355,46 +354,17 @@ export default function POSPage() {
       // Sync order paid status based on payments
       await syncOrderPaidStatus(orderToUpdate.id, orderToUpdate.total);
 
-      // Show order status selection dialog
-      setOrderForStatusUpdate(orderToUpdate);
-      setShowOrderStatusDialog(true);
+      // Navigate back to orders view to show order actions
+      setCurrentView('orders');
+      setSelectedOrder(orderToUpdate);
+      toast.success('Payment processed successfully! You can now complete the order.');
     } catch (error) {
       console.error('Error processing payment:', error);
       toast.error('Failed to process payment. Please try again.');
     }
   };
 
-  const handleOrderStatusSelect = async (status: OrderStatus) => {
-    if (!orderForStatusUpdate || !organizationId) return;
-
-    try {
-      const orderRef = doc(db, 'organizations', organizationId, 'orders', orderForStatusUpdate.id);
-      await updateDoc(orderRef, {
-        status,
-        updatedAt: new Date(),
-      });
-
-      const statusMessages = {
-        [OrderStatus.OPEN]: 'Order reopened successfully!',
-        [OrderStatus.COMPLETED]: 'Order completed successfully!',
-        [OrderStatus.PREPARING]: 'Order marked as preparing successfully!',
-        [OrderStatus.CANCELLED]: 'Order cancelled successfully!',
-        [OrderStatus.ON_HOLD]: 'Order placed on hold successfully!',
-      };
-
-      toast.success(statusMessages[status] || 'Order status updated successfully!');
-      
-      // Clear state and return to items view
-      setSelectedOrder(null);
-      setOrderForStatusUpdate(null);
-      setCurrentView('items');
-      // Clear all POS data after successful payment (cart, table, customer, etc.)
-      clearPOSData();
-    } catch (error) {
-      console.error('Error updating order status:', error);
-      toast.error('Failed to update order status. Please try again.');
-    }
-  };
+  
 
 
   const handleSaveOrder = async () => {
@@ -964,16 +934,7 @@ onPayOrder={() => {
         }}
       />
 
-      {/* Order Status Selection Dialog */}
-      {orderForStatusUpdate && (
-        <OrderStatusSelectionDialog
-          open={showOrderStatusDialog}
-          onOpenChange={setShowOrderStatusDialog}
-          onStatusSelect={handleOrderStatusSelect}
-          currentStatus={orderForStatusUpdate.status}
-          isPaid={orderForStatusUpdate.paid}
-        />
-      )}
+      
     </div>
   );
 }

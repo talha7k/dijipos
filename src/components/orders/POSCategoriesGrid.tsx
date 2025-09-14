@@ -1,6 +1,6 @@
 import { Category } from '@/types';
 import { Product, Service } from '@/types';
-import { CategoryCard } from '@/components/CategoryCard';
+import { CategoryCard } from '@/components/products_services/CategoryCard';
 
 interface POSCategoriesGridProps {
   categories: Category[];

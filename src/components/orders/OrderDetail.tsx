@@ -23,7 +23,7 @@ export function OrderDetail({
   const isActuallyPaid = order.paid;
 
   return (
-    <div className="h-screen flex flex-col bg-background">
+    <div className="h-screen flex flex-col bg-background pb-15">
       <div className="flex-shrink-0 p-4 border-b">
         <div className="flex items-center gap-4">
           <Button variant="ghost" onClick={onBack}>
