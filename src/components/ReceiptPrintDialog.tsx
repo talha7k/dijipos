@@ -78,10 +78,10 @@ export function ReceiptPrintDialog({
           tableName: order.tableName || '',
           customerName: order.customerName || '',
           items: order.items,
-          subtotal: order.subtotal.toFixed(2),
-          vatRate: order.taxRate,
-          vatAmount: order.taxAmount.toFixed(2),
-          total: order.total.toFixed(2),
+           subtotal: (order.subtotal || 0).toFixed(2),
+           vatRate: order.taxRate || 0,
+           vatAmount: (order.taxAmount || 0).toFixed(2),
+           total: (order.total || 0).toFixed(2),
           paymentMethod: 'Cash' // Default, can be enhanced later
         };
 
@@ -152,10 +152,10 @@ export function ReceiptPrintDialog({
         tableName: order.tableName || '',
         customerName: order.customerName || '',
         items: order.items,
-        subtotal: order.subtotal.toFixed(2),
-        vatRate: order.taxRate,
-        vatAmount: order.taxAmount.toFixed(2),
-        total: order.total.toFixed(2),
+        subtotal: (order.subtotal || 0).toFixed(2),
+         vatRate: order.taxRate || 0,
+         vatAmount: (order.taxAmount || 0).toFixed(2),
+         total: (order.total || 0).toFixed(2),
         paymentMethod: 'Cash'
       };
 
@@ -233,7 +233,7 @@ export function ReceiptPrintDialog({
                 </div>
                 <div>
                   <span className="font-medium">Total:</span>
-                  <span className="ml-2 font-bold">${order.total.toFixed(2)}</span>
+                  <span className="ml-2 font-bold">${(order.total || 0).toFixed(2)}</span>
                 </div>
                 <div>
                   <span className="font-medium">Status:</span>

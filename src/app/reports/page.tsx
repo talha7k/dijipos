@@ -105,6 +105,8 @@ export default function ReportsPage() {
   }, [organizationId]);
 
   const calculateReportData = useCallback(() => {
+    if (!dateRange.startDate || !dateRange.endDate) return;
+
     const startDate = new Date(dateRange.startDate);
     const endDate = new Date(dateRange.endDate);
     endDate.setHours(23, 59, 59, 999); // Include end date
@@ -136,14 +138,14 @@ export default function ReportsPage() {
     const profitMargin = totalSales > 0 ? (netProfit / totalSales) * 100 : 0;
     
     setReportData({
-      totalSales,
-      totalPurchases,
-      totalVATCollected,
-      totalVATPaid,
-      netVATPayable,
-      grossProfit,
-      netProfit,
-      profitMargin
+      totalSales: totalSales || 0,
+      totalPurchases: totalPurchases || 0,
+      totalVATCollected: totalVATCollected || 0,
+      totalVATPaid: totalVATPaid || 0,
+      netVATPayable: netVATPayable || 0,
+      grossProfit: grossProfit || 0,
+      netProfit: netProfit || 0,
+      profitMargin: profitMargin || 0
     });
   }, [invoices, dateRange]);
 

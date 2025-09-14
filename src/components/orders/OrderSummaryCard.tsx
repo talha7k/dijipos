@@ -185,39 +185,39 @@ export function OrderSummaryCard({
             <span className="font-bold">{order.orderNumber}</span>
           </div>
 
-          <div className="flex justify-between">
-            <span>Order Total:</span>
-            <span className="font-bold">${order.total.toFixed(2)}</span>
-          </div>
+           <div className="flex justify-between">
+             <span>Order Total:</span>
+             <span className="font-bold">${(order.total || 0).toFixed(2)}</span>
+           </div>
 
           {totalPaid !== undefined && (
             <div className="flex justify-between">
               <span>Total Paid:</span>
-              <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                ${totalPaid.toFixed(2)}
-              </span>
+               <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                 ${(totalPaid || 0).toFixed(2)}
+               </span>
             </div>
           )}
 
           {remainingAmount !== undefined && (
             <div className="flex justify-between border-t pt-2">
               <span className="font-bold">Remaining:</span>
-              <span
-                className={`font-bold ${
-                  remainingAmount > 0 ? "text-destructive" : "text-emerald-600 dark:text-emerald-400"
-                }`}
-              >
-                ${remainingAmount.toFixed(2)}
-              </span>
+               <span
+                 className={`font-bold ${
+                   remainingAmount > 0 ? "text-destructive" : "text-emerald-600 dark:text-emerald-400"
+                 }`}
+               >
+                 ${(remainingAmount || 0).toFixed(2)}
+               </span>
             </div>
           )}
 
           {changeDue !== undefined && changeDue > 0 && (
             <div className="flex justify-between">
               <span className="font-bold text-emerald-600 dark:text-emerald-400">Change Due:</span>
-              <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                ${changeDue.toFixed(2)}
-              </span>
+               <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                 ${(changeDue || 0).toFixed(2)}
+               </span>
             </div>
           )}
 
