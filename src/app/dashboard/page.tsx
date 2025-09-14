@@ -8,12 +8,12 @@ import Link from 'next/link';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
-import { useQuotesData } from '@/hooks/use-quotes-data';
-import { useInvoicesData } from '@/hooks/use-invoices-data';
+import { useQuotesData } from '@/hooks/invoices_quotes/use-quotes-data';
+import { useInvoicesData } from '@/hooks/invoices_quotes/use-invoices-data';
 import { usePaymentsData } from '@/hooks/use-payments-data';
-import { useProductsData } from '@/hooks/use-products-data';
-import { useServicesData } from '@/hooks/use-services-data';
-import { useTablesData } from '@/hooks/use-tables-data';
+import { useProductsData } from '@/hooks/products_services/use-products-data';
+import { useServicesData } from '@/hooks/products_services/use-services-data';
+import { useTablesData } from '@/hooks/tables/use-tables-data';
 import { TableStatus } from '@/types';
 
 function DashboardContent() {

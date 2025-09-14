@@ -5,7 +5,7 @@ import { collection, query, onSnapshot, addDoc, doc, deleteDoc } from 'firebase/
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Table as TableType } from '@/types';
-import { useTablesData } from '@/hooks/use-tables-data';
+import { useTablesData } from '@/hooks/tables/use-tables-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

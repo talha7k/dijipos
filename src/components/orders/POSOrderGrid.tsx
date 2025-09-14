@@ -1,8 +1,8 @@
 import { Order, OrderPayment, OrderStatus } from "@/types";
 import { OrderList } from "@/components/orders/OrderList";
 import { OrderDetailView } from "@/components/orders/OrderDetailView";
-import { useOrderManagement } from "@/hooks/use-order-management";
-import { useOrderSelection } from "@/hooks/use-order-selection";
+import { useOrderManagement } from "@/hooks/orders/use-order-management";
+import { useOrderSelection } from "@/hooks/orders/use-order-selection";
 import { useOrderContext } from "@/contexts/OrderContext";
 
 interface POSOrderGridProps {

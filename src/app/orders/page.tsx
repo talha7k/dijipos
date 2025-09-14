@@ -5,8 +5,8 @@ import { collection, query, onSnapshot, getDoc, doc, updateDoc, serverTimestamp 
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Order, OrderPayment, PaymentType, Organization, User as AppUser, OrderStatus } from '@/types';
-import { useOrdersData } from '@/hooks/use-orders-data';
-import { useUsersData } from '@/hooks/use-users-data';
+import { useOrdersData } from '@/hooks/orders/use-orders-data';
+import { useUsersData } from '@/hooks/organization/use-users-data';
 import { usePaymentTypesData } from '@/hooks/use-payment-types-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

@@ -1,15 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 
 import { usePaymentTypesData } from '@/hooks/use-payment-types-data';
 import { useReceiptTemplatesData } from '@/hooks/use-receipt-templates-data';
-import { useOrderTypesData } from '@/hooks/use-order-types-data';
-import { useTablesData } from '@/hooks/use-tables-data';
-import { VATSettings, PrinterSettings, FontSize, PrinterType } from '@/types';
+import { useOrderTypesData } from '@/hooks/orders/use-order-types-data';
+import { useTablesData } from '@/hooks/tables/use-tables-data';
+import { useSettingsData } from '@/hooks/organization/use-settings-data';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SettingsHeader } from '@/components/settings/SettingsHeader';
@@ -26,85 +24,15 @@ function SettingsContent() {
   const { receiptTemplates, loading: receiptTemplatesLoading } = useReceiptTemplatesData(organizationId || undefined);
   const { orderTypes, loading: orderTypesLoading } = useOrderTypesData(organizationId || undefined);
   const { tables, loading: tablesLoading } = useTablesData(organizationId || undefined);
-  const [vatSettings, setVatSettings] = useState<VATSettings | null>(null);
-  const [printerSettings, setPrinterSettings] = useState<PrinterSettings | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { 
+    vatSettings, 
+    printerSettings, 
+    loading: settingsLoading,
+    handleVatSettingsUpdate,
+    handlePrinterSettingsUpdate 
+  } = useSettingsData(organizationId || undefined);
 
-  useEffect(() => {
-    if (!organizationId) return;
-
-    // Fetch VAT settings
-    const fetchVatSettings = async () => {
-      const vatDoc = await getDoc(doc(db, 'organizations', organizationId, 'settings', 'vat'));
-      if (vatDoc.exists()) {
-        const vatData = vatDoc.data() as VATSettings;
-        setVatSettings({
-          ...vatData,
-          createdAt: vatData.createdAt,
-          updatedAt: vatData.updatedAt,
-        });
-      } else {
-        // Create default VAT settings
-        const defaultVat: VATSettings = {
-          id: 'vat',
-          rate: 15,
-          isEnabled: true,
-          organizationId,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        };
-        await setDoc(doc(db, 'organizations', organizationId, 'settings', 'vat'), defaultVat);
-        setVatSettings(defaultVat);
-      }
-    };
-
-    // Fetch printer settings
-    const fetchPrinterSettings = async () => {
-      const printerDoc = await getDoc(doc(db, 'organizations', organizationId, 'settings', 'printer'));
-      if (printerDoc.exists()) {
-        const printerData = printerDoc.data() as PrinterSettings;
-        setPrinterSettings({
-          ...printerData,
-          createdAt: printerData.createdAt,
-          updatedAt: printerData.updatedAt,
-        });
-      } else {
-        // Create default printer settings
-        const defaultPrinter: PrinterSettings = {
-          id: 'printer',
-          paperWidth: 58,
-          fontSize: FontSize.MEDIUM,
-          characterPerLine: 32,
-          autoCut: true,
-          printerType: PrinterType.EPSON,
-          characterSet: 'korea',
-          baudRate: 9600,
-          organizationId,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        };
-        await setDoc(doc(db, 'organizations', organizationId, 'settings', 'printer'), defaultPrinter);
-        setPrinterSettings(defaultPrinter);
-      }
-    };
-
-    const loadData = async () => {
-      await Promise.all([fetchVatSettings(), fetchPrinterSettings()]);
-      setLoading(false);
-    };
-
-    loadData();
-  }, [organizationId]);
-
-  const handleVatSettingsUpdate = (settings: VATSettings) => {
-    setVatSettings(settings);
-  };
-
-  const handlePrinterSettingsUpdate = (settings: PrinterSettings) => {
-    setPrinterSettings(settings);
-  };
-
-  if (loading || paymentTypesLoading || receiptTemplatesLoading || orderTypesLoading || tablesLoading) {
+  if (settingsLoading || paymentTypesLoading || receiptTemplatesLoading || orderTypesLoading || tablesLoading) {
     return <div className="flex justify-center items-center h-64">Loading...</div>;
   }
 

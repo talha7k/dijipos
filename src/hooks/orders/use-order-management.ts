@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Order, OrderPayment, OrderStatus, TableStatus } from "@/types";
 import { serverTimestamp } from "firebase/firestore";
 import { toast } from "sonner";
-import { useOrderActions } from "./use-orders-data";
-import { useTableActions } from "./use-tables-data";
+import { useOrderActions } from "@/hooks/orders/use-orders-data";
+import { useTableActions } from "@/hooks/tables/use-tables-data";
 
 export function useOrderManagement(organizationId: string | undefined) {
   const [updatingStatus, setUpdatingStatus] = useState(false);

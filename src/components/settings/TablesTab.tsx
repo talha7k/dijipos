@@ -1,10 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { collection, addDoc, deleteDoc, doc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { useAuth } from '@/contexts/AuthContext';
 import { Table } from '@/types';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,9 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Table as TableIcon, Plus, Trash2, Users, MoreHorizontal } from 'lucide-react';
-import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { TableActionsDialog } from '@/components/tables/TableActionsDialog';
+import { useTableManagement } from '@/hooks/tables/use-table-management';
 
 interface TablesTabProps {
   tables: Table[];
@@ -24,58 +21,18 @@ interface TablesTabProps {
 
 export function TablesTab({ tables, onRefresh }: TablesTabProps) {
   const { organizationId } = useAuth();
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [deleteTableId, setDeleteTableId] = useState<string | null>(null);
-  const [newTable, setNewTable] = useState({
-    name: '',
-    capacity: 1,
-    status: 'available' as 'available' | 'occupied' | 'reserved' | 'maintenance'
-  });
-
-  const handleAddTable = async () => {
-    if (!organizationId || !newTable.name.trim()) return;
-
-    await addDoc(collection(db, 'organizations', organizationId, 'tables'), {
-      ...newTable,
-      organizationId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-
-    setNewTable({ name: '', capacity: 1, status: 'available' });
-    setDialogOpen(false);
-    onRefresh?.();
-    toast.success('Table added successfully');
-  };
-
-  const handleDeleteTable = (id: string) => {
-    setDeleteTableId(id);
-  };
-
-  const confirmDeleteTable = async () => {
-    if (!organizationId || !deleteTableId) return;
-
-    try {
-      await deleteDoc(doc(db, 'organizations', organizationId, 'tables', deleteTableId));
-      toast.success('Table deleted successfully');
-      onRefresh?.();
-    } catch (error) {
-      console.error('Error deleting table:', error);
-      toast.error('Failed to delete table');
-    } finally {
-      setDeleteTableId(null);
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'available': return 'bg-green-100 text-green-800';
-      case 'occupied': return 'bg-red-100 text-red-800';
-      case 'reserved': return 'bg-yellow-100 text-yellow-800';
-      case 'maintenance': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
+  const {
+    dialogOpen,
+    setDialogOpen,
+    deleteTableId,
+    setDeleteTableId,
+    newTable,
+    setNewTable,
+    handleAddTable,
+    handleDeleteTable,
+    confirmDeleteTable,
+    getStatusColor,
+  } = useTableManagement(organizationId || undefined);
 
   return (
     <Card>
@@ -136,9 +93,9 @@ export function TablesTab({ tables, onRefresh }: TablesTabProps) {
                     </SelectContent>
                   </Select>
                 </div>
-                <Button onClick={handleAddTable} className="w-full">
-                  Add Table
-                </Button>
+<Button onClick={() => handleAddTable(onRefresh)} className="w-full">
+                    Add Table
+                  </Button>
               </div>
             </DialogContent>
           </Dialog>
@@ -194,7 +151,7 @@ export function TablesTab({ tables, onRefresh }: TablesTabProps) {
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel onClick={() => setDeleteTableId(null)}>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={confirmDeleteTable} className="bg-destructive text-destructive-foreground">
+                        <AlertDialogAction onClick={() => confirmDeleteTable(onRefresh)} className="bg-destructive text-destructive-foreground">
                           Delete
                         </AlertDialogAction>
                       </AlertDialogFooter>

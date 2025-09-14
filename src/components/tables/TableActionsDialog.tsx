@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { Table, Order, TableStatus } from '@/types';
-import { useTablesData, useTableActions } from '@/hooks/use-tables-data';
-import { useOrdersData } from '@/hooks/use-orders-data';
+import { useTablesData } from '@/hooks/tables/use-tables-data';
+import { useOrdersData } from '@/hooks/orders/use-orders-data';
+import { useTableManagement } from '@/hooks/tables/use-table-management';
 import {
   Dialog,
   DialogContent,
@@ -24,8 +25,8 @@ interface TableActionsDialogProps {
 
 export function TableActionsDialog({ table, children }: TableActionsDialogProps) {
   const { tables } = useTablesData('');
-  const { updateTable } = useTableActions('');
   const { orders } = useOrdersData('');
+  const { releaseTable, moveOrderToTable, updating } = useTableManagement('');
   const [isOpen, setIsOpen] = useState(false);
   const [selectedTableId, setSelectedTableId] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -47,9 +48,10 @@ export function TableActionsDialog({ table, children }: TableActionsDialogProps)
     
     setIsProcessing(true);
     try {
-      // Update table status to available
-      await updateTable(table.id, { status: TableStatus.AVAILABLE });
-      setIsOpen(false);
+      const success = await releaseTable(table.id, tableOrder);
+      if (success) {
+        setIsOpen(false);
+      }
     } catch (error) {
       console.error('Error releasing table:', error);
     } finally {
@@ -62,14 +64,14 @@ export function TableActionsDialog({ table, children }: TableActionsDialogProps)
     
     setIsProcessing(true);
     try {
-      // Release current table
-      await updateTable(table.id, { status: TableStatus.AVAILABLE });
-      
-      // Assign order to new table and mark it as occupied
-      await updateTable(selectedTableId, { status: TableStatus.OCCUPIED });
-      
-      setIsOpen(false);
-      setSelectedTableId('');
+      const targetTable = tables.find(t => t.id === selectedTableId);
+      if (targetTable) {
+        const success = await moveOrderToTable(tableOrder, table.id, selectedTableId, targetTable.name);
+        if (success) {
+          setIsOpen(false);
+          setSelectedTableId('');
+        }
+      }
     } catch (error) {
       console.error('Error moving order:', error);
     } finally {

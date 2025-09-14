@@ -16,7 +16,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useInvoicesData, useInvoiceActions } from '@/hooks/use-invoices-data';
+import { useInvoicesData, useInvoiceActions } from '@/hooks/invoices_quotes/use-invoices-data';
 
 export default function InvoicesPage() {
   const { user, organizationId, currentOrganization } = useAuth();
