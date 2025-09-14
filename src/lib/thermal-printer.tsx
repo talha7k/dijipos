@@ -142,7 +142,7 @@ export class ThermalPrinterService {
    * Check if WebUSB API is supported
    */
   isWebUSBSupported(): boolean {
-    return 'usb' in navigator && !!(navigator as unknown as NavigatorWithWebUSB).usb;
+    return 'usb' in navigator && !!(navigator as unknown as { usb?: unknown }).usb;
   }
 
   /**
@@ -154,7 +154,7 @@ export class ThermalPrinterService {
         return [];
       }
 
-      const usbNavigator = navigator as unknown as NavigatorWithWebUSB;
+      const usbNavigator = navigator as unknown as { usb: { getDevices(): Promise<USBDeviceBasic[]>; requestDevice(options?: { filters?: Array<{ vendorId?: number; productId?: number }> }): Promise<USBDeviceBasic> } };
       const devices = await usbNavigator.usb.getDevices();
       return devices
         .filter((device) => this.isThermalPrinter(device))
@@ -182,7 +182,7 @@ export class ThermalPrinterService {
         throw new Error('WebUSB API not supported in this browser');
       }
 
-      const usbNavigator = navigator as unknown as NavigatorWithWebUSB;
+      const usbNavigator = navigator as unknown as { usb: { getDevices(): Promise<USBDeviceBasic[]>; requestDevice(options?: { filters?: Array<{ vendorId?: number; productId?: number }> }): Promise<USBDeviceBasic> } };
       const device = await usbNavigator.usb.requestDevice({
         filters: this.getUSBDeviceFilters()
       });

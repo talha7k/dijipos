@@ -315,7 +315,7 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
                     }}
                   />
                   <Label htmlFor="browser-print" className="text-sm">
-                    <strong>Browser Print (Recommended)</strong> - Use your browser's native print dialog.
+                    <strong>Browser Print (Recommended)</strong> - Use your browser&apos;s native print dialog.
                     Works with any printer including thermal printers.
                   </Label>
                 </div>
@@ -359,7 +359,7 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
             </div>
 
             {/* Browser Print Section */}
-            {(thermalPrinter as any).config?.connectionType === 'browser' && (
+            {(thermalPrinter as unknown as { config: { connectionType?: string } }).config?.connectionType === 'browser' && (
               <div className="border-t pt-4 mb-4">
                 <h4 className="text-sm font-medium mb-2">Browser Printing:</h4>
                 <div className="bg-blue-50 border border-blue-200 rounded p-3">
@@ -384,13 +384,13 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
             )}
 
             {/* Connected Printers Section */}
-            {((thermalPrinter as any).config?.connectionType === 'serial' ||
-              (thermalPrinter as any).config?.connectionType === 'usb') && (
+            {((thermalPrinter as unknown as { config: { connectionType?: string } }).config?.connectionType === 'serial' ||
+              (thermalPrinter as unknown as { config: { connectionType?: string } }).config?.connectionType === 'usb') && (
               <div className="border-t pt-4">
                 <div className="flex items-center justify-between mb-2">
                   <span className="font-medium">Connected Printers:</span>
                   <div className="flex gap-2">
-                    {(thermalPrinter as any).config?.connectionType === 'serial' && isWebSerialSupported && (
+                    {(thermalPrinter as unknown as { config: { connectionType?: string } }).config?.connectionType === 'serial' && isWebSerialSupported && (
                       <Button
                         size="sm"
                         variant="outline"
@@ -400,7 +400,7 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
                         Refresh Serial
                       </Button>
                     )}
-                    {(thermalPrinter as any).config?.connectionType === 'usb' && isWebUSBSupported && (
+                    {(thermalPrinter as unknown as { config: { connectionType?: string } }).config?.connectionType === 'usb' && isWebUSBSupported && (
                       <Button
                         size="sm"
                         variant="outline"
