@@ -216,7 +216,7 @@ const generateOrderItems = (products: Omit<Product, 'organizationId'>[], service
     return items;
 };
 
-const generateOrders = (count: number, customers: Omit<Customer, 'organizationId'>[], products: Omit<Product, 'organizationId'>[], services: Omit<Service, 'organizationId'>[], orderTypes: Omit<OrderType, 'organizationId'>[], paymentTypes: Omit<PaymentType, 'organizationId'>[]): { orders: Omit<Order, 'organizationId'>[], orderPayments: OrderPayment[] } => {
+const generateOrders = (count: number, customers: Omit<Customer, 'organizationId'>[], products: Omit<Product, 'organizationId'>[], services: Omit<Service, 'organizationId'>[], orderTypes: Omit<OrderType, 'organizationId'>[], paymentTypes: Omit<PaymentType, 'organizationId'>[], organizationId: string): { orders: Omit<Order, 'organizationId'>[], orderPayments: OrderPayment[] } => {
     const orders: Omit<Order, 'organizationId'>[] = [];
     const orderPayments: OrderPayment[] = [];
 
@@ -262,7 +262,8 @@ const generateOrders = (count: number, customers: Omit<Customer, 'organizationId
         orders.push(orderData as Omit<Order, 'organizationId'>);
 
         // Generate payments for completed orders
-        if (status === 'completed') {
+        console.log(`Order ${orderId} has status: ${status}`);
+        if (status === OrderStatus.COMPLETED) {
             const paymentCount = getRandomInt(1, 2);
             let remainingTotal = total;
             for (let p = 0; p < paymentCount; p++) {
@@ -272,7 +273,7 @@ const generateOrders = (count: number, customers: Omit<Customer, 'organizationId
                 orderPayments.push({
                     id: generateId('ord-pay'),
                     orderId: orderId,
-                    organizationId: 'temp-org-id', // Will be replaced with actual orgId
+                    organizationId: organizationId,
                     amount: paymentAmount,
                      paymentMethod: getRandomElement(paymentTypes).name,
                     paymentDate: new Date(),
@@ -351,7 +352,7 @@ const generateQuotes = (count: number, customers: Omit<Customer, 'organizationId
     });
 };
 
-const generateInvoices = (count: number, customers: Omit<Customer, 'organizationId'>[], suppliers: Omit<Supplier, 'organizationId'>[], products: Omit<Product, 'organizationId'>[], services: Omit<Service, 'organizationId'>[], paymentTypes: Omit<PaymentType, 'organizationId'>[]): { invoices: Omit<Invoice, 'organizationId'>[], payments: Payment[] } => {
+const generateInvoices = (count: number, customers: Omit<Customer, 'organizationId'>[], suppliers: Omit<Supplier, 'organizationId'>[], products: Omit<Product, 'organizationId'>[], services: Omit<Service, 'organizationId'>[], paymentTypes: Omit<PaymentType, 'organizationId'>[], organizationId: string): { invoices: Omit<Invoice, 'organizationId'>[], payments: Payment[] } => {
     const allInvoices: Omit<Invoice, 'organizationId'>[] = [];
     const allPayments: Payment[] = [];
 
@@ -367,7 +368,8 @@ const generateInvoices = (count: number, customers: Omit<Customer, 'organization
 
         // Generate payments based on invoice status
         const payments: Payment[] = [];
-        if (status === 'paid') {
+        console.log(`Invoice ${invoiceId} has status: ${status}`);
+        if (status === InvoiceStatus.PAID) {
             const paymentCount = getRandomInt(1, 2);
             let remainingTotal = total;
             for (let p = 0; p < paymentCount; p++) {
@@ -377,7 +379,7 @@ const generateInvoices = (count: number, customers: Omit<Customer, 'organization
                 const payment = {
                     id: generateId('pay'),
                     invoiceId: invoiceId,
-                    organizationId: 'temp-org-id', // Will be replaced with actual orgId
+                    organizationId: organizationId,
                     amount: paymentAmount,
                     paymentDate: new Date(),
                      paymentMethod: getRandomElement(paymentTypes).name,
@@ -387,11 +389,11 @@ const generateInvoices = (count: number, customers: Omit<Customer, 'organization
                 payments.push(payment);
                 allPayments.push(payment);
             }
-        } else if (status === 'sent' && Math.random() > 0.6) { // 40% chance of a partial payment on a sent invoice
+        } else if (status === InvoiceStatus.SENT && Math.random() > 0.6) { // 40% chance of a partial payment on a sent invoice
             const payment = {
                 id: generateId('pay'),
                 invoiceId: invoiceId,
-                organizationId: 'temp-org-id', // Will be replaced with actual orgId
+                organizationId: organizationId,
                 amount: getRandomFloat(0.1, 0.5, 2) * total,
                 paymentDate: new Date(),
                 paymentMethod: 'Bank Transfer',
@@ -454,6 +456,10 @@ export async function generateSampleData(organizationId: string) {
   console.log(`Starting sample data generation for organization: ${organizationId}`);
   const batch = writeBatch(db);
 
+  // Debug counters
+  let totalPayments = 0;
+  let totalOrderPayments = 0;
+
   // Define how much data to generate
   const COUNTS = {
     PRODUCTS: 60,
@@ -493,8 +499,12 @@ export async function generateSampleData(organizationId: string) {
 
     // 2. Generate dependent data
     const quotes = generateQuotes(COUNTS.QUOTES, customers, products, services);
-    const { invoices, payments } = generateInvoices(COUNTS.INVOICES, customers, suppliers, products, services, paymentTypes);
-    const { orders, orderPayments } = generateOrders(COUNTS.ORDERS, customers, products, services, orderTypes, paymentTypes);
+    const { invoices, payments } = generateInvoices(COUNTS.INVOICES, customers, suppliers, products, services, paymentTypes, organizationId);
+    const { orders, orderPayments } = generateOrders(COUNTS.ORDERS, customers, products, services, orderTypes, paymentTypes, organizationId);
+
+    totalPayments = payments.length;
+    totalOrderPayments = orderPayments.length;
+    console.log(`Generated ${totalPayments} invoice payments and ${totalOrderPayments} order payments`);
     
     // 3. Prepare data for batch write
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -515,6 +525,9 @@ export async function generateSampleData(organizationId: string) {
 
     for (const [name, data] of Object.entries(collections)) {
         console.log(`-> Preparing ${data.length} documents for '${name}' collection...`);
+        if (name === 'payments' || name === 'orderPayments') {
+            console.log(`   Payments data:`, data.slice(0, 3)); // Show first 3 payments for debugging
+        }
         for (const item of data) {
             const docRef = doc(collection(db, 'organizations', organizationId, name), item.id);
             // Handle different collection types
@@ -525,7 +538,7 @@ export async function generateSampleData(organizationId: string) {
                 // Categories already have timestamps, just add orgId
                 batch.set(docRef, { ...item, organizationId });
             } else if (name === 'payments' || name === 'orderPayments') {
-                // Payments already have organizationId set
+                // Payments have organizationId set correctly
                 batch.set(docRef, item);
             } else if (name === 'orderTypes' || name === 'paymentTypes') {
                 // Order types and payment types already have timestamps, just add orgId
@@ -540,6 +553,7 @@ export async function generateSampleData(organizationId: string) {
     // 4. Commit the batch
     await batch.commit();
     console.log(`✅ Sample data generated successfully! Wrote documents to ${Object.keys(collections).length} collections.`);
+    console.log(`📊 Summary: ${totalPayments} payments, ${totalOrderPayments} order payments generated.`);
 
   } catch (error) {
     console.error('❌ Error generating sample data:', error);
