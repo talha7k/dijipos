@@ -17,11 +17,11 @@ interface POSOrderGridProps {
   payments: { [orderId: string]: OrderPayment[] };
   organizationId: string | undefined;
   onOrderSelect: (order: Order) => void;
-  onPaymentClick: (order: Order) => void;
+  onPayOrder: (order: Order) => void;
   onBack: () => void;
 }
 
-export function POSOrderGrid({ orders, payments, organizationId, onOrderSelect, onPaymentClick, onBack }: POSOrderGridProps) {
+export function POSOrderGrid({ orders, payments, organizationId, onOrderSelect, onPayOrder, onBack }: POSOrderGridProps) {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [updatingStatus, setUpdatingStatus] = useState(false);
 
@@ -182,81 +182,99 @@ export function POSOrderGrid({ orders, payments, organizationId, onOrderSelect, 
             </Button>
             {!isOrderFullyPaid(selectedOrder) && (
               <Button
-                onClick={() => onPaymentClick(selectedOrder)}
+                onClick={() => onPayOrder(selectedOrder)}
                 className="flex-1"
                 variant="outline"
               >
-                Process Payment
+                Pay & Complete
               </Button>
             )}
           </div>
 
-          {isOrderFullyPaid(selectedOrder) && !selectedOrder.paid && selectedOrder.status !== OrderStatus.COMPLETED && (
-            <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-              <h3 className="text-sm font-medium text-green-800 mb-3">Payment Complete - Choose Action:</h3>
-              <div className="flex gap-2 flex-wrap">
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      size="sm"
-                      className="bg-green-600 hover:bg-green-700"
-                      disabled={updatingStatus}
-                    >
-                      <CheckCircle className="h-4 w-4 mr-2" />
-                      {updatingStatus ? 'Marking...' : 'Mark as Paid'}
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Mark Order as Paid</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This will mark the order as paid but keep it open for further processing.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={() => markOrderAsPaid(selectedOrder.id)}
-                        disabled={updatingStatus}
+          {/* Order Actions Section */}
+          <div className="mt-4 space-y-4">
+            {/* Payment Actions */}
+            {!selectedOrder.paid && isOrderFullyPaid(selectedOrder) && (
+              <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                <h3 className="text-sm font-medium text-green-800 mb-3">Payment Complete:</h3>
+                <div className="flex gap-2">
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        size="sm"
                         className="bg-green-600 hover:bg-green-700"
-                      >
-                        {updatingStatus ? 'Marking...' : 'Mark as Paid'}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      size="sm"
-                      className="bg-blue-600 hover:bg-blue-700"
-                      disabled={updatingStatus}
-                    >
-                      <CheckCircle className="h-4 w-4 mr-2" />
-                      {updatingStatus ? 'Completing...' : 'Complete Order'}
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Complete Order</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This will mark the order as paid and completed. The order will be finalized.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={() => completeOrder(selectedOrder.id)}
                         disabled={updatingStatus}
-                        className="bg-blue-600 hover:bg-blue-700"
                       >
-                        {updatingStatus ? 'Completing...' : 'Complete Order'}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        {updatingStatus ? 'Marking...' : 'Mark as Paid'}
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Mark Order as Paid</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will mark the order as paid but keep it open for further processing.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => markOrderAsPaid(selectedOrder.id)}
+                          disabled={updatingStatus}
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          {updatingStatus ? 'Marking...' : 'Mark as Paid'}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </div>
+            )}
 
+            {/* Order Status Actions */}
+            {selectedOrder.paid && selectedOrder.status !== OrderStatus.COMPLETED && (
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <h3 className="text-sm font-medium text-blue-800 mb-3">Ready to Complete:</h3>
+                <div className="flex gap-2">
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        size="sm"
+                        className="bg-blue-600 hover:bg-blue-700"
+                        disabled={updatingStatus}
+                      >
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        {updatingStatus ? 'Completing...' : 'Complete Order'}
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Complete Order</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will mark the order as completed. This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => completeOrder(selectedOrder.id)}
+                          disabled={updatingStatus}
+                          className="bg-blue-600 hover:bg-blue-700"
+                        >
+                          {updatingStatus ? 'Completing...' : 'Complete Order'}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </div>
+            )}
+
+            {/* General Actions */}
+            <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+              <h3 className="text-sm font-medium text-gray-800 mb-3">Other Actions:</h3>
+              <div className="flex gap-2 flex-wrap">
                 <Button
                   size="sm"
                   variant="outline"
@@ -277,55 +295,7 @@ export function POSOrderGrid({ orders, payments, organizationId, onOrderSelect, 
                 </Button>
               </div>
             </div>
-          )}
-
-          {selectedOrder.paid && selectedOrder.status !== OrderStatus.COMPLETED && (
-            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <h3 className="text-sm font-medium text-blue-800 mb-3">Order Actions:</h3>
-              <div className="flex gap-2">
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      size="sm"
-                      className="bg-blue-600 hover:bg-blue-700"
-                      disabled={updatingStatus}
-                    >
-                      <CheckCircle className="h-4 w-4 mr-2" />
-                      {updatingStatus ? 'Completing...' : 'Complete Order'}
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Complete Order</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This will mark the order as completed. This action cannot be undone.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={() => updateOrderStatus(selectedOrder.id, OrderStatus.COMPLETED)}
-                        disabled={updatingStatus}
-                        className="bg-blue-600 hover:bg-blue-700"
-                      >
-                        {updatingStatus ? 'Completing...' : 'Complete Order'}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => updateOrderStatus(selectedOrder.id, OrderStatus.SAVED)}
-                  disabled={updatingStatus}
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  {updatingStatus ? 'Saving...' : 'Save for Later'}
-                </Button>
-              </div>
-            </div>
-          )}
+          </div>
         </div>
       </div>
     );
@@ -357,25 +327,28 @@ export function POSOrderGrid({ orders, payments, organizationId, onOrderSelect, 
                <CardHeader className="pb-2">
                  <div className="flex items-center justify-between">
                    <CardTitle className="text-lg">Order #{order.orderNumber}</CardTitle>
-                   <div className="flex items-center gap-2">
-                     <Badge className={`${getStatusColor(order.status)} text-white`}>
-                       {getStatusIcon(order.status)}
-                       <span className="ml-1 capitalize">{order.status}</span>
-                     </Badge>
-                     <Badge variant={order.paid ? "default" : "outline"} className={order.paid ? "bg-green-500 text-white" : ""}>
-                       {order.paid ? (
-                         <>
-                           <CheckCircle className="h-3 w-3 mr-1" />
-                           Paid
-                         </>
-                       ) : (
-                         <>
-                           <DollarSign className="h-3 w-3 mr-1" />
-                           Unpaid
-                         </>
-                       )}
-                     </Badge>
-                   </div>
+<div className="flex items-center gap-2">
+                      {/* Order Status */}
+                      <Badge className={`${getStatusColor(order.status)} text-white`}>
+                        {getStatusIcon(order.status)}
+                        <span className="ml-1 capitalize">{order.status}</span>
+                      </Badge>
+                      
+                      {/* Payment Status */}
+                      <Badge variant={order.paid ? "default" : "secondary"} className={order.paid ? "bg-green-600 text-white" : "bg-orange-100 text-orange-800"}>
+                        {order.paid ? (
+                          <>
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Paid
+                          </>
+                        ) : (
+                          <>
+                            <DollarSign className="h-3 w-3 mr-1" />
+                            Unpaid
+                          </>
+                        )}
+                      </Badge>
+                    </div>
                  </div>
                </CardHeader>
               <CardContent className="space-y-3">

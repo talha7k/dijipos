@@ -14,7 +14,7 @@ interface CartItem {
 interface POSCartSidebarProps {
   cart: CartItem[];
   cartTotal: number;
-  onCheckout: () => void;
+  onPayOrder?: () => void;
   onSaveOrder?: () => void;
   onPrintReceipt?: () => void;
   onClearCart?: () => void;
@@ -24,7 +24,7 @@ interface POSCartSidebarProps {
 export function POSCartSidebar({
   cart,
   cartTotal,
-  onCheckout,
+  onPayOrder,
   onSaveOrder,
   onPrintReceipt,
   onClearCart,
@@ -96,9 +96,9 @@ export function POSCartSidebar({
         <Button
           className="w-full h-14 text-lg font-bold"
           disabled={cart.length === 0}
-          onClick={onCheckout}
+          onClick={onPayOrder}
         >
-          Checkout
+          Pay & Complete
         </Button>
       </div>
     </div>

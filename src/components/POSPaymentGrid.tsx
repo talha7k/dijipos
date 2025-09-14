@@ -142,6 +142,34 @@ export function POSPaymentGrid({ order, paymentTypes, onPaymentProcessed, onBack
         />
       </div>
 
+      {/* Payment Status Indicator */}
+      <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-medium text-blue-800">Payment Progress</h3>
+            <p className="text-sm text-blue-600 mt-1">
+              ${totalPaid.toFixed(2)} of ${order.total.toFixed(2)} paid
+            </p>
+          </div>
+          <div className="text-right">
+            <div className="text-2xl font-bold text-blue-800">
+              {remainingAmount > 0 ? `$${remainingAmount.toFixed(2)}` : 'Paid'}
+            </div>
+            <div className="text-sm text-blue-600">
+              {remainingAmount > 0 ? 'remaining' : 'in full'}
+            </div>
+          </div>
+        </div>
+        
+        {/* Progress Bar */}
+        <div className="mt-3 w-full bg-blue-200 rounded-full h-2">
+          <div 
+            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+            style={{ width: `${Math.min((totalPaid / order.total) * 100, 100)}%` }}
+          ></div>
+        </div>
+      </div>
+
         {/* Payment List */}
         {payments.length > 0 && (
           <PaymentList
@@ -185,14 +213,14 @@ export function POSPaymentGrid({ order, paymentTypes, onPaymentProcessed, onBack
                       {changeDue > 0 && ` • Change Due: $${changeDue.toFixed(2)}`}
                     </p>
                     <p className="text-green-700 mt-2 text-sm">
-                      Order has been automatically marked as completed.
+                      Order has been marked as paid. You can now complete it from the orders view.
                     </p>
                   </div>
 
                   <div className="flex justify-center">
                     <Button onClick={onBack} className="bg-green-600 hover:bg-green-700">
                       <CheckCircle className="h-4 w-4 mr-2" />
-                      Continue
+                      Back to Orders
                     </Button>
                   </div>
                 </div>

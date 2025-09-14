@@ -479,41 +479,41 @@ export default function POSPage() {
                     <POSCartSidebar
                       cart={cart}
                       cartTotal={cartTotal}
-                       onCheckout={() => {
+onPayOrder={() => {
                          if (cart.length === 0) return;
 
                          // Create a temporary order from cart for payment processing
-                          const tempOrder: Order = {
-                            id: 'temp-checkout',
-                            organizationId: organizationId || '',
-                            orderNumber: `TEMP-${Date.now()}`,
-                             items: cart.map(item => ({
-                               id: `${item.type}-${item.id}`,
-                               type: item.type === ItemType.PRODUCT ? ItemType.PRODUCT : ItemType.SERVICE,
-                               productId: item.type === ItemType.PRODUCT ? item.id : undefined,
-                               serviceId: item.type === ItemType.SERVICE ? item.id : undefined,
-                               name: item.name,
-                               quantity: item.quantity,
-                               unitPrice: item.price,
-                              total: item.total,
-                            })),
-                            subtotal: cartTotal,
-                            taxRate: 0, // TODO: Get from settings
-                            taxAmount: 0, // TODO: Calculate based on tax rate
-                            total: cartTotal,
-                             status: OrderStatus.OPEN,
-                            paid: false, // New orders are not paid initially
-                            orderType: selectedOrderType?.name || 'dine-in',
-                            customerName: selectedCustomer?.name,
-                            customerPhone: selectedCustomer?.phone,
-                            customerEmail: selectedCustomer?.email,
-                            tableId: selectedTable?.id,
-                            tableName: selectedTable?.name,
-                            createdById: user?.uid || 'unknown',
-                            createdByName: user?.displayName || user?.email || 'Unknown User',
-                            createdAt: new Date(),
-                            updatedAt: new Date(),
-                          };
+                           const tempOrder: Order = {
+                             id: 'temp-checkout',
+                             organizationId: organizationId || '',
+                             orderNumber: `TEMP-${Date.now()}`,
+                              items: cart.map(item => ({
+                                id: `${item.type}-${item.id}`,
+                                type: item.type === ItemType.PRODUCT ? ItemType.PRODUCT : ItemType.SERVICE,
+                                productId: item.type === ItemType.PRODUCT ? item.id : undefined,
+                                serviceId: item.type === ItemType.SERVICE ? item.id : undefined,
+                                name: item.name,
+                                quantity: item.quantity,
+                                unitPrice: item.price,
+                               total: item.total,
+                             })),
+                             subtotal: cartTotal,
+                             taxRate: 0, // TODO: Get from settings
+                             taxAmount: 0, // TODO: Calculate based on tax rate
+                             total: cartTotal,
+                              status: OrderStatus.OPEN,
+                             paid: false, // New orders are not paid initially
+                             orderType: selectedOrderType?.name || 'dine-in',
+                             customerName: selectedCustomer?.name,
+                             customerPhone: selectedCustomer?.phone,
+                             customerEmail: selectedCustomer?.email,
+                             tableId: selectedTable?.id,
+                             tableName: selectedTable?.name,
+                             createdById: user?.uid || 'unknown',
+                             createdByName: user?.displayName || user?.email || 'Unknown User',
+                             createdAt: new Date(),
+                             updatedAt: new Date(),
+                           };
 
                          setSelectedOrder(tempOrder);
                          setCurrentView('payment');
@@ -749,7 +749,7 @@ export default function POSPage() {
             payments={orderPayments}
             organizationId={organizationId || undefined}
             onOrderSelect={handleOrderReopen}
-            onPaymentClick={handlePaymentClick}
+            onPayOrder={handlePaymentClick}
             onBack={handleBackToItems}
           />
         )}
@@ -770,41 +770,41 @@ export default function POSPage() {
         <POSCartSidebar
           cart={cart}
           cartTotal={cartTotal}
-           onCheckout={() => {
-             if (cart.length === 0) return;
+onPayOrder={() => {
+              if (cart.length === 0) return;
 
-              // Create a temporary order from cart for payment processing
-              const tempOrder: Order = {
-                id: 'temp-checkout',
-                organizationId: organizationId || '',
-                orderNumber: `TEMP-${Date.now()}`,
-               items: cart.map(item => ({
-                 id: `${item.type}-${item.id}`,
-                 type: item.type === ItemType.PRODUCT ? ItemType.PRODUCT : ItemType.SERVICE,
-                 productId: item.type === ItemType.PRODUCT ? item.id : undefined,
-                 serviceId: item.type === ItemType.SERVICE ? item.id : undefined,
-                 name: item.name,
-                 quantity: item.quantity,
-                 unitPrice: item.price,
-                 total: item.total,
-               })),
-                subtotal: cartTotal,
-                taxRate: 0, // TODO: Get from settings
-                taxAmount: 0, // TODO: Calculate based on tax rate
-                total: cartTotal,
-                status: OrderStatus.OPEN,
-                paid: false, // New orders are not paid initially
-                orderType: selectedOrderType?.name || 'dine-in',
-                customerName: selectedCustomer?.name,
-                customerPhone: selectedCustomer?.phone,
-                customerEmail: selectedCustomer?.email,
-                tableId: selectedTable?.id,
-                tableName: selectedTable?.name,
-                createdById: user?.uid || 'unknown',
-                createdByName: user?.displayName || user?.email || 'Unknown User',
-               createdAt: new Date(),
-               updatedAt: new Date(),
-             };
+               // Create a temporary order from cart for payment processing
+               const tempOrder: Order = {
+                 id: 'temp-checkout',
+                 organizationId: organizationId || '',
+                 orderNumber: `TEMP-${Date.now()}`,
+                items: cart.map(item => ({
+                  id: `${item.type}-${item.id}`,
+                  type: item.type === ItemType.PRODUCT ? ItemType.PRODUCT : ItemType.SERVICE,
+                  productId: item.type === ItemType.PRODUCT ? item.id : undefined,
+                  serviceId: item.type === ItemType.SERVICE ? item.id : undefined,
+                  name: item.name,
+                  quantity: item.quantity,
+                  unitPrice: item.price,
+                  total: item.total,
+                })),
+                 subtotal: cartTotal,
+                 taxRate: 0, // TODO: Get from settings
+                 taxAmount: 0, // TODO: Calculate based on tax rate
+                 total: cartTotal,
+                 status: OrderStatus.OPEN,
+                 paid: false, // New orders are not paid initially
+                 orderType: selectedOrderType?.name || 'dine-in',
+                 customerName: selectedCustomer?.name,
+                 customerPhone: selectedCustomer?.phone,
+                 customerEmail: selectedCustomer?.email,
+                 tableId: selectedTable?.id,
+                 tableName: selectedTable?.name,
+                 createdById: user?.uid || 'unknown',
+                 createdByName: user?.displayName || user?.email || 'Unknown User',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+              };
 
              setSelectedOrder(tempOrder);
              setCurrentView('payment');
