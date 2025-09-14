@@ -48,7 +48,7 @@ export function PaymentList({
           <div className="text-center py-8 text-muted-foreground">
             <CreditCard className="h-12 w-12 mx-auto mb-3 opacity-50" />
             <p className="text-sm">No payments recorded yet</p>
-            <p className="text-xs mt-1">Click "Process Payment" to add a payment</p>
+            <p className="text-xs mt-1">Click &quot;Process Payment&quot; to add a payment</p>
           </div>
         </CardContent>
       </Card>

@@ -18,6 +18,12 @@ function VerifyEmailContent() {
   useEffect(() => {
     const handleEmailVerification = async () => {
       try {
+        if (!searchParams) {
+          setStatus('error');
+          setMessage('Invalid verification link. Please request a new verification email.');
+          return;
+        }
+
         // Get the action code from the URL
         const actionCode = searchParams.get('oobCode');
 

@@ -21,6 +21,12 @@ function ResetPasswordContent() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
+    if (!searchParams) {
+      setStatus('error');
+      setMessage('Invalid reset link. Please request a new password reset.');
+      return;
+    }
+
     const oobCode = searchParams.get('oobCode');
     if (!oobCode) {
       setStatus('error');
@@ -46,6 +52,13 @@ function ResetPasswordContent() {
     }
 
     setIsSubmitting(true);
+
+    if (!searchParams) {
+      setStatus('error');
+      setMessage('Invalid reset link. Please request a new password reset.');
+      return;
+    }
+
     const oobCode = searchParams.get('oobCode');
 
     try {

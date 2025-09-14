@@ -32,6 +32,10 @@ function HomeContent() {
   useEffect(() => {
     const checkForActionCode = async () => {
       // Check if there's an action code in the URL
+      if (!searchParams) {
+        return;
+      }
+
       const oobCode = searchParams.get('oobCode');
       const mode = searchParams.get('mode');
 
@@ -81,17 +85,22 @@ function HomeContent() {
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
     setResetError('');
-    
+
     if (newPassword !== confirmPassword) {
       setResetError('Passwords do not match.');
       return;
     }
-    
+
     if (newPassword.length < 6) {
       setResetError('Password must be at least 6 characters long.');
       return;
     }
-    
+
+    if (!searchParams) {
+      setResetError('Invalid password reset link.');
+      return;
+    }
+
     const oobCode = searchParams.get('oobCode');
     if (!oobCode) {
       setResetError('Invalid password reset link.');

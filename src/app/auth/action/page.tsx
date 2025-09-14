@@ -8,6 +8,11 @@ function FirebaseActionHandlerContent() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
+    if (!searchParams) {
+      router.push('/login');
+      return;
+    }
+
     const mode = searchParams.get('mode');
     const oobCode = searchParams.get('oobCode');
 

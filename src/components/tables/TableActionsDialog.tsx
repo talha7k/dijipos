@@ -143,7 +143,7 @@ export function TableActionsDialog({ table, children }: TableActionsDialogProps)
               <div className="space-y-2">
                 <h4 className="font-medium">Release Table</h4>
                 <p className="text-sm text-muted-foreground">
-                  Mark this table as available. The order will remain active but won't be assigned to any table.
+                  Mark this table as available. The order will remain active but won&apos;t be assigned to any table.
                 </p>
                 <Button 
                   onClick={handleReleaseTable}

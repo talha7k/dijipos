@@ -23,10 +23,10 @@ function LoginContent() {
   const [isResendLoading, setIsResendLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const showVerificationMessage = searchParams.get('verification') === 'true';
-  const verificationSuccess = searchParams.get('verification') === 'success';
-  const verificationError = searchParams.get('verification') === 'error';
-  const resetSuccess = searchParams.get('reset') === 'success';
+  const showVerificationMessage = searchParams?.get('verification') === 'true';
+  const verificationSuccess = searchParams?.get('verification') === 'success';
+  const verificationError = searchParams?.get('verification') === 'error';
+  const resetSuccess = searchParams?.get('reset') === 'success';
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
