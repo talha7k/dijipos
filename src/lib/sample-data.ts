@@ -1,7 +1,7 @@
 // Sample data for customers, products, and services
 // This would typically come from a database
 
-import { Invoice, Category, Product, Service, Table, Order, Customer, Supplier, OrderType, PaymentType } from '@/types';
+import { Invoice, Category, Product, Service, Table, Order, Customer, Supplier, OrderType, PaymentType, TemplateType, ItemType, CategoryType, TableStatus, OrderStatus, InvoiceStatus, InvoiceType } from '@/types';
 
 // Sample categories
 export const sampleCategories: Omit<Category, 'organizationId'>[] = [
@@ -9,7 +9,7 @@ export const sampleCategories: Omit<Category, 'organizationId'>[] = [
     id: 'cat1',
     name: 'Food & Beverages',
     description: 'Food and drink items',
-    type: 'product',
+    type: CategoryType.PRODUCT,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -17,7 +17,7 @@ export const sampleCategories: Omit<Category, 'organizationId'>[] = [
     id: 'cat2',
     name: 'Appetizers',
     description: 'Starters and small plates',
-    type: 'product',
+    type: CategoryType.PRODUCT,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -25,7 +25,7 @@ export const sampleCategories: Omit<Category, 'organizationId'>[] = [
     id: 'cat3',
     name: 'Main Courses',
     description: 'Main dishes',
-    type: 'product',
+    type: CategoryType.PRODUCT,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -33,7 +33,7 @@ export const sampleCategories: Omit<Category, 'organizationId'>[] = [
     id: 'cat4',
     name: 'Desserts',
     description: 'Sweet treats and desserts',
-    type: 'product',
+    type: CategoryType.PRODUCT,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -41,7 +41,7 @@ export const sampleCategories: Omit<Category, 'organizationId'>[] = [
     id: 'cat5',
     name: 'Beverages',
     description: 'Drinks and refreshments',
-    type: 'product',
+    type: CategoryType.PRODUCT,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -49,7 +49,7 @@ export const sampleCategories: Omit<Category, 'organizationId'>[] = [
     id: 'cat6',
     name: 'IT Services',
     description: 'Information technology services',
-    type: 'service',
+    type: CategoryType.SERVICE,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -57,7 +57,7 @@ export const sampleCategories: Omit<Category, 'organizationId'>[] = [
     id: 'cat7',
     name: 'Consulting',
     description: 'Business consulting services',
-    type: 'service',
+    type: CategoryType.SERVICE,
     createdAt: new Date(),
     updatedAt: new Date(),
   }
@@ -265,7 +265,7 @@ export const sampleTables: Omit<Table, 'organizationId'>[] = [
     id: 't1',
     name: 'Table 1',
     capacity: 4,
-    status: 'available',
+    status: TableStatus.AVAILABLE,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -273,7 +273,7 @@ export const sampleTables: Omit<Table, 'organizationId'>[] = [
     id: 't2',
     name: 'Table 2',
     capacity: 2,
-    status: 'available',
+    status: TableStatus.AVAILABLE,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -281,7 +281,7 @@ export const sampleTables: Omit<Table, 'organizationId'>[] = [
     id: 't3',
     name: 'Table 3',
     capacity: 6,
-    status: 'available',
+    status: TableStatus.AVAILABLE,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -289,7 +289,7 @@ export const sampleTables: Omit<Table, 'organizationId'>[] = [
     id: 't4',
     name: 'Table 4',
     capacity: 4,
-    status: 'available',
+    status: TableStatus.AVAILABLE,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -297,7 +297,7 @@ export const sampleTables: Omit<Table, 'organizationId'>[] = [
     id: 't5',
     name: 'Bar Counter',
     capacity: 8,
-    status: 'available',
+    status: TableStatus.AVAILABLE,
     createdAt: new Date(),
     updatedAt: new Date(),
   }
@@ -368,7 +368,7 @@ export const sampleOrders: Omit<Order, 'organizationId'>[] = [
     items: [
       {
         id: 'oi1',
-        type: 'product',
+        type: ItemType.PRODUCT,
         productId: 'p1',
         name: 'Margherita Pizza',
         quantity: 2,
@@ -377,7 +377,7 @@ export const sampleOrders: Omit<Order, 'organizationId'>[] = [
       },
       {
         id: 'oi2',
-        type: 'product',
+        type: ItemType.PRODUCT,
         productId: 'p5',
         name: 'Cappuccino',
         quantity: 2,
@@ -389,7 +389,7 @@ export const sampleOrders: Omit<Order, 'organizationId'>[] = [
     taxRate: 15,
     taxAmount: 6.15,
     total: 47.13,
-    status: 'completed',
+    status: OrderStatus.COMPLETED,
     customerName: 'John Smith',
     customerPhone: '+1-234-567-8900',
     tableId: 't1',
@@ -406,7 +406,7 @@ export const sampleOrders: Omit<Order, 'organizationId'>[] = [
     items: [
       {
         id: 'oi3',
-        type: 'product',
+        type: ItemType.PRODUCT,
         productId: 'p7',
         name: 'Chicken Burger',
         quantity: 1,
@@ -415,7 +415,7 @@ export const sampleOrders: Omit<Order, 'organizationId'>[] = [
       },
       {
         id: 'oi4',
-        type: 'product',
+        type: ItemType.PRODUCT,
         productId: 'p6',
         name: 'French Fries',
         quantity: 1,
@@ -424,7 +424,7 @@ export const sampleOrders: Omit<Order, 'organizationId'>[] = [
       },
       {
         id: 'oi5',
-        type: 'product',
+        type: ItemType.PRODUCT,
         productId: 'p8',
         name: 'Ice Cream Sundae',
         quantity: 1,
@@ -436,7 +436,7 @@ export const sampleOrders: Omit<Order, 'organizationId'>[] = [
     taxRate: 15,
     taxAmount: 4.27,
     total: 32.75,
-    status: 'completed',
+    status: OrderStatus.COMPLETED,
     customerName: 'Sarah Johnson',
     customerPhone: '+1-234-567-8901',
     orderType: 'Take Away',
@@ -474,7 +474,7 @@ export const getServiceOptions = (services: Omit<Service, 'organizationId'>[]) =
 
 // Helper functions for mixed product/service arrays
 export const getProductOptionsFromMixed = (items: (Omit<Product, 'organizationId'> & { type: 'product' } | Omit<Service, 'organizationId'> & { type: 'service' })[]) => {
-  return items.filter(item => item.type === 'product').map(item => ({
+  return items.filter(item => item.type === ItemType.PRODUCT).map(item => ({
     value: item.id,
     label: item.name,
     description: `$${item.price.toFixed(2)}`
@@ -482,7 +482,7 @@ export const getProductOptionsFromMixed = (items: (Omit<Product, 'organizationId
 }
 
 export const getServiceOptionsFromMixed = (items: (Omit<Product, 'organizationId'> & { type: 'product' } | Omit<Service, 'organizationId'> & { type: 'service' })[]) => {
-  return items.filter(item => item.type === 'service').map(item => ({
+    return items.filter(item => item.type === ItemType.SERVICE).map(item => ({
     value: item.id,
     label: item.name,
     description: `$${item.price.toFixed(2)}`
@@ -533,7 +533,7 @@ export const getSupplierById = (suppliers: Omit<Supplier, 'organizationId'>[], i
 export const samplePurchaseInvoices: Omit<Invoice, 'organizationId'>[] = [
   {
     id: 'pi1',
-    type: 'purchase',
+    type: InvoiceType.PURCHASE,
     supplierId: 'sup1',
     supplierName: 'Fresh Foods Co',
     supplierEmail: 'orders@freshfoods.com',
@@ -544,7 +544,7 @@ export const samplePurchaseInvoices: Omit<Invoice, 'organizationId'>[] = [
     items: [
       {
         id: 'item1',
-        type: 'product',
+        type: ItemType.PRODUCT,
         productId: 'p1',
         name: 'Margherita Pizza Ingredients',
         description: 'Tomatoes, cheese, dough supplies',
@@ -554,7 +554,7 @@ export const samplePurchaseInvoices: Omit<Invoice, 'organizationId'>[] = [
       },
       {
         id: 'item2',
-        type: 'product',
+        type: ItemType.PRODUCT,
         productId: 'p2',
         name: 'Fresh Vegetables',
         description: 'Lettuce, tomatoes, herbs for salads',
@@ -567,17 +567,17 @@ export const samplePurchaseInvoices: Omit<Invoice, 'organizationId'>[] = [
     taxRate: 15,
     taxAmount: 255.00,
     total: 1955.00,
-    status: 'paid',
+    status: InvoiceStatus.PAID,
     dueDate: new Date('2024-02-14'),
     notes: 'Weekly food supplies',
-    template: 'english',
+    template: TemplateType.ENGLISH,
     includeQR: false,
     createdAt: new Date('2024-01-15'),
     updatedAt: new Date('2024-01-20'),
   },
   {
     id: 'pi2',
-    type: 'purchase',
+    type: InvoiceType.PURCHASE,
     supplierId: 'sup2',
     supplierName: 'Beverage Distributors',
     supplierEmail: 'sales@beverages.com',
@@ -588,7 +588,7 @@ export const samplePurchaseInvoices: Omit<Invoice, 'organizationId'>[] = [
     items: [
       {
         id: 'item3',
-        type: 'product',
+        type: ItemType.PRODUCT,
         productId: 'p5',
         name: 'Coffee Beans',
         description: 'Premium arabica coffee beans',
@@ -598,7 +598,7 @@ export const samplePurchaseInvoices: Omit<Invoice, 'organizationId'>[] = [
       },
       {
         id: 'item4',
-        type: 'product',
+        type: ItemType.PRODUCT,
         productId: 'p5',
         name: 'Soft Drinks',
         description: 'Assorted soft drinks and juices',
@@ -611,10 +611,10 @@ export const samplePurchaseInvoices: Omit<Invoice, 'organizationId'>[] = [
     taxRate: 15,
     taxAmount: 172.50,
     total: 1322.50,
-    status: 'paid',
+    status: InvoiceStatus.PAID,
     dueDate: new Date('2024-03-01'),
     notes: 'Monthly beverage supplies',
-    template: 'english',
+    template: TemplateType.ENGLISH,
     includeQR: false,
     createdAt: new Date('2024-02-01'),
     updatedAt: new Date('2024-02-10'),
@@ -625,7 +625,7 @@ export const samplePurchaseInvoices: Omit<Invoice, 'organizationId'>[] = [
 export const sampleSalesInvoices: Omit<Invoice, 'organizationId'>[] = [
   {
     id: 'si1',
-    type: 'sales',
+    type: InvoiceType.SALES,
     clientName: 'John Smith',
     clientEmail: 'john.smith@email.com',
     clientAddress: '123 Main St, City, Country',
@@ -633,7 +633,7 @@ export const sampleSalesInvoices: Omit<Invoice, 'organizationId'>[] = [
     items: [
       {
         id: 'item5',
-        type: 'product',
+        type: ItemType.PRODUCT,
         productId: 'p1',
         name: 'Margherita Pizza',
         description: 'Classic pizza with tomato sauce, mozzarella, and basil',
@@ -643,7 +643,7 @@ export const sampleSalesInvoices: Omit<Invoice, 'organizationId'>[] = [
       },
       {
         id: 'item6',
-        type: 'product',
+        type: ItemType.PRODUCT,
         productId: 'p5',
         name: 'Cappuccino',
         description: 'Espresso with steamed milk and foam',
@@ -656,17 +656,17 @@ export const sampleSalesInvoices: Omit<Invoice, 'organizationId'>[] = [
     taxRate: 15,
     taxAmount: 8.55,
     total: 65.52,
-    status: 'paid',
+    status: InvoiceStatus.PAID,
     dueDate: new Date('2024-01-25'),
     notes: 'Dinner order',
-    template: 'english',
+    template: TemplateType.ENGLISH,
     includeQR: true,
     createdAt: new Date('2024-01-20'),
     updatedAt: new Date('2024-01-20'),
   },
   {
     id: 'si2',
-    type: 'sales',
+    type: InvoiceType.SALES,
     clientName: 'Sarah Johnson',
     clientEmail: 'sarah.j@email.com',
     clientAddress: '456 Oak Ave, City, Country',
@@ -674,7 +674,7 @@ export const sampleSalesInvoices: Omit<Invoice, 'organizationId'>[] = [
     items: [
       {
         id: 'item7',
-        type: 'product',
+        type: ItemType.PRODUCT,
         productId: 'p7',
         name: 'Chicken Burger',
         description: 'Grilled chicken burger with lettuce and tomato',
@@ -684,7 +684,7 @@ export const sampleSalesInvoices: Omit<Invoice, 'organizationId'>[] = [
       },
       {
         id: 'item8',
-        type: 'product',
+        type: ItemType.PRODUCT,
         productId: 'p6',
         name: 'French Fries',
         description: 'Crispy golden french fries',
@@ -694,7 +694,7 @@ export const sampleSalesInvoices: Omit<Invoice, 'organizationId'>[] = [
       },
       {
         id: 'item9',
-        type: 'product',
+        type: ItemType.PRODUCT,
         productId: 'p8',
         name: 'Ice Cream Sundae',
         description: 'Vanilla ice cream with chocolate sauce and nuts',
@@ -707,10 +707,10 @@ export const sampleSalesInvoices: Omit<Invoice, 'organizationId'>[] = [
     taxRate: 15,
     taxAmount: 7.42,
     total: 56.88,
-    status: 'paid',
+    status: InvoiceStatus.PAID,
     dueDate: new Date('2024-02-05'),
     notes: 'Take away order',
-    template: 'english',
+    template: TemplateType.ENGLISH,
     includeQR: true,
     createdAt: new Date('2024-02-01'),
     updatedAt: new Date('2024-02-01'),
@@ -719,8 +719,8 @@ export const sampleSalesInvoices: Omit<Invoice, 'organizationId'>[] = [
 
 // Combined sample products and services (for backward compatibility)
 export const sampleProductsServices = [
-  ...sampleProducts.map(p => ({ ...p, type: 'product' as const })),
-  ...sampleServices.map(s => ({ ...s, type: 'service' as const }))
+  ...sampleProducts.map(p => ({ ...p, type: ItemType.PRODUCT as const })),
+  ...sampleServices.map(s => ({ ...s, type: ItemType.SERVICE as const }))
 ];
 
 // Combined sample invoices (both sales and purchase)
@@ -737,6 +737,6 @@ export const getServiceById = (services: Service[], id: string) => {
   return services.find(service => service.id === id)
 }
 
-export const getProductServiceById = (items: ((Omit<Product, 'organizationId'> & { type: 'product' }) | (Omit<Service, 'organizationId'> & { type: 'service' }))[], id: string) => {
+export const getProductServiceById = (items: ((Omit<Product, 'organizationId'> & { type: ItemType.PRODUCT }) | (Omit<Service, 'organizationId'> & { type: ItemType.SERVICE }))[], id: string) => {
   return items.find(item => item.id === id)
 }

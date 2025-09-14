@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
-import { PrinterSettings } from '@/types';
+import { PrinterSettings, FontSize, PrinterType } from '@/types';
 import thermalPrinter from '@/lib/thermal-printer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -44,9 +44,9 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
   const [connectedPrinters, setConnectedPrinters] = useState<ConnectedPrinter[]>([]);
   const [newPrinterSettings, setNewPrinterSettings] = useState({
     paperWidth: printerSettings?.paperWidth || 58,
-    fontSize: printerSettings?.fontSize || 'medium' as 'small' | 'medium' | 'large',
+    fontSize: printerSettings?.fontSize || FontSize.MEDIUM,
     autoCut: printerSettings?.autoCut ?? true,
-    printerType: printerSettings?.printerType || 'epson' as 'epson' | 'star',
+    printerType: printerSettings?.printerType || PrinterType.EPSON,
     characterSet: printerSettings?.characterSet || 'korea',
     baudRate: printerSettings?.baudRate || 9600
   });
@@ -147,13 +147,13 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
                     className="w-full p-2 border rounded"
                     value={newPrinterSettings.fontSize}
                     onChange={(e) => {
-                      const value = e.target.value as 'small' | 'medium' | 'large';
+                      const value = e.target.value as FontSize;
                       setNewPrinterSettings({ ...newPrinterSettings, fontSize: value });
                     }}
                   >
-                    <option value="small">Small</option>
-                    <option value="medium">Medium</option>
-                    <option value="large">Large</option>
+                    <option value={FontSize.SMALL}>Small</option>
+                    <option value={FontSize.MEDIUM}>Medium</option>
+                    <option value={FontSize.LARGE}>Large</option>
                   </select>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -170,10 +170,10 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
                     id="printer-type"
                     className="w-full p-2 border rounded"
                     value={newPrinterSettings.printerType}
-                    onChange={(e) => setNewPrinterSettings({ ...newPrinterSettings, printerType: e.target.value as 'epson' | 'star' })}
+                    onChange={(e) => setNewPrinterSettings({ ...newPrinterSettings, printerType: e.target.value as PrinterType })}
                   >
-                    <option value="epson">Epson</option>
-                    <option value="star">Star</option>
+                    <option value={PrinterType.EPSON}>Epson</option>
+                    <option value={PrinterType.STAR}>Star</option>
                   </select>
                 </div>
                 <div>
