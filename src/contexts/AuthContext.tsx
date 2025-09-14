@@ -105,6 +105,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             updatedAt: organizationDoc.data()?.updatedAt?.toDate(),
           } as Organization;
           setCurrentOrganization(organizationData);
+        } else {
+          // Organization doesn't exist, clear stored ID
+          localStorage.removeItem('selectedOrganizationId');
         }
       }
     } catch (error) {
@@ -156,15 +159,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
            setUserOrganizations(organizationAssociations);
 
-           // Check if there's a previously selected organization in localStorage
+           // Handle organization selection logic at root level
            const storedOrganizationId = localStorage.getItem('selectedOrganizationId');
+
            if (storedOrganizationId && organizationAssociations.some(ou => ou.organizationId === storedOrganizationId)) {
-             // Auto-select stored organization
+             // Auto-select locally stored organization
              await selectOrganization(storedOrganizationId);
-           } else if (organizationAssociations.length === 1) {
-             // Auto-select only available organization
-             await selectOrganization(organizationAssociations[0].organizationId);
            }
+          // If user has multiple organizations, let them choose via select-organization page
         } else {
           setOrganizationId(null);
           setOrganizationUser(null);

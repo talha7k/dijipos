@@ -1,24 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { OrganizationManager } from '@/components/OrganizationManager';
 
 export default function SelectOrganizationPage() {
-  const { user, userOrganizations, organizationId, loading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!user) {
-      router.push('/login');
-      return;
-    }
-
-    // If user has organizations and already has an organization selected, 
-    // and they manually navigated to this page, allow them to stay
-    // to switch organizations
-  }, [user, userOrganizations, organizationId, router]);
+  const { loading } = useAuth();
 
   // Show loading state while auth is initializing
   if (loading) {
@@ -32,9 +18,7 @@ export default function SelectOrganizationPage() {
     );
   }
 
-  if (!user) {
-    return null;
-  }
-
+  // The routing logic is now handled at the root level (app/page.tsx)
+  // This page simply displays the organization selection UI
   return <OrganizationManager />;
 }

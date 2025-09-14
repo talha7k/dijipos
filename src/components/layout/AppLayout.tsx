@@ -24,7 +24,9 @@ export function AppLayout({ children }: AppLayoutProps) {
   }
 
   // Check if we should show organization selector
-  const shouldShowOrganizationSelector = !loading && user && userOrganizations.length > 0 && !currentOrganization;
+  const storedOrganizationId = typeof window !== 'undefined' ? localStorage.getItem('selectedOrganizationId') : null;
+  const hasStoredOrganization = storedOrganizationId && userOrganizations.some(ou => ou.organizationId === storedOrganizationId);
+  const shouldShowOrganizationSelector = !loading && user && userOrganizations.length > 0 && !currentOrganization && !hasStoredOrganization;
 
   // For protected pages, check if organization is selected
   return (

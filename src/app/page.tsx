@@ -11,7 +11,7 @@ import { Suspense } from 'react';
 import { toast } from 'sonner';
 
 function HomeContent() {
-  const { user, loading, emailVerified } = useAuth();
+  const { user, loading, emailVerified, organizationId, userOrganizations } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -24,19 +24,29 @@ function HomeContent() {
 
 
 
-  // Handle authentication-based routing
+  // Handle authentication-based routing and organization selection
   // Only redirect if we're not processing an action code
   useEffect(() => {
     if (loading || resetMode || isProcessing) return; // Wait for auth to finish loading or action processing
 
     if (user && emailVerified) {
-      router.push('/select-organization');
+       // Handle organization selection at root level
+       if (organizationId) {
+         // User already has an organization selected - go to dashboard
+         router.push('/dashboard');
+       } else if (userOrganizations.length > 0) {
+         // User has organizations - let them choose
+         router.push('/select-organization');
+       } else {
+         // User has no organizations - they need to create or be invited to one
+         router.push('/select-organization');
+       }
     } else if (user && !emailVerified) {
       router.push('/login?verification=true');
     } else if (!user) {
       router.push('/login');
     }
-  }, [loading, user, emailVerified, router, resetMode, isProcessing]);
+  }, [loading, user, emailVerified, organizationId, userOrganizations, router, resetMode, isProcessing]);
 
   // Handle Firebase action codes (email verification, password reset)
   // These are links that Firebase redirects to the root URL

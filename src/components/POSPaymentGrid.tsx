@@ -6,9 +6,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, CreditCard, CheckCircle } from 'lucide-react';
 import { Order, OrderPayment, PaymentType } from '@/types';
 import { toast } from 'sonner';
-import { OrderSummaryCard } from './shared/OrderSummaryCard';
-import { PaymentList } from './shared/PaymentList';
-import { PaymentEntryForm } from './shared/PaymentEntryForm';
+import { OrderSummaryCard } from './orders/OrderSummaryCard';
+import { PaymentList } from './orders/PaymentList';
+import { PaymentEntryForm } from './orders/PaymentEntryForm';
 
 interface POSPaymentGridProps {
   order: Order;
@@ -145,6 +145,7 @@ export function POSPaymentGrid({ order, paymentTypes, onPaymentProcessed, onBack
         {/* Order Summary */}
         <OrderSummaryCard
           order={order}
+          payments={[]}
           showPaymentStatus={false}
           showOrderDetails={true}
           totalPaid={totalPaid}
