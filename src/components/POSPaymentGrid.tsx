@@ -24,8 +24,25 @@ interface PaymentEntry {
   reference?: string;
   notes?: string;
 }
-
 export function POSPaymentGrid({ order, paymentTypes, onPaymentProcessed, onBack }: POSPaymentGridProps) {
+  const [payments, setPayments] = useState<PaymentEntry[]>([]);
+  const [amount, setAmount] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('');
+  const [reference, setReference] = useState('');
+  const [notes, setNotes] = useState('');
+  const [paymentProcessed, setPaymentProcessed] = useState(false);
+
+  const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
+  const remainingAmount = order.total - totalPaid;
+  const changeDue = totalPaid > order.total ? totalPaid - order.total : 0;
+
+  // Auto-fill amount with remaining amount when payment method is selected
+  useEffect(() => {
+    if (paymentMethod && remainingAmount > 0 && !amount) {
+      setAmount(remainingAmount.toFixed(2));
+    }
+  }, [paymentMethod, remainingAmount, amount]);
+
   // Prevent payment processing for already paid orders
   if (order.paid) {
     return (
@@ -53,23 +70,6 @@ export function POSPaymentGrid({ order, paymentTypes, onPaymentProcessed, onBack
       </div>
     );
   }
-  const [payments, setPayments] = useState<PaymentEntry[]>([]);
-  const [amount, setAmount] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('');
-  const [reference, setReference] = useState('');
-  const [notes, setNotes] = useState('');
-  const [paymentProcessed, setPaymentProcessed] = useState(false);
-
-  const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
-  const remainingAmount = order.total - totalPaid;
-  const changeDue = totalPaid > order.total ? totalPaid - order.total : 0;
-
-  // Auto-fill amount with remaining amount when payment method is selected
-  useEffect(() => {
-    if (paymentMethod && remainingAmount > 0 && !amount) {
-      setAmount(remainingAmount.toFixed(2));
-    }
-  }, [paymentMethod, remainingAmount, amount]);
 
   const addPayment = () => {
     if (!amount || !paymentMethod) return;
