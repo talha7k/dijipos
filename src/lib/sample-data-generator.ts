@@ -1,6 +1,6 @@
 import { db } from '@/lib/firebase';
 import { collection, doc, writeBatch } from 'firebase/firestore';
-import { Product, Service, Quote, Customer, Supplier, Item, Payment, PurchaseInvoice, Invoice, Category, Order, OrderPayment, OrderItem, OrderType, PaymentType } from '@/types';
+import { Product, Service, Quote, Customer, Supplier, Item, Payment, PurchaseInvoice, Invoice, Category, Order, OrderPayment, OrderItem, OrderType, PaymentType, Table, TableStatus, OrderStatus, TemplateType, CategoryType, ItemType, InvoiceType, QuoteStatus, InvoiceStatus } from '@/types';
  
 // --- HELPER FUNCTIONS ---
 
@@ -27,9 +27,9 @@ const companySuffixes = ['Trading', 'Solutions', 'Enterprises', 'Group', 'LLC', 
 const generateCategories = (): Omit<Category, 'organizationId'>[] => {
   const categories: Omit<Category, 'organizationId'>[] = [];
   const mainCategories = [
-    { name: 'Food & Beverages', type: 'both' as const },
-    { name: 'Electronics', type: 'product' as const },
-    { name: 'Services', type: 'service' as const }
+    { name: 'Food & Beverages', type: CategoryType.PRODUCT },
+    { name: 'Electronics', type: CategoryType.PRODUCT },
+    { name: 'Services', type: CategoryType.SERVICE }
   ];
 
   const subCategories: Record<string, string[]> = {
@@ -190,7 +190,7 @@ const generateOrderItems = (products: Omit<Product, 'organizationId'>[], service
             const quantity = getRandomInt(1, 5);
             items.push({
                 id: generateId('ord-item'),
-                type: 'product',
+                type: ItemType.PRODUCT,
                 productId: product.id,
                 name: product.name,
                 description: product.description || '',
@@ -203,7 +203,7 @@ const generateOrderItems = (products: Omit<Product, 'organizationId'>[], service
             const quantity = getRandomInt(1, 3); // Hours
             items.push({
                 id: generateId('ord-item'),
-                type: 'service',
+                type: ItemType.SERVICE,
                 serviceId: service.id,
                 name: service.name,
                 description: service.description || '',
@@ -229,7 +229,7 @@ const generateOrders = (count: number, customers: Omit<Customer, 'organizationId
         const total = subtotal + taxAmount;
 
         const orderId = generateId('ord');
-        const status = getRandomElement(['open', 'completed', 'cancelled', 'saved'] as const);
+        const status = getRandomElement([OrderStatus.OPEN, OrderStatus.COMPLETED, OrderStatus.CANCELLED, OrderStatus.SAVED]);
 
         const orderData: Omit<Order, 'organizationId'> = {
             id: orderId,
@@ -298,7 +298,7 @@ const generateItems = (products: Omit<Product, 'organizationId'>[], services: Om
             const quantity = getRandomInt(1, 10);
             items.push({
                 id: generateId('item'),
-                type: 'product',
+                type: ItemType.PRODUCT,
                 productId: product.id,
                 name: product.name,
                 description: 'Product item',
@@ -311,7 +311,7 @@ const generateItems = (products: Omit<Product, 'organizationId'>[], services: Om
             const quantity = getRandomInt(2, 20); // Hours
             items.push({
                 id: generateId('item'),
-                type: 'service',
+                type: ItemType.SERVICE,
                 serviceId: service.id,
                 name: service.name,
                 description: 'Professional services rendered.',
@@ -343,7 +343,7 @@ const generateQuotes = (count: number, customers: Omit<Customer, 'organizationId
             taxRate,
             taxAmount,
             total,
-            status: getRandomElement(['draft', 'sent', 'accepted', 'rejected']),
+            status: getRandomElement([QuoteStatus.DRAFT, QuoteStatus.SENT, QuoteStatus.ACCEPTED, QuoteStatus.REJECTED]),
             createdAt: new Date(),
             updatedAt: new Date(),
             validUntil: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15 days from now
@@ -361,7 +361,7 @@ const generateInvoices = (count: number, customers: Omit<Customer, 'organization
         const taxRate = 15;
         const taxAmount = subtotal * (taxRate / 100);
         const total = subtotal + taxAmount;
-        const status = getRandomElement<'sent' | 'paid' | 'overdue'>(['sent', 'paid', 'overdue']);
+        const status = getRandomElement([InvoiceStatus.SENT, InvoiceStatus.PAID, InvoiceStatus.OVERDUE]);
 
         const invoiceId = generateId('inv');
 
@@ -420,11 +420,11 @@ const generateInvoices = (count: number, customers: Omit<Customer, 'organization
             const customer = getRandomElement(customers);
             const invoice: Omit<Invoice, 'organizationId'> = {
                 ...baseInvoice,
-                type: 'sales',
+                type: InvoiceType.SALES,
                 clientName: customer.name,
                 clientEmail: customer.email,
                 clientAddress: customer.address,
-                template: 'english',
+                template: TemplateType.ENGLISH,
                 includeQR: true,
             };
             allInvoices.push(invoice);
@@ -432,12 +432,12 @@ const generateInvoices = (count: number, customers: Omit<Customer, 'organization
             const supplier = getRandomElement(suppliers);
             const invoice: Omit<Invoice, 'organizationId'> = {
                 ...baseInvoice,
-                type: 'purchase',
+                type: InvoiceType.PURCHASE,
                 supplierId: supplier.id,
                 supplierName: supplier.name,
                 supplierEmail: supplier.email,
                 supplierAddress: supplier.address,
-                template: 'english',
+                template: TemplateType.ENGLISH,
                 includeQR: true,
             };
             allInvoices.push(invoice);
@@ -473,6 +473,23 @@ export async function generateSampleData(organizationId: string) {
     const suppliers = generateSuppliers(COUNTS.SUPPLIERS);
     const orderTypes = generateOrderTypes();
     const paymentTypes = generatePaymentTypes();
+
+    // Generate tables
+    const tables: Table[] = [];
+    const tableStatuses = [TableStatus.AVAILABLE, TableStatus.OCCUPIED, TableStatus.RESERVED];
+    
+    for (let i = 1; i <= 10; i++) {
+      const table: Table = {
+        id: `table_${i}`,
+        name: `Table ${i}`,
+        capacity: Math.floor(Math.random() * 4) + 2,
+        status: tableStatuses[Math.floor(Math.random() * tableStatuses.length)],
+        organizationId,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      tables.push(table);
+    }
 
     // 2. Generate dependent data
     const quotes = generateQuotes(COUNTS.QUOTES, customers, products, services);
