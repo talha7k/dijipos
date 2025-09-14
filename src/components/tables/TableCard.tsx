@@ -2,7 +2,7 @@ import { Table, Order } from '@/types';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Users, User, Armchair as TableIcon } from 'lucide-react';
-import { useTableStatus } from '@/hooks/use-table-status';
+import { useTableManagement } from '@/hooks/tables/use-table-management';
 
 interface TableCardProps {
   table: Table;
@@ -12,7 +12,7 @@ interface TableCardProps {
 }
 
 export function TableCard({ table, tableOrder, isAvailable, onClick }: TableCardProps) {
-  const { getStatusColor } = useTableStatus();
+  const { getStatusColor } = useTableManagement(undefined);
 
   return (
     <Card 

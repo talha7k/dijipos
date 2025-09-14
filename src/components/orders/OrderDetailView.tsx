@@ -1,4 +1,4 @@
-import { Order, OrderPayment } from "@/types";
+import { Order, OrderPayment, OrderStatus } from "@/types";
 import { OrderDetail } from "@/components/orders/OrderDetail";
 import { OrderActions } from "@/components/orders/OrderActions";
 
@@ -11,7 +11,7 @@ interface OrderDetailViewProps {
   onPayOrder: (order: Order) => void;
   onMarkAsPaid: (orderId: string) => void;
   onCompleteOrder: (orderId: string) => void;
-  onUpdateStatus: (orderId: string, status: any) => void;
+  onUpdateStatus: (orderId: string, status: OrderStatus) => void;
 }
 
 export function OrderDetailView({

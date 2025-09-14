@@ -5,7 +5,7 @@ import { collection, query, onSnapshot, addDoc, doc, deleteDoc, updateDoc } from
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Supplier } from '@/types';
-import { useSuppliersData } from '@/hooks/use-suppliers-data';
+import { useSuppliersData } from '@/hooks/suppliers/use-suppliers-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

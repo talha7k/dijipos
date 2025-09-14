@@ -1,13 +1,14 @@
 import { useState } from 'react';
-import { collection, addDoc, deleteDoc, doc } from 'firebase/firestore';
+import { collection, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Table } from '@/types';
+import { Table, Order } from '@/types';
 import { toast } from 'sonner';
 import { getTableStatusColor } from '@/lib/utils';
 
 export function useTableManagement(organizationId: string | undefined) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteTableId, setDeleteTableId] = useState<string | null>(null);
+  const [updating, setUpdating] = useState(false);
   const [newTable, setNewTable] = useState({
     name: '',
     capacity: 1,
@@ -78,21 +79,93 @@ export function useTableManagement(organizationId: string | undefined) {
     return status === 'maintenance';
   };
 
+  const releaseTable = async (tableId: string, order: Order) => {
+    if (!organizationId) return false;
+
+    setUpdating(true);
+    try {
+      // Update table status to available
+      const tableRef = doc(db, 'organizations', organizationId, 'tables', tableId);
+      await updateDoc(tableRef, {
+        status: 'available',
+        updatedAt: new Date(),
+      });
+
+      // Update order to remove table assignment
+      const orderRef = doc(db, 'organizations', organizationId, 'orders', order.id);
+      await updateDoc(orderRef, {
+        tableId: null,
+        tableName: null,
+        updatedAt: new Date(),
+      });
+
+      toast.success('Table released successfully');
+      return true;
+    } catch (error) {
+      console.error('Error releasing table:', error);
+      toast.error('Failed to release table');
+      return false;
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const moveOrderToTable = async (order: Order, fromTableId: string, toTableId: string, targetTableName: string) => {
+    if (!organizationId) return false;
+
+    setUpdating(true);
+    try {
+      // Update order with new table
+      const orderRef = doc(db, 'organizations', organizationId, 'orders', order.id);
+      await updateDoc(orderRef, {
+        tableId: toTableId,
+        tableName: targetTableName,
+        updatedAt: new Date(),
+      });
+
+      // Update source table to available
+      const fromTableRef = doc(db, 'organizations', organizationId, 'tables', fromTableId);
+      await updateDoc(fromTableRef, {
+        status: 'available',
+        updatedAt: new Date(),
+      });
+
+      // Update target table to occupied
+      const toTableRef = doc(db, 'organizations', organizationId, 'tables', toTableId);
+      await updateDoc(toTableRef, {
+        status: 'occupied',
+        updatedAt: new Date(),
+      });
+
+      toast.success('Order moved successfully');
+      return true;
+    } catch (error) {
+      console.error('Error moving order:', error);
+      toast.error('Failed to move order');
+      return false;
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   return {
     // State
     dialogOpen,
     setDialogOpen,
     deleteTableId,
     setDeleteTableId,
+    updating,
     newTable,
     setNewTable,
-    
+
     // Actions
     handleAddTable,
     handleDeleteTable,
     confirmDeleteTable,
+    releaseTable,
+    moveOrderToTable,
     resetForm,
-    
+
     // Utilities
     getStatusColor,
     isAvailable,
