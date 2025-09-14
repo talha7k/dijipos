@@ -46,7 +46,7 @@ export function CollapsibleSidebar({ className }: SidebarProps) {
     onToggleCollapse: toggleCollapse,
     onThemeToggle: toggleTheme,
     theme,
-    pathname,
+    pathname: pathname || undefined,
     user: user ? {
       email: user.email || undefined,
       displayName: user.displayName || undefined,

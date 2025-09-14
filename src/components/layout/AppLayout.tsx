@@ -15,7 +15,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const { loading, currentOrganization, user, userOrganizations } = useAuth();
   const { isCollapsed } = useSidebar();
 
-  const isPublicRoute = pathname === '/login' || pathname === '/register' || pathname === '/verify-email' || pathname === '/reset-password' || pathname.startsWith('/auth');
+  const isPublicRoute = pathname ? (pathname === '/login' || pathname === '/register' || pathname === '/verify-email' || pathname === '/reset-password' || pathname.startsWith('/auth')) : false;
 
   if (isPublicRoute) {
     // For public pages, don't show sidebar

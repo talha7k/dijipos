@@ -36,13 +36,13 @@ export function RouteGuard({ children }: RouteGuardProps) {
     '/select-organization'
   ];
 
-  const isPublicRoute = publicRoutes.some(route => 
+  const isPublicRoute = pathname ? publicRoutes.some(route =>
     pathname === route || pathname.startsWith(route + '/')
-  );
+  ) : false;
 
-  const isAuthOnlyRoute = authOnlyRoutes.some(route => 
+  const isAuthOnlyRoute = pathname ? authOnlyRoutes.some(route =>
     pathname === route || pathname.startsWith(route + '/')
-  );
+  ) : false;
 
   useEffect(() => {
     if (loading) return;
