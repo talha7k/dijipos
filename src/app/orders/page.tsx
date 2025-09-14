@@ -14,8 +14,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { ArrowLeft, Receipt, CreditCard, Users, LayoutGrid, ShoppingBag, Calendar, DollarSign, User, CheckCircle, Save } from 'lucide-react';
+import { ArrowLeft, Receipt, CreditCard, Users, LayoutGrid, ShoppingBag, Calendar, DollarSign, User, CheckCircle, Save, Settings } from 'lucide-react';
 import { toast } from 'sonner';
+import { OrderStatusSelectionDialog } from '@/components/OrderStatusSelectionDialog';
 
 function OrdersContent() {
   const { user, organizationId } = useAuth();
@@ -27,6 +28,8 @@ function OrdersContent() {
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [showOrderStatusDialog, setShowOrderStatusDialog] = useState(false);
+  const [orderForStatusUpdate, setOrderForStatusUpdate] = useState<Order | null>(null);
 
   useEffect(() => {
     if (!organizationId) return;
@@ -132,6 +135,33 @@ function OrdersContent() {
     }
   };
 
+  const handleOrderStatusSelect = async (status: OrderStatus) => {
+    if (!orderForStatusUpdate || !organizationId) return;
+
+    try {
+      const orderRef = doc(db, 'organizations', organizationId, 'orders', orderForStatusUpdate.id);
+      await updateDoc(orderRef, {
+        status,
+        updatedAt: serverTimestamp(),
+      });
+
+      const statusMessages = {
+        [OrderStatus.OPEN]: 'Order reopened successfully!',
+        [OrderStatus.COMPLETED]: 'Order completed successfully!',
+        [OrderStatus.PREPARING]: 'Order marked as preparing successfully!',
+        [OrderStatus.CANCELLED]: 'Order cancelled successfully!',
+        [OrderStatus.SAVED]: 'Order saved successfully!',
+      };
+
+      toast.success(statusMessages[status] || 'Order status updated successfully!');
+      setShowOrderStatusDialog(false);
+      setOrderForStatusUpdate(null);
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      toast.error('Failed to update order status. Please try again.');
+    }
+  };
+
   if (loading) return <div className="flex items-center justify-center h-screen">Loading...</div>;
 
   return (
@@ -193,16 +223,17 @@ function OrdersContent() {
                     </TableCell>
                     <TableCell>{order.createdAt.toLocaleDateString()}</TableCell>
                     <TableCell>
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => setSelectedOrder(order)}
-                          >
-                            View Details
-                          </Button>
-                        </DialogTrigger>
+                      <div className="flex gap-2">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => setSelectedOrder(order)}
+                            >
+                              View Details
+                            </Button>
+                          </DialogTrigger>
                         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
                           <DialogHeader>
                             <DialogTitle>Order Details - {selectedOrder?.orderNumber}</DialogTitle>
@@ -405,9 +436,22 @@ function OrdersContent() {
                                )}
                              </div>
                            )}
-                        </DialogContent>
-                      </Dialog>
-                    </TableCell>
+</DialogContent>
+                       </Dialog>
+                       
+                       <Button
+                         variant="outline"
+                         size="sm"
+                         onClick={() => {
+                           setOrderForStatusUpdate(order);
+                           setShowOrderStatusDialog(true);
+                         }}
+                       >
+                         <Settings className="h-4 w-4 mr-1" />
+                         Status
+                       </Button>
+                     </div>
+                   </TableCell>
                   </TableRow>
                 );
               })}
@@ -425,6 +469,17 @@ function OrdersContent() {
           </Table>
         </CardContent>
       </Card>
+      
+      {/* Order Status Selection Dialog */}
+      {orderForStatusUpdate && (
+        <OrderStatusSelectionDialog
+          open={showOrderStatusDialog}
+          onOpenChange={setShowOrderStatusDialog}
+          onStatusSelect={handleOrderStatusSelect}
+          currentStatus={orderForStatusUpdate.status}
+          isPaid={orderForStatusUpdate.paid}
+        />
+      )}
     </div>
   );
 }

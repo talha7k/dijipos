@@ -26,6 +26,33 @@ interface PaymentEntry {
 }
 
 export function POSPaymentGrid({ order, paymentTypes, onPaymentProcessed, onBack }: POSPaymentGridProps) {
+  // Prevent payment processing for already paid orders
+  if (order.paid) {
+    return (
+      <div className="h-full overflow-auto p-4 bg-background">
+        <div className="flex items-center gap-4 mb-6">
+          <Button variant="ghost" onClick={onBack}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Order
+          </Button>
+          <h2 className="text-2xl font-bold">Payment - {order.orderNumber}</h2>
+        </div>
+        
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-green-800 mb-2">Order Already Paid</h3>
+            <p className="text-muted-foreground">
+              This order has already been paid for. No further payments can be processed.
+            </p>
+            <Button onClick={onBack} className="mt-4">
+              Back to Orders
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
   const [payments, setPayments] = useState<PaymentEntry[]>([]);
   const [amount, setAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
@@ -143,28 +170,28 @@ export function POSPaymentGrid({ order, paymentTypes, onPaymentProcessed, onBack
       </div>
 
       {/* Payment Status Indicator */}
-      <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+      <div className="mt-6 p-4 bg-primary/10 border border-primary/20 rounded-lg">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-medium text-blue-800">Payment Progress</h3>
-            <p className="text-sm text-blue-600 mt-1">
+            <h3 className="text-sm font-medium text-primary">Payment Progress</h3>
+            <p className="text-sm text-primary/80 mt-1">
               ${totalPaid.toFixed(2)} of ${order.total.toFixed(2)} paid
             </p>
           </div>
           <div className="text-right">
-            <div className="text-2xl font-bold text-blue-800">
+            <div className="text-2xl font-bold text-primary">
               {remainingAmount > 0 ? `$${remainingAmount.toFixed(2)}` : 'Paid'}
             </div>
-            <div className="text-sm text-blue-600">
+            <div className="text-sm text-primary/80">
               {remainingAmount > 0 ? 'remaining' : 'in full'}
             </div>
           </div>
         </div>
         
         {/* Progress Bar */}
-        <div className="mt-3 w-full bg-blue-200 rounded-full h-2">
+        <div className="mt-3 w-full bg-primary/20 rounded-full h-2">
           <div 
-            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+            className="bg-primary h-2 rounded-full transition-all duration-300"
             style={{ width: `${Math.min((totalPaid / order.total) * 100, 100)}%` }}
           ></div>
         </div>

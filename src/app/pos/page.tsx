@@ -32,6 +32,7 @@ import { POSPaymentGrid } from '@/components/POSPaymentGrid';
 import { OrderTypeSelectionDialog } from '@/components/OrderTypeSelectionDialog';
 import { ReceiptPrintDialog } from '@/components/ReceiptPrintDialog';
 import { CartItemModal } from '@/components/CartItemModal';
+import { OrderStatusSelectionDialog } from '@/components/OrderStatusSelectionDialog';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import { ShoppingCart, LayoutGrid, Users, ShoppingBag, FileText } from 'lucide-react';
@@ -75,6 +76,8 @@ export default function POSPage() {
   const [pendingOrderToReopen, setPendingOrderToReopen] = useState<Order | null>(null);
   const [showOrderConfirmationDialog, setShowOrderConfirmationDialog] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [showOrderStatusDialog, setShowOrderStatusDialog] = useState(false);
+  const [orderForStatusUpdate, setOrderForStatusUpdate] = useState<Order | null>(null);
   
   // Use new hooks for data management
   const { products, loading: productsLoading } = useProductsData(organizationId || undefined);
@@ -253,6 +256,7 @@ export default function POSPage() {
     }));
 
     setCart(cartItems);
+    setSelectedOrder(order); // Set selected order so payments will load
     setCurrentView('items');
     setPendingOrderToReopen(null);
     setShowOrderConfirmationDialog(false);
@@ -354,14 +358,44 @@ export default function POSPage() {
         updatedAt: new Date(),
       });
 
-      toast.success('Payment processed successfully! Order marked as paid.');
+      // Show order status selection dialog
+      setOrderForStatusUpdate(orderToUpdate);
+      setShowOrderStatusDialog(true);
+    } catch (error) {
+      console.error('Error processing payment:', error);
+      toast.error('Failed to process payment. Please try again.');
+    }
+  };
+
+  const handleOrderStatusSelect = async (status: OrderStatus) => {
+    if (!orderForStatusUpdate || !organizationId) return;
+
+    try {
+      const orderRef = doc(db, 'organizations', organizationId, 'orders', orderForStatusUpdate.id);
+      await updateDoc(orderRef, {
+        status,
+        updatedAt: new Date(),
+      });
+
+      const statusMessages = {
+        [OrderStatus.OPEN]: 'Order reopened successfully!',
+        [OrderStatus.COMPLETED]: 'Order completed successfully!',
+        [OrderStatus.PREPARING]: 'Order marked as preparing successfully!',
+        [OrderStatus.CANCELLED]: 'Order cancelled successfully!',
+        [OrderStatus.SAVED]: 'Order saved successfully!',
+      };
+
+      toast.success(statusMessages[status] || 'Order status updated successfully!');
+      
+      // Clear state and return to items view
       setSelectedOrder(null);
+      setOrderForStatusUpdate(null);
       setCurrentView('items');
       // Clear all POS data after successful payment (cart, table, customer, etc.)
       clearPOSData();
     } catch (error) {
-      console.error('Error processing payment:', error);
-      toast.error('Failed to process payment. Please try again.');
+      console.error('Error updating order status:', error);
+      toast.error('Failed to update order status. Please try again.');
     }
   };
 
@@ -745,7 +779,10 @@ onPayOrder={() => {
 
         {currentView === 'orders' && (
           <POSOrderGrid
-            orders={orders.filter(order => order.status === OrderStatus.SAVED)}
+            orders={orders.filter(order => 
+              order.status !== OrderStatus.COMPLETED && 
+              order.status !== OrderStatus.CANCELLED
+            )}
             payments={orderPayments}
             organizationId={organizationId || undefined}
             onOrderSelect={handleOrderReopen}
@@ -929,6 +966,17 @@ onPayOrder={() => {
           }
         }}
       />
+
+      {/* Order Status Selection Dialog */}
+      {orderForStatusUpdate && (
+        <OrderStatusSelectionDialog
+          open={showOrderStatusDialog}
+          onOpenChange={setShowOrderStatusDialog}
+          onStatusSelect={handleOrderStatusSelect}
+          currentStatus={orderForStatusUpdate.status}
+          isPaid={orderForStatusUpdate.paid}
+        />
+      )}
     </div>
   );
 }

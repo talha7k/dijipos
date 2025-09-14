@@ -180,7 +180,7 @@ export function POSOrderGrid({ orders, payments, organizationId, onOrderSelect, 
             >
               Reopen Order
             </Button>
-            {!isOrderFullyPaid(selectedOrder) && (
+            {!selectedOrder.paid && !isOrderFullyPaid(selectedOrder) && (
               <Button
                 onClick={() => onPayOrder(selectedOrder)}
                 className="flex-1"
@@ -195,8 +195,8 @@ export function POSOrderGrid({ orders, payments, organizationId, onOrderSelect, 
           <div className="mt-4 space-y-4">
             {/* Payment Actions */}
             {!selectedOrder.paid && isOrderFullyPaid(selectedOrder) && (
-              <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                <h3 className="text-sm font-medium text-green-800 mb-3">Payment Complete:</h3>
+              <div className="p-4 bg-green-100 border border-green-200 rounded-lg">
+                <h3 className="text-sm font-medium text-green-900 mb-3">Payment Complete:</h3>
                 <div className="flex gap-2">
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
@@ -234,8 +234,8 @@ export function POSOrderGrid({ orders, payments, organizationId, onOrderSelect, 
 
             {/* Order Status Actions */}
             {selectedOrder.paid && selectedOrder.status !== OrderStatus.COMPLETED && (
-              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <h3 className="text-sm font-medium text-blue-800 mb-3">Ready to Complete:</h3>
+              <div className="p-4 bg-blue-100 border border-blue-200 rounded-lg">
+                <h3 className="text-sm font-medium text-blue-900 mb-3">Ready to Complete:</h3>
                 <div className="flex gap-2">
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
@@ -272,8 +272,8 @@ export function POSOrderGrid({ orders, payments, organizationId, onOrderSelect, 
             )}
 
             {/* General Actions */}
-            <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
-              <h3 className="text-sm font-medium text-gray-800 mb-3">Other Actions:</h3>
+            <div className="p-4 bg-muted border border-border rounded-lg">
+              <h3 className="text-sm font-medium text-foreground mb-3">Other Actions:</h3>
               <div className="flex gap-2 flex-wrap">
                 <Button
                   size="sm"
@@ -335,7 +335,7 @@ export function POSOrderGrid({ orders, payments, organizationId, onOrderSelect, 
                       </Badge>
                       
                       {/* Payment Status */}
-                      <Badge variant={order.paid ? "default" : "secondary"} className={order.paid ? "bg-green-600 text-white" : "bg-orange-100 text-orange-800"}>
+                      <Badge variant={order.paid ? "default" : "secondary"} className={order.paid ? "bg-green-600 text-white" : "bg-orange-500 text-white"}>
                         {order.paid ? (
                           <>
                             <CheckCircle className="h-3 w-3 mr-1" />
