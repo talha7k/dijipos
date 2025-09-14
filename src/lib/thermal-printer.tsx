@@ -66,7 +66,8 @@ export class ThermalPrinterService {
    */
   async getConnectedPrinters(): Promise<ConnectedPrinter[]> {
     try {
-      if (!(navigator as NavigatorWithSerial).serial) {
+      if (!this.isWebSerialSupported()) {
+        console.warn('Web Serial API not supported in this browser');
         return [];
       }
 
@@ -85,6 +86,55 @@ export class ThermalPrinterService {
     } catch (error) {
       console.error('Failed to get connected printers:', error);
       return [];
+    }
+  }
+
+  /**
+   * Check if Web Serial API is supported
+   */
+  isWebSerialSupported(): boolean {
+    return 'serial' in navigator && !!(navigator as NavigatorWithSerial).serial;
+  }
+
+  /**
+   * Request user to select and connect to a new printer
+   */
+  async requestPrinterConnection(): Promise<ConnectedPrinter | null> {
+    try {
+      if (!this.isWebSerialSupported()) {
+        throw new Error('Web Serial API is not supported in this browser. Please use a compatible browser like Chrome, Edge, or Opera.');
+      }
+
+      const port = await (navigator as NavigatorWithSerial).serial.requestPort();
+      await port.open({ baudRate: this.config.baudRate! });
+
+      // Store printer info
+      const info = port.getInfo?.();
+      this.port = port;
+      this.connectedPrinter = {
+        id: 'current',
+        name: 'Connected Printer',
+        vendorId: info?.usbVendorId,
+        productId: info?.usbProductId,
+        usbVendorId: info?.usbVendorId,
+        usbProductId: info?.usbProductId,
+      };
+
+      console.log('Connected to thermal printer');
+      return this.connectedPrinter;
+    } catch (error: any) {
+      console.error('Failed to connect to thermal printer:', error);
+
+      // Provide more specific error messages
+      if (error.name === 'NotAllowedError') {
+        throw new Error('Printer access was denied. Please allow access to the printer when prompted.');
+      } else if (error.name === 'NotFoundError') {
+        throw new Error('No printer was selected or found. Please ensure your printer is connected and try again.');
+      } else if (error.message) {
+        throw error;
+      } else {
+        throw new Error('Failed to connect to thermal printer. Please check your printer connection and try again.');
+      }
     }
   }
 

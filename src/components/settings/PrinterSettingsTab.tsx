@@ -31,6 +31,8 @@ interface ThermalPrinterService {
   disconnect(): Promise<void>;
   isConnected(): boolean;
   printTest(): Promise<void>;
+  requestPrinterConnection(): Promise<ConnectedPrinter | null>;
+  isWebSerialSupported(): boolean;
 }
 
 interface PrinterSettingsTabProps {
@@ -42,6 +44,7 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
   const { organizationId } = useAuth();
   const [printerDialogOpen, setPrinterDialogOpen] = useState(false);
   const [connectedPrinters, setConnectedPrinters] = useState<ConnectedPrinter[]>([]);
+  const [isWebSerialSupported, setIsWebSerialSupported] = useState(false);
   const [newPrinterSettings, setNewPrinterSettings] = useState({
     paperWidth: printerSettings?.paperWidth || 58,
     fontSize: printerSettings?.fontSize || FontSize.MEDIUM,
@@ -52,6 +55,13 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
   });
 
   useEffect(() => {
+    // Check Web Serial API support
+    const checkWebSerialSupport = () => {
+      const supported = (thermalPrinter as unknown as ThermalPrinterService).isWebSerialSupported();
+      setIsWebSerialSupported(supported);
+    };
+
+    checkWebSerialSupport();
     fetchConnectedPrinters();
   }, []);
 
@@ -61,6 +71,7 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
       setConnectedPrinters(printers);
     } catch (error) {
       console.error('Failed to fetch connected printers:', error);
+      toast.error('Failed to detect printers. Please check your browser compatibility.');
     }
   };
 
@@ -95,6 +106,18 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
       fetchConnectedPrinters();
     } catch (error) {
       toast.error('Failed to connect to printer');
+    }
+  };
+
+  const handleRequestPrinterConnection = async () => {
+    try {
+      const printer = await (thermalPrinter as unknown as ThermalPrinterService).requestPrinterConnection();
+      if (printer) {
+        toast.success('Printer connected successfully!');
+        fetchConnectedPrinters();
+      }
+    } catch (error) {
+      toast.error('Failed to connect to printer. Please ensure your printer is connected and try again.');
     }
   };
 
@@ -254,11 +277,23 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
                   size="sm"
                   variant="outline"
                   onClick={fetchConnectedPrinters}
+                  disabled={!isWebSerialSupported}
                 >
                   <RefreshCw className="h-4 w-4 mr-1" />
                   Refresh
                 </Button>
               </div>
+              {!isWebSerialSupported && (
+                <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                  <div className="flex items-center gap-2 text-yellow-700">
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                    <span className="text-sm font-medium">Web Serial API Not Supported</span>
+                  </div>
+                  <p className="text-sm text-yellow-600 mt-1">
+                    Your browser doesn't support the Web Serial API. Please use Chrome, Edge, or Opera for printer functionality.
+                  </p>
+                </div>
+              )}
               {connectedPrinters.length > 0 ? (
                 <div className="space-y-2">
                   {connectedPrinters.map((printer) => (
@@ -291,9 +326,21 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">
-                  No printers detected. Connect a thermal printer and click &ldquo;Refresh&rdquo;.
-                </p>
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">
+                    No printers detected. Connect a thermal printer and click &ldquo;Refresh&rdquo; or select one manually.
+                  </p>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleRequestPrinterConnection}
+                    className="w-full"
+                    disabled={!isWebSerialSupported}
+                  >
+                    <Printer className="h-4 w-4 mr-2" />
+                    Select Printer Manually
+                  </Button>
+                </div>
               )}
               {(thermalPrinter as unknown as ThermalPrinterService).isConnected() && (
                 <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded">
