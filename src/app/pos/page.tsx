@@ -94,7 +94,7 @@ export default function POSPage() {
   const { organization, loading: organizationLoading } = useOrganizationData(organizationId || undefined);
 
   // Use the new order payments hook
-  const { orderPayments, loading: orderPaymentsLoading } = useOrderPayments({
+  const { orderPayments, loading: orderPaymentsLoading, syncOrderPaidStatus } = useOrderPayments({
     organizationId: organizationId || undefined,
   });
 
@@ -352,11 +352,8 @@ export default function POSPage() {
       
       await Promise.all(paymentPromises);
 
-      // Update order to mark as paid (don't automatically complete)
-      await updateDoc(doc(db, 'organizations', organizationId, 'orders', orderToUpdate.id), {
-        paid: true,
-        updatedAt: new Date(),
-      });
+      // Sync order paid status based on payments
+      await syncOrderPaidStatus(orderToUpdate.id, orderToUpdate.total);
 
       // Show order status selection dialog
       setOrderForStatusUpdate(orderToUpdate);

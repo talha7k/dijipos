@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { collection, query, onSnapshot, addDoc, updateDoc, doc, Timestamp } from 'firebase/firestore';
+import { collection, query, onSnapshot, addDoc, updateDoc, doc, Timestamp, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { OrderPayment } from '@/types';
 
@@ -17,6 +17,7 @@ interface UseOrderPaymentsReturn {
   getOrderTotalPaid: (orderId: string) => number;
   getOrderRemainingAmount: (orderId: string, orderTotal: number) => number;
   refreshPayments: () => void;
+  syncOrderPaidStatus: (orderId: string, orderTotal: number) => Promise<void>;
 }
 
 export function useOrderPayments({ organizationId }: UseOrderPaymentsProps): UseOrderPaymentsReturn {
@@ -74,6 +75,34 @@ export function useOrderPayments({ organizationId }: UseOrderPaymentsProps): Use
           });
 
           setOrderPayments(paymentsByOrder);
+          
+          // Auto-sync paid status for orders with payments
+          Object.keys(paymentsByOrder).forEach(async (orderId) => {
+            const payments = paymentsByOrder[orderId];
+            const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
+            
+            // Get order total to check if order should be marked as paid
+            try {
+              const orderRef = doc(db, 'organizations', organizationId, 'orders', orderId);
+              const orderDoc = await getDoc(orderRef);
+              
+              if (orderDoc.exists()) {
+                const orderData = orderDoc.data();
+                const shouldBePaid = totalPaid >= orderData.total;
+                
+                // Only update if paid status needs to change
+                if (orderData.paid !== shouldBePaid) {
+                  await updateDoc(orderRef, {
+                    paid: shouldBePaid,
+                    updatedAt: Timestamp.now(),
+                  });
+                }
+              }
+            } catch (err) {
+              console.error('Error auto-syncing order paid status:', err);
+            }
+          });
+          
           setLoading(false);
         } catch (err) {
           console.error('Error processing order payments:', err);
@@ -188,6 +217,39 @@ export function useOrderPayments({ organizationId }: UseOrderPaymentsProps): Use
     setRefreshKey(prev => prev + 1);
   }, []);
 
+  const syncOrderPaidStatus = useCallback(
+    async (orderId: string, orderTotal: number): Promise<void> => {
+      if (!organizationId) {
+        return;
+      }
+
+      try {
+        const totalPaid = getOrderTotalPaid(orderId);
+        const shouldBePaid = totalPaid >= orderTotal;
+
+        // Get current order data
+        const orderRef = doc(db, 'organizations', organizationId, 'orders', orderId);
+        const orderDoc = await getDoc(orderRef);
+        
+        if (orderDoc.exists()) {
+          const currentOrder = orderDoc.data();
+          
+          // Only update if the paid status needs to change
+          if (currentOrder.paid !== shouldBePaid) {
+            await updateDoc(orderRef, {
+              paid: shouldBePaid,
+              updatedAt: Timestamp.now(),
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Error syncing order paid status:', err);
+        // Don't throw error here as this is a background sync
+      }
+    },
+    [organizationId, getOrderTotalPaid]
+  );
+
   return {
     orderPayments,
     loading,
@@ -198,5 +260,6 @@ export function useOrderPayments({ organizationId }: UseOrderPaymentsProps): Use
     getOrderTotalPaid,
     getOrderRemainingAmount,
     refreshPayments,
+    syncOrderPaidStatus,
   };
 }

@@ -39,6 +39,10 @@ export function OrderSummaryCard({
   onCompleteOrder,
   className = ''
 }: OrderSummaryCardProps) {
+  // Calculate payment amounts for display, but use order.paid for status
+  const calculatedTotalPaid = totalPaid !== undefined ? totalPaid : payments.reduce((sum, payment) => sum + payment.amount, 0);
+  const calculatedRemainingAmount = remainingAmount !== undefined ? remainingAmount : order.total - calculatedTotalPaid;
+  const isActuallyPaid = order.paid;
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
@@ -109,9 +113,9 @@ export function OrderSummaryCard({
           {/* Payment Status Badge - 1 column */}
           <div>
             <Badge 
-              className={`${order.paid ? "bg-green-500" : "bg-orange-500"} text-white w-full justify-center py-2`}
+              className={`${isActuallyPaid ? "bg-green-500" : "bg-orange-500"} text-white w-full justify-center py-2`}
             >
-              {order.paid ? (
+              {isActuallyPaid ? (
                 <>
                   <CheckCircle className="h-3 w-3 mr-1" />
                   Paid
