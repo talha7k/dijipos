@@ -33,6 +33,9 @@ interface ThermalPrinterService {
   printTest(): Promise<void>;
   requestPrinterConnection(): Promise<ConnectedPrinter | null>;
   isWebSerialSupported(): boolean;
+  isWebUSBSupported(): boolean;
+  getConnectedUSBPrinters(): Promise<ConnectedPrinter[]>;
+  requestUSBPrinterConnection(): Promise<ConnectedPrinter | null>;
 }
 
 interface PrinterSettingsTabProps {
@@ -44,7 +47,9 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
   const { organizationId } = useAuth();
   const [printerDialogOpen, setPrinterDialogOpen] = useState(false);
   const [connectedPrinters, setConnectedPrinters] = useState<ConnectedPrinter[]>([]);
+  const [connectedUSBPrinters, setConnectedUSBPrinters] = useState<ConnectedPrinter[]>([]);
   const [isWebSerialSupported, setIsWebSerialSupported] = useState(false);
+  const [isWebUSBSupported, setIsWebUSBSupported] = useState(false);
   const [newPrinterSettings, setNewPrinterSettings] = useState({
     paperWidth: printerSettings?.paperWidth || 58,
     fontSize: printerSettings?.fontSize || FontSize.MEDIUM,
@@ -55,15 +60,27 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
   });
 
   useEffect(() => {
-    // Check Web Serial API support
-    const checkWebSerialSupport = () => {
-      const supported = (thermalPrinter as unknown as ThermalPrinterService).isWebSerialSupported();
-      setIsWebSerialSupported(supported);
+    // Check API support
+    const checkAPISupport = () => {
+      const serialSupported = (thermalPrinter as unknown as ThermalPrinterService).isWebSerialSupported();
+      const usbSupported = (thermalPrinter as unknown as ThermalPrinterService).isWebUSBSupported();
+      setIsWebSerialSupported(serialSupported);
+      setIsWebUSBSupported(usbSupported);
     };
 
-    checkWebSerialSupport();
+    checkAPISupport();
     fetchConnectedPrinters();
+    fetchConnectedUSBPrinters();
   }, []);
+
+  const fetchConnectedUSBPrinters = async () => {
+    try {
+      const usbPrinters = await (thermalPrinter as unknown as ThermalPrinterService).getConnectedUSBPrinters();
+      setConnectedUSBPrinters(usbPrinters);
+    } catch (error) {
+      console.error('Failed to fetch connected USB printers:', error);
+    }
+  };
 
   const fetchConnectedPrinters = async () => {
     try {
@@ -113,11 +130,23 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
     try {
       const printer = await (thermalPrinter as unknown as ThermalPrinterService).requestPrinterConnection();
       if (printer) {
-        toast.success('Printer connected successfully!');
+        toast.success('Serial printer connected successfully!');
         fetchConnectedPrinters();
       }
     } catch (error) {
-      toast.error('Failed to connect to printer. Please ensure your printer is connected and try again.');
+      toast.error('Failed to connect to serial printer. Please ensure your printer is connected and try again.');
+    }
+  };
+
+  const handleRequestUSBPrinterConnection = async () => {
+    try {
+      const printer = await (thermalPrinter as unknown as ThermalPrinterService).requestUSBPrinterConnection();
+      if (printer) {
+        toast.success('USB printer connected successfully!');
+        fetchConnectedUSBPrinters();
+      }
+    } catch (error) {
+      toast.error('Failed to connect to USB printer. Please ensure your printer is connected and try again.');
     }
   };
 
@@ -273,73 +302,156 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
             <div className="border-t pt-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="font-medium">Connected Printers:</span>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={fetchConnectedPrinters}
-                  disabled={!isWebSerialSupported}
-                >
-                  <RefreshCw className="h-4 w-4 mr-1" />
-                  Refresh
-                </Button>
-              </div>
-              {!isWebSerialSupported && (
-                <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
-                  <div className="flex items-center gap-2 text-yellow-700">
-                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                    <span className="text-sm font-medium">Web Serial API Not Supported</span>
-                  </div>
-                  <p className="text-sm text-yellow-600 mt-1">
-                    Your browser doesn&apos;t support the Web Serial API. Please use Chrome, Edge, or Opera for printer functionality.
-                  </p>
-                </div>
-              )}
-              {connectedPrinters.length > 0 ? (
-                <div className="space-y-2">
-                  {connectedPrinters.map((printer) => (
-                    <div key={printer.id} className="flex items-center justify-between p-2 border rounded">
-                      <div>
-                        <span className="font-medium">{printer.name}</span>
-                        {printer.vendorId && (
-                          <div className="text-sm text-muted-foreground">
-                            Vendor: 0x{printer.vendorId.toString(16)}, Product: 0x{printer.productId?.toString(16)}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={handleConnectPrinter}
-                        >
-                          Connect
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={handleTestPrint}
-                        >
-                          Test Print
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">
-                    No printers detected. Connect a thermal printer and click &ldquo;Refresh&rdquo; or select one manually.
-                  </p>
+                <div className="flex gap-2">
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={handleRequestPrinterConnection}
-                    className="w-full"
+                    onClick={fetchConnectedPrinters}
                     disabled={!isWebSerialSupported}
                   >
-                    <Printer className="h-4 w-4 mr-2" />
-                    Select Printer Manually
+                    <RefreshCw className="h-4 w-4 mr-1" />
+                    Refresh Serial
                   </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={fetchConnectedUSBPrinters}
+                    disabled={!isWebUSBSupported}
+                  >
+                    <RefreshCw className="h-4 w-4 mr-1" />
+                    Refresh USB
+                  </Button>
+                </div>
+              </div>
+
+              {/* API Support Warnings */}
+              {(!isWebSerialSupported && !isWebUSBSupported) && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded">
+                  <div className="flex items-center gap-2 text-red-700">
+                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                    <span className="text-sm font-medium">Printer APIs Not Supported</span>
+                  </div>
+                  <p className="text-sm text-red-600 mt-1">
+                    Your browser doesn&apos;t support Web Serial or WebUSB APIs. Please use Chrome, Edge, or Opera for printer functionality.
+                  </p>
+                </div>
+              )}
+
+              {isWebSerialSupported && !isWebUSBSupported && (
+                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded">
+                  <div className="flex items-center gap-2 text-blue-700">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span className="text-sm font-medium">Serial Printers Supported</span>
+                  </div>
+                  <p className="text-sm text-blue-600 mt-1">
+                    Your browser supports serial printers. USB printers may require additional browser support.
+                  </p>
+                </div>
+              )}
+              {/* Serial Printers */}
+              {connectedPrinters.length > 0 && (
+                <div className="mb-4">
+                  <h4 className="text-sm font-medium mb-2">Serial Printers:</h4>
+                  <div className="space-y-2">
+                    {connectedPrinters.map((printer) => (
+                      <div key={printer.id} className="flex items-center justify-between p-2 border rounded">
+                        <div>
+                          <span className="font-medium">{printer.name}</span>
+                          {printer.vendorId && (
+                            <div className="text-sm text-muted-foreground">
+                              Serial - Vendor: 0x{printer.vendorId.toString(16)}, Product: 0x{printer.productId?.toString(16)}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={handleConnectPrinter}
+                          >
+                            Connect
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={handleTestPrint}
+                          >
+                            Test Print
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* USB Printers */}
+              {connectedUSBPrinters.length > 0 && (
+                <div className="mb-4">
+                  <h4 className="text-sm font-medium mb-2">USB Printers:</h4>
+                  <div className="space-y-2">
+                    {connectedUSBPrinters.map((printer) => (
+                      <div key={printer.id} className="flex items-center justify-between p-2 border rounded">
+                        <div>
+                          <span className="font-medium">{printer.name}</span>
+                          {printer.vendorId && (
+                            <div className="text-sm text-muted-foreground">
+                              USB - Vendor: 0x{printer.vendorId.toString(16)}, Product: 0x{printer.productId?.toString(16)}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={handleRequestUSBPrinterConnection}
+                          >
+                            Connect USB
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={handleTestPrint}
+                          >
+                            Test Print
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* No printers detected */}
+              {connectedPrinters.length === 0 && connectedUSBPrinters.length === 0 && (
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">
+                    No printers detected. Connect a thermal printer and refresh, or select one manually.
+                  </p>
+                  <div className="flex gap-2">
+                    {isWebSerialSupported && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handleRequestPrinterConnection}
+                        className="flex-1"
+                      >
+                        <Printer className="h-4 w-4 mr-2" />
+                        Select Serial Printer
+                      </Button>
+                    )}
+                    {isWebUSBSupported && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handleRequestUSBPrinterConnection}
+                        className="flex-1"
+                      >
+                        <Printer className="h-4 w-4 mr-2" />
+                        Select USB Printer
+                      </Button>
+                    )}
+                  </div>
                 </div>
               )}
               {(thermalPrinter as unknown as ThermalPrinterService).isConnected() && (
