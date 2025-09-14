@@ -159,8 +159,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
            // Check if there's a previously selected organization in localStorage
            const storedOrganizationId = localStorage.getItem('selectedOrganizationId');
            if (storedOrganizationId && organizationAssociations.some(ou => ou.organizationId === storedOrganizationId)) {
-             // Auto-select the stored organization
+             // Auto-select stored organization
              await selectOrganization(storedOrganizationId);
+           } else if (organizationAssociations.length === 1) {
+             // Auto-select only available organization
+             await selectOrganization(organizationAssociations[0].organizationId);
            }
         } else {
           setOrganizationId(null);
