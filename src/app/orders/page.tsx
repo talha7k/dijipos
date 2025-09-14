@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, query, onSnapshot, getDoc, doc } from 'firebase/firestore';
+import { collection, query, onSnapshot, getDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
-import { Order, OrderPayment, PaymentType, Organization, User as AppUser } from '@/types';
+import { Order, OrderPayment, PaymentType, Organization, User as AppUser, OrderStatus } from '@/types';
 import { useOrdersData } from '@/hooks/use-orders-data';
 import { useUsersData } from '@/hooks/use-users-data';
 import { usePaymentTypesData } from '@/hooks/use-payment-types-data';
@@ -13,7 +13,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { ArrowLeft, Receipt, CreditCard, Users, LayoutGrid, ShoppingBag, Calendar, DollarSign, User } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { ArrowLeft, Receipt, CreditCard, Users, LayoutGrid, ShoppingBag, Calendar, DollarSign, User, CheckCircle, Save } from 'lucide-react';
+import { toast } from 'sonner';
 
 function OrdersContent() {
   const { user, organizationId } = useAuth();
@@ -99,11 +101,35 @@ function OrdersContent() {
     return orderPayments.reduce((sum, payment) => sum + payment.amount, 0);
   };
 
+  const isOrderPaid = (order: Order) => {
+    return order.paid;
+  };
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
     }).format(amount);
+  };
+
+  const updateOrderStatus = async (orderId: string, newStatus: OrderStatus) => {
+    if (!organizationId) return;
+
+    try {
+      const orderRef = doc(db, 'organizations', organizationId, 'orders', orderId);
+      await updateDoc(orderRef, {
+        status: newStatus,
+        updatedAt: serverTimestamp(),
+      });
+
+      toast.success(`Order ${newStatus === OrderStatus.COMPLETED ? 'completed' : 'saved'} successfully!`);
+
+      // Close the dialog after successful update
+      setSelectedOrder(null);
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      toast.error('Failed to update order status');
+    }
   };
 
   if (loading) return <div className="flex items-center justify-center h-screen">Loading...</div>;
@@ -137,8 +163,7 @@ function OrdersContent() {
             <TableBody>
               {orders.map((order) => {
                 const totalPaid = getOrderTotalPaid(order.id);
-                const isFullyPaid = totalPaid >= order.total;
-                
+
                 return (
                   <TableRow key={order.id}>
                     <TableCell className="font-medium">{order.orderNumber}</TableCell>
@@ -157,8 +182,8 @@ function OrdersContent() {
                     </TableCell>
                     <TableCell>{formatCurrency(order.total)}</TableCell>
                     <TableCell>
-                      <span className={isFullyPaid ? 'text-green-600 font-medium' : 'text-orange-600'}>
-                        {formatCurrency(totalPaid)}
+                      <span className={order.paid ? 'text-green-600 font-medium' : 'text-orange-600'}>
+                        {order.paid ? formatCurrency(order.total) : formatCurrency(totalPaid)}
                       </span>
                     </TableCell>
                     <TableCell>
@@ -283,39 +308,103 @@ function OrdersContent() {
                                 {/* Payment Information */}
                                 <div>
                                   <h3 className="font-semibold mb-3">Payment Information</h3>
-                                  {payments[selectedOrder.id] && payments[selectedOrder.id].length > 0 ? (
-                                    <div className="space-y-2">
-                                      {payments[selectedOrder.id].map((payment, index) => (
-                                        <div key={index} className="flex justify-between text-sm">
-                                          <span>{payment.paymentMethod}:</span>
-                                          <span>{formatCurrency(payment.amount)}</span>
-                                        </div>
-                                      ))}
-                                      <div className="flex justify-between font-medium border-t pt-2">
-                                        <span>Total Paid:</span>
-                                        <span>{formatCurrency(totalPaid)}</span>
-                                      </div>
-                                      {totalPaid > selectedOrder.total && (
-                                        <div className="flex justify-between text-green-600">
-                                          <span>Change Due:</span>
-                                          <span>{formatCurrency(totalPaid - selectedOrder.total)}</span>
-                                        </div>
-                                      )}
+                                  <div className="space-y-2">
+                                    <div className="flex justify-between">
+                                      <span>Payment Status:</span>
+                                      <Badge variant={selectedOrder.paid ? "default" : "secondary"} className={selectedOrder.paid ? "bg-green-500" : ""}>
+                                        {selectedOrder.paid ? "Paid" : "Unpaid"}
+                                      </Badge>
                                     </div>
-                                  ) : (
-                                    <p className="text-gray-500 text-sm">No payments recorded</p>
-                                  )}
+                                    {payments[selectedOrder.id] && payments[selectedOrder.id].length > 0 ? (
+                                      <>
+                                        {payments[selectedOrder.id].map((payment, index) => (
+                                          <div key={index} className="flex justify-between text-sm">
+                                            <span>{payment.paymentMethod}:</span>
+                                            <span>{formatCurrency(payment.amount)}</span>
+                                          </div>
+                                        ))}
+                                        <div className="flex justify-between font-medium border-t pt-2">
+                                          <span>Total Paid:</span>
+                                          <span>{formatCurrency(totalPaid)}</span>
+                                        </div>
+                                        {totalPaid > selectedOrder.total && (
+                                          <div className="flex justify-between text-green-600">
+                                            <span>Change Due:</span>
+                                            <span>{formatCurrency(totalPaid - selectedOrder.total)}</span>
+                                          </div>
+                                        )}
+                                      </>
+                                    ) : (
+                                      <p className="text-gray-500 text-sm">No payments recorded</p>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
 
-                              {selectedOrder.notes && (
-                                <div>
-                                  <h3 className="font-semibold mb-2">Notes</h3>
-                                  <p className="text-sm text-gray-600">{selectedOrder.notes}</p>
-                                </div>
-                              )}
-                            </div>
-                          )}
+                               {selectedOrder.notes && (
+                                 <div>
+                                   <h3 className="font-semibold mb-2">Notes</h3>
+                                   <p className="text-sm text-gray-600">{selectedOrder.notes}</p>
+                                 </div>
+                               )}
+
+                               {/* Action Buttons - Only show when fully paid */}
+                               {selectedOrder.paid && selectedOrder.status !== OrderStatus.COMPLETED && (
+                                 <div className="flex gap-3 pt-4 border-t">
+                                   <AlertDialog>
+                                     <AlertDialogTrigger asChild>
+                                       <Button variant="outline" className="flex-1">
+                                         <Save className="h-4 w-4 mr-2" />
+                                         Save for Later
+                                       </Button>
+                                     </AlertDialogTrigger>
+                                     <AlertDialogContent>
+                                       <AlertDialogHeader>
+                                         <AlertDialogTitle>Save Order</AlertDialogTitle>
+                                         <AlertDialogDescription>
+                                           This will save the order for later processing. You can still modify it if needed.
+                                         </AlertDialogDescription>
+                                       </AlertDialogHeader>
+                                       <AlertDialogFooter>
+                                         <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                         <AlertDialogAction
+                                           onClick={() => updateOrderStatus(selectedOrder.id, OrderStatus.SAVED)}
+                                         >
+                                           Save Order
+                                         </AlertDialogAction>
+                                       </AlertDialogFooter>
+                                     </AlertDialogContent>
+                                   </AlertDialog>
+
+                                   <AlertDialog>
+                                     <AlertDialogTrigger asChild>
+                                       <Button className="flex-1 bg-green-600 hover:bg-green-700">
+                                         <CheckCircle className="h-4 w-4 mr-2" />
+                                         Mark as Completed
+                                       </Button>
+                                     </AlertDialogTrigger>
+                                     <AlertDialogContent>
+                                       <AlertDialogHeader>
+                                         <AlertDialogTitle>Complete Order</AlertDialogTitle>
+                                         <AlertDialogDescription>
+                                           This will mark the order as completed. This action cannot be undone.
+                                         </AlertDialogDescription>
+                                       </AlertDialogHeader>
+                                       <AlertDialogFooter>
+                                         <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                         <AlertDialogAction
+                                           onClick={() => updateOrderStatus(selectedOrder.id, OrderStatus.COMPLETED)}
+                                           className="bg-green-600 hover:bg-green-700"
+                                         >
+                                           Complete Order
+                                         </AlertDialogAction>
+                                       </AlertDialogFooter>
+                                     </AlertDialogContent>
+                                   </AlertDialog>
+                                 </div>
+                               )}
+                             </div>
+                           )}
                         </DialogContent>
                       </Dialog>
                     </TableCell>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import React from 'react';
-import { addDoc, getDoc, doc, collection, updateDoc } from 'firebase/firestore';
+import { addDoc, getDoc, doc, collection, updateDoc, query, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 import { TableStatus, OrderStatus, ItemType } from '@/types';
@@ -18,6 +18,7 @@ import { useOrderTypesData } from '@/hooks/use-order-types-data';
 import { useReceiptTemplatesData } from '@/hooks/use-receipt-templates-data';
 import { usePrinterSettingsData } from '@/hooks/use-printer-settings-data';
 import { useOrganizationData } from '@/hooks/use-organization-data';
+import { useOrderPayments } from '@/hooks/use-order-payments';
 import { Product, Service, Category, Table, Customer, Order, OrderPayment, PaymentType, OrderType, ReceiptTemplate, PrinterSettings, Organization } from '@/types';
 
 import { POSBreadcrumb } from '@/components/POSBreadcrumb';
@@ -89,12 +90,22 @@ export default function POSPage() {
   const { printerSettings, loading: printerSettingsLoading } = usePrinterSettingsData(organizationId || undefined);
   const { organization, loading: organizationLoading } = useOrganizationData(organizationId || undefined);
 
+  // Use the new order payments hook
+  const { orderPayments, loading: orderPaymentsLoading } = useOrderPayments({
+    organizationId: organizationId || undefined,
+  });
+
+  const getTotalPaidForOrder = (orderId: string) => {
+    const payments = orderPayments[orderId] || [];
+    return payments.reduce((sum, payment) => sum + payment.amount, 0);
+  };
+
   // Update loading state based on all data sources
   useEffect(() => {
-    const allDataLoaded = !productsLoading && !servicesLoading && !categoriesLoading && 
-                         !tablesLoading && !customersLoading && !ordersLoading &&
-                         !paymentTypesLoading && !orderTypesLoading && !receiptTemplatesLoading &&
-                         !printerSettingsLoading && !organizationLoading;
+    const allDataLoaded = !productsLoading && !servicesLoading && !categoriesLoading &&
+                          !tablesLoading && !customersLoading && !ordersLoading &&
+                          !paymentTypesLoading && !orderTypesLoading && !receiptTemplatesLoading &&
+                          !printerSettingsLoading && !organizationLoading && !orderPaymentsLoading;
     setLoading(!allDataLoaded);
   }, [productsLoading, servicesLoading, categoriesLoading, tablesLoading, customersLoading, 
       ordersLoading, paymentTypesLoading, orderTypesLoading, receiptTemplatesLoading, 
@@ -317,24 +328,30 @@ export default function POSPage() {
 
         const orderRef = await addDoc(collection(db, 'organizations', organizationId, 'orders'), orderDataWithoutId);
         const savedOrder = { ...orderData, id: orderRef.id };
+        orderToUpdate = savedOrder;
 
         // Update payments to reference the real order ID
-        payments.forEach(payment => {
-          payment.orderId = savedOrder.id;
-        });
-
-        orderToUpdate = savedOrder;
+        payments = payments.map(payment => ({
+          ...payment,
+          orderId: savedOrder.id,
+        }));
       }
 
-      // Save payments to Firebase
-      const paymentPromises = payments.map(payment =>
-        addDoc(collection(db, 'organizations', organizationId, 'orderPayments'), payment)
-      );
+      // Save payments using the order payments hook approach
+      const paymentPromises = payments.map(payment => {
+        const paymentData = {
+          ...payment,
+          organizationId,
+        };
+        return addDoc(collection(db, 'organizations', organizationId, 'orderPayments'), paymentData);
+      });
+      
       await Promise.all(paymentPromises);
 
-      // Update order status to completed
+      // Update order status to completed and mark as paid
       await updateDoc(doc(db, 'organizations', organizationId, 'orders', orderToUpdate.id), {
         status: OrderStatus.COMPLETED,
+        paid: true,
         updatedAt: new Date(),
       });
 
@@ -467,36 +484,37 @@ export default function POSPage() {
                          if (cart.length === 0) return;
 
                          // Create a temporary order from cart for payment processing
-                         const tempOrder: Order = {
-                           id: 'temp-checkout',
-                           organizationId: organizationId || '',
-                           orderNumber: `TEMP-${Date.now()}`,
-                            items: cart.map(item => ({
-                              id: `${item.type}-${item.id}`,
-                              type: item.type === ItemType.PRODUCT ? ItemType.PRODUCT : ItemType.SERVICE,
-                              productId: item.type === ItemType.PRODUCT ? item.id : undefined,
-                              serviceId: item.type === ItemType.SERVICE ? item.id : undefined,
-                              name: item.name,
-                              quantity: item.quantity,
-                              unitPrice: item.price,
-                             total: item.total,
-                           })),
-                           subtotal: cartTotal,
-                           taxRate: 0, // TODO: Get from settings
-                           taxAmount: 0, // TODO: Calculate based on tax rate
-                           total: cartTotal,
-                            status: OrderStatus.OPEN,
-                           orderType: selectedOrderType?.name || 'dine-in',
-                           customerName: selectedCustomer?.name,
-                           customerPhone: selectedCustomer?.phone,
-                           customerEmail: selectedCustomer?.email,
-                           tableId: selectedTable?.id,
-                           tableName: selectedTable?.name,
-                           createdById: user?.uid || 'unknown',
-                           createdByName: user?.displayName || user?.email || 'Unknown User',
-                           createdAt: new Date(),
-                           updatedAt: new Date(),
-                         };
+                          const tempOrder: Order = {
+                            id: 'temp-checkout',
+                            organizationId: organizationId || '',
+                            orderNumber: `TEMP-${Date.now()}`,
+                             items: cart.map(item => ({
+                               id: `${item.type}-${item.id}`,
+                               type: item.type === ItemType.PRODUCT ? ItemType.PRODUCT : ItemType.SERVICE,
+                               productId: item.type === ItemType.PRODUCT ? item.id : undefined,
+                               serviceId: item.type === ItemType.SERVICE ? item.id : undefined,
+                               name: item.name,
+                               quantity: item.quantity,
+                               unitPrice: item.price,
+                              total: item.total,
+                            })),
+                            subtotal: cartTotal,
+                            taxRate: 0, // TODO: Get from settings
+                            taxAmount: 0, // TODO: Calculate based on tax rate
+                            total: cartTotal,
+                             status: OrderStatus.OPEN,
+                            paid: false, // New orders are not paid initially
+                            orderType: selectedOrderType?.name || 'dine-in',
+                            customerName: selectedCustomer?.name,
+                            customerPhone: selectedCustomer?.phone,
+                            customerEmail: selectedCustomer?.email,
+                            tableId: selectedTable?.id,
+                            tableName: selectedTable?.name,
+                            createdById: user?.uid || 'unknown',
+                            createdByName: user?.displayName || user?.email || 'Unknown User',
+                            createdAt: new Date(),
+                            updatedAt: new Date(),
+                          };
 
                          setSelectedOrder(tempOrder);
                          setCurrentView('payment');
@@ -533,32 +551,33 @@ export default function POSPage() {
                           }
                         }
 
-                        // Create a temporary order from cart for printing
-                        const tempOrder: Order = {
-                          id: 'temp',
-                          organizationId: organizationId || '',
-                          orderNumber: `TEMP-${Date.now()}`,
-                          items: cart.map(item => ({
-                            id: `${item.type}-${item.id}`,
-                            type: item.type === ItemType.PRODUCT ? ItemType.PRODUCT : ItemType.SERVICE,
-                            productId: item.type === ItemType.PRODUCT ? item.id : undefined,
-                            serviceId: item.type === ItemType.SERVICE ? item.id : undefined,
-                            name: item.name,
-                            quantity: item.quantity,
-                            unitPrice: item.price,
-                            total: item.total,
-                          })),
-                          subtotal: cartTotal,
-                          taxRate: 0,
-                          taxAmount: 0,
-                          total: cartTotal,
-                          status: OrderStatus.OPEN,
-                          orderType: selectedOrderType?.name || 'dine-in',
-                          customerName: selectedCustomer?.name,
-                          customerPhone: selectedCustomer?.phone,
-                          customerEmail: selectedCustomer?.email,
-                          tableId: selectedTable?.id,
-                          tableName: selectedTable?.name,
+                         // Create a temporary order from cart for printing
+                         const tempOrder: Order = {
+                           id: 'temp',
+                           organizationId: organizationId || '',
+                           orderNumber: `TEMP-${Date.now()}`,
+                           items: cart.map(item => ({
+                             id: `${item.type}-${item.id}`,
+                             type: item.type === ItemType.PRODUCT ? ItemType.PRODUCT : ItemType.SERVICE,
+                             productId: item.type === ItemType.PRODUCT ? item.id : undefined,
+                             serviceId: item.type === ItemType.SERVICE ? item.id : undefined,
+                             name: item.name,
+                             quantity: item.quantity,
+                             unitPrice: item.price,
+                             total: item.total,
+                           })),
+                           subtotal: cartTotal,
+                           taxRate: 0,
+                           taxAmount: 0,
+                           total: cartTotal,
+                           status: OrderStatus.OPEN,
+                           paid: false, // Temporary orders for printing are not paid
+                           orderType: selectedOrderType?.name || 'dine-in',
+                           customerName: selectedCustomer?.name,
+                           customerPhone: selectedCustomer?.phone,
+                           customerEmail: selectedCustomer?.email,
+                           tableId: selectedTable?.id,
+                           tableName: selectedTable?.name,
                           createdById: user?.uid || 'unknown',
                           createdByName: user?.displayName || user?.email || 'Unknown User',
                           createdAt: new Date(),
@@ -728,6 +747,8 @@ export default function POSPage() {
         {currentView === 'orders' && (
           <POSOrderGrid
             orders={orders.filter(order => order.status === OrderStatus.SAVED)}
+            payments={orderPayments}
+            organizationId={organizationId || undefined}
             onOrderSelect={handleOrderReopen}
             onPaymentClick={handlePaymentClick}
             onBack={handleBackToItems}
@@ -753,34 +774,35 @@ export default function POSPage() {
            onCheckout={() => {
              if (cart.length === 0) return;
 
-             // Create a temporary order from cart for payment processing
-             const tempOrder: Order = {
-               id: 'temp-checkout',
-               organizationId: organizationId || '',
-               orderNumber: `TEMP-${Date.now()}`,
-              items: cart.map(item => ({
-                id: `${item.type}-${item.id}`,
-                type: item.type === ItemType.PRODUCT ? ItemType.PRODUCT : ItemType.SERVICE,
-                productId: item.type === ItemType.PRODUCT ? item.id : undefined,
-                serviceId: item.type === ItemType.SERVICE ? item.id : undefined,
-                name: item.name,
-                quantity: item.quantity,
-                unitPrice: item.price,
-                total: item.total,
-              })),
-               subtotal: cartTotal,
-               taxRate: 0, // TODO: Get from settings
-               taxAmount: 0, // TODO: Calculate based on tax rate
-               total: cartTotal,
-               status: OrderStatus.OPEN,
-               orderType: selectedOrderType?.name || 'dine-in',
-               customerName: selectedCustomer?.name,
-               customerPhone: selectedCustomer?.phone,
-               customerEmail: selectedCustomer?.email,
-               tableId: selectedTable?.id,
-               tableName: selectedTable?.name,
-               createdById: user?.uid || 'unknown',
-               createdByName: user?.displayName || user?.email || 'Unknown User',
+              // Create a temporary order from cart for payment processing
+              const tempOrder: Order = {
+                id: 'temp-checkout',
+                organizationId: organizationId || '',
+                orderNumber: `TEMP-${Date.now()}`,
+               items: cart.map(item => ({
+                 id: `${item.type}-${item.id}`,
+                 type: item.type === ItemType.PRODUCT ? ItemType.PRODUCT : ItemType.SERVICE,
+                 productId: item.type === ItemType.PRODUCT ? item.id : undefined,
+                 serviceId: item.type === ItemType.SERVICE ? item.id : undefined,
+                 name: item.name,
+                 quantity: item.quantity,
+                 unitPrice: item.price,
+                 total: item.total,
+               })),
+                subtotal: cartTotal,
+                taxRate: 0, // TODO: Get from settings
+                taxAmount: 0, // TODO: Calculate based on tax rate
+                total: cartTotal,
+                status: OrderStatus.OPEN,
+                paid: false, // New orders are not paid initially
+                orderType: selectedOrderType?.name || 'dine-in',
+                customerName: selectedCustomer?.name,
+                customerPhone: selectedCustomer?.phone,
+                customerEmail: selectedCustomer?.email,
+                tableId: selectedTable?.id,
+                tableName: selectedTable?.name,
+                createdById: user?.uid || 'unknown',
+                createdByName: user?.displayName || user?.email || 'Unknown User',
                createdAt: new Date(),
                updatedAt: new Date(),
              };
@@ -836,6 +858,7 @@ export default function POSPage() {
               taxAmount: 0,
               total: cartTotal,
               status: OrderStatus.OPEN,
+              paid: false, // Temporary orders for printing are not paid
               orderType: selectedOrderType?.name || 'dine-in',
               customerName: selectedCustomer?.name,
               customerPhone: selectedCustomer?.phone,

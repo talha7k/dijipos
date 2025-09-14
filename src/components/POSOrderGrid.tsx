@@ -2,18 +2,28 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Clock, CheckCircle, XCircle, Save } from 'lucide-react';
-import { Order } from '@/types';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { ArrowLeft, Clock, CheckCircle, XCircle, Save, DollarSign } from 'lucide-react';
+import { Order, OrderPayment, OrderStatus } from '@/types';
+import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { toast } from 'sonner';
+import { OrderSummaryCard } from './shared/OrderSummaryCard';
+import { PaymentList } from './shared/PaymentList';
+import { OrderItemList } from './shared/OrderItemList';
 
 interface POSOrderGridProps {
   orders: Order[];
+  payments: { [orderId: string]: OrderPayment[] };
+  organizationId: string | undefined;
   onOrderSelect: (order: Order) => void;
   onPaymentClick: (order: Order) => void;
   onBack: () => void;
 }
 
-export function POSOrderGrid({ orders, onOrderSelect, onPaymentClick, onBack }: POSOrderGridProps) {
+export function POSOrderGrid({ orders, payments, organizationId, onOrderSelect, onPaymentClick, onBack }: POSOrderGridProps) {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
 
   const getStatusColor = (status: Order['status']) => {
     switch (status) {
@@ -45,6 +55,80 @@ export function POSOrderGrid({ orders, onOrderSelect, onPaymentClick, onBack }: 
     }
   };
 
+  const getOrderTotalPaid = (orderId: string) => {
+    const orderPayments = payments[orderId] || [];
+    return orderPayments.reduce((sum, payment) => sum + payment.amount, 0);
+  };
+
+  const isOrderFullyPaid = (order: Order) => {
+    const totalPaid = getOrderTotalPaid(order.id);
+    return totalPaid >= order.total;
+  };
+
+  const markOrderAsPaid = async (orderId: string) => {
+    if (!organizationId) return;
+
+    setUpdatingStatus(true);
+    try {
+      const orderRef = doc(db, 'organizations', organizationId, 'orders', orderId);
+      await updateDoc(orderRef, {
+        paid: true,
+        updatedAt: serverTimestamp(),
+      });
+
+      toast.success('Order marked as paid successfully!');
+      setSelectedOrder(null);
+    } catch (error) {
+      console.error('Error marking order as paid:', error);
+      toast.error('Failed to mark order as paid');
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
+  const completeOrder = async (orderId: string) => {
+    if (!organizationId) return;
+
+    setUpdatingStatus(true);
+    try {
+      const orderRef = doc(db, 'organizations', organizationId, 'orders', orderId);
+      await updateDoc(orderRef, {
+        paid: true,
+        status: OrderStatus.COMPLETED,
+        updatedAt: serverTimestamp(),
+      });
+
+      toast.success('Order completed successfully!');
+      setSelectedOrder(null);
+    } catch (error) {
+      console.error('Error completing order:', error);
+      toast.error('Failed to complete order');
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
+  const updateOrderStatus = async (orderId: string, newStatus: OrderStatus) => {
+    if (!organizationId) return;
+
+    setUpdatingStatus(true);
+    try {
+      const orderRef = doc(db, 'organizations', organizationId, 'orders', orderId);
+      await updateDoc(orderRef, {
+        status: newStatus,
+        updatedAt: serverTimestamp(),
+      });
+
+      toast.success(`Order ${newStatus === OrderStatus.COMPLETED ? 'completed' : 'saved'} successfully!`);
+      setSelectedOrder(null);
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      toast.error('Failed to update order status');
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
   if (selectedOrder) {
     return (
       <div className="flex-1 flex flex-col bg-background">
@@ -60,65 +144,21 @@ export function POSOrderGrid({ orders, onOrderSelect, onPaymentClick, onBack }: 
 
         <div className="flex-1 overflow-auto p-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Order Details</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between">
-                  <span>Status:</span>
-                  <Badge className={`${getStatusColor(selectedOrder.status)} text-white`}>
-                    {getStatusIcon(selectedOrder.status)}
-                    <span className="ml-1 capitalize">{selectedOrder.status}</span>
-                  </Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span>Customer:</span>
-                  <span>{selectedOrder.customerName || 'Walk-in'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Table:</span>
-                  <span>{selectedOrder.tableName || 'N/A'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Order Type:</span>
-                  <span className="capitalize">{selectedOrder.orderType}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Created:</span>
-                  <span>{selectedOrder.createdAt.toLocaleString()}</span>
-                </div>
-              </CardContent>
-            </Card>
+            <OrderSummaryCard
+              order={selectedOrder}
+              showPaymentStatus={true}
+              showOrderDetails={true}
+            />
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Order Items</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2 max-h-64 overflow-y-auto">
-                  {selectedOrder.items.map((item) => (
-                    <div key={item.id} className="flex justify-between items-center p-2 border rounded">
-                      <div>
-                        <div className="font-medium">{item.name}</div>
-                        <div className="text-sm text-muted-foreground">
-                          ${item.unitPrice.toFixed(2)} × {item.quantity}
-                        </div>
-                      </div>
-                      <div className="font-medium">${item.total.toFixed(2)}</div>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-4 pt-4 border-t">
-                  <div className="flex justify-between text-lg font-bold">
-                    <span>Total:</span>
-                    <span>${selectedOrder.total.toFixed(2)}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+            <OrderItemList items={selectedOrder.items} />
+
+             {/* Payments Section */}
+            <PaymentList
+              payments={payments[selectedOrder.id] || []}
+              orderTotal={selectedOrder.total}
+            />
+           </div>
+         </div>
 
         <div className="flex-shrink-0 p-4 border-t bg-background">
           <div className="flex gap-4">
@@ -132,10 +172,147 @@ export function POSOrderGrid({ orders, onOrderSelect, onPaymentClick, onBack }: 
             <Button
               onClick={() => onPaymentClick(selectedOrder)}
               className="flex-1"
+              variant="outline"
             >
               Process Payment
             </Button>
           </div>
+
+          {isOrderFullyPaid(selectedOrder) && !selectedOrder.paid && (
+            <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <h3 className="text-sm font-medium text-green-800 mb-3">Payment Complete - Choose Action:</h3>
+              <div className="flex gap-2 flex-wrap">
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      size="sm"
+                      className="bg-green-600 hover:bg-green-700"
+                      disabled={updatingStatus}
+                    >
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      {updatingStatus ? 'Marking...' : 'Mark as Paid'}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Mark Order as Paid</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will mark the order as paid but keep it open for further processing.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => markOrderAsPaid(selectedOrder.id)}
+                        disabled={updatingStatus}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        {updatingStatus ? 'Marking...' : 'Mark as Paid'}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      size="sm"
+                      className="bg-blue-600 hover:bg-blue-700"
+                      disabled={updatingStatus}
+                    >
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      {updatingStatus ? 'Completing...' : 'Complete Order'}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Complete Order</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will mark the order as paid and completed. The order will be finalized.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => completeOrder(selectedOrder.id)}
+                        disabled={updatingStatus}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        {updatingStatus ? 'Completing...' : 'Complete Order'}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => updateOrderStatus(selectedOrder.id, OrderStatus.SAVED)}
+                  disabled={updatingStatus}
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {updatingStatus ? 'Saving...' : 'Save for Later'}
+                </Button>
+
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setSelectedOrder(null)}
+                  disabled={updatingStatus}
+                >
+                  Keep Open
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {selectedOrder.paid && selectedOrder.status !== 'completed' && (
+            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <h3 className="text-sm font-medium text-blue-800 mb-3">Order Actions:</h3>
+              <div className="flex gap-2">
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      size="sm"
+                      className="bg-blue-600 hover:bg-blue-700"
+                      disabled={updatingStatus}
+                    >
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      {updatingStatus ? 'Completing...' : 'Complete Order'}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Complete Order</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will mark the order as completed. This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => updateOrderStatus(selectedOrder.id, OrderStatus.COMPLETED)}
+                        disabled={updatingStatus}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        {updatingStatus ? 'Completing...' : 'Complete Order'}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => updateOrderStatus(selectedOrder.id, OrderStatus.SAVED)}
+                  disabled={updatingStatus}
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {updatingStatus ? 'Saving...' : 'Save for Later'}
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -164,15 +341,30 @@ export function POSOrderGrid({ orders, onOrderSelect, onPaymentClick, onBack }: 
               className="cursor-pointer hover:shadow-lg transition-all duration-200"
               onClick={() => setSelectedOrder(order)}
             >
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">Order #{order.orderNumber}</CardTitle>
-                  <Badge className={`${getStatusColor(order.status)} text-white`}>
-                    {getStatusIcon(order.status)}
-                    <span className="ml-1 capitalize">{order.status}</span>
-                  </Badge>
-                </div>
-              </CardHeader>
+               <CardHeader className="pb-2">
+                 <div className="flex items-center justify-between">
+                   <CardTitle className="text-lg">Order #{order.orderNumber}</CardTitle>
+                   <div className="flex items-center gap-2">
+                     <Badge className={`${getStatusColor(order.status)} text-white`}>
+                       {getStatusIcon(order.status)}
+                       <span className="ml-1 capitalize">{order.status}</span>
+                     </Badge>
+                     <Badge variant={order.paid ? "default" : "outline"} className={order.paid ? "bg-green-500 text-white" : ""}>
+                       {order.paid ? (
+                         <>
+                           <CheckCircle className="h-3 w-3 mr-1" />
+                           Paid
+                         </>
+                       ) : (
+                         <>
+                           <DollarSign className="h-3 w-3 mr-1" />
+                           Unpaid
+                         </>
+                       )}
+                     </Badge>
+                   </div>
+                 </div>
+               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex justify-between text-sm">
                   <span>Customer:</span>

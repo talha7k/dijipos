@@ -224,6 +224,7 @@ export enum TableStatus {
 export enum OrderStatus {
   OPEN = 'open',
   COMPLETED = 'completed',
+  PREPARING = 'preparing',
   CANCELLED = 'cancelled',
   SAVED = 'saved'
 }
@@ -345,6 +346,7 @@ export interface Order {
   taxAmount: number;
   total: number;
   status: OrderStatus;
+  paid: boolean; // Whether the order has been fully paid
   customerName?: string;
   customerPhone?: string;
   customerEmail?: string;
