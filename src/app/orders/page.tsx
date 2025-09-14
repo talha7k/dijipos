@@ -164,7 +164,16 @@ function OrdersContent() {
     if (!organizationId || !selectedOrder) return;
 
     // Check if order is paid before completing
-    if (!selectedOrder.paid) {
+    let isPaid = selectedOrder.paid;
+    
+    // Fallback: check payments directly if paid field is false
+    if (!isPaid && payments[selectedOrder.id]) {
+      const orderPayments = payments[selectedOrder.id];
+      const totalPaid = orderPayments.reduce((sum, payment) => sum + payment.amount, 0);
+      isPaid = totalPaid >= selectedOrder.total;
+    }
+    
+    if (!isPaid) {
       toast.error(
         "Cannot complete an unpaid order. Please process payment first."
       );

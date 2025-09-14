@@ -1,144 +1,67 @@
-import { useState } from "react";
 import { Order, OrderPayment, OrderStatus } from "@/types";
-import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
-import { db } from "@/lib/firebase";
-import { toast } from "sonner";
 import { OrderList } from "@/components/orders/OrderList";
-import { OrderDetail } from "@/components/orders/OrderDetail";
-import { OrderActions } from "@/components/orders/OrderActions";
+import { OrderDetailView } from "@/components/orders/OrderDetailView";
+import { useOrderManagement } from "@/hooks/use-order-management";
+import { useOrderSelection } from "@/hooks/use-order-selection";
+import { useOrderContext } from "@/contexts/OrderContext";
 
 interface POSOrderGridProps {
-  orders: Order[];
-  payments: { [orderId: string]: OrderPayment[] };
   organizationId: string | undefined;
-  onOrderSelect: (order: Order) => void;
-  onPayOrder: (order: Order) => void;
-  onBack: () => void;
   onOrderUpdate?: () => void;
 }
 
 export function POSOrderGrid({
-  orders,
-  payments,
   organizationId,
-  onOrderSelect,
-  onPayOrder,
-  onBack,
   onOrderUpdate,
 }: POSOrderGridProps) {
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [updatingStatus, setUpdatingStatus] = useState(false);
+  const { orders, payments, onOrderSelect, onPayOrder, onBack } = useOrderContext();
+  const { selectedOrder, selectOrder, clearSelection } = useOrderSelection();
+  const { markOrderAsPaid, completeOrder, updateOrderStatus, updatingStatus } = useOrderManagement(organizationId);
 
-  const markOrderAsPaid = async (orderId: string) => {
-    if (!organizationId) return;
-
-    setUpdatingStatus(true);
-    try {
-      const orderRef = doc(
-        db,
-        "organizations",
-        organizationId,
-        "orders",
-        orderId
-      );
-      await updateDoc(orderRef, {
-        paid: true,
-        updatedAt: serverTimestamp(),
-      });
-
-       toast.success("Order marked as paid successfully!");
-       onOrderUpdate?.();
-       setSelectedOrder(null);
-    } catch (error) {
-      console.error("Error marking order as paid:", error);
-      toast.error("Failed to mark order as paid");
-    } finally {
-      setUpdatingStatus(false);
+  const handleMarkAsPaid = async (orderId: string) => {
+    const success = await markOrderAsPaid(orderId);
+    if (success) {
+      onOrderUpdate?.();
+      clearSelection();
     }
   };
 
-  const completeOrder = async (orderId: string) => {
-    if (!organizationId || !selectedOrder) return;
-
-    // Check if order is paid before completing
-    if (!selectedOrder.paid) {
-      toast.error(
-        "Cannot complete an unpaid order. Please process payment first."
-      );
-      return;
-    }
-
-    setUpdatingStatus(true);
-    try {
-      const orderRef = doc(
-        db,
-        "organizations",
-        organizationId,
-        "orders",
-        orderId
-      );
-      await updateDoc(orderRef, {
-        status: OrderStatus.COMPLETED,
-        updatedAt: serverTimestamp(),
-      });
-
-       toast.success("Order completed successfully!");
-       onOrderUpdate?.();
-       setSelectedOrder(null);
-    } catch (error) {
-      console.error("Error completing order:", error);
-      toast.error("Failed to complete order");
-    } finally {
-      setUpdatingStatus(false);
+  const handleCompleteOrder = async () => {
+    if (!selectedOrder) return;
+    const success = await completeOrder(selectedOrder, payments);
+    if (success) {
+      onOrderUpdate?.();
+      clearSelection();
     }
   };
 
-  const updateOrderStatus = async (orderId: string, newStatus: OrderStatus) => {
-    if (!organizationId) return;
-
-    // Check if trying to complete an unpaid order
-    if (newStatus === OrderStatus.COMPLETED && !selectedOrder?.paid) {
-      toast.error(
-        "Cannot complete an unpaid order. Please process payment first."
-      );
-      return;
+  const handleUpdateOrderStatus = async (newStatus: OrderStatus) => {
+    if (!selectedOrder) return;
+    const success = await updateOrderStatus(selectedOrder, newStatus, payments);
+    if (success) {
+      onOrderUpdate?.();
+      clearSelection();
     }
+  };
 
-    setUpdatingStatus(true);
-    try {
-      const orderRef = doc(
-        db,
-        "organizations",
-        organizationId,
-        "orders",
-        orderId
-      );
-      await updateDoc(orderRef, {
-        status: newStatus,
-        updatedAt: serverTimestamp(),
-      });
+  const wrapMarkAsPaid = (orderId: string) => {
+    handleMarkAsPaid(orderId);
+  };
 
-       toast.success(
-         `Order ${
-           newStatus === OrderStatus.COMPLETED ? "completed" : "updated"
-         } successfully!`
-       );
-       onOrderUpdate?.();
-       setSelectedOrder(null);
-    } catch (error) {
-      console.error("Error updating order status:", error);
-      toast.error("Failed to update order status");
-    } finally {
-      setUpdatingStatus(false);
-    }
+  const wrapCompleteOrder = (orderId: string) => {
+    handleCompleteOrder();
+  };
+
+  const wrapUpdateStatus = (orderId: string, status: OrderStatus) => {
+    handleUpdateOrderStatus(status);
   };
 
   const handleOrderSelect = (order: Order) => {
-    setSelectedOrder(order);
+    selectOrder(order);
   };
 
   const handleBackToList = () => {
-    setSelectedOrder(null);
+    clearSelection();
   };
 
   const handleReopenOrder = (order: Order) => {
@@ -147,25 +70,17 @@ export function POSOrderGrid({
 
   if (selectedOrder) {
     return (
-      <div className="flex-1 flex flex-col bg-background">
-        <OrderDetail
-          order={selectedOrder}
-          payments={payments[selectedOrder.id] || []}
-          onBack={handleBackToList}
-          onReopenOrder={handleReopenOrder}
-          onPayOrder={onPayOrder}
-        />
-        <div className="flex-shrink-0 p-4 border-t bg-background">
-          <OrderActions
-            order={selectedOrder}
-            payments={payments[selectedOrder.id] || []}
-            updatingStatus={updatingStatus}
-            onMarkAsPaid={markOrderAsPaid}
-            onCompleteOrder={completeOrder}
-            onUpdateStatus={updateOrderStatus}
-          />
-        </div>
-      </div>
+      <OrderDetailView
+        order={selectedOrder}
+        payments={payments[selectedOrder.id] || []}
+        updatingStatus={updatingStatus}
+        onBack={handleBackToList}
+        onReopenOrder={handleReopenOrder}
+        onPayOrder={onPayOrder}
+        onMarkAsPaid={wrapMarkAsPaid}
+        onCompleteOrder={wrapCompleteOrder}
+        onUpdateStatus={wrapUpdateStatus}
+      />
     );
   }
 
@@ -174,9 +89,9 @@ export function POSOrderGrid({
       orders={orders}
       onOrderSelect={handleOrderSelect}
       onBack={onBack}
-      onStatusChange={updateOrderStatus}
-      onMarkAsPaid={markOrderAsPaid}
-      onCompleteOrder={completeOrder}
+      onStatusChange={wrapUpdateStatus}
+      onMarkAsPaid={wrapMarkAsPaid}
+      onCompleteOrder={wrapCompleteOrder}
       getOrderPayments={(orderId: string) => payments[orderId] || []}
     />
   );

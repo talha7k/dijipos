@@ -1,18 +1,19 @@
 'use client';
 
-import { Table, TableStatus } from '@/types';
+import { Table, TableStatus, Order } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Users, ArrowLeft } from 'lucide-react';
+import { Users, ArrowLeft, User, Armchair as TableIcon } from 'lucide-react';
 
 interface POSTableGridProps {
   tables: Table[];
+  orders: Order[];
   onTableSelect: (table: Table) => void;
   onBack: () => void;
 }
 
-export function POSTableGrid({ tables, onTableSelect, onBack }: POSTableGridProps) {
+export function POSTableGrid({ tables, orders, onTableSelect, onBack }: POSTableGridProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'available':
@@ -28,7 +29,12 @@ export function POSTableGrid({ tables, onTableSelect, onBack }: POSTableGridProp
     }
   };
 
-  const availableTables = tables.filter(table => table.status === TableStatus.AVAILABLE);
+  const availableTables = tables; // Show all tables regardless of status
+
+  // Find orders for occupied tables
+  const getTableOrder = (tableId: string) => {
+    return orders.find(order => order.tableId === tableId && order.status !== 'completed' && order.status !== 'cancelled');
+  };
 
   return (
     <div className="flex flex-col h-full w-full">
@@ -43,7 +49,7 @@ export function POSTableGrid({ tables, onTableSelect, onBack }: POSTableGridProp
             <h1 className="text-2xl font-bold text-foreground">Select Table</h1>
           </div>
           <Badge variant="outline" className="text-lg px-3 py-1">
-            {availableTables.length} available
+            {availableTables.length} tables
           </Badge>
         </div>
       </div>
@@ -52,39 +58,55 @@ export function POSTableGrid({ tables, onTableSelect, onBack }: POSTableGridProp
       <div className="flex-1 overflow-auto p-6 bg-background">
         {availableTables.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6">
-            {availableTables.map((table) => (
-              <Card 
-                key={table.id} 
-                className="cursor-pointer hover:shadow-lg transition-all duration-200 transform hover:scale-105 active:scale-95"
-                onClick={() => onTableSelect(table)}
-              >
-                <CardHeader className="pb-3">
-                  <div className="flex justify-between items-start">
-                    <CardTitle className="text-lg font-bold">{table.name}</CardTitle>
-                    <Badge className={getStatusColor(table.status)}>
-                      {table.status}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">
-                      Capacity: {table.capacity}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+            {availableTables.map((table) => {
+              const tableOrder = getTableOrder(table.id);
+              const isAvailable = table.status === TableStatus.AVAILABLE;
+              
+              return (
+                <Card 
+                  key={table.id} 
+                  className={`${isAvailable ? 'cursor-pointer hover:shadow-lg transition-all duration-200 transform hover:scale-105 active:scale-95' : 'opacity-75'} ${tableOrder ? 'border-blue-200' : ''}`}
+                  onClick={() => isAvailable && onTableSelect(table)}
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center gap-2 text-lg font-bold">
+                      <TableIcon className="h-5 w-5" />
+                      <span>{table.name}</span>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="space-y-3">
+                      <Badge className={`${getStatusColor(table.status)} w-full justify-center`}>
+                        {table.status}
+                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Users className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">
+                          {table.capacity}
+                        </span>
+                      </div>
+                      {tableOrder && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <User className="h-4 w-4 text-blue-600" />
+                          <span className="text-blue-600 font-medium">
+                            {tableOrder.customerName || 'Customer'}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         ) : (
           <div className="text-center py-12 text-muted-foreground">
             <Users className="h-12 w-12 mx-auto mb-4" />
             <p className="text-lg">
-              No available tables
+              No tables found
             </p>
             <p className="text-sm mt-2">
-              All tables are currently occupied, reserved, or under maintenance.
+              Please create tables in Settings → Tables tab first.
             </p>
           </div>
         )}

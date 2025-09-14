@@ -6,8 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Trash2, Users } from 'lucide-react';
+import { Trash2, Users, MoreHorizontal } from 'lucide-react';
 import { toast } from 'sonner';
+import { TableActionsDialog } from '@/components/tables/TableActionsDialog';
 
 interface TableListProps {
   tables: TableType[];
@@ -86,7 +87,16 @@ export function TableList({
                       Capacity: {table.capacity}
                     </span>
                   </div>
-                  <div className="flex justify-end">
+                  <div className="flex justify-end gap-2">
+                    <TableActionsDialog table={table}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="hover:bg-accent"
+                      >
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </TableActionsDialog>
                     <AlertDialog open={deleteTableId === table.id} onOpenChange={(open) => !open && setDeleteTableId(null)}>
                       <AlertDialogTrigger asChild>
                         <Button

@@ -12,9 +12,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Table as TableIcon, Plus, Trash2, Users } from 'lucide-react';
+import { Table as TableIcon, Plus, Trash2, Users, MoreHorizontal } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
+import { TableActionsDialog } from '@/components/tables/TableActionsDialog';
 
 interface TablesTabProps {
   tables: Table[];
@@ -164,6 +165,15 @@ export function TablesTab({ tables, onRefresh }: TablesTabProps) {
                   <Badge className={getStatusColor(table.status)}>
                     {table.status}
                   </Badge>
+                  <TableActionsDialog table={table}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="hover:bg-accent"
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </TableActionsDialog>
                   <AlertDialog open={deleteTableId === table.id} onOpenChange={(open) => !open && setDeleteTableId(null)}>
                     <AlertDialogTrigger asChild>
                       <Button

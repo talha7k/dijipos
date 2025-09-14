@@ -351,7 +351,17 @@ export default function POSPage() {
       
       await Promise.all(paymentPromises);
 
-      // Sync order paid status based on payments
+      // Calculate total paid from the payments we just saved
+      const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
+      const shouldBePaid = totalPaid >= orderToUpdate.total;
+
+      // IMMEDIATELY update local order state to prevent race condition
+      if (shouldBePaid) {
+        setSelectedOrder(prev => prev ? { ...prev, paid: true } : null);
+        orderToUpdate = { ...orderToUpdate, paid: true };
+      }
+
+      // Also sync with Firestore (background)
       await syncOrderPaidStatus(orderToUpdate.id, orderToUpdate.total);
 
       // Navigate back to orders view to show order actions
@@ -369,9 +379,6 @@ export default function POSPage() {
 
   const handleSaveOrder = async () => {
     if (cart.length === 0 || !organizationId) return;
-
-    // Generate order number
-    const orderNumber = `ORD-${Date.now()}`;
 
     // Convert cart items to order items
     const orderItems = cart.map(cartItem => {
@@ -408,43 +415,73 @@ export default function POSPage() {
     const taxAmount = 0; // TODO: Calculate based on tax rate
     const total = subtotal + taxAmount;
 
-    const orderData = {
-      orderNumber,
-      items: orderItems,
-      subtotal,
-      taxRate,
-      taxAmount,
-      total,
-      status: OrderStatus.OPEN,
-      ...(selectedCustomer && {
-        customerName: selectedCustomer.name,
-        customerPhone: selectedCustomer.phone,
-        customerEmail: selectedCustomer.email,
-      }),
-      ...(selectedTable && {
-        tableId: selectedTable.id,
-        tableName: selectedTable.name,
-      }),
-      orderType: selectedOrderType?.name || 'dine-in',
-      organizationId,
-      createdById: user?.uid || 'unknown',
-      createdByName: user?.displayName || user?.email || 'Unknown User',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
     try {
-      // Create the order
-      await addDoc(collection(db, 'organizations', organizationId, 'orders'), orderData);
-      
-      // Update table status to occupied if a table is selected
-      if (selectedTable && selectedTable.id) {
-        await updateTable(selectedTable.id, { status: TableStatus.OCCUPIED });
+      // Check if we're updating an existing order or creating a new one
+      if (selectedOrder && !selectedOrder.id.startsWith('temp')) {
+        // Update existing order
+        const orderRef = doc(db, 'organizations', organizationId, 'orders', selectedOrder.id);
+        const updateData = {
+          items: orderItems,
+          subtotal,
+          taxRate,
+          taxAmount,
+          total,
+          ...(selectedCustomer && {
+            customerName: selectedCustomer.name,
+            customerPhone: selectedCustomer.phone,
+            customerEmail: selectedCustomer.email,
+          }),
+          ...(selectedTable && {
+            tableId: selectedTable.id,
+            tableName: selectedTable.name,
+          }),
+          orderType: selectedOrderType?.name || 'dine-in',
+          updatedAt: new Date(),
+        };
+
+        await updateDoc(orderRef, updateData);
+        toast.success('Order updated successfully!');
+      } else {
+        // Create new order
+        const orderNumber = `ORD-${Date.now()}`;
+        const orderData = {
+          orderNumber,
+          items: orderItems,
+          subtotal,
+          taxRate,
+          taxAmount,
+          total,
+          status: OrderStatus.OPEN,
+          ...(selectedCustomer && {
+            customerName: selectedCustomer.name,
+            customerPhone: selectedCustomer.phone,
+            customerEmail: selectedCustomer.email,
+          }),
+          ...(selectedTable && {
+            tableId: selectedTable.id,
+            tableName: selectedTable.name,
+          }),
+          orderType: selectedOrderType?.name || 'dine-in',
+          organizationId,
+          createdById: user?.uid || 'unknown',
+          createdByName: user?.displayName || user?.email || 'Unknown User',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+
+        await addDoc(collection(db, 'organizations', organizationId, 'orders'), orderData);
+        
+        // Update table status to occupied if a table is selected
+        if (selectedTable && selectedTable.id) {
+          await updateTable(selectedTable.id, { status: TableStatus.OCCUPIED });
+        }
+        
+        toast.success('Order saved successfully!');
       }
       
-      toast.success('Order saved successfully!');
       // Clear all POS data after successful save
       clearPOSData();
+      setSelectedOrder(null); // Ensure selected order is cleared after save
     } catch (error) {
       console.error('Error saving order:', error);
       toast.error('Failed to save order. Please try again.');
@@ -480,6 +517,7 @@ export default function POSPage() {
                     <POSCartSidebar
                       cart={cart}
                       cartTotal={cartTotal}
+                      onItemClick={handleCartItemClick}
 onPayOrder={() => {
                          if (cart.length === 0) return;
 
@@ -731,6 +769,7 @@ onPayOrder={() => {
         {currentView === 'tables' && (
           <POSTableGrid
             tables={tables}
+            orders={orders}
             onTableSelect={handleTableSelected}
             onBack={handleBackToItems}
           />
@@ -774,6 +813,7 @@ onPayOrder={() => {
         <POSCartSidebar
           cart={cart}
           cartTotal={cartTotal}
+          onItemClick={handleCartItemClick}
 onPayOrder={() => {
               if (cart.length === 0) return;
 

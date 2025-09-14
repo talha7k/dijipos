@@ -521,7 +521,8 @@ export async function generateSampleData(organizationId: string) {
         invoices,
         payments,
         orders,
-        orderPayments
+        orderPayments,
+        tables
     };
 
     for (const [name, data] of Object.entries(collections)) {
@@ -544,6 +545,9 @@ export async function generateSampleData(organizationId: string) {
             } else if (name === 'orderTypes' || name === 'paymentTypes') {
                 // Order types and payment types already have timestamps, just add orgId
                 batch.set(docRef, { ...item, organizationId });
+            } else if (name === 'tables') {
+                // Tables already have organizationId and timestamps
+                batch.set(docRef, item);
             } else {
                 // Other collections just need organizationId
                 batch.set(docRef, { ...item, organizationId });

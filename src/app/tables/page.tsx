@@ -14,11 +14,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { MoreHorizontal } from 'lucide-react';
 import { Plus, Trash2, Table as TableIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { Search, Users } from 'lucide-react';
 import { TableList } from '@/components/TableList';
 import { AddTableDialog } from '@/components/AddTableDialog';
+import { TableActionsDialog } from '@/components/tables/TableActionsDialog';
 
 export default function TablesPage() {
   const { organizationId } = useAuth();
