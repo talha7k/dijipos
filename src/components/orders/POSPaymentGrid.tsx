@@ -141,6 +141,55 @@ export function POSPaymentGrid({ order, paymentTypes, onPaymentProcessed, onBack
         <h2 className="text-2xl font-bold">Process Payment - {order.orderNumber}</h2>
       </div>
 
+      {/* Payment Status Indicator - Moved to top for better visibility */}
+      <div className={`mb-6 p-4 rounded-lg border ${
+        remainingAmount > 0
+          ? 'bg-orange-50 border-orange-200'
+          : 'bg-green-50 border-green-200'
+      }`}>
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className={`text-sm font-medium ${
+              remainingAmount > 0 ? 'text-orange-800' : 'text-green-800'
+            }`}>
+              Payment Progress
+            </h3>
+            <p className={`text-sm mt-1 ${
+              remainingAmount > 0 ? 'text-orange-700' : 'text-green-700'
+            }`}>
+              ${totalPaid.toFixed(2)} of ${order.total.toFixed(2)} paid
+            </p>
+            {remainingAmount > 0 && (
+              <p className="text-sm text-orange-600 mt-1 font-medium">
+                Add ${remainingAmount.toFixed(2)} more to process payment
+              </p>
+            )}
+          </div>
+          <div className="text-right">
+            <div className={`text-2xl font-bold ${
+              remainingAmount > 0 ? 'text-orange-800' : 'text-green-800'
+            }`}>
+              {remainingAmount > 0 ? `$${remainingAmount.toFixed(2)}` : 'Paid'}
+            </div>
+            <div className={`text-sm ${
+              remainingAmount > 0 ? 'text-orange-700' : 'text-green-700'
+            }`}>
+              {remainingAmount > 0 ? 'remaining' : 'in full'}
+            </div>
+          </div>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="mt-3 w-full bg-gray-200 rounded-full h-2">
+          <div
+            className={`h-2 rounded-full transition-all duration-300 ${
+              remainingAmount > 0 ? 'bg-orange-500' : 'bg-green-500'
+            }`}
+            style={{ width: `${Math.min((totalPaid / order.total) * 100, 100)}%` }}
+          ></div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Order Summary */}
         <OrderSummaryCard
@@ -170,34 +219,6 @@ export function POSPaymentGrid({ order, paymentTypes, onPaymentProcessed, onBack
         />
       </div>
 
-      {/* Payment Status Indicator */}
-      <div className="mt-6 p-4 bg-primary/10 border border-primary/20 rounded-lg">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-sm font-medium text-primary">Payment Progress</h3>
-            <p className="text-sm text-primary/80 mt-1">
-              ${totalPaid.toFixed(2)} of ${order.total.toFixed(2)} paid
-            </p>
-          </div>
-          <div className="text-right">
-            <div className="text-2xl font-bold text-primary">
-              {remainingAmount > 0 ? `$${remainingAmount.toFixed(2)}` : 'Paid'}
-            </div>
-            <div className="text-sm text-primary/80">
-              {remainingAmount > 0 ? 'remaining' : 'in full'}
-            </div>
-          </div>
-        </div>
-        
-        {/* Progress Bar */}
-        <div className="mt-3 w-full bg-primary/20 rounded-full h-2">
-          <div 
-            className="bg-primary h-2 rounded-full transition-all duration-300"
-            style={{ width: `${Math.min((totalPaid / order.total) * 100, 100)}%` }}
-          ></div>
-        </div>
-      </div>
-
         {/* Payment List */}
         {payments.length > 0 && (
           <PaymentList
@@ -213,20 +234,26 @@ export function POSPaymentGrid({ order, paymentTypes, onPaymentProcessed, onBack
           />
         )}
 
-       {/* Process Payment Button or Completion Options */}
-       <div className="mt-6 pb-6">
-         {!paymentProcessed ? (
-           <div className="flex justify-end">
-             <Button
-               onClick={processPayment}
-               disabled={totalPaid < order.total}
-               size="lg"
-               className="px-8"
-             >
-               <CreditCard className="h-5 w-5 mr-2" />
-               {changeDue > 0 ? 'Process Payment & Give Change' : 'Process Payment'}
-             </Button>
-           </div>
+        {/* Process Payment Button or Completion Options */}
+        <div className="mt-6 pb-6">
+          {!paymentProcessed ? (
+            <div className="flex justify-end">
+              <Button
+                onClick={processPayment}
+                disabled={totalPaid < order.total}
+                size="lg"
+                className="px-8"
+                title={totalPaid < order.total ? `Add $${(order.total - totalPaid).toFixed(2)} more to process payment` : undefined}
+              >
+                <CreditCard className="h-5 w-5 mr-2" />
+                {totalPaid < order.total
+                  ? `Add $${(order.total - totalPaid).toFixed(2)} More`
+                  : changeDue > 0
+                    ? 'Process Payment & Give Change'
+                    : 'Process Payment'
+                }
+              </Button>
+            </div>
           ) : (
             <Card className="border-green-200 bg-green-50">
               <CardContent className="p-6">

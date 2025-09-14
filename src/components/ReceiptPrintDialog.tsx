@@ -75,7 +75,7 @@ export function ReceiptPrintDialog({
           companyPhone: organization?.phone || '',
           companyVat: organization?.vatNumber || '',
           orderNumber: order.orderNumber,
-          orderDate: new Date(order.createdAt).toLocaleDateString(),
+          orderDate: new Date(order.createdAt).toLocaleString(),
           tableName: order.tableName || '',
           customerName: order.customerName || '',
           items: order.items,
@@ -149,7 +149,7 @@ export function ReceiptPrintDialog({
         companyPhone: organization?.phone || '',
         companyVat: organization?.vatNumber || '',
         orderNumber: order.orderNumber,
-        orderDate: new Date(order.createdAt).toLocaleDateString(),
+        orderDate: new Date(order.createdAt).toLocaleString(),
         tableName: order.tableName || '',
         customerName: order.customerName || '',
         items: order.items,
@@ -230,7 +230,7 @@ export function ReceiptPrintDialog({
                 </div>
                 <div>
                   <span className="font-medium">Date:</span>
-                  <span className="ml-2">{new Date(order.createdAt).toLocaleDateString()}</span>
+                  <span className="ml-2">{new Date(order.createdAt).toLocaleString()}</span>
                 </div>
                 <div>
                   <span className="font-medium">Total:</span>

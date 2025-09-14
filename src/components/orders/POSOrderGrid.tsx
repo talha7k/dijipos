@@ -3,18 +3,26 @@ import { OrderList } from "@/components/orders/OrderList";
 import { OrderDetailView } from "@/components/orders/OrderDetailView";
 import { useOrderManagement } from "@/hooks/orders/use-order-management";
 import { useOrderSelection } from "@/hooks/orders/use-order-selection";
-import { useOrderContext } from "@/contexts/OrderContext";
 
 interface POSOrderGridProps {
+  orders: Order[];
+  payments: { [orderId: string]: OrderPayment[] };
   organizationId: string | undefined;
+  onOrderSelect: (order: Order) => void;
+  onPayOrder: (order: Order) => void;
+  onBack: () => void;
   onOrderUpdate?: () => void;
 }
 
 export function POSOrderGrid({
+  orders,
+  payments,
   organizationId,
+  onOrderSelect,
+  onPayOrder,
+  onBack,
   onOrderUpdate,
 }: POSOrderGridProps) {
-  const { orders, payments, onOrderSelect, onPayOrder, onBack } = useOrderContext();
   const { selectedOrder, selectOrder, clearSelection } = useOrderSelection();
   const { markOrderAsPaid, completeOrder, updateOrderStatus, updatingStatus } = useOrderManagement(organizationId);
 
@@ -35,9 +43,8 @@ export function POSOrderGrid({
     }
   };
 
-  const handleUpdateOrderStatus = async (newStatus: OrderStatus) => {
-    if (!selectedOrder) return;
-    const success = await updateOrderStatus(selectedOrder, newStatus, payments);
+  const handleUpdateOrderStatus = async (order: Order, newStatus: OrderStatus) => {
+    const success = await updateOrderStatus(order, newStatus, payments);
     if (success) {
       onOrderUpdate?.();
       clearSelection();
@@ -53,7 +60,10 @@ export function POSOrderGrid({
   };
 
   const wrapUpdateStatus = (orderId: string, status: OrderStatus) => {
-    handleUpdateOrderStatus(status);
+    const order = orders.find(o => o.id === orderId);
+    if (order) {
+      handleUpdateOrderStatus(order, status);
+    }
   };
 
   const handleOrderSelect = (order: Order) => {
@@ -68,6 +78,10 @@ export function POSOrderGrid({
     onOrderSelect(order);
   };
 
+  const handlePayOrder = (order: Order) => {
+    onPayOrder(order);
+  };
+
   if (selectedOrder) {
     return (
       <OrderDetailView
@@ -76,7 +90,7 @@ export function POSOrderGrid({
         updatingStatus={updatingStatus}
         onBack={handleBackToList}
         onReopenOrder={handleReopenOrder}
-        onPayOrder={onPayOrder}
+        onPayOrder={handlePayOrder}
         onMarkAsPaid={wrapMarkAsPaid}
         onCompleteOrder={wrapCompleteOrder}
         onUpdateStatus={wrapUpdateStatus}
