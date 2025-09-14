@@ -226,7 +226,7 @@ export enum OrderStatus {
   COMPLETED = 'completed',
   PREPARING = 'preparing',
   CANCELLED = 'cancelled',
-  SAVED = 'saved'
+  ON_HOLD = 'on_hold'
 }
 
 export enum QuoteStatus {

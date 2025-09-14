@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, Clock, Save, XCircle } from 'lucide-react';
+import { CheckCircle, Clock, Pause, XCircle } from 'lucide-react';
 import { OrderStatus } from '@/types';
 
 interface OrderStatusSelectionDialogProps {
@@ -38,11 +38,11 @@ export function OrderStatusSelectionDialog({
       disabled: !isPaid
     },
     {
-      value: OrderStatus.SAVED,
-      label: 'Saved',
-      description: 'Order is saved but can be modified',
-      icon: Save,
-      color: 'bg-blue-500',
+      value: OrderStatus.ON_HOLD,
+      label: 'On Hold',
+      description: 'Order is reserved but not yet active',
+      icon: Pause,
+      color: 'bg-orange-500',
       recommended: false,
       disabled: false
     },

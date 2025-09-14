@@ -229,7 +229,7 @@ const generateOrders = (count: number, customers: Omit<Customer, 'organizationId
         const total = subtotal + taxAmount;
 
         const orderId = generateId('ord');
-        const status = getRandomElement([OrderStatus.OPEN, OrderStatus.COMPLETED, OrderStatus.CANCELLED, OrderStatus.SAVED]);
+        const status = getRandomElement([OrderStatus.OPEN, OrderStatus.COMPLETED, OrderStatus.CANCELLED, OrderStatus.ON_HOLD]);
 
         const orderData: Omit<Order, 'organizationId'> = {
             id: orderId,

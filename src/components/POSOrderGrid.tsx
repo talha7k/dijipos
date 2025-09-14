@@ -33,7 +33,7 @@ export function POSOrderGrid({ orders, payments, organizationId, onOrderSelect, 
         return 'bg-green-500';
       case 'cancelled':
         return 'bg-red-500';
-      case 'saved':
+      case 'on_hold':
         return 'bg-blue-500';
       default:
         return 'bg-gray-500';
@@ -48,7 +48,7 @@ export function POSOrderGrid({ orders, payments, organizationId, onOrderSelect, 
         return <CheckCircle className="h-4 w-4" />;
       case 'cancelled':
         return <XCircle className="h-4 w-4" />;
-      case 'saved':
+      case 'on_hold':
         return <Save className="h-4 w-4" />;
       default:
         return <Clock className="h-4 w-4" />;
@@ -278,7 +278,7 @@ export function POSOrderGrid({ orders, payments, organizationId, onOrderSelect, 
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => updateOrderStatus(selectedOrder.id, OrderStatus.SAVED)}
+                  onClick={() => updateOrderStatus(selectedOrder.id, OrderStatus.ON_HOLD)}
                   disabled={updatingStatus}
                 >
                   <Save className="h-4 w-4 mr-2" />

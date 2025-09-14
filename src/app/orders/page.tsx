@@ -90,7 +90,7 @@ function OrdersContent() {
     switch (status) {
       case 'completed':
         return 'default';
-      case 'saved':
+      case 'on_hold':
         return 'secondary';
       case 'cancelled':
         return 'destructive';
@@ -125,7 +125,7 @@ function OrdersContent() {
         updatedAt: serverTimestamp(),
       });
 
-      toast.success(`Order ${newStatus === OrderStatus.COMPLETED ? 'completed' : 'saved'} successfully!`);
+      toast.success(`Order ${newStatus === OrderStatus.COMPLETED ? 'completed' : 'updated'} successfully!`);
 
       // Close the dialog after successful update
       setSelectedOrder(null);
@@ -150,7 +150,7 @@ function OrdersContent() {
         [OrderStatus.COMPLETED]: 'Order completed successfully!',
         [OrderStatus.PREPARING]: 'Order marked as preparing successfully!',
         [OrderStatus.CANCELLED]: 'Order cancelled successfully!',
-        [OrderStatus.SAVED]: 'Order saved successfully!',
+        [OrderStatus.ON_HOLD]: 'Order placed on hold successfully!',
       };
 
       toast.success(statusMessages[status] || 'Order status updated successfully!');
@@ -399,7 +399,7 @@ function OrdersContent() {
                                        <AlertDialogFooter>
                                          <AlertDialogCancel>Cancel</AlertDialogCancel>
                                          <AlertDialogAction
-                                           onClick={() => updateOrderStatus(selectedOrder.id, OrderStatus.SAVED)}
+                                           onClick={() => updateOrderStatus(selectedOrder.id, OrderStatus.OPEN)}
                                          >
                                            Save Order
                                          </AlertDialogAction>

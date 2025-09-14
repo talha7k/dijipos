@@ -323,7 +323,7 @@ export default function POSPage() {
       if (selectedOrder.id.startsWith('temp')) {
         const orderData = {
           ...selectedOrder,
-          status: OrderStatus.SAVED,
+          status: OrderStatus.OPEN,
           createdAt: new Date(),
           updatedAt: new Date(),
         };
@@ -382,7 +382,7 @@ export default function POSPage() {
         [OrderStatus.COMPLETED]: 'Order completed successfully!',
         [OrderStatus.PREPARING]: 'Order marked as preparing successfully!',
         [OrderStatus.CANCELLED]: 'Order cancelled successfully!',
-        [OrderStatus.SAVED]: 'Order saved successfully!',
+        [OrderStatus.ON_HOLD]: 'Order placed on hold successfully!',
       };
 
       toast.success(statusMessages[status] || 'Order status updated successfully!');
@@ -448,7 +448,7 @@ export default function POSPage() {
       taxRate,
       taxAmount,
       total,
-      status: OrderStatus.SAVED,
+      status: OrderStatus.OPEN,
       ...(selectedCustomer && {
         customerName: selectedCustomer.name,
         customerPhone: selectedCustomer.phone,
