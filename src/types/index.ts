@@ -395,11 +395,7 @@ export interface PrinterSettings {
   paperWidth: number; // Width in mm (e.g., 48, 58, 80 for common thermal printer widths)
   fontSize: FontSize;
   characterPerLine: number; // Characters per line based on paper width
-  autoCut: boolean;
-  // Thermal printer specific settings
-  printerType?: PrinterType; // Thermal printer type
   characterSet?: string; // Character set (e.g., 'korea', 'japan', 'multilingual')
-  baudRate?: number; // Serial baud rate (default: 9600)
   organizationId: string;
   createdAt: Date;
   updatedAt: Date;

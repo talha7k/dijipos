@@ -6,10 +6,9 @@ import { Order, Organization, ItemType, OrderStatus, SubscriptionStatus } from '
 
 
 export interface ThermalPrinterConfig {
-  type?: PrinterType;
-  width?: number;
+  paperWidth?: number;
+  fontSize?: string;
   characterSet?: string;
-  connectionType?: 'browser';
 }
 
 export interface ReceiptData {
@@ -21,10 +20,9 @@ export interface ReceiptData {
 
 export class ThermalPrinterService {
   private config: ThermalPrinterConfig = {
-    type: 'epson',
-    width: 48,
-    characterSet: 'korea',
-    connectionType: 'browser', // Default to browser native printing
+    paperWidth: 80,
+    fontSize: 'medium',
+    characterSet: 'multilingual',
   };
 
 
@@ -105,6 +103,18 @@ export class ThermalPrinterService {
   }
 
   /**
+   * Get font size in pixels from config
+   */
+  private getFontSize(): number {
+    switch (this.config.fontSize) {
+      case 'small': return 10;
+      case 'large': return 14;
+      case 'medium':
+      default: return 12;
+    }
+  }
+
+  /**
    * Generate QR code data URL for receipt
    */
   private async generateQRCodeData(order: Order, organization: Organization | null): Promise<string> {
@@ -143,6 +153,10 @@ export class ThermalPrinterService {
     // Generate QR code for the receipt
     const qrCodeDataURL = await this.generateQRCodeData(order, organization);
 
+    // Get font size from config
+    const fontSize = this.getFontSize();
+    const paperWidth = this.config.paperWidth || 80;
+
     const items = order.items.map(item => `
       <div class="item">
         <span class="item-name">${item.name} (x${item.quantity})</span>
@@ -158,13 +172,13 @@ export class ThermalPrinterService {
           <style>
             @media print {
               @page {
-                size: 80mm auto;
+                size: ${paperWidth}mm auto;
                 margin: 0;
               }
               body {
-                width: 80mm;
+                width: ${paperWidth}mm;
                 font-family: 'Courier New', monospace;
-                font-size: 12px;
+                font-size: ${fontSize}px;
                 line-height: 1.2;
                 margin: 0;
                 padding: 5mm;
@@ -173,11 +187,11 @@ export class ThermalPrinterService {
 
             body {
               font-family: 'Courier New', monospace;
-              font-size: 12px;
+              font-size: ${fontSize}px;
               line-height: 1.2;
               margin: 0;
               padding: 10px;
-              max-width: 80mm;
+              max-width: ${paperWidth}mm;
             }
 
             .center { text-align: center; }
@@ -235,49 +249,7 @@ export class ThermalPrinterService {
     `;
   }
 
-  /**
-   * Create the receipt React component
-   */
-  private createReceiptComponent({ order, organization }: ReceiptData) {
-    return (
-      <Printer
-        type={this.config.type || 'epson'}
-        width={this.config.width || 48}
-        debug={false}
-      >
-        {/* Company Header */}
-        <Text align="center" bold>{organization?.name || ''}</Text>
-        <Text align="center">{organization?.address || ''}</Text>
-        <Text align="center">Tel: {organization?.phone || ''}</Text>
-        {organization?.vatNumber && <Text align="center">VAT: {organization.vatNumber}</Text>}
-        <Line />
 
-        {/* Order Info */}
-        <Text align="center">Order #: {order.orderNumber}</Text>
-        <Text align="center">Date: {new Date(order.createdAt).toLocaleDateString()}</Text>
-        {order.tableName && <Text align="center">Table: {order.tableName}</Text>}
-        {order.customerName && <Text align="center">Customer: {order.customerName}</Text>}
-        <Line />
-
-        {/* Order Items */}
-        {order.items.map((item, index) => (
-          <Row key={index} left={`${item.name} (x${item.quantity})`} right={item.total.toFixed(2)} />
-        ))}
-        <Line />
-
-        {/* Totals */}
-        <Row left="Subtotal:" right={order.subtotal.toFixed(2)} />
-        <Row left={`VAT (${order.taxRate}%):`} right={order.taxAmount.toFixed(2)} />
-        <Row left="TOTAL:" right={order.total.toFixed(2)} />
-        <Line />
-
-        {/* Footer */}
-        <Text align="center">Payment: Cash</Text>
-        <Text align="center">Thank you for your business!</Text>
-        <Cut />
-      </Printer>
-    );
-  }
 
   /**
    * Print test receipt

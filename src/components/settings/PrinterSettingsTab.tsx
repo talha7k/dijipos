@@ -29,12 +29,9 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
   const { organizationId } = useAuth();
   const [printerDialogOpen, setPrinterDialogOpen] = useState(false);
   const [newPrinterSettings, setNewPrinterSettings] = useState({
-    paperWidth: printerSettings?.paperWidth || 58,
+    paperWidth: printerSettings?.paperWidth || 80,
     fontSize: printerSettings?.fontSize || FontSize.MEDIUM,
-    autoCut: printerSettings?.autoCut ?? true,
-    printerType: printerSettings?.printerType || PrinterType.EPSON,
-    characterSet: printerSettings?.characterSet || 'korea',
-    baudRate: printerSettings?.baudRate || 9600
+    characterSet: printerSettings?.characterSet || 'multilingual'
   });
 
   const handleUpdatePrinterSettings = async () => {
@@ -121,26 +118,6 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
                     <option value={FontSize.LARGE}>Large</option>
                   </select>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="auto-cut"
-                    checked={newPrinterSettings.autoCut}
-                    onCheckedChange={(checked) => setNewPrinterSettings({ ...newPrinterSettings, autoCut: checked })}
-                  />
-                  <Label htmlFor="auto-cut">Auto Cut (if supported)</Label>
-                </div>
-                <div>
-                  <Label htmlFor="printer-type">Printer Type</Label>
-                  <select
-                    id="printer-type"
-                    className="w-full p-2 border rounded"
-                    value={newPrinterSettings.printerType}
-                    onChange={(e) => setNewPrinterSettings({ ...newPrinterSettings, printerType: e.target.value as PrinterType })}
-                  >
-                    <option value={PrinterType.EPSON}>Epson</option>
-                    <option value={PrinterType.STAR}>Star</option>
-                  </select>
-                </div>
                 <div>
                   <Label htmlFor="character-set">Character Set</Label>
                   <select
@@ -149,24 +126,10 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
                     value={newPrinterSettings.characterSet}
                     onChange={(e) => setNewPrinterSettings({ ...newPrinterSettings, characterSet: e.target.value })}
                   >
+                    <option value="multilingual">Multilingual</option>
                     <option value="korea">Korea</option>
                     <option value="japan">Japan</option>
-                    <option value="multilingual">Multilingual</option>
                     <option value="usa">USA</option>
-                  </select>
-                </div>
-                <div>
-                  <Label htmlFor="baud-rate">Baud Rate</Label>
-                  <select
-                    id="baud-rate"
-                    className="w-full p-2 border rounded"
-                    value={newPrinterSettings.baudRate}
-                    onChange={(e) => setNewPrinterSettings({ ...newPrinterSettings, baudRate: parseInt(e.target.value) })}
-                  >
-                    <option value={9600}>9600</option>
-                    <option value={19200}>19200</option>
-                    <option value={38400}>38400</option>
-                    <option value={115200}>115200</option>
                   </select>
                 </div>
                 <Button onClick={handleUpdatePrinterSettings} className="w-full">
@@ -193,18 +156,8 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
               <span className="font-medium">{printerSettings.characterPerLine}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span>Auto Cut:</span>
-              <Badge variant={printerSettings.autoCut ? "default" : "secondary"}>
-                {printerSettings.autoCut ? "Enabled" : "Disabled"}
-              </Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>Printer Type:</span>
-              <span className="font-medium">{printerSettings.printerType || 'epson'}</span>
-            </div>
-            <div className="flex items-center justify-between">
               <span>Character Set:</span>
-              <span className="font-medium">{printerSettings.characterSet || 'korea'}</span>
+              <span className="font-medium">{printerSettings.characterSet || 'multilingual'}</span>
             </div>
 
             {/* Print Method */}

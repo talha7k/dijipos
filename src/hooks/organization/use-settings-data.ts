@@ -48,13 +48,10 @@ export function useSettingsData(organizationId: string | undefined) {
         // Create default printer settings
         const defaultPrinter: PrinterSettings = {
           id: 'printer',
-          paperWidth: 58,
+          paperWidth: 80,
           fontSize: FontSize.MEDIUM,
-          characterPerLine: 32,
-          autoCut: true,
-          printerType: PrinterType.EPSON,
-          characterSet: 'korea',
-          baudRate: 9600,
+          characterPerLine: 48,
+          characterSet: 'multilingual',
           organizationId,
           createdAt: new Date(),
           updatedAt: new Date(),

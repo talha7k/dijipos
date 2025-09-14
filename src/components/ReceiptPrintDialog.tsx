@@ -50,8 +50,8 @@ export function ReceiptPrintDialog({
           // Update printer config if settings are available
           if (printerSettings) {
             thermalPrinter.updateConfig({
-              type: printerSettings.printerType,
-              width: printerSettings.characterPerLine,
+              paperWidth: printerSettings.paperWidth,
+              fontSize: printerSettings.fontSize,
               characterSet: printerSettings.characterSet,
             });
           }
@@ -263,12 +263,7 @@ export function ReceiptPrintDialog({
                     <span className="font-medium">Chars per Line:</span>
                     <span className="ml-2">{printerSettings.characterPerLine}</span>
                   </div>
-                  <div>
-                    <span className="font-medium">Auto Cut:</span>
-                    <Badge variant={printerSettings.autoCut ? "default" : "secondary"} className="ml-2">
-                      {printerSettings.autoCut ? "Enabled" : "Disabled"}
-                    </Badge>
-                  </div>
+
                 </div>
               </CardContent>
             </Card>
