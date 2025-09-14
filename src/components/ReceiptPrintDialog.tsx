@@ -6,9 +6,10 @@ import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Printer, Download } from 'lucide-react';
-import { Order, ReceiptTemplate, PrinterSettings, Organization, CHARACTER_SETS } from '@/types';
+import { Order, ReceiptTemplate, PrinterSettings, Organization } from '@/types';
 import thermalPrinter from '@/lib/thermal-printer';
 import { toast } from 'sonner';
+import Receipt from '@/components/templates/Receipt';
 
 interface ReceiptPrintDialogProps {
   order: Order;
@@ -67,63 +68,98 @@ export function ReceiptPrintDialog({
           toast.error(error instanceof Error ? error.message : 'Failed to print receipt. Please check printer connection.');
         }
       } else {
-        // Prepare template data for A4 templates
-        const templateData = {
-          companyName: organization?.name || '',
-          companyAddress: organization?.address || '',
-          companyPhone: organization?.phone || '',
-          companyVat: organization?.vatNumber || '',
-          orderNumber: order.orderNumber,
-          orderDate: new Date(order.createdAt).toLocaleString(),
-          tableName: order.tableName || '',
-          customerName: order.customerName || '',
-          items: order.items,
-           subtotal: (order.subtotal || 0).toFixed(2),
-           vatRate: order.taxRate || 0,
-           vatAmount: (order.taxAmount || 0).toFixed(2),
-           total: (order.total || 0).toFixed(2),
-          paymentMethod: 'Cash' // Default, can be enhanced later
-        };
-
-        // Simple template replacement
-        let htmlContent = template.content;
-
-        // Replace simple placeholders
-        Object.entries(templateData).forEach(([key, value]) => {
-          if (key !== 'items') {
-            const regex = new RegExp(`{{${key}}}`, 'g');
-            htmlContent = htmlContent.replace(regex, String(value));
-          }
-        });
-
-        // Handle items loop
-        const itemsRegex = /{{#each items}}([\s\S]*?){{\/each}}/;
-        const itemsMatch = htmlContent.match(itemsRegex);
-        if (itemsMatch && templateData.items) {
-          const itemTemplate = itemsMatch[1];
-          const itemsHtml = templateData.items.map(item => {
-            let itemHtml = itemTemplate;
-            Object.entries(item).forEach(([key, value]) => {
-              const regex = new RegExp(`{{${key}}}`, 'g');
-              itemHtml = itemHtml.replace(regex, String(value));
-            });
-            return itemHtml;
-          }).join('');
-          htmlContent = htmlContent.replace(itemsRegex, itemsHtml);
-        }
-
-        // Create and open print window
+        // For A4 templates, use the Receipt template component
         const printWindow = window.open('', '_blank');
         if (printWindow) {
-          printWindow.document.write(htmlContent);
-          printWindow.document.close();
+          // Create a complete HTML document with the Receipt component rendered
+          const receiptHtml = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <meta charset="utf-8">
+              <title>Receipt - ${order.orderNumber}</title>
+              <style>
+                body { 
+                  font-family: system-ui, -apple-system, sans-serif; 
+                  margin: 0; 
+                  padding: 20px; 
+                  background: white;
+                }
+                .receipt-container {
+                  max-width: 800px;
+                  margin: 0 auto;
+                  padding: 20px;
+                  border: 1px solid #ddd;
+                }
+                @media print {
+                  body { padding: 0; }
+                  .receipt-container { border: none; }
+                }
+              </style>
+            </head>
+            <body>
+              <div class="receipt-container">
+                <div style="text-align: center; margin-bottom: 20px;">
+                  <h2 style="margin: 0 0 10px 0;">${organization?.name || ''}</h2>
+                  <p style="margin: 5px 0;">${organization?.address || ''}</p>
+                  <p style="margin: 5px 0;">Tel: ${organization?.phone || ''}</p>
+                  ${organization?.vatNumber ? `<p style="margin: 5px 0;">VAT: ${organization.vatNumber}</p>` : ''}
+                  <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">
+                  <p style="margin: 5px 0;"><strong>Order #:</strong> ${order.orderNumber}</p>
+                  <p style="margin: 5px 0;"><strong>Date:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
+                  ${order.tableName ? `<p style="margin: 5px 0;"><strong>Table:</strong> ${order.tableName}</p>` : ''}
+                  ${order.customerName ? `<p style="margin: 5px 0;"><strong>Customer:</strong> ${order.customerName}</p>` : ''}
+                  <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                  ${order.items.map(item => `
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; padding: 5px 0;">
+                      <span>${item.name} (${item.quantity}x)</span>
+                      <span style="font-weight: 500;">$${item.total.toFixed(2)}</span>
+                    </div>
+                  `).join('')}
+                </div>
+                
+                <div style="border-top: 2px solid #000; padding-top: 15px; margin-top: 20px;">
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span>Subtotal:</span>
+                    <span>$${(order.subtotal || 0).toFixed(2)}</span>
+                  </div>
+                  ${(order.taxRate || 0) > 0 ? `
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span>VAT (${order.taxRate || 0}%):</span>
+                    <span>$${(order.taxAmount || 0).toFixed(2)}</span>
+                  </div>
+                  ` : ''}
+                  <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.2em; margin-top: 10px; padding-top: 10px; border-top: 1px solid #ddd;">
+                    <span>TOTAL:</span>
+                    <span>$${(order.total || 0).toFixed(2)}</span>
+                  </div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #666;">
+                  <p>Thank you for your business!</p>
+                </div>
+              </div>
+              
+              <script>
+                window.onload = function() {
+                  setTimeout(function() {
+                    window.print();
+                    window.close();
+                  }, 500);
+                };
+              </script>
+            </body>
+            </html>
+          `;
 
-          // Wait for content to load then print
-          printWindow.onload = () => {
-            printWindow.print();
-            setIsGenerating(false);
-            setOpen(false);
-          };
+          printWindow.document.write(receiptHtml);
+          printWindow.document.close();
+          
+          setIsGenerating(false);
+          setOpen(false);
         } else {
           setIsGenerating(false);
           toast.error('Please allow popups to print receipts');
@@ -141,48 +177,80 @@ export function ReceiptPrintDialog({
     if (!template) return;
 
     try {
-      // Prepare template data (same as generateReceipt)
-      const templateData = {
-        companyName: organization?.name || '',
-        companyAddress: organization?.address || '',
-        companyPhone: organization?.phone || '',
-        companyVat: organization?.vatNumber || '',
-        orderNumber: order.orderNumber,
-        orderDate: new Date(order.createdAt).toLocaleString(),
-        tableName: order.tableName || '',
-        customerName: order.customerName || '',
-        items: order.items,
-        subtotal: (order.subtotal || 0).toFixed(2),
-         vatRate: order.taxRate || 0,
-         vatAmount: (order.taxAmount || 0).toFixed(2),
-         total: (order.total || 0).toFixed(2),
-        paymentMethod: 'Cash'
-      };
-
-      let htmlContent = template.content;
-      
-      // Replace placeholders (same logic as above)
-      Object.entries(templateData).forEach(([key, value]) => {
-        if (key !== 'items') {
-          const regex = new RegExp(`{{${key}}}`, 'g');
-          htmlContent = htmlContent.replace(regex, String(value));
-        }
-      });
-
-      const itemsRegex = /{{#each items}}([\s\S]*?){{\/each}}/;
-      const itemsMatch = htmlContent.match(itemsRegex);
-      if (itemsMatch && templateData.items) {
-        const itemTemplate = itemsMatch[1];
-        const itemsHtml = templateData.items.map(item => {
-          let itemHtml = itemTemplate;
-          Object.entries(item).forEach(([key, value]) => {
-            const regex = new RegExp(`{{${key}}}`, 'g');
-            itemHtml = itemHtml.replace(regex, String(value));
-          });
-          return itemHtml;
-        }).join('');
-        htmlContent = htmlContent.replace(itemsRegex, itemsHtml);
-      }
+      // Generate proper HTML using the Receipt template structure
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Receipt - ${order.orderNumber}</title>
+          <style>
+            body { 
+              font-family: system-ui, -apple-system, sans-serif; 
+              margin: 0; 
+              padding: 20px; 
+              background: white;
+            }
+            .receipt-container {
+              max-width: 800px;
+              margin: 0 auto;
+              padding: 20px;
+              border: 1px solid #ddd;
+            }
+            @media print {
+              body { padding: 0; }
+              .receipt-container { border: none; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="receipt-container">
+            <div style="text-align: center; margin-bottom: 20px;">
+              <h2 style="margin: 0 0 10px 0;">${organization?.name || ''}</h2>
+              <p style="margin: 5px 0;">${organization?.address || ''}</p>
+              <p style="margin: 5px 0;">Tel: ${organization?.phone || ''}</p>
+              ${organization?.vatNumber ? `<p style="margin: 5px 0;">VAT: ${organization.vatNumber}</p>` : ''}
+              <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">
+              <p style="margin: 5px 0;"><strong>Order #:</strong> ${order.orderNumber}</p>
+              <p style="margin: 5px 0;"><strong>Date:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
+              ${order.tableName ? `<p style="margin: 5px 0;"><strong>Table:</strong> ${order.tableName}</p>` : ''}
+              ${order.customerName ? `<p style="margin: 5px 0;"><strong>Customer:</strong> ${order.customerName}</p>` : ''}
+              <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+              ${order.items.map(item => `
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; padding: 5px 0;">
+                  <span>${item.name} (${item.quantity}x)</span>
+                  <span style="font-weight: 500;">$${item.total.toFixed(2)}</span>
+                </div>
+              `).join('')}
+            </div>
+            
+            <div style="border-top: 2px solid #000; padding-top: 15px; margin-top: 20px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span>Subtotal:</span>
+                <span>$${(order.subtotal || 0).toFixed(2)}</span>
+              </div>
+              ${(order.taxRate || 0) > 0 ? `
+              <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span>VAT (${order.taxRate || 0}%):</span>
+                <span>$${(order.taxAmount || 0).toFixed(2)}</span>
+              </div>
+              ` : ''}
+              <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.2em; margin-top: 10px; padding-top: 10px; border-top: 1px solid #ddd;">
+                <span>TOTAL:</span>
+                <span>$${(order.total || 0).toFixed(2)}</span>
+              </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #666;">
+              <p>Thank you for your business!</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
 
       // Create and download file
       const blob = new Blob([htmlContent], { type: 'text/html' });
