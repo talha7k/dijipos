@@ -120,7 +120,7 @@ export async function generateZatcaQRCode(data: ZatcaQRData): Promise<string> {
 /**
  * Generate QR code data for invoices
  */
-export function createInvoiceQRData(invoice: any, organization: any): ZatcaQRData {
+export function createInvoiceQRData(invoice: { createdAt: Date | string; total: number; taxAmount: number; invoiceNumber?: string; id: string; clientName?: string; clientVAT?: string }, organization: { name?: string; vatNumber?: string } | null): ZatcaQRData {
   const invoiceDate = new Date(invoice.createdAt);
   const dateString = invoiceDate.toISOString().split('T')[0];
   const timeString = invoiceDate.toTimeString().split(' ')[0];
@@ -133,7 +133,7 @@ export function createInvoiceQRData(invoice: any, organization: any): ZatcaQRDat
     totalAmount: invoice.total.toFixed(2),
     vatAmount: invoice.taxAmount.toFixed(2),
     invoiceNumber: invoice.invoiceNumber || invoice.id.slice(-8),
-    buyerName: invoice.clientName,
+    buyerName: invoice.clientName || '',
     buyerVatNumber: invoice.clientVAT || ''
   };
 }
@@ -141,7 +141,7 @@ export function createInvoiceQRData(invoice: any, organization: any): ZatcaQRDat
 /**
  * Generate QR code data for receipts/orders
  */
-export function createReceiptQRData(order: any, organization: any): ZatcaQRData {
+export function createReceiptQRData(order: { createdAt: Date | string; total: number; taxAmount?: number; orderNumber: string; customerName?: string }, organization: { name?: string; vatNumber?: string } | null): ZatcaQRData {
   const orderDate = new Date(order.createdAt);
   const dateString = orderDate.toISOString().split('T')[0];
   const timeString = orderDate.toTimeString().split(' ')[0];
