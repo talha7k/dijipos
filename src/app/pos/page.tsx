@@ -5,8 +5,8 @@ import React from 'react';
 import { addDoc, getDoc, doc, collection, updateDoc, query, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
+import { useOrderContext, CartItem } from '@/contexts/OrderContext';
 import { TableStatus, OrderStatus, ItemType } from '@/types';
-import { usePOSPersistence, CartItem } from '@/hooks/use-pos-persistence';
 import { useProductsData } from '@/hooks/products_services/use-products-data';
 import { useServicesData } from '@/hooks/products_services/use-services-data';
 import { useCategoriesData } from '@/hooks/products_services/use-categories-data';
@@ -32,6 +32,7 @@ import { POSPaymentGrid } from '@/components/orders/POSPaymentGrid';
 import { OrderTypeSelectionDialog } from '@/components/orders/OrderTypeSelectionDialog';
 import { ReceiptPrintDialog } from '@/components/ReceiptPrintDialog';
 import { CartItemModal } from '@/components/orders/CartItemModal';
+import { PaymentSuccessDialog } from '@/components/PaymentSuccessDialog';
 
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
@@ -51,8 +52,6 @@ import { toast } from 'sonner';
 
 export default function POSPage() {
   const { organizationId, user } = useAuth();
-
-  // Use the POS persistence hook for all POS state
   const {
     cart,
     selectedTable,
@@ -67,15 +66,24 @@ export default function POSPage() {
     setSelectedOrderType,
     setCurrentView,
     setCategoryPath,
-    setSelectedOrder,
+    setSelectedOrder: contextSetSelectedOrder,
     clearPOSData,
-    clearCart
-  } = usePOSPersistence(organizationId || undefined);
+    clearCart,
+    addToCart: contextAddToCart,
+    updateCartItem,
+    removeFromCart,
+    getCartTotal
+  } = useOrderContext();
+
+  // Local state for POS-specific views
+  const [posView, setPosView] = useState<'items' | 'tables' | 'customers' | 'orders' | 'payment'>('items');
 
   const [loading, setLoading] = useState(true);
   const [pendingOrderToReopen, setPendingOrderToReopen] = useState<Order | null>(null);
   const [showOrderConfirmationDialog, setShowOrderConfirmationDialog] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [showPaymentSuccessDialog, setShowPaymentSuccessDialog] = useState(false);
+  const [paymentSuccessData, setPaymentSuccessData] = useState<{ totalPaid: number; order?: Order } | null>(null);
   
   
   // Use new hooks for data management
@@ -116,26 +124,28 @@ export default function POSPage() {
   // Set default order type when order types are loaded
   useEffect(() => {
     if (orderTypes && orderTypes.length > 0 && !selectedOrderType) {
-      const savedOrderTypeKey = organizationId ? `${organizationId}_posOrderType` : 'posOrderType';
-      const savedOrderType = localStorage.getItem(savedOrderTypeKey);
-      
-      if (savedOrderType) {
-        try {
-          const parsedOrderType = JSON.parse(savedOrderType);
-          setSelectedOrderType(parsedOrderType);
-        } catch (error) {
-          console.error('Error loading order type from localStorage:', error);
-          setSelectedOrderType(orderTypes[0]);
-        }
-      } else {
-        setSelectedOrderType(orderTypes[0]);
-      }
+      setSelectedOrderType(orderTypes[0]);
     }
-  }, [orderTypes, selectedOrderType, organizationId, setSelectedOrderType]);
+  }, [orderTypes, selectedOrderType, setSelectedOrderType]);
+
+  // Reset payment success dialog state when component mounts or organization changes
+  useEffect(() => {
+    setShowPaymentSuccessDialog(false);
+    setPaymentSuccessData(null);
+  }, [organizationId]);
+
+  
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      resetPaymentSuccessDialog();
+    };
+  }, []);
 
 
   // Calculate cart total
-  const cartTotal = cart.reduce((sum: number, item: CartItem) => sum + item.total, 0);
+  const cartTotal = getCartTotal();
 
 
 
@@ -143,35 +153,20 @@ export default function POSPage() {
   useEffect(() => {
     console.log('POSPage: Cart state changed:', cart);
     console.log('POSPage: organizationId:', organizationId);
-    const cartKey = organizationId ? `${organizationId}_posCart` : 'posCart';
-    console.log('POSPage: Looking for cart with key:', cartKey);
-    console.log('POSPage: Cart in localStorage:', localStorage.getItem(cartKey));
   }, [cart, organizationId]);
 
   // Add item to cart
   const addToCart = (item: Product | Service, type: 'product' | 'service') => {
-      const itemType = type === 'product' ? ItemType.PRODUCT : ItemType.SERVICE;
-      const price = itemType === ItemType.PRODUCT ? item.price : (item as Service).price;
-    const existingItem = cart.find((cartItem: CartItem) =>
-      cartItem.id === item.id && cartItem.type === type
-    );
-
-    if (existingItem) {
-      setCart(cart.map((cartItem: CartItem) =>
-        cartItem.id === item.id && cartItem.type === type
-          ? { ...cartItem, quantity: cartItem.quantity + 1, total: (cartItem.quantity + 1) * price }
-          : cartItem
-      ));
-    } else {
-      setCart([...cart, {
-        id: item.id,
-        type,
-        name: item.name,
-        price,
-        quantity: 1,
-        total: price
-      }]);
-    }
+    const price = type === 'product' ? item.price : (item as Service).price;
+    const cartItem: CartItem = {
+      id: item.id,
+      type,
+      name: item.name,
+      price,
+      quantity: 1,
+      total: price
+    };
+    contextAddToCart(cartItem);
   };
 
   // Navigation handlers
@@ -190,29 +185,29 @@ export default function POSPage() {
 
   // Table and customer selection handlers
   const handleTableSelect = () => {
-    setCurrentView('tables');
+    setPosView('tables');
   };
 
   const handleCustomerSelect = () => {
-    setCurrentView('customers');
+    setPosView('customers');
   };
 
   const handleTableSelected = (table: Table) => {
     setSelectedTable(table);
-    setCurrentView('items');
+    setPosView('items');
   };
 
   const handleCustomerSelected = (customer: Customer) => {
     setSelectedCustomer(customer);
-    setCurrentView('items');
+    setPosView('items');
   };
 
   const handleBackToItems = () => {
-    setCurrentView('items');
+    setPosView('items');
   };
 
   const handleOrdersClick = () => {
-    setCurrentView('orders');
+    setPosView('orders');
   };
 
   const handleOrderTypeSelect = (orderType: OrderType) => {
@@ -232,6 +227,11 @@ export default function POSPage() {
   };
 
   const handleOrderReopen = (order: Order) => {
+    // Check if order is already paid
+    if (order.paid) {
+      return; // Don't allow reopening paid orders
+    }
+    
     // Check if there are items in the current cart
     if (cart.length > 0) {
       // Show confirmation dialog
@@ -244,6 +244,11 @@ export default function POSPage() {
   };
 
   const proceedWithOrderReopen = (order: Order) => {
+    // Check if order is already paid
+    if (order.paid) {
+      return; // Don't allow reopening paid orders
+    }
+    
     // Convert order items back to cart items
     const cartItems: CartItem[] = order.items.map(orderItem => ({
       id: orderItem.productId || orderItem.serviceId || orderItem.id,
@@ -255,8 +260,67 @@ export default function POSPage() {
     }));
 
     setCart(cartItems);
-    setSelectedOrder(order); // Set selected order so payments will load
-    setCurrentView('items');
+    contextSetSelectedOrder(order); // Set selected order so payments will load
+
+    // Restore selected table from order data
+    if (order.tableId && order.tableName) {
+      const tableFromOrder = tables.find(table => table.id === order.tableId);
+      if (tableFromOrder) {
+        setSelectedTable(tableFromOrder);
+      } else {
+        // If table not found in current tables list, create a placeholder table object
+        setSelectedTable({
+          id: order.tableId,
+          name: order.tableName,
+          capacity: 0, // Default capacity
+          status: TableStatus.OCCUPIED, // Assume occupied since there's an order
+          organizationId: organizationId || '',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+      }
+    }
+
+    // Restore order type from order data if available
+    if (order.orderType) {
+      const orderTypeFromOrder = orderTypes.find(orderType => orderType.name === order.orderType);
+      if (orderTypeFromOrder) {
+        setSelectedOrderType(orderTypeFromOrder);
+      } else {
+        // If order type not found, create a placeholder order type object
+        setSelectedOrderType({
+          id: `temp-${order.orderType}`,
+          name: order.orderType,
+          organizationId: organizationId || '',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+      }
+    }
+
+    // Restore customer from order data if available
+    if (order.customerName) {
+      const customerFromOrder = customers.find(customer =>
+        customer.name === order.customerName && 
+        (order.customerEmail ? customer.email === order.customerEmail : true)
+      );
+      if (customerFromOrder) {
+        setSelectedCustomer(customerFromOrder);
+      } else {
+        // If customer not found, create a placeholder customer object
+        setSelectedCustomer({
+          id: `temp-${order.customerEmail || order.customerName}`,
+          name: order.customerName,
+          email: order.customerEmail || '',
+          phone: order.customerPhone || '',
+          organizationId: organizationId || '',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+      }
+    }
+
+    setPosView('items');
     setPendingOrderToReopen(null);
     setShowOrderConfirmationDialog(false);
   };
@@ -280,6 +344,12 @@ export default function POSPage() {
 
   const handleClearCart = () => clearCart();
 
+  // Helper function to reset payment success dialog state
+  const resetPaymentSuccessDialog = () => {
+    setShowPaymentSuccessDialog(false);
+    setPaymentSuccessData(null);
+  };
+
   // Cart item operation handlers
   const [selectedCartItem, setSelectedCartItem] = useState<CartItem | null>(null);
   const [showQuantityModal, setShowQuantityModal] = useState(false);
@@ -292,11 +362,10 @@ export default function POSPage() {
   const handleQuantityUpdate = (newQuantity: number) => {
     if (!selectedCartItem || newQuantity <= 0) return;
 
-    setCart(cart.map(cartItem =>
-      cartItem.id === selectedCartItem.id && cartItem.type === selectedCartItem.type
-        ? { ...cartItem, quantity: newQuantity, total: newQuantity * cartItem.price }
-        : cartItem
-    ));
+    updateCartItem(selectedCartItem.id, selectedCartItem.type, {
+      quantity: newQuantity,
+      total: newQuantity * selectedCartItem.price
+    });
 
     setSelectedCartItem(null);
     setShowQuantityModal(false);
@@ -308,8 +377,8 @@ export default function POSPage() {
   };
 
   const handlePaymentClick = (order: Order) => {
-    setSelectedOrder(order);
-    setCurrentView('payment');
+    contextSetSelectedOrder(order);
+
   };
 
   const handlePaymentProcessed = async (payments: OrderPayment[]) => {
@@ -342,11 +411,17 @@ export default function POSPage() {
 
       // Save payments using the order payments hook approach
       const paymentPromises = payments.map(payment => {
-        const paymentData = {
-          ...payment,
-          organizationId,
-        };
-        return addDoc(collection(db, 'organizations', organizationId, 'orderPayments'), paymentData);
+        const { id, ...paymentData } = payment;
+        
+        // Filter out undefined values to prevent Firestore errors
+        const filteredPaymentData = Object.fromEntries(
+          Object.entries({
+            ...paymentData,
+            organizationId,
+          }).filter(([_, value]) => value !== undefined && value !== null)
+        );
+        
+        return addDoc(collection(db, 'organizations', organizationId, 'orderPayments'), filteredPaymentData);
       });
       
       await Promise.all(paymentPromises);
@@ -357,17 +432,25 @@ export default function POSPage() {
 
       // IMMEDIATELY update local order state to prevent race condition
       if (shouldBePaid) {
-        setSelectedOrder(prev => prev ? { ...prev, paid: true } : null);
+        contextSetSelectedOrder(selectedOrder ? { ...selectedOrder, paid: true } : null);
         orderToUpdate = { ...orderToUpdate, paid: true };
       }
 
       // Also sync with Firestore (background)
       await syncOrderPaidStatus(orderToUpdate.id, orderToUpdate.total);
 
-      // Navigate back to orders view to show order actions
-      setCurrentView('orders');
-      setSelectedOrder(orderToUpdate);
-      toast.success('Payment processed successfully! You can now complete the order.');
+      // Reset dialog state first to clear any old data
+      resetPaymentSuccessDialog();
+
+      // Small delay to ensure state is cleared, then show new dialog
+      setTimeout(() => {
+        setPaymentSuccessData({ totalPaid, order: orderToUpdate });
+        setShowPaymentSuccessDialog(true);
+      }, 100);
+
+      // Don't auto-navigate - let user choose via dialog buttons
+      // setCurrentView('orders');
+      // setSelectedOrder(orderToUpdate);
     } catch (error) {
       console.error('Error processing payment:', error);
       toast.error('Failed to process payment. Please try again.');
@@ -420,6 +503,21 @@ export default function POSPage() {
       if (selectedOrder && !selectedOrder.id.startsWith('temp')) {
         // Update existing order
         const orderRef = doc(db, 'organizations', organizationId, 'orders', selectedOrder.id);
+
+        // Handle table status changes for existing orders
+        const previousTableId = selectedOrder.tableId;
+        const newTableId = selectedTable?.id;
+
+        // If table has changed, update table statuses
+        if (previousTableId && previousTableId !== newTableId) {
+          // Set previous table to available
+          await updateTable(previousTableId, { status: TableStatus.AVAILABLE });
+        }
+        if (newTableId && newTableId !== previousTableId) {
+          // Set new table to occupied
+          await updateTable(newTableId, { status: TableStatus.OCCUPIED });
+        }
+
         const updateData = {
           items: orderItems,
           subtotal,
@@ -439,7 +537,12 @@ export default function POSPage() {
           updatedAt: new Date(),
         };
 
-        await updateDoc(orderRef, updateData);
+        // Filter out undefined values
+        const filteredUpdateData = Object.fromEntries(
+          Object.entries(updateData).filter(([_, value]) => value !== undefined && value !== null)
+        );
+
+        await updateDoc(orderRef, filteredUpdateData);
         toast.success('Order updated successfully!');
       } else {
         // Create new order
@@ -469,7 +572,12 @@ export default function POSPage() {
           updatedAt: new Date(),
         };
 
-        await addDoc(collection(db, 'organizations', organizationId, 'orders'), orderData);
+        // Filter out undefined values
+        const filteredOrderData = Object.fromEntries(
+          Object.entries(orderData).filter(([_, value]) => value !== undefined && value !== null)
+        );
+
+        await addDoc(collection(db, 'organizations', organizationId, 'orders'), filteredOrderData);
         
         // Update table status to occupied if a table is selected
         if (selectedTable && selectedTable.id) {
@@ -481,7 +589,7 @@ export default function POSPage() {
       
       // Clear all POS data after successful save
       clearPOSData();
-      setSelectedOrder(null); // Ensure selected order is cleared after save
+      contextSetSelectedOrder(null); // Ensure selected order is cleared after save
     } catch (error) {
       console.error('Error saving order:', error);
       toast.error('Failed to save order. Please try again.');
@@ -548,15 +656,19 @@ onPayOrder={() => {
                              customerEmail: selectedCustomer?.email,
                              tableId: selectedTable?.id,
                              tableName: selectedTable?.name,
-                             createdById: user?.uid || 'unknown',
-                             createdByName: user?.displayName || user?.email || 'Unknown User',
-                             createdAt: new Date(),
-                             updatedAt: new Date(),
-                           };
+createdById: user?.uid || 'unknown',
+                              createdByName: user?.displayName || user?.email || 'Unknown User',
+                              createdAt: new Date(),
+                              updatedAt: new Date(),
+                            };
 
-                         setSelectedOrder(tempOrder);
-                         setCurrentView('payment');
-                         setIsCartOpen(false);
+                            const filteredTempOrder = Object.fromEntries(
+                              Object.entries(tempOrder).filter(([_, value]) => value !== undefined && value !== null)
+                            ) as Order;
+
+                           contextSetSelectedOrder(filteredTempOrder);
+                           setPosView('payment');
+                          setIsCartOpen(false);
                        }}
                       onSaveOrder={() => {
                         handleSaveOrder();
@@ -566,7 +678,7 @@ onPayOrder={() => {
                         // Check if receipt templates exist, create a default one if not
                         if (receiptTemplates.length === 0 && organizationId) {
                           try {
-                            const defaultTemplateContent = '<!DOCTYPE html>\\n<html>\\n<head>\\n  <meta charset="utf-8">\\n  <title>Receipt</title>\\n  <style>\\n    body { font-family: monospace; margin: 0; padding: 10px; }\\n    .header { text-align: center; margin-bottom: 10px; }\\n    .content { margin-bottom: 10px; }\\n    .footer { text-align: center; margin-top: 10px; }\\n    .line { display: flex; justify-content: space-between; }\\n    .total { font-weight: bold; border-top: 1px dashed; padding-top: 5px; }\\n  </style>\\n</head>\\n<body>\\n  <div class="header">\\n    <h2>{{companyName}}</h2>\\n    <p>{{companyAddress}}</p>\\n    <p>Tel: {{companyPhone}}</p>\\n    <p>VAT: {{companyVat}}</p>\\n    <hr>\\n    <p>Order #: {{orderNumber}}</p>\\n    <p>Date: {{orderDate}}</p>\\n    <p>Table: {{tableName}}</p>\\n    <p>Customer: {{customerName}}</p>\\n    <hr>\\n  </div>\\n  \\n  <div class="content">\\n    {{#each items}}\\n    <div class="line">\\n      <span>{{name}} ({{quantity}}x)</span>\\n      <span>{{total}}</span>\\n    </div>\\n    {{/each}}\\n  </div>\\n  \\n  <div class="total">\\n    <div class="line">\\n      <span>Subtotal:</span>\\n      <span>{{subtotal}}</span>\\n    </div>\\n    <div class="line">\\n      <span>VAT ({{vatRate}}%):</span>\\n      <span>{{vatAmount}}</span>\\n    </div>\\n    <div class="line">\\n      <span>TOTAL:</span>\\n      <span>{{total}}</span>\\n    </div>\\n  </div>\\n  \\n  <div class="footer">\\n    <p>Payment: {{paymentMethod}}</p>\\n    <p>Thank you for your business!</p>\\n  </div>\\n</body>\\n</html>';
+                            const defaultTemplateContent = '<!DOCTYPE html>\n<html>\n<head>\n  <meta charset="utf-8">\n  <title>Receipt</title>\n  <style>\n    body { font-family: monospace; margin: 0; padding: 10px; }\n    .header { text-align: center; margin-bottom: 10px; }\n    .content { margin-bottom: 10px; }\n    .footer { text-align: center; margin-top: 10px; }\n    .line { display: flex; justify-content: space-between; }\n    .total { font-weight: bold; border-top: 1px dashed; padding-top: 5px; }\n  </style>\n</head>\n<body>\n  <div class="header">\n    <h2>{{companyName}}</h2>\n    <p>{{companyAddress}}</p>\n    <p>Tel: {{companyPhone}}</p>\n    <p>VAT: {{companyVat}}</p>\n    <hr>\n    <p>Order #: {{orderNumber}}</p>\n    <p>Date: {{orderDate}}</p>\n    <p>Table: {{tableName}}</p>\n    <p>Customer: {{customerName}}</p>\n    <hr>\n  </div>\n  \n  <div class="content">\n    {{#each items}}\n    <div class="line">\n      <span>{{name}} ({{quantity}}x)</span>\n      <span>{{total}}</span>\n    </div>\n    {{/each}}\n  </div>\n  \n  <div class="total">\n    <div class="line">\n      <span>Subtotal:</span>\n      <span>{{subtotal}}</span>\n    </div>\n    <div class="line">\n      <span>VAT ({{vatRate}}%):</span>\n      <span>{{vatAmount}}</span>\n    </div>\n    <div class="line">\n      <span>TOTAL:</span>\n      <span>{{total}}</span>\n    </div>\n  </div>\n  \n  <div class="footer">\n    <p>Payment: {{paymentMethod}}</p>\n    <p>Thank you for your business!</p>\n  </div>\n</body>\n</html>';
 
                             await addDoc(collection(db, 'organizations', organizationId, 'receiptTemplates'), {
                               name: 'Default Receipt',
@@ -616,12 +728,17 @@ onPayOrder={() => {
                            customerEmail: selectedCustomer?.email,
                            tableId: selectedTable?.id,
                            tableName: selectedTable?.name,
-                          createdById: user?.uid || 'unknown',
-                          createdByName: user?.displayName || user?.email || 'Unknown User',
-                          createdAt: new Date(),
-                          updatedAt: new Date(),
-                        };
-                        setSelectedOrder(tempOrder);
+createdById: user?.uid || 'unknown',
+                           createdByName: user?.displayName || user?.email || 'Unknown User',
+                           createdAt: new Date(),
+                           updatedAt: new Date(),
+                         };
+                         
+                         const filteredTempOrder = Object.fromEntries(
+                           Object.entries(tempOrder).filter(([_, value]) => value !== undefined && value !== null)
+                         ) as Order;
+                         
+                          contextSetSelectedOrder(filteredTempOrder);
                         // Open the print dialog immediately after setting the order
                         setTimeout(() => {
                           const printTrigger = document.querySelector('[data-print-receipt-trigger]') as HTMLElement;
@@ -711,7 +828,7 @@ onPayOrder={() => {
 
          {/* Main Content Area */}
          <div className="flex-1 overflow-hidden">
-        {currentView === 'items' && (
+        {posView === 'items' && (
           <div className="h-full grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-0">
             {/* Items Grid */}
             <div className="overflow-auto bg-background">
@@ -766,7 +883,7 @@ onPayOrder={() => {
           </div>
         )}
 
-        {currentView === 'tables' && (
+        {posView === 'tables' && (
           <POSTableGrid
             tables={tables}
             orders={orders}
@@ -775,7 +892,7 @@ onPayOrder={() => {
           />
         )}
 
-        {currentView === 'customers' && (
+        {posView === 'customers' && (
           <POSCustomerGrid
             customers={customers}
             onCustomerSelect={handleCustomerSelected}
@@ -783,10 +900,9 @@ onPayOrder={() => {
           />
         )}
 
-        {currentView === 'orders' && (
+        {posView === 'orders' && (
           <POSOrderGrid
             orders={orders.filter(order => 
-              order.status !== OrderStatus.COMPLETED && 
               order.status !== OrderStatus.CANCELLED
             )}
             payments={orderPayments}
@@ -794,18 +910,19 @@ onPayOrder={() => {
             onOrderSelect={handleOrderReopen}
             onPayOrder={handlePaymentClick}
             onBack={handleBackToItems}
-          />
-        )}
+           />
+         )}
 
-        {currentView === 'payment' && selectedOrder && (
-          <POSPaymentGrid
-            order={selectedOrder}
-            paymentTypes={paymentTypes}
-            onPaymentProcessed={handlePaymentProcessed}
-            onBack={() => setCurrentView('orders')}
-          />
-        )}
-        </div>
+         {posView === 'payment' && selectedOrder && (
+           <POSPaymentGrid
+             order={selectedOrder}
+             paymentTypes={paymentTypes}
+             onPaymentProcessed={handlePaymentProcessed}
+             onBack={handleBackToItems}
+           />
+         )}
+
+         </div>
       </div>
 
       {/* Right Column - Full Height Sidebar */}
@@ -818,41 +935,74 @@ onPayOrder={() => {
               if (cart.length === 0) return;
 
                // Create a temporary order from cart for payment processing
-               const tempOrder: Order = {
+               const tempOrder: any = {
                  id: 'temp-checkout',
                  organizationId: organizationId || '',
                  orderNumber: `TEMP-${Date.now()}`,
-                items: cart.map(item => ({
-                  id: `${item.type}-${item.id}`,
-                  type: item.type === ItemType.PRODUCT ? ItemType.PRODUCT : ItemType.SERVICE,
-                  productId: item.type === ItemType.PRODUCT ? item.id : undefined,
-                  serviceId: item.type === ItemType.SERVICE ? item.id : undefined,
-                  name: item.name,
-                  quantity: item.quantity,
-                  unitPrice: item.price,
-                  total: item.total,
-                })),
+                items: cart.map(item => {
+                  const itemData: any = {
+                    id: `${item.type}-${item.id}`,
+                    type: item.type === ItemType.PRODUCT ? ItemType.PRODUCT : ItemType.SERVICE,
+                    name: item.name,
+                    quantity: item.quantity,
+                    unitPrice: item.price,
+                    total: item.total,
+                  };
+
+                  // Add productId or serviceId conditionally only if they exist
+                  if (item.type === ItemType.PRODUCT && item.id) {
+                    itemData.productId = item.id;
+                  } else if (item.type === ItemType.SERVICE && item.id) {
+                    itemData.serviceId = item.id;
+                  }
+
+                  return itemData;
+                }).filter(item => item.id && item.name && item.quantity && item.unitPrice && item.total),
                  subtotal: cartTotal,
-                 taxRate: 0, // TODO: Get from settings
-                 taxAmount: 0, // TODO: Calculate based on tax rate
+                 taxRate: 0,
+                 taxAmount: 0,
                  total: cartTotal,
                  status: OrderStatus.OPEN,
-                 paid: false, // New orders are not paid initially
+                 paid: false,
                  orderType: selectedOrderType?.name || 'dine-in',
-                 customerName: selectedCustomer?.name,
-                 customerPhone: selectedCustomer?.phone,
-                 customerEmail: selectedCustomer?.email,
-                 tableId: selectedTable?.id,
-                 tableName: selectedTable?.name,
                  createdById: user?.uid || 'unknown',
                  createdByName: user?.displayName || user?.email || 'Unknown User',
                 createdAt: new Date(),
                 updatedAt: new Date(),
               };
 
-             setSelectedOrder(tempOrder);
-             setCurrentView('payment');
-           }}
+               // Add optional fields only if they exist
+               if (selectedCustomer?.name) tempOrder.customerName = selectedCustomer.name;
+               if (selectedCustomer?.phone) tempOrder.customerPhone = selectedCustomer.phone;
+               if (selectedCustomer?.email) tempOrder.customerEmail = selectedCustomer.email;
+               if (selectedTable?.id) tempOrder.tableId = selectedTable.id;
+               if (selectedTable?.name) tempOrder.tableName = selectedTable.name;
+
+// Filter out undefined values but ensure required fields remain
+                const filteredTempOrder: Order = {
+                  ...tempOrder,
+                  // Ensure all required fields are present even if they were filtered out
+                  id: tempOrder.id || 'temp',
+                  organizationId: tempOrder.organizationId || '',
+                  orderNumber: tempOrder.orderNumber || `TEMP-${Date.now()}`,
+                  items: tempOrder.items || [],
+                  subtotal: tempOrder.subtotal || 0,
+                  taxRate: tempOrder.taxRate || 0,
+                  taxAmount: tempOrder.taxAmount || 0,
+                  total: tempOrder.total || 0,
+                  status: tempOrder.status || OrderStatus.OPEN,
+                  paid: tempOrder.paid || false,
+                  orderType: tempOrder.orderType || 'dine-in',
+                  createdById: tempOrder.createdById || 'unknown',
+                  createdByName: tempOrder.createdByName || 'Unknown User',
+                  createdAt: tempOrder.createdAt || new Date(),
+                  updatedAt: tempOrder.updatedAt || new Date(),
+                };
+
+                contextSetSelectedOrder(filteredTempOrder);
+                setPosView('payment');
+
+            }}
           onSaveOrder={handleSaveOrder}
           onPrintReceipt={async () => {
             // Check if receipt templates exist, create a default one if not
@@ -860,7 +1010,7 @@ onPayOrder={() => {
               try {
                 const defaultTemplateContent = '<!DOCTYPE html>\\n<html>\\n<head>\\n  <meta charset="utf-8">\\n  <title>Receipt</title>\\n  <style>\\n    body { font-family: monospace; margin: 0; padding: 10px; }\\n    .header { text-align: center; margin-bottom: 10px; }\\n    .content { margin-bottom: 10px; }\\n    .footer { text-align: center; margin-top: 10px; }\\n    .line { display: flex; justify-content: space-between; }\\n    .total { font-weight: bold; border-top: 1px dashed; padding-top: 5px; }\\n  </style>\\n</head>\\n<body>\\n  <div class="header">\\n    <h2>{{companyName}}</h2>\\n    <p>{{companyAddress}}</p>\\n    <p>Tel: {{companyPhone}}</p>\\n    <p>VAT: {{companyVat}}</p>\\n    <hr>\\n    <p>Order #: {{orderNumber}}</p>\\n    <p>Date: {{orderDate}}</p>\\n    <p>Table: {{tableName}}</p>\\n    <p>Customer: {{customerName}}</p>\\n    <hr>\\n  </div>\\n  \\n  <div class="content">\\n    {{#each items}}\\n    <div class="line">\\n      <span>{{name}} ({{quantity}}x)</span>\\n      <span>{{total}}</span>\\n    </div>\\n    {{/each}}\\n  </div>\\n  \\n  <div class="total">\\n    <div class="line">\\n      <span>Subtotal:</span>\\n      <span>{{subtotal}}</span>\\n    </div>\\n    <div class="line">\\n      <span>VAT ({{vatRate}}%):</span>\\n      <span>{{vatAmount}}</span>\\n    </div>\\n    <div class="line">\\n      <span>TOTAL:</span>\\n      <span>{{total}}</span>\\n    </div>\\n  </div>\\n  \\n  <div class="footer">\\n    <p>Payment: {{paymentMethod}}</p>\\n    <p>Thank you for your business!</p>\\n  </div>\\n</body>\\n</html>';
 
-                await addDoc(collection(db, 'organizations', organizationId, 'receiptTemplates'), {
+                const templateData = {
                   name: 'Default Receipt',
                   description: 'Default receipt template',
                   content: defaultTemplateContent,
@@ -869,7 +1019,14 @@ onPayOrder={() => {
                   organizationId,
                   createdAt: new Date(),
                   updatedAt: new Date(),
-                });
+                };
+
+                // Filter out undefined values
+                const filteredTemplateData = Object.fromEntries(
+                  Object.entries(templateData).filter(([_, value]) => value !== undefined && value !== null)
+                );
+
+                await addDoc(collection(db, 'organizations', organizationId, 'receiptTemplates'), filteredTemplateData);
 
                 // Show success message
                 toast.success('Default receipt template created successfully. Please try printing again.');
@@ -882,38 +1039,54 @@ onPayOrder={() => {
             }
 
             // Create a temporary order from cart for printing
-            const tempOrder: Order = {
+            const tempOrder: any = {
               id: 'temp',
               organizationId: organizationId || '',
               orderNumber: `TEMP-${Date.now()}`,
-              items: cart.map(item => ({
-                id: `${item.type}-${item.id}`,
-                type: item.type === 'product' ? ItemType.PRODUCT : ItemType.SERVICE,
-                productId: item.type === ItemType.PRODUCT ? item.id : undefined,
-                serviceId: item.type === ItemType.SERVICE ? item.id : undefined,
-                name: item.name,
-                quantity: item.quantity,
-                unitPrice: item.price,
-                total: item.total,
-              })),
+              items: cart.map(item => {
+                const itemData: any = {
+                  id: `${item.type}-${item.id}`,
+                  type: item.type === 'product' ? ItemType.PRODUCT : ItemType.SERVICE,
+                  name: item.name,
+                  quantity: item.quantity,
+                  unitPrice: item.price,
+                  total: item.total,
+                };
+
+                // Add productId or serviceId conditionally only if they exist
+                if (item.type === ItemType.PRODUCT && item.id) {
+                  itemData.productId = item.id;
+                } else if (item.type === ItemType.SERVICE && item.id) {
+                  itemData.serviceId = item.id;
+                }
+
+                return itemData;
+              }).filter(item => item.id && item.name && item.quantity && item.unitPrice && item.total),
               subtotal: cartTotal,
               taxRate: 0,
               taxAmount: 0,
               total: cartTotal,
               status: OrderStatus.OPEN,
-              paid: false, // Temporary orders for printing are not paid
+              paid: false,
               orderType: selectedOrderType?.name || 'dine-in',
-              customerName: selectedCustomer?.name,
-              customerPhone: selectedCustomer?.phone,
-              customerEmail: selectedCustomer?.email,
-              tableId: selectedTable?.id,
-              tableName: selectedTable?.name,
               createdById: user?.uid || 'unknown',
               createdByName: user?.displayName || user?.email || 'Unknown User',
               createdAt: new Date(),
               updatedAt: new Date(),
             };
-            setSelectedOrder(tempOrder);
+
+            // Add optional fields only if they exist
+            if (selectedCustomer?.name) tempOrder.customerName = selectedCustomer.name;
+            if (selectedCustomer?.phone) tempOrder.customerPhone = selectedCustomer.phone;
+            if (selectedCustomer?.email) tempOrder.customerEmail = selectedCustomer.email;
+            if (selectedTable?.id) tempOrder.tableId = selectedTable.id;
+            if (selectedTable?.name) tempOrder.tableName = selectedTable.name;
+
+            // Filter out undefined values
+            const filteredTempOrder = Object.fromEntries(
+              Object.entries(tempOrder).filter(([_, value]) => value !== undefined && value !== null)
+            );
+            contextSetSelectedOrder(tempOrder);
             // Open the print dialog immediately after setting the order
             setTimeout(() => {
               const printTrigger = document.querySelector('[data-print-receipt-trigger]') as HTMLElement;
@@ -967,14 +1140,26 @@ onPayOrder={() => {
         onUpdateQuantity={(itemId, newQuantity) => handleQuantityUpdate(newQuantity)}
         onDeleteItem={(itemId) => {
           if (selectedCartItem) {
-            setCart(cart.filter(cartItem =>
-              !(cartItem.id === selectedCartItem.id && cartItem.type === selectedCartItem.type)
-            ));
+            removeFromCart(selectedCartItem.id, selectedCartItem.type);
           }
         }}
       />
 
-      
+      {/* Payment Success Dialog */}
+      <PaymentSuccessDialog
+        key={paymentSuccessData?.totalPaid || 'empty'} // Force re-render with new data
+        isOpen={showPaymentSuccessDialog}
+        onClose={resetPaymentSuccessDialog}
+        totalPaid={paymentSuccessData?.totalPaid || 0}
+        onViewOrders={() => {
+          setPosView('orders');
+          if (paymentSuccessData?.order) {
+            contextSetSelectedOrder(paymentSuccessData.order);
+          }
+          resetPaymentSuccessDialog();
+        }}
+      />
+
     </div>
   );
 }

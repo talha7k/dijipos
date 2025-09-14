@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ShoppingCart } from 'lucide-react';
 import { OrderItem } from '@/types';
+import { OrderItemDisplay } from './OrderItemDisplay';
 
 interface OrderItemListProps {
   items: OrderItem[];
@@ -23,20 +24,15 @@ export function OrderItemList({ items, className = '' }: OrderItemListProps) {
       <CardContent>
         <div className="space-y-2 max-h-64 overflow-y-auto">
           {items.map((item) => (
-            <div key={item.id} className="flex justify-between items-center p-2 border rounded">
-              <div>
-                <div className="font-medium">{item.name}</div>
-                <div className="text-sm text-muted-foreground">
-                  ${item.unitPrice.toFixed(2)} × {item.quantity}
-                </div>
-                {item.notes && (
-                  <div className="text-xs text-muted-foreground mt-1">
-                    {item.notes}
-                  </div>
-                )}
-              </div>
-              <div className="font-medium">${item.total.toFixed(2)}</div>
-            </div>
+            <OrderItemDisplay
+              key={item.id}
+              id={item.id}
+              name={item.name}
+              unitPrice={item.unitPrice}
+              quantity={item.quantity}
+              total={item.total}
+              notes={item.notes}
+            />
           ))}
         </div>
         <div className="mt-4 pt-4 border-t">

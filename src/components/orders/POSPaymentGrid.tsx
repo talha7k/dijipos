@@ -9,11 +9,12 @@ import { toast } from 'sonner';
 import { OrderSummaryCard } from './OrderSummaryCard';
 import { PaymentList } from './PaymentList';
 import { PaymentEntryForm } from './PaymentEntryForm';
+import { OrderAlreadyPaid } from './OrderAlreadyPaid';
 
 interface POSPaymentGridProps {
   order: Order;
   paymentTypes: PaymentType[];
-  onPaymentProcessed: (payments: OrderPayment[]) => void;
+  onPaymentProcessed: (payments: OrderPayment[]) => Promise<void>;
   onBack: () => void;
 }
 
@@ -46,8 +47,8 @@ export function POSPaymentGrid({ order, paymentTypes, onPaymentProcessed, onBack
   // Prevent payment processing for already paid orders
   if (order.paid) {
     return (
-      <div className="h-full overflow-auto p-4 bg-background">
-        <div className="flex items-center gap-4 mb-6">
+      <div className="h-full flex flex-col bg-background">
+        <div className="flex items-center gap-4 p-4 border-b">
           <Button variant="ghost" onClick={onBack}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Order
@@ -55,16 +56,20 @@ export function POSPaymentGrid({ order, paymentTypes, onPaymentProcessed, onBack
           <h2 className="text-2xl font-bold">Payment - {order.orderNumber}</h2>
         </div>
         
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-green-800 mb-2">Order Already Paid</h3>
-            <p className="text-muted-foreground">
-              This order has already been paid for. No further payments can be processed.
-            </p>
-            <Button onClick={onBack} className="mt-4">
-              Back to Orders
-            </Button>
+        <div className="flex-1 overflow-y-auto p-4">
+          <div className="mb-6">
+            <OrderAlreadyPaid 
+              orderNumber={order.orderNumber} 
+            />
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <OrderSummaryCard
+              order={order}
+              payments={[]}
+              showPaymentStatus={false}
+              showOrderDetails={true}
+            />
           </div>
         </div>
       </div>
@@ -96,7 +101,7 @@ export function POSPaymentGrid({ order, paymentTypes, onPaymentProcessed, onBack
     setPayments(payments.filter(p => p.id !== paymentId));
   };
 
-  const processPayment = () => {
+  const processPayment = async () => {
     if (totalPaid < order.total) {
       toast.error('Payment amount does not cover the full order total.');
       return;
@@ -125,15 +130,20 @@ export function POSPaymentGrid({ order, paymentTypes, onPaymentProcessed, onBack
       return paymentObj;
     });
 
-    onPaymentProcessed(orderPayments);
-    setPaymentProcessed(true);
+    try {
+      await onPaymentProcessed(orderPayments);
+      setPaymentProcessed(true);
+    } catch (error) {
+      console.error('Payment processing failed:', error);
+      toast.error('Failed to process payment. Please try again.');
+    }
   };
 
 
 
   return (
-    <div className="h-full overflow-auto p-4 bg-background ">
-      <div className="flex items-center gap-4 mb-6">
+    <div className="h-full flex flex-col bg-background">
+      <div className="flex items-center gap-4 p-4 border-b">
         <Button variant="ghost" onClick={onBack}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Order
@@ -141,83 +151,84 @@ export function POSPaymentGrid({ order, paymentTypes, onPaymentProcessed, onBack
         <h2 className="text-2xl font-bold">Process Payment - {order.orderNumber}</h2>
       </div>
 
-      {/* Payment Status Indicator - Moved to top for better visibility */}
-      <div className={`mb-6 p-4 rounded-lg border ${
-        remainingAmount > 0
-          ? 'bg-orange-50 border-orange-200'
-          : 'bg-green-50 border-green-200'
-      }`}>
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className={`text-sm font-medium ${
-              remainingAmount > 0 ? 'text-orange-800' : 'text-green-800'
-            }`}>
-              Payment Progress
-            </h3>
-            <p className={`text-sm mt-1 ${
-              remainingAmount > 0 ? 'text-orange-700' : 'text-green-700'
-            }`}>
-              ${totalPaid.toFixed(2)} of ${order.total.toFixed(2)} paid
-            </p>
-            {remainingAmount > 0 && (
-              <p className="text-sm text-orange-600 mt-1 font-medium">
-                Add ${remainingAmount.toFixed(2)} more to process payment
+      <div className="flex-1 overflow-y-auto p-4">
+        {/* Payment Status Indicator - Moved to top for better visibility */}
+        <div className={`mb-6 p-4 rounded-lg border ${
+          remainingAmount > 0
+            ? 'bg-destructive/10 border-destructive/20'
+            : 'bg-emerald-50 border-emerald-200 dark:bg-emerald-900/20 dark:border-emerald-800'
+        }`}>
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className={`text-sm font-medium ${
+                remainingAmount > 0 ? 'text-destructive' : 'text-emerald-700 dark:text-emerald-300'
+              }`}>
+                Payment Progress
+              </h3>
+              <p className={`text-sm mt-1 ${
+                remainingAmount > 0 ? 'text-destructive/80' : 'text-emerald-600 dark:text-emerald-400'
+              }`}>
+                ${totalPaid.toFixed(2)} of ${order.total.toFixed(2)} paid
               </p>
-            )}
+              {remainingAmount > 0 && (
+                <p className="text-sm text-destructive/90 mt-1 font-medium">
+                  Add ${remainingAmount.toFixed(2)} more to process payment
+                </p>
+              )}
+            </div>
+            <div className="text-right">
+              <div className={`text-2xl font-bold ${
+                remainingAmount > 0 ? 'text-destructive' : 'text-emerald-700 dark:text-emerald-300'
+              }`}>
+                {remainingAmount > 0 ? `$${remainingAmount.toFixed(2)}` : 'Paid'}
+              </div>
+              <div className={`text-sm ${
+                remainingAmount > 0 ? 'text-destructive/80' : 'text-emerald-600 dark:text-emerald-400'
+              }`}>
+                {remainingAmount > 0 ? 'remaining' : 'in full'}
+              </div>
+            </div>
           </div>
-          <div className="text-right">
-            <div className={`text-2xl font-bold ${
-              remainingAmount > 0 ? 'text-orange-800' : 'text-green-800'
-            }`}>
-              {remainingAmount > 0 ? `$${remainingAmount.toFixed(2)}` : 'Paid'}
-            </div>
-            <div className={`text-sm ${
-              remainingAmount > 0 ? 'text-orange-700' : 'text-green-700'
-            }`}>
-              {remainingAmount > 0 ? 'remaining' : 'in full'}
-            </div>
+
+          {/* Progress Bar */}
+          <div className="mt-3 w-full bg-muted rounded-full h-2">
+            <div
+              className={`h-2 rounded-full transition-all duration-300 ${
+                remainingAmount > 0 ? 'bg-destructive' : 'bg-emerald-500'
+              }`}
+              style={{ width: `${Math.min((totalPaid / order.total) * 100, 100)}%` }}
+            ></div>
           </div>
         </div>
 
-        {/* Progress Bar */}
-        <div className="mt-3 w-full bg-gray-200 rounded-full h-2">
-          <div
-            className={`h-2 rounded-full transition-all duration-300 ${
-              remainingAmount > 0 ? 'bg-orange-500' : 'bg-green-500'
-            }`}
-            style={{ width: `${Math.min((totalPaid / order.total) * 100, 100)}%` }}
-          ></div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Order Summary */}
+          <OrderSummaryCard
+            order={order}
+            payments={[]}
+            showPaymentStatus={false}
+            showOrderDetails={true}
+            totalPaid={totalPaid}
+            remainingAmount={remainingAmount}
+            changeDue={changeDue}
+          />
+
+          {/* Payment Entry */}
+          <PaymentEntryForm
+            paymentTypes={paymentTypes}
+            remainingAmount={remainingAmount}
+            onAddPayment={addPayment}
+            disabled={paymentProcessed}
+            amount={amount}
+            paymentMethod={paymentMethod}
+            reference={reference}
+            notes={notes}
+            onAmountChange={setAmount}
+            onPaymentMethodChange={setPaymentMethod}
+            onReferenceChange={setReference}
+            onNotesChange={setNotes}
+          />
         </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Order Summary */}
-        <OrderSummaryCard
-          order={order}
-          payments={[]}
-          showPaymentStatus={false}
-          showOrderDetails={true}
-          totalPaid={totalPaid}
-          remainingAmount={remainingAmount}
-          changeDue={changeDue}
-        />
-
-        {/* Payment Entry */}
-        <PaymentEntryForm
-          paymentTypes={paymentTypes}
-          remainingAmount={remainingAmount}
-          onAddPayment={addPayment}
-          disabled={paymentProcessed}
-          amount={amount}
-          paymentMethod={paymentMethod}
-          reference={reference}
-          notes={notes}
-          onAmountChange={setAmount}
-          onPaymentMethodChange={setPaymentMethod}
-          onReferenceChange={setReference}
-          onNotesChange={setNotes}
-        />
-      </div>
 
         {/* Payment List */}
         {payments.length > 0 && (
@@ -235,7 +246,7 @@ export function POSPaymentGrid({ order, paymentTypes, onPaymentProcessed, onBack
         )}
 
         {/* Process Payment Button or Completion Options */}
-        <div className="mt-6 pb-6">
+        <div className="mt-6">
           {!paymentProcessed ? (
             <div className="flex justify-end">
               <Button
@@ -255,34 +266,12 @@ export function POSPaymentGrid({ order, paymentTypes, onPaymentProcessed, onBack
               </Button>
             </div>
           ) : (
-            <Card className="border-green-200 bg-green-50">
-              <CardContent className="p-6">
-                <div className="text-center space-y-4">
-                  <div className="flex items-center justify-center">
-                    <CheckCircle className="h-12 w-12 text-green-600" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-green-800">Payment Processed Successfully!</h3>
-                    <p className="text-green-700 mt-1">
-                      Total Paid: ${totalPaid.toFixed(2)}
-                      {changeDue > 0 && ` • Change Due: $${changeDue.toFixed(2)}`}
-                    </p>
-                    <p className="text-green-700 mt-2 text-sm">
-                      Order has been marked as paid. You can now complete it from the orders view.
-                    </p>
-                  </div>
-
-                  <div className="flex justify-center">
-                    <Button onClick={onBack} className="bg-green-600 hover:bg-green-700">
-                      <CheckCircle className="h-4 w-4 mr-2" />
-                      Back to Orders
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="text-center">
+              <p className="text-green-600 font-medium">Payment processed successfully!</p>
+            </div>
           )}
-       </div>
+        </div>
+      </div>
     </div>
   );
 }

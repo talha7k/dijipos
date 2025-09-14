@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { CreditCard, X } from 'lucide-react';
+import { CreditCard, Trash2 } from 'lucide-react';
 
 interface GenericPayment {
   id: string;
@@ -48,7 +48,7 @@ export function PaymentList({
           <div className="text-center py-8 text-muted-foreground">
             <CreditCard className="h-12 w-12 mx-auto mb-3 opacity-50" />
             <p className="text-sm">No payments recorded yet</p>
-            <p className="text-xs mt-1">Click &quot;Process Payment&quot; to add a payment</p>
+            <p className="text-xs mt-1">Click "Process Payment" to add a payment</p>
           </div>
         </CardContent>
       </Card>
@@ -110,9 +110,10 @@ export function PaymentList({
                           size="sm"
                           onClick={() => onRemovePayment(payment.id)}
                           disabled={disabled}
-                          className="text-red-600 hover:text-red-700 p-1 h-6 w-6"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 p-2 h-8 w-8"
+                          title="Delete payment"
                         >
-                          <X className="h-3 w-3" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       )}
                     </TableCell>

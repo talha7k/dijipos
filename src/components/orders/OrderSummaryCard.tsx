@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -58,7 +59,7 @@ export function OrderSummaryCard({
   const getStatusColor = (status: string) => {
     switch (status) {
       case "completed":
-        return "bg-green-500";
+        return "bg-emerald-500";
       case "preparing":
         return "bg-blue-500";
       case "open":
@@ -67,9 +68,9 @@ export function OrderSummaryCard({
       case "on_hold":
         return "bg-blue-500";
       case "cancelled":
-        return "bg-red-500";
+        return "bg-destructive";
       default:
-        return "bg-gray-500";
+        return "bg-muted-foreground";
     }
   };
 
@@ -128,7 +129,7 @@ export function OrderSummaryCard({
           <div>
             <Badge
               className={`${
-                isActuallyPaid ? "bg-green-500" : "bg-orange-500"
+                isActuallyPaid ? "bg-emerald-500" : "bg-destructive"
               } text-white w-full justify-center py-2`}
             >
               {isActuallyPaid ? (
@@ -160,7 +161,7 @@ export function OrderSummaryCard({
           {totalPaid !== undefined && (
             <div className="flex justify-between">
               <span>Total Paid:</span>
-              <span className="font-bold text-green-600">
+              <span className="font-bold text-emerald-600 dark:text-emerald-400">
                 ${totalPaid.toFixed(2)}
               </span>
             </div>
@@ -171,7 +172,7 @@ export function OrderSummaryCard({
               <span className="font-bold">Remaining:</span>
               <span
                 className={`font-bold ${
-                  remainingAmount > 0 ? "text-red-600" : "text-green-600"
+                  remainingAmount > 0 ? "text-destructive" : "text-emerald-600 dark:text-emerald-400"
                 }`}
               >
                 ${remainingAmount.toFixed(2)}
@@ -181,8 +182,8 @@ export function OrderSummaryCard({
 
           {changeDue !== undefined && changeDue > 0 && (
             <div className="flex justify-between">
-              <span className="font-bold text-green-600">Change Due:</span>
-              <span className="font-bold text-green-600">
+              <span className="font-bold text-emerald-600 dark:text-emerald-400">Change Due:</span>
+              <span className="font-bold text-emerald-600 dark:text-emerald-400">
                 ${changeDue.toFixed(2)}
               </span>
             </div>

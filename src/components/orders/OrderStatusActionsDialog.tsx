@@ -47,12 +47,16 @@ export function OrderActionsDialog({
     return false;
   };
 
-  const handleAction = (action: () => Promise<void> | void) => {
-    const result = action();
-    if (result instanceof Promise) {
-      result.then(() => setOpen(false));
-    } else {
+  const handleAction = async (action: () => Promise<void> | void) => {
+    try {
+      const result = action();
+      if (result instanceof Promise) {
+        await result;
+      }
       setOpen(false);
+    } catch (error) {
+      console.error('Error in handleAction:', error);
+      // Don't close dialog on error
     }
   };
 

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { collection, query, onSnapshot, getDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
+import { useOrderContext } from '@/contexts/OrderContext';
 import { Order, OrderPayment, PaymentType, Organization, User as AppUser, OrderStatus } from '@/types';
 import { useOrdersData } from '@/hooks/orders/use-orders-data';
 import { useUsersData } from '@/hooks/organization/use-users-data';
@@ -21,11 +22,11 @@ import { OrderActionsDialog } from '@/components/orders/OrderStatusActionsDialog
 
 function OrdersContent() {
   const { user, organizationId } = useAuth();
-  const { orders, loading: ordersLoading } = useOrdersData(organizationId || undefined);
+  const { orders, payments, setOrders, setPayments } = useOrderContext();
+  const { orders: fetchedOrders, loading: ordersLoading } = useOrdersData(organizationId || undefined);
   const { users: usersArray, loading: usersLoading } = useUsersData(organizationId || undefined);
   const { paymentTypes, loading: paymentTypesLoading } = usePaymentTypesData(organizationId || undefined);
   const [users, setUsers] = useState<{ [userId: string]: AppUser }>({});
-  const [payments, setPayments] = useState<{ [orderId: string]: OrderPayment[] }>({});
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -34,6 +35,11 @@ function OrdersContent() {
 
   useEffect(() => {
     if (!organizationId) return;
+
+    // Sync fetched orders with context
+    if (fetchedOrders) {
+      setOrders(fetchedOrders);
+    }
 
     // Fetch organization data
     const fetchOrganization = async () => {
@@ -70,7 +76,7 @@ function OrdersContent() {
         paymentDate: doc.data().paymentDate?.toDate(),
         createdAt: doc.data().createdAt?.toDate(),
       })) as OrderPayment[];
-      
+
       // Group payments by orderId
       const paymentsByOrder: { [orderId: string]: OrderPayment[] } = {};
       paymentsData.forEach(payment => {
@@ -85,7 +91,7 @@ function OrdersContent() {
     return () => {
       paymentsUnsubscribe();
     };
-  }, [organizationId, ordersLoading, usersLoading, paymentTypesLoading, usersArray]);
+  }, [organizationId, ordersLoading, usersLoading, paymentTypesLoading, usersArray, fetchedOrders, setOrders, setPayments]);
 
   const getStatusColor = (status: Order['status']) => {
     switch (status) {

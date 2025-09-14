@@ -12,21 +12,18 @@ interface POSCartItemProps {
   onClick?: () => void;
 }
 
+import { OrderItemDisplay } from './OrderItemDisplay';
+
 export function POSCartItem({ item, onClick }: POSCartItemProps) {
   return (
-    <div
-      className="flex justify-between items-center p-3 border rounded bg-card cursor-pointer hover:bg-muted/50 transition-colors"
+    <OrderItemDisplay
+      id={item.id}
+      name={item.name}
+      unitPrice={item.price}
+      quantity={item.quantity}
+      total={item.total}
       onClick={onClick}
-    >
-      <div>
-        <div className="font-medium text-foreground">{item.name}</div>
-        <div className="text-sm text-muted-foreground">
-          ${item.price.toFixed(2)} × {item.quantity}
-        </div>
-      </div>
-      <div className="font-medium text-foreground">
-        ${item.total.toFixed(2)}
-      </div>
-    </div>
+      className="bg-card cursor-pointer hover:bg-muted/50 transition-colors"
+    />
   );
 }

@@ -7,6 +7,7 @@ import { ThemeProvider } from '@/contexts/ThemeContext'
 import { Toaster } from '@/components/ui/sonner'
 import { RouteGuard } from '@/components/auth/RouteGuard'
 import { AppLayout } from '@/components/layout/AppLayout'
+import { OrderProviderWrapper } from '@/components/OrderProviderWrapper'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -25,14 +26,16 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider>
           <AuthProvider>
-            <SidebarProvider>
-              <RouteGuard>
-                <AppLayout>
-                  {children}
-                </AppLayout>
-              </RouteGuard>
-              <Toaster />
-            </SidebarProvider>
+            <OrderProviderWrapper>
+              <SidebarProvider>
+                <RouteGuard>
+                  <AppLayout>
+                    {children}
+                  </AppLayout>
+                </RouteGuard>
+                <Toaster />
+              </SidebarProvider>
+            </OrderProviderWrapper>
           </AuthProvider>
         </ThemeProvider>
       </body>
