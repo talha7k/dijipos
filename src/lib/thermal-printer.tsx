@@ -122,16 +122,18 @@ export class ThermalPrinterService {
 
       console.log('Connected to thermal printer');
       return this.connectedPrinter;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to connect to thermal printer:', error);
 
       // Provide more specific error messages
-      if (error.name === 'NotAllowedError') {
-        throw new Error('Printer access was denied. Please allow access to the printer when prompted.');
-      } else if (error.name === 'NotFoundError') {
-        throw new Error('No printer was selected or found. Please ensure your printer is connected and try again.');
-      } else if (error.message) {
-        throw error;
+      if (error instanceof Error) {
+        if (error.name === 'NotAllowedError') {
+          throw new Error('Printer access was denied. Please allow access to the printer when prompted.');
+        } else if (error.name === 'NotFoundError') {
+          throw new Error('No printer was selected or found. Please ensure your printer is connected and try again.');
+        } else {
+          throw error;
+        }
       } else {
         throw new Error('Failed to connect to thermal printer. Please check your printer connection and try again.');
       }

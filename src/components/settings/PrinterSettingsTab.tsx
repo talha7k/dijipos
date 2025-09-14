@@ -290,7 +290,7 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
                     <span className="text-sm font-medium">Web Serial API Not Supported</span>
                   </div>
                   <p className="text-sm text-yellow-600 mt-1">
-                    Your browser doesn't support the Web Serial API. Please use Chrome, Edge, or Opera for printer functionality.
+                    Your browser doesn&apos;t support the Web Serial API. Please use Chrome, Edge, or Opera for printer functionality.
                   </p>
                 </div>
               )}
