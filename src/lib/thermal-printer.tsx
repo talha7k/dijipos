@@ -1,5 +1,3 @@
-import React from 'react';
-import { Printer, Text, Line, Cut, Row, PrinterType } from 'react-thermal-printer';
 import QRCode from 'qrcode';
 import { Order, Organization, ItemType, OrderStatus, SubscriptionStatus, CHARACTER_SETS, FontSize, PaperWidth, CharacterSet } from '@/types';
 
