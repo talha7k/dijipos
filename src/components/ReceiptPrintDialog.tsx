@@ -53,7 +53,6 @@ export function ReceiptPrintDialog({
               type: printerSettings.printerType,
               width: printerSettings.characterPerLine,
               characterSet: printerSettings.characterSet,
-              baudRate: printerSettings.baudRate,
             });
           }
 
