@@ -102,7 +102,7 @@ export function TableList({
                         <AlertDialogHeader>
                           <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                           <AlertDialogDescription>
-                            This will permanently delete the table "{table.name}". This action cannot be undone.
+                            This will permanently delete the table &ldquo;{table.name}&rdquo;. This action cannot be undone.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>

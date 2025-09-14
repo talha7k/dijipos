@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ActionButtons } from '@/components/ui/action-buttons';
 import { ChevronRight, ChevronDown, Folder, FolderOpen } from 'lucide-react';
-import { Category, Product, Service } from '@/types';
+import { Category, Product, Service, ItemType, CategoryType } from '@/types';
 
 interface CategoryTreeProps {
   categories: Category[];
@@ -14,7 +14,7 @@ interface CategoryTreeProps {
   selectedCategory: string | null;
   onCategorySelect: (categoryId: string | null) => void;
   onCategoryDelete: (categoryId: string) => void;
-  type: 'product' | 'service';
+  type: CategoryType;
   level?: number;
   isRecursive?: boolean;
 }
@@ -49,10 +49,10 @@ function CategoryTreeNode({
   };
 
   const getItemsCount = (categoryId: string) => {
-    if (type === 'product' && products.length > 0) {
+    if (type === ItemType.PRODUCT && products.length > 0) {
       return products.filter(p => p.categoryId === categoryId).length;
     }
-    if (type === 'service' && services.length > 0) {
+    if (type === ItemType.SERVICE && services.length > 0) {
       return services.filter(s => s.categoryId === categoryId).length;
     }
     return 0;
@@ -161,7 +161,7 @@ export function CategoryTree({
   const filteredCategories = isRecursive 
     ? categories 
     : categories.filter(c => 
-        (c.type === type || c.type === 'both') && 
+        c.type === type && 
         (level === 0 ? !c.parentId : true)
       );
 

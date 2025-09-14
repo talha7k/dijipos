@@ -134,7 +134,7 @@ export function PaymentTypesTab({ paymentTypes, onRefresh }: PaymentTypesTabProp
                     <AlertDialogHeader>
                       <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        This will permanently delete the payment type "{type.name}". This action cannot be undone.
+                        This will permanently delete the payment type &ldquo;{type.name}&rdquo;. This action cannot be undone.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

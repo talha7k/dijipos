@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { collection, query, onSnapshot, addDoc, doc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
-import { Product, Service, Category } from '@/types';
+import { Product, Service, Category, CategoryType } from '@/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -199,7 +199,7 @@ export default function ProductsServicesPage() {
                       onOpenChange={setCategoryDialogOpen}
                       onAddCategory={handleAddCategory}
                       categories={categories}
-                      defaultType="product"
+                      defaultType={CategoryType.PRODUCT}
                       selectedParentId={selectedCategory}
                     />
                   </CardTitle>
@@ -233,7 +233,7 @@ export default function ProductsServicesPage() {
                       selectedCategory={selectedCategory}
                       onCategorySelect={setSelectedCategory}
                       onCategoryDelete={handleDeleteCategory}
-                      type="product"
+                      type={CategoryType.PRODUCT}
                     />
                   </div>
                 </CardContent>
@@ -297,7 +297,7 @@ export default function ProductsServicesPage() {
                       onOpenChange={setCategoryDialogOpen}
                       onAddCategory={handleAddCategory}
                       categories={categories}
-                      defaultType="service"
+                      defaultType={CategoryType.SERVICE}
                       selectedParentId={selectedCategory}
                     />
                   </CardTitle>
@@ -331,7 +331,7 @@ export default function ProductsServicesPage() {
                       selectedCategory={selectedCategory}
                       onCategorySelect={setSelectedCategory}
                       onCategoryDelete={handleDeleteCategory}
-                      type="service"
+                      type={CategoryType.SERVICE}
                     />
                   </div>
                 </CardContent>
@@ -385,7 +385,7 @@ export default function ProductsServicesPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete the category "{deleteCategoryName}"?
+              Are you sure you want to delete the category &ldquo;{deleteCategoryName}&rdquo;?
               {deleteCategoryItemCount > 0 && ` This will also remove ${deleteCategoryItemCount} item${deleteCategoryItemCount > 1 ? 's' : ''} in this category.`}
             </AlertDialogDescription>
           </AlertDialogHeader>

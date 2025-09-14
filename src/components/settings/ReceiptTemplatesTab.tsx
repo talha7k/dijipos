@@ -199,7 +199,7 @@ export function ReceiptTemplatesTab({ receiptTemplates, onRefresh }: ReceiptTemp
                       <AlertDialogHeader>
                         <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                         <AlertDialogDescription>
-                          This will permanently delete the receipt template "{template.name}". This action cannot be undone.
+                          This will permanently delete the receipt template &ldquo;{template.name}&rdquo;. This action cannot be undone.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>

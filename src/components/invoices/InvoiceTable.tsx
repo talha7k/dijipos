@@ -3,7 +3,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Invoice } from '@/types';
+import { Invoice, InvoiceStatus } from '@/types';
 import { Receipt, MoreHorizontal } from 'lucide-react';
 
 interface InvoiceTableProps {
@@ -86,7 +86,7 @@ export function InvoiceTable({
                      loading={updatingStatus === invoice.id}
                      onClick={(e) => {
                        e.stopPropagation();
-                       onStatusChange(invoice.id, 'sent');
+                        onStatusChange(invoice.id, InvoiceStatus.SENT);
                      }}
                    >
                      Mark as Sent
@@ -99,7 +99,7 @@ export function InvoiceTable({
                      loading={updatingStatus === invoice.id}
                      onClick={(e) => {
                        e.stopPropagation();
-                       onStatusChange(invoice.id, 'paid');
+                        onStatusChange(invoice.id, InvoiceStatus.PAID);
                      }}
                    >
                      Mark as Paid

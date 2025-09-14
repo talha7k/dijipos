@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus } from 'lucide-react';
-import { Category } from '@/types';
+import { Category, CategoryType } from '@/types';
 
 interface AddProductDialogProps {
   open: boolean;
@@ -61,7 +61,7 @@ export function AddProductDialog({
   };
 
   const renderCategoryOptions = (parentId: string | null = null, level = 0) => {
-    const productCategories = categories.filter(c => c.type === 'product' || c.type === 'both');
+    const productCategories = categories.filter(c => c.type === CategoryType.PRODUCT);
     const filteredCategories = parentId === null
       ? productCategories.filter(c => !c.parentId)
       : productCategories.filter(c => c.parentId === parentId);

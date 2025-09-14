@@ -2,14 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import React from 'react';
-import { addDoc, getDoc, doc, collection } from 'firebase/firestore';
+import { addDoc, getDoc, doc, collection, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
+import { TableStatus, OrderStatus, ItemType } from '@/types';
 import { usePOSPersistence, CartItem } from '@/hooks/use-pos-persistence';
 import { useProductsData } from '@/hooks/use-products-data';
 import { useServicesData } from '@/hooks/use-services-data';
 import { useCategoriesData } from '@/hooks/use-categories-data';
-import { useTablesData } from '@/hooks/use-tables-data';
+import { useTablesData, useTableActions } from '@/hooks/use-tables-data';
 import { useCustomersData } from '@/hooks/use-customers-data';
 import { useOrdersData } from '@/hooks/use-orders-data';
 import { usePaymentTypesData } from '@/hooks/use-payment-types-data';
@@ -79,6 +80,7 @@ export default function POSPage() {
   const { services, loading: servicesLoading } = useServicesData(organizationId || undefined);
   const { categories, loading: categoriesLoading } = useCategoriesData(organizationId || undefined);
   const { tables, loading: tablesLoading } = useTablesData(organizationId || undefined);
+  const { updateTable } = useTableActions(organizationId || undefined);
   const { customers, loading: customersLoading } = useCustomersData(organizationId || undefined);
   const { orders, loading: ordersLoading } = useOrdersData(organizationId || undefined);
   const { paymentTypes, loading: paymentTypesLoading } = usePaymentTypesData(organizationId || undefined);
@@ -135,7 +137,8 @@ export default function POSPage() {
 
   // Add item to cart
   const addToCart = (item: Product | Service, type: 'product' | 'service') => {
-    const price = type === 'product' ? item.price : (item as Service).price;
+      const itemType = type === 'product' ? ItemType.PRODUCT : ItemType.SERVICE;
+      const price = itemType === ItemType.PRODUCT ? item.price : (item as Service).price;
     const existingItem = cart.find((cartItem: CartItem) =>
       cartItem.id === item.id && cartItem.type === type
     );
@@ -305,13 +308,14 @@ export default function POSPage() {
       if (selectedOrder.id.startsWith('temp')) {
         const orderData = {
           ...selectedOrder,
-          status: 'saved' as const,
+          status: OrderStatus.SAVED,
           createdAt: new Date(),
           updatedAt: new Date(),
         };
-        delete (orderData as any).id; // Remove temp ID so Firebase can generate a real one
+        // Remove temp ID so Firebase can generate a real one
+        const { id, ...orderDataWithoutId } = orderData;
 
-        const orderRef = await addDoc(collection(db, 'organizations', organizationId, 'orders'), orderData);
+        const orderRef = await addDoc(collection(db, 'organizations', organizationId, 'orders'), orderDataWithoutId);
         const savedOrder = { ...orderData, id: orderRef.id };
 
         // Update payments to reference the real order ID
@@ -329,17 +333,16 @@ export default function POSPage() {
       await Promise.all(paymentPromises);
 
       // Update order status to completed
-      await addDoc(collection(db, 'organizations', organizationId, 'orders'), {
-        ...orderToUpdate,
-        status: 'completed' as const,
+      await updateDoc(doc(db, 'organizations', organizationId, 'orders', orderToUpdate.id), {
+        status: OrderStatus.COMPLETED,
         updatedAt: new Date(),
       });
 
       toast.success('Payment processed successfully! Order marked as completed.');
       setSelectedOrder(null);
       setCurrentView('items');
-      // Clear the cart after successful payment
-      clearCart();
+      // Clear all POS data after successful payment (cart, table, customer, etc.)
+      clearPOSData();
     } catch (error) {
       console.error('Error processing payment:', error);
       toast.error('Failed to process payment. Please try again.');
@@ -373,9 +376,9 @@ export default function POSPage() {
         total: cartItem.total,
       };
       
-      if (cartItem.type === 'product') {
+      if (cartItem.type === ItemType.PRODUCT) {
         orderItem.productId = cartItem.id;
-      } else if (cartItem.type === 'service') {
+      } else if (cartItem.type === ItemType.SERVICE) {
         orderItem.serviceId = cartItem.id;
       }
       
@@ -395,7 +398,7 @@ export default function POSPage() {
       taxRate,
       taxAmount,
       total,
-      status: 'saved' as const,
+      status: OrderStatus.SAVED,
       ...(selectedCustomer && {
         customerName: selectedCustomer.name,
         customerPhone: selectedCustomer.phone,
@@ -414,12 +417,17 @@ export default function POSPage() {
     };
 
     try {
+      // Create the order
       await addDoc(collection(db, 'organizations', organizationId, 'orders'), orderData);
+      
+      // Update table status to occupied if a table is selected
+      if (selectedTable && selectedTable.id) {
+        await updateTable(selectedTable.id, { status: TableStatus.OCCUPIED });
+      }
+      
       toast.success('Order saved successfully!');
       // Clear all POS data after successful save
       clearPOSData();
-      // Clear cart after saving
-      setCart([]);
     } catch (error) {
       console.error('Error saving order:', error);
       toast.error('Failed to save order. Please try again.');
@@ -463,21 +471,21 @@ export default function POSPage() {
                            id: 'temp-checkout',
                            organizationId: organizationId || '',
                            orderNumber: `TEMP-${Date.now()}`,
-                           items: cart.map(item => ({
-                             id: `${item.type}-${item.id}`,
-                             type: item.type,
-                             productId: item.type === 'product' ? item.id : undefined,
-                             serviceId: item.type === 'service' ? item.id : undefined,
-                             name: item.name,
-                             quantity: item.quantity,
-                             unitPrice: item.price,
+                            items: cart.map(item => ({
+                              id: `${item.type}-${item.id}`,
+                              type: item.type === ItemType.PRODUCT ? ItemType.PRODUCT : ItemType.SERVICE,
+                              productId: item.type === ItemType.PRODUCT ? item.id : undefined,
+                              serviceId: item.type === ItemType.SERVICE ? item.id : undefined,
+                              name: item.name,
+                              quantity: item.quantity,
+                              unitPrice: item.price,
                              total: item.total,
                            })),
                            subtotal: cartTotal,
                            taxRate: 0, // TODO: Get from settings
                            taxAmount: 0, // TODO: Calculate based on tax rate
                            total: cartTotal,
-                           status: 'open',
+                            status: OrderStatus.OPEN,
                            orderType: selectedOrderType?.name || 'dine-in',
                            customerName: selectedCustomer?.name,
                            customerPhone: selectedCustomer?.phone,
@@ -532,9 +540,9 @@ export default function POSPage() {
                           orderNumber: `TEMP-${Date.now()}`,
                           items: cart.map(item => ({
                             id: `${item.type}-${item.id}`,
-                            type: item.type,
-                            productId: item.type === 'product' ? item.id : undefined,
-                            serviceId: item.type === 'service' ? item.id : undefined,
+                            type: item.type === ItemType.PRODUCT ? ItemType.PRODUCT : ItemType.SERVICE,
+                            productId: item.type === ItemType.PRODUCT ? item.id : undefined,
+                            serviceId: item.type === ItemType.SERVICE ? item.id : undefined,
                             name: item.name,
                             quantity: item.quantity,
                             unitPrice: item.price,
@@ -544,7 +552,7 @@ export default function POSPage() {
                           taxRate: 0,
                           taxAmount: 0,
                           total: cartTotal,
-                          status: 'open',
+                          status: OrderStatus.OPEN,
                           orderType: selectedOrderType?.name || 'dine-in',
                           customerName: selectedCustomer?.name,
                           customerPhone: selectedCustomer?.phone,
@@ -719,7 +727,7 @@ export default function POSPage() {
 
         {currentView === 'orders' && (
           <POSOrderGrid
-            orders={orders.filter(order => order.status === 'saved')}
+            orders={orders.filter(order => order.status === OrderStatus.SAVED)}
             onOrderSelect={handleOrderReopen}
             onPaymentClick={handlePaymentClick}
             onBack={handleBackToItems}
@@ -750,21 +758,21 @@ export default function POSPage() {
                id: 'temp-checkout',
                organizationId: organizationId || '',
                orderNumber: `TEMP-${Date.now()}`,
-               items: cart.map(item => ({
-                 id: `${item.type}-${item.id}`,
-                 type: item.type,
-                 productId: item.type === 'product' ? item.id : undefined,
-                 serviceId: item.type === 'service' ? item.id : undefined,
-                 name: item.name,
-                 quantity: item.quantity,
-                 unitPrice: item.price,
-                 total: item.total,
-               })),
+              items: cart.map(item => ({
+                id: `${item.type}-${item.id}`,
+                type: item.type === ItemType.PRODUCT ? ItemType.PRODUCT : ItemType.SERVICE,
+                productId: item.type === ItemType.PRODUCT ? item.id : undefined,
+                serviceId: item.type === ItemType.SERVICE ? item.id : undefined,
+                name: item.name,
+                quantity: item.quantity,
+                unitPrice: item.price,
+                total: item.total,
+              })),
                subtotal: cartTotal,
                taxRate: 0, // TODO: Get from settings
                taxAmount: 0, // TODO: Calculate based on tax rate
                total: cartTotal,
-               status: 'open',
+               status: OrderStatus.OPEN,
                orderType: selectedOrderType?.name || 'dine-in',
                customerName: selectedCustomer?.name,
                customerPhone: selectedCustomer?.phone,
@@ -815,9 +823,9 @@ export default function POSPage() {
               orderNumber: `TEMP-${Date.now()}`,
               items: cart.map(item => ({
                 id: `${item.type}-${item.id}`,
-                type: item.type,
-                productId: item.type === 'product' ? item.id : undefined,
-                serviceId: item.type === 'service' ? item.id : undefined,
+                type: item.type === 'product' ? ItemType.PRODUCT : ItemType.SERVICE,
+                productId: item.type === ItemType.PRODUCT ? item.id : undefined,
+                serviceId: item.type === ItemType.SERVICE ? item.id : undefined,
                 name: item.name,
                 quantity: item.quantity,
                 unitPrice: item.price,
@@ -827,7 +835,7 @@ export default function POSPage() {
               taxRate: 0,
               taxAmount: 0,
               total: cartTotal,
-              status: 'open',
+              status: OrderStatus.OPEN,
               orderType: selectedOrderType?.name || 'dine-in',
               customerName: selectedCustomer?.name,
               customerPhone: selectedCustomer?.phone,

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { collection, query, onSnapshot, updateDoc, doc, getDoc, addDoc, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
-import { Invoice, Organization, Customer, Supplier, Payment } from '@/types';
+import { Invoice, Organization, Customer, Supplier, Payment, TemplateType } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -141,9 +141,9 @@ export function InvoicesManager() {
       const customer = customers.find(c => c.name === invoice.clientName);
       const supplier = suppliers.find(s => s.id === invoice.supplierId);
 
-      const invoiceContent = invoice.template === 'arabic' 
-        ? createArabicInvoiceHTML(invoice, organization, customer, supplier)
-        : createEnglishInvoiceHTML(invoice, organization, customer, supplier);
+      const invoiceContent = invoice.template === TemplateType.ARABIC 
+          ? createArabicInvoiceHTML(invoice, organization, customer, supplier)
+          : createEnglishInvoiceHTML(invoice, organization, customer, supplier);
 
       printWindow.document.write(`
         <!DOCTYPE html>

@@ -134,7 +134,7 @@ export function OrderTypesTab({ orderTypes, onRefresh }: OrderTypesTabProps) {
                     <AlertDialogHeader>
                       <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        This will permanently delete the order type "{type.name}". This action cannot be undone.
+                        This will permanently delete the order type &ldquo;{type.name}&rdquo;. This action cannot be undone.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

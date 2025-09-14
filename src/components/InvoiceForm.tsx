@@ -10,7 +10,7 @@ import ItemList from '@/components/ItemList';
 import ClientInfo from '@/components/ClientInfo';
 import SupplierInfo from '@/components/SupplierInfo';
 import FormSummary from '@/components/FormSummary';
-import { Invoice, Item } from '@/types';
+import { Invoice, Item, TemplateType, ItemType, InvoiceType } from '@/types';
 import {
   sampleProductsServices,
   getProductOptionsFromMixed,
@@ -60,7 +60,7 @@ export default function InvoiceForm({ onSubmit, defaultType = 'sales' }: Invoice
   const addItem = () => {
     setItems([...items, {
       id: Date.now().toString(),
-      type: 'product',
+      type: ItemType.PRODUCT,
       name: '',
       description: '',
       quantity: 1,
@@ -74,7 +74,7 @@ export default function InvoiceForm({ onSubmit, defaultType = 'sales' }: Invoice
     if (catalogItem) {
       setItems([...items, {
         id: Date.now().toString(),
-        type: catalogItem.type,
+        type: catalogItem.type as ItemType,
         productId: catalogItem.type === 'product' ? catalogItem.id : undefined,
         serviceId: catalogItem.type === 'service' ? catalogItem.id : undefined,
         name: catalogItem.name,
@@ -115,11 +115,11 @@ export default function InvoiceForm({ onSubmit, defaultType = 'sales' }: Invoice
       status: 'draft' as const,
       dueDate: new Date(dueDate),
       notes,
-      template: 'english' as const,
+      template: TemplateType.ENGLISH,
       includeQR: false,
     };
 
-    if (invoiceType === 'sales') {
+    if (invoiceType === InvoiceType.SALES) {
       onSubmit({
         ...baseInvoice,
         clientName,
@@ -156,7 +156,7 @@ export default function InvoiceForm({ onSubmit, defaultType = 'sales' }: Invoice
         </Select>
       </div>
 
-      {invoiceType === 'sales' ? (
+      {invoiceType === InvoiceType.SALES ? (
         <ClientInfo
           selectedCustomerId={selectedCustomerId}
           clientName={clientName}

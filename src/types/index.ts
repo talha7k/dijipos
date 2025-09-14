@@ -3,7 +3,7 @@ export interface Category {
   name: string;
   description?: string;
   parentId?: string; // For hierarchical categories
-  type: 'product' | 'service' | 'both'; // Category can be for products, services, or both
+  type: CategoryType; // Category can be for products, services, or both
   organizationId: string;
   createdAt: Date;
   updatedAt: Date;
@@ -41,7 +41,7 @@ export interface Service {
 
 export interface Item {
   id: string;
-  type: 'product' | 'service';
+  type: ItemType;
   productId?: string;
   serviceId?: string;
   name: string;
@@ -63,7 +63,7 @@ export interface Quote {
   taxRate: number;
   taxAmount: number;
   total: number;
-  status: 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired' | 'converted';
+  status: QuoteStatus;
   notes?: string;
   validUntil?: Date;
   createdAt: Date;
@@ -74,7 +74,7 @@ export interface Invoice {
   id: string;
   organizationId: string;
   quoteId?: string;
-  type: 'sales' | 'purchase';
+  type: InvoiceType;
   clientName?: string; // For sales invoices
   clientEmail?: string; // For sales invoices
   clientAddress?: string; // For sales invoices
@@ -89,12 +89,12 @@ export interface Invoice {
   taxRate: number;
   taxAmount: number;
   total: number;
-  status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
+  status: InvoiceStatus;
   invoiceNumber?: string; // For purchase invoices
   invoiceDate?: Date; // For purchase invoices
   dueDate: Date;
   notes?: string;
-  template: 'english' | 'arabic';
+  template: TemplateType;
   includeQR: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -116,7 +116,7 @@ export interface InvitationCode {
   id: string;
   code: string;
   organizationId: string;
-  role: 'admin' | 'manager' | 'waiter' | 'cashier';
+  role: UserRole;
   expiresAt: Date;
   isUsed: boolean;
   usedBy?: string;
@@ -126,7 +126,7 @@ export interface InvitationCode {
 export interface TemplateField {
   id: string;
   name: string;
-  type: 'text' | 'number' | 'boolean' | 'select' | 'date';
+  type: TemplateFieldType;
   label: string;
   defaultValue?: string | number | boolean;
   options?: string[]; // for select type
@@ -152,7 +152,7 @@ export interface InvoiceTemplate {
   organizationId: string;
   name: string;
   description?: string;
-  type: 'english' | 'arabic' | 'custom';
+  type: TemplateType;
   isDefault: boolean;
   fields: TemplateField[];
   style: TemplateStyle;
@@ -203,22 +203,120 @@ export interface PurchaseInvoice {
   taxRate: number;
   taxAmount: number;
   total: number;
-  status: 'draft' | 'sent' | 'received' | 'partially_paid' | 'paid' | 'cancelled';
+  status: PurchaseInvoiceStatus;
   invoiceNumber?: string;
   invoiceDate: Date;
   dueDate: Date;
   notes?: string;
-  template: 'english' | 'arabic';
+  template: TemplateType;
   includeQR: boolean;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export enum TableStatus {
+  AVAILABLE = 'available',
+  OCCUPIED = 'occupied',
+  RESERVED = 'reserved',
+  MAINTENANCE = 'maintenance'
+}
+
+export enum OrderStatus {
+  OPEN = 'open',
+  COMPLETED = 'completed',
+  CANCELLED = 'cancelled',
+  SAVED = 'saved'
+}
+
+export enum QuoteStatus {
+  DRAFT = 'draft',
+  SENT = 'sent',
+  ACCEPTED = 'accepted',
+  REJECTED = 'rejected',
+  EXPIRED = 'expired',
+  CONVERTED = 'converted'
+}
+
+export enum InvoiceStatus {
+  DRAFT = 'draft',
+  SENT = 'sent',
+  PAID = 'paid',
+  OVERDUE = 'overdue',
+  CANCELLED = 'cancelled'
+}
+
+export enum PurchaseInvoiceStatus {
+  DRAFT = 'draft',
+  SENT = 'sent',
+  RECEIVED = 'received',
+  PARTIALLY_PAID = 'partially_paid',
+  PAID = 'paid',
+  CANCELLED = 'cancelled'
+}
+
+export enum CategoryType {
+  PRODUCT = 'product',
+  SERVICE = 'service'
+}
+
+export enum ItemType {
+  PRODUCT = 'product',
+  SERVICE = 'service'
+}
+
+export enum InvoiceType {
+  SALES = 'sales',
+  PURCHASE = 'purchase'
+}
+
+export enum TemplateType {
+  ENGLISH = 'english',
+  ARABIC = 'arabic',
+  CUSTOM = 'custom'
+}
+
+export enum UserRole {
+  ADMIN = 'admin',
+  MANAGER = 'manager',
+  WAITER = 'waiter',
+  CASHIER = 'cashier'
+}
+
+export enum TemplateFieldType {
+  TEXT = 'text',
+  NUMBER = 'number',
+  BOOLEAN = 'boolean',
+  SELECT = 'select',
+  DATE = 'date'
+}
+
+export enum PrinterType {
+  EPSON = 'epson',
+  STAR = 'star'
+}
+
+export enum FontSize {
+  SMALL = 'small',
+  MEDIUM = 'medium',
+  LARGE = 'large'
+}
+
+export enum PrinterFormat {
+  THERMAL = 'thermal',
+  A4 = 'a4'
+}
+
+export enum SubscriptionStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  TRIAL = 'trial'
 }
 
 export interface Table {
   id: string;
   name: string;
   capacity: number; // Number of seats
-  status: 'available' | 'occupied' | 'reserved' | 'maintenance';
+  status: TableStatus;
   organizationId: string;
   createdAt: Date;
   updatedAt: Date;
@@ -226,7 +324,7 @@ export interface Table {
 
 export interface OrderItem {
   id: string;
-  type: 'product' | 'service';
+  type: ItemType;
   productId?: string;
   serviceId?: string;
   name: string;
@@ -246,7 +344,7 @@ export interface Order {
   taxRate: number;
   taxAmount: number;
   total: number;
-  status: 'open' | 'completed' | 'cancelled' | 'saved';
+  status: OrderStatus;
   customerName?: string;
   customerPhone?: string;
   customerEmail?: string;
@@ -293,11 +391,11 @@ export interface PaymentType {
 export interface PrinterSettings {
   id: string;
   paperWidth: number; // Width in mm (e.g., 48, 58, 80 for common thermal printer widths)
-  fontSize: 'small' | 'medium' | 'large';
+  fontSize: FontSize;
   characterPerLine: number; // Characters per line based on paper width
   autoCut: boolean;
   // Thermal printer specific settings
-  printerType?: 'epson' | 'star'; // Thermal printer type
+  printerType?: PrinterType; // Thermal printer type
   characterSet?: string; // Character set (e.g., 'korea', 'japan', 'multilingual')
   baudRate?: number; // Serial baud rate (default: 9600)
   organizationId: string;
@@ -309,7 +407,7 @@ export interface ReceiptTemplate {
   id: string;
   name: string;
   description?: string;
-  type: 'thermal' | 'a4';
+  type: PrinterFormat;
   content: string; // HTML template content
   isDefault: boolean;
   organizationId: string;
@@ -349,7 +447,7 @@ export interface OrganizationUser {
   id: string;
   userId: string;
   organizationId: string;
-  role: 'admin' | 'manager' | 'waiter' | 'cashier';
+  role: UserRole;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -367,5 +465,5 @@ export interface Organization {
   stampUrl?: string; // Company stamp URL
   createdAt: Date;
   updatedAt: Date;
-  subscriptionStatus: 'active' | 'inactive' | 'trial';
+  subscriptionStatus: SubscriptionStatus;
 }

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Invoice, Organization, Customer, Supplier } from '@/types';
+import { Invoice, Organization, Customer, Supplier, TemplateType } from '@/types';
 
 interface InvoicePrintProps {
   invoice: Invoice;
@@ -18,7 +18,7 @@ export function InvoicePrint({ invoice, organization, customers, suppliers }: In
     const customer = customers.find(c => c.name === invoice.clientName);
     const supplier = suppliers.find(s => s.id === invoice.supplierId);
 
-    const invoiceContent = invoice.template === 'arabic' 
+    const invoiceContent = invoice.template === TemplateType.ARABIC 
       ? createArabicInvoiceHTML(invoice, organization, customer, supplier)
       : createEnglishInvoiceHTML(invoice, organization, customer, supplier);
 

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { collection, query, onSnapshot, updateDoc, doc, getDoc, addDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
-import { Invoice, Organization } from '@/types';
+import { Invoice, Organization, TemplateType, InvoiceStatus } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -97,9 +97,9 @@ function InvoicesContent() {
     if (!printWindow) return;
 
     // Create the invoice HTML content
-    const invoiceContent = invoice.template === 'arabic' 
-      ? createArabicInvoiceHTML(invoice, organizationData)
-      : createEnglishInvoiceHTML(invoice, organizationData);
+      const invoiceContent = invoice.template === 'arabic' 
+        ? createArabicInvoiceHTML(invoice, organizationData)
+        : createEnglishInvoiceHTML(invoice, organizationData);
 
     // Write the HTML to the new window
     printWindow.document.write(`
@@ -458,24 +458,24 @@ function InvoicesContent() {
                             <div>
                               <div className="flex gap-4 mb-4 items-center">
                                 <Button
-                                  variant={selectedInvoice.template === 'english' ? 'default' : 'outline'}
+                                  variant={selectedInvoice.template === TemplateType.ENGLISH ? 'default' : 'outline'}
                                   onClick={() => {
-                                    const updatedInvoice = { ...selectedInvoice, template: 'english' as const };
+                                    const updatedInvoice = { ...selectedInvoice, template: TemplateType.ENGLISH };
                                     setSelectedInvoice(updatedInvoice);
-                                    updateDoc(doc(db, 'organizations', organizationId!, 'purchase-invoices', selectedInvoice.id), {
-                                      template: 'english'
-                                    });
+                                     updateDoc(doc(db, 'organizations', organizationId!, 'purchase-invoices', selectedInvoice.id), {
+                                       template: TemplateType.ENGLISH
+                                     });
                                   }}
                                 >
                                   English Template
                                 </Button>
                                 <Button
-                                  variant={selectedInvoice.template === 'arabic' ? 'default' : 'outline'}
+                                  variant={selectedInvoice.template === TemplateType.ARABIC ? 'default' : 'outline'}
                                   onClick={() => {
-                                    const updatedInvoice = { ...selectedInvoice, template: 'arabic' as const };
+                                    const updatedInvoice = { ...selectedInvoice, template: TemplateType.ARABIC };
                                     setSelectedInvoice(updatedInvoice);
                                     updateDoc(doc(db, 'organizations', organizationId!, 'purchase-invoices', selectedInvoice.id), {
-                                      template: 'arabic'
+                                      template: TemplateType.ARABIC
                                     });
                                   }}
                                 >
@@ -500,7 +500,7 @@ function InvoicesContent() {
                                   />
                                 </div>
                               </div>
-                              {selectedInvoice.template === 'arabic' ? (
+                              {selectedInvoice.template === TemplateType.ARABIC ? (
                                 <ArabicInvoice invoice={selectedInvoice} organization={organization} />
                               ) : (
                                 <EnglishInvoice invoice={selectedInvoice} organization={organization} />
@@ -509,20 +509,20 @@ function InvoicesContent() {
                           )}
                         </DialogContent>
                       </Dialog>
-                      {invoice.status === 'draft' && (
+                       {invoice.status === InvoiceStatus.DRAFT && (
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleStatusChange(invoice.id, 'sent')}
+                          onClick={() => handleStatusChange(invoice.id, InvoiceStatus.SENT)}
                         >
                           Mark as Sent
                         </Button>
                       )}
-                      {invoice.status === 'sent' && (
+                       {invoice.status === InvoiceStatus.SENT && (
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleStatusChange(invoice.id, 'paid')}
+                          onClick={() => handleStatusChange(invoice.id, InvoiceStatus.PAID)}
                         >
                           Mark as Paid
                         </Button>

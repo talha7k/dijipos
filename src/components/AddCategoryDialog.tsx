@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { FolderPlus } from 'lucide-react';
-import { Category } from '@/types';
+import { Category, CategoryType } from '@/types';
 import { CategoryTree } from './CategoryTree';
 
 interface AddCategoryDialogProps {
@@ -19,11 +19,11 @@ interface AddCategoryDialogProps {
   onAddCategory: (category: {
     name: string;
     description: string;
-    type: 'product' | 'service';
+    type: CategoryType;
     parentId: string | null;
   }) => void;
   categories: Category[];
-  defaultType?: 'product' | 'service';
+  defaultType?: CategoryType;
   selectedParentId?: string | null;
 }
 
@@ -32,12 +32,12 @@ export function AddCategoryDialog({
   onOpenChange,
   onAddCategory,
   categories,
-  defaultType = 'product',
+  defaultType = CategoryType.PRODUCT,
   selectedParentId: propSelectedParentId
 }: AddCategoryDialogProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [type, setType] = useState<'product' | 'service'>(defaultType);
+  const [type, setType] = useState<CategoryType>(defaultType);
   const [selectedParentId, setSelectedParentId] = useState<string | null>(propSelectedParentId || null);
 
   // Update selectedParentId when prop changes
@@ -65,8 +65,8 @@ export function AddCategoryDialog({
     onOpenChange(false);
   };
 
-  const filteredCategories = categories.filter(c => 
-    c.type === type || c.type === 'both'
+  const filteredCategories = categories.filter(c =>
+    c.type === type
   );
 
   return (
@@ -147,16 +147,16 @@ export function AddCategoryDialog({
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="categoryType">Type</Label>
-                  <Select value={type} onValueChange={(value: 'product' | 'service') => {
-                    setType(value);
-                    setSelectedParentId(null); // Reset parent selection when type changes
-                  }}>
+                   <Select value={type} onValueChange={(value: string) => {
+                     setType(value as CategoryType);
+                     setSelectedParentId(null); // Reset parent selection when type changes
+                   }}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="product">Products</SelectItem>
-                      <SelectItem value="service">Services</SelectItem>
+                      <SelectItem value={CategoryType.PRODUCT}>Products</SelectItem>
+                      <SelectItem value={CategoryType.SERVICE}>Services</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

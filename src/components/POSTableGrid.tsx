@@ -1,6 +1,6 @@
 'use client';
 
-import { Table } from '@/types';
+import { Table, TableStatus } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -28,7 +28,7 @@ export function POSTableGrid({ tables, onTableSelect, onBack }: POSTableGridProp
     }
   };
 
-  const availableTables = tables.filter(table => table.status === 'available');
+  const availableTables = tables.filter(table => table.status === TableStatus.AVAILABLE);
 
   return (
     <div className="flex flex-col h-full w-full">

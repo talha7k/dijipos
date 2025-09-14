@@ -8,7 +8,7 @@ import { Combobox } from '@/components/ui/combobox';
 import ItemList from '@/components/ItemList';
 import ClientInfo from '@/components/ClientInfo';
 import FormSummary from '@/components/FormSummary';
-import { Quote, Item } from '@/types';
+import { Quote, Item, ItemType } from '@/types';
 import {
   sampleProductsServices,
   getProductOptionsFromMixed,
@@ -33,7 +33,7 @@ export default function QuoteForm({ onSubmit }: QuoteFormProps) {
   const addItem = () => {
     setItems([...items, {
       id: Date.now().toString(),
-      type: 'product',
+      type: ItemType.PRODUCT,
       name: '',
       description: '',
       quantity: 1,
@@ -47,7 +47,7 @@ export default function QuoteForm({ onSubmit }: QuoteFormProps) {
     if (catalogItem) {
       setItems([...items, {
         id: Date.now().toString(),
-        type: catalogItem.type,
+        type: catalogItem.type as ItemType,
         productId: catalogItem.type === 'product' ? catalogItem.id : undefined,
         serviceId: catalogItem.type === 'service' ? catalogItem.id : undefined,
         name: catalogItem.name,

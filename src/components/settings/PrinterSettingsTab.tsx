@@ -292,7 +292,7 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  No printers detected. Connect a thermal printer and click "Refresh".
+                  No printers detected. Connect a thermal printer and click &ldquo;Refresh&rdquo;.
                 </p>
               )}
               {(thermalPrinter as unknown as ThermalPrinterService).isConnected() && (

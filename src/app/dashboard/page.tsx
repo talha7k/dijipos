@@ -14,6 +14,7 @@ import { usePaymentsData } from '@/hooks/use-payments-data';
 import { useProductsData } from '@/hooks/use-products-data';
 import { useServicesData } from '@/hooks/use-services-data';
 import { useTablesData } from '@/hooks/use-tables-data';
+import { TableStatus } from '@/types';
 
 function DashboardContent() {
   const { user, organizationId } = useAuth();
@@ -118,8 +119,8 @@ function DashboardContent() {
             <CardContent>
               <div className="text-2xl font-bold">{tables.length}</div>
               <p className="text-sm text-muted-foreground">
-                {tables.filter(table => table.status === 'available').length} available • {tables.filter(table => table.status !== 'available').length} occupied
-              </p>
+                        {tables.filter(table => table.status === TableStatus.AVAILABLE).length} available • {tables.filter(table => table.status !== TableStatus.AVAILABLE).length} occupied
+                      </p>
             </CardContent>
           </Card>
         </Link>

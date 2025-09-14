@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { updateDoc, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
-import { Invoice } from '@/types';
+import { Invoice, InvoiceStatus } from '@/types';
 import { toast } from 'sonner';
 
 interface InvoiceStatusToggleProps {
@@ -37,11 +37,11 @@ export function InvoiceStatusToggle({ invoice, onStatusChange }: InvoiceStatusTo
 
   const getStatusColor = (status: Invoice['status']) => {
     switch (status) {
-      case 'paid':
+      case InvoiceStatus.PAID:
         return 'bg-green-100 text-green-800 hover:bg-green-200';
-      case 'sent':
+      case InvoiceStatus.SENT:
         return 'bg-blue-100 text-blue-800 hover:bg-blue-200';
-      case 'draft':
+      case InvoiceStatus.DRAFT:
         return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
       default:
         return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
@@ -50,24 +50,24 @@ export function InvoiceStatusToggle({ invoice, onStatusChange }: InvoiceStatusTo
 
   const getNextStatus = () => {
     switch (invoice.status) {
-      case 'draft':
-        return 'sent';
-      case 'sent':
-        return 'paid';
-      case 'paid':
-        return 'sent';
+      case InvoiceStatus.DRAFT:
+        return InvoiceStatus.SENT;
+      case InvoiceStatus.SENT:
+        return InvoiceStatus.PAID;
+      case InvoiceStatus.PAID:
+        return InvoiceStatus.SENT;
       default:
-        return 'draft';
+        return InvoiceStatus.DRAFT;
     }
   };
 
   const getStatusLabel = (status: Invoice['status']) => {
     switch (status) {
-      case 'paid':
+      case InvoiceStatus.PAID:
         return 'Paid';
-      case 'sent':
+      case InvoiceStatus.SENT:
         return 'Sent';
-      case 'draft':
+      case InvoiceStatus.DRAFT:
         return 'Draft';
       default:
         return status;

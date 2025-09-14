@@ -233,10 +233,22 @@ export const usePOSPersistence = (organizationId?: string) => {
 
   // Clear all POS data
   const clearPOSData = () => {
+    // Clear state variables (preserve order type as user preference)
+    setCart([]);
+    setSelectedTable(null);
+    setSelectedCustomer(null);
+    // Don't clear order type - preserve user preference
+    // setSelectedOrderType(null);
+    setCurrentView('items');
+    setCategoryPath([]);
+    setSelectedOrder(null);
+
+    // Clear localStorage (preserve order type)
     localStorage.removeItem(getOrganizationStorageKey(POS_STORAGE_KEYS.CART, organizationId));
     localStorage.removeItem(getOrganizationStorageKey(POS_STORAGE_KEYS.TABLE, organizationId));
     localStorage.removeItem(getOrganizationStorageKey(POS_STORAGE_KEYS.CUSTOMER, organizationId));
-    localStorage.removeItem(getOrganizationStorageKey(POS_STORAGE_KEYS.ORDER_TYPE, organizationId));
+    // Don't remove order type from localStorage - preserve user preference
+    // localStorage.removeItem(getOrganizationStorageKey(POS_STORAGE_KEYS.ORDER_TYPE, organizationId));
     localStorage.removeItem(getOrganizationStorageKey(POS_STORAGE_KEYS.VIEW, organizationId));
     localStorage.removeItem(getOrganizationStorageKey(POS_STORAGE_KEYS.CATEGORY_PATH, organizationId));
     localStorage.removeItem(getOrganizationStorageKey(POS_STORAGE_KEYS.ORDER, organizationId));

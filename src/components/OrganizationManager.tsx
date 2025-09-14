@@ -12,7 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Building2, Plus, Users, ArrowRight, Crown, Mail, LogOut } from 'lucide-react';
 import { collection, query, where, getDocs, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Organization } from '@/types';
+import { Organization, UserRole } from '@/types';
 import { useTheme } from '@/contexts/ThemeContext';
 import { auth } from '@/lib/firebase';
 import { toast } from 'sonner';
@@ -281,7 +281,7 @@ export function OrganizationManager() {
                           
                           {/* Role Badge */}
                           <div className="flex items-center gap-2">
-                            {organizationUser.role === 'admin' && (
+                            {organizationUser.role === UserRole.ADMIN && (
                               <div className="flex items-center gap-1">
                                 <Crown className="h-4 w-4 text-yellow-500" />
                                 <span className="text-xs text-yellow-600 font-medium">Admin</span>

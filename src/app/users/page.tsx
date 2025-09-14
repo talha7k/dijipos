@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { collection, query, onSnapshot, addDoc, updateDoc, doc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
-import { OrganizationUser } from '@/types';
+import { OrganizationUser, UserRole } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -22,7 +22,7 @@ interface InvitationCode {
   id: string;
   code: string;
   organizationId: string;
-  role: 'admin' | 'manager' | 'waiter' | 'cashier';
+  role: UserRole;
   expiresAt: Date;
   isUsed: boolean;
   usedBy?: string;
@@ -38,11 +38,11 @@ function UsersContent() {
   const [invitationDialogOpen, setInvitationDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<OrganizationUser | null>(null);
   const [formData, setFormData] = useState({
-    role: 'waiter' as 'admin' | 'manager' | 'waiter' | 'cashier',
+    role: UserRole.WAITER,
     isActive: true,
   });
   const [invitationFormData, setInvitationFormData] = useState({
-    role: 'waiter' as 'admin' | 'manager' | 'waiter' | 'cashier',
+    role: UserRole.WAITER,
     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
   });
 
@@ -105,7 +105,7 @@ function UsersContent() {
 
       setInvitationDialogOpen(false);
       setInvitationFormData({
-        role: 'waiter',
+        role: UserRole.WAITER,
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       });
     } catch (error) {
@@ -148,7 +148,7 @@ function UsersContent() {
       setDialogOpen(false);
       setEditingUser(null);
       setFormData({
-        role: 'waiter',
+        role: UserRole.WAITER,
         isActive: true,
       });
     } catch (error) {
@@ -228,15 +228,15 @@ function UsersContent() {
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="role">Role</Label>
-                  <Select value={invitationFormData.role} onValueChange={(value: 'admin' | 'manager' | 'cashier' | 'waiter') => setInvitationFormData({ ...invitationFormData, role: value })}>
+                   <Select value={invitationFormData.role} onValueChange={(value: string) => setInvitationFormData({ ...invitationFormData, role: value as UserRole })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select role" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="admin">Admin</SelectItem>
-                      <SelectItem value="manager">Manager</SelectItem>
-                      <SelectItem value="waiter">Waiter</SelectItem>
-                      <SelectItem value="cashier">Cashier</SelectItem>
+                      <SelectItem value={UserRole.ADMIN}>Admin</SelectItem>
+                      <SelectItem value={UserRole.MANAGER}>Manager</SelectItem>
+                      <SelectItem value={UserRole.WAITER}>Waiter</SelectItem>
+                      <SelectItem value={UserRole.CASHIER}>Cashier</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -434,15 +434,15 @@ function UsersContent() {
           <div className="space-y-4">
             <div>
               <Label htmlFor="role">Role</Label>
-              <Select value={formData.role} onValueChange={(value: 'admin' | 'manager' | 'cashier' | 'waiter') => setFormData({ ...formData, role: value })}>
+               <Select value={formData.role} onValueChange={(value: string) => setFormData({ ...formData, role: value as UserRole })}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select role" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="manager">Manager</SelectItem>
-                  <SelectItem value="waiter">Waiter</SelectItem>
-                  <SelectItem value="cashier">Cashier</SelectItem>
+                  <SelectItem value={UserRole.ADMIN}>Admin</SelectItem>
+                  <SelectItem value={UserRole.MANAGER}>Manager</SelectItem>
+                  <SelectItem value={UserRole.WAITER}>Waiter</SelectItem>
+                  <SelectItem value={UserRole.CASHIER}>Cashier</SelectItem>
                 </SelectContent>
               </Select>
             </div>

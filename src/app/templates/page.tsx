@@ -12,14 +12,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useAuth } from '@/contexts/AuthContext';
-import { InvoiceTemplate, TemplateField, TemplateStyle } from '@/types';
+import { InvoiceTemplate, TemplateField, TemplateStyle, TemplateFieldType, TemplateType } from '@/types';
 import { Plus, Edit, Trash2, Copy, Eye } from 'lucide-react';
 
 const defaultFields: TemplateField[] = [
   {
     id: 'clientName',
     name: 'clientName',
-    type: 'text',
+    type: TemplateFieldType.TEXT,
     label: 'Client Name',
     required: true,
     visible: true,
@@ -27,7 +27,7 @@ const defaultFields: TemplateField[] = [
   {
     id: 'clientEmail',
     name: 'clientEmail',
-    type: 'text',
+    type: TemplateFieldType.TEXT,
     label: 'Client Email',
     required: true,
     visible: true,
@@ -35,7 +35,7 @@ const defaultFields: TemplateField[] = [
   {
     id: 'clientAddress',
     name: 'clientAddress',
-    type: 'text',
+    type: TemplateFieldType.TEXT,
     label: 'Client Address',
     required: false,
     visible: true,
@@ -43,7 +43,7 @@ const defaultFields: TemplateField[] = [
   {
     id: 'clientVAT',
     name: 'clientVAT',
-    type: 'text',
+    type: TemplateFieldType.TEXT,
     label: 'Client VAT Number',
     required: false,
     visible: true,
@@ -51,7 +51,7 @@ const defaultFields: TemplateField[] = [
   {
     id: 'dueDate',
     name: 'dueDate',
-    type: 'date',
+    type: TemplateFieldType.DATE,
     label: 'Due Date',
     required: true,
     visible: true,
@@ -59,7 +59,7 @@ const defaultFields: TemplateField[] = [
   {
     id: 'notes',
     name: 'notes',
-    type: 'text',
+    type: TemplateFieldType.TEXT,
     label: 'Notes',
     required: false,
     visible: true,
@@ -89,7 +89,7 @@ function TemplatesContent() {
   const [newTemplate, setNewTemplate] = useState({
     name: '',
     description: '',
-    type: 'english' as 'english' | 'arabic' | 'custom',
+    type: TemplateType.ENGLISH,
     isDefault: false,
     fields: defaultFields,
     style: defaultStyle,
@@ -105,7 +105,7 @@ function TemplatesContent() {
           organizationId: organizationId!,
           name: 'English Standard',
           description: 'Standard English invoice template',
-          type: 'english',
+          type: TemplateType.ENGLISH,
           isDefault: true,
           fields: defaultFields,
           style: defaultStyle,
@@ -117,7 +117,7 @@ function TemplatesContent() {
           organizationId: organizationId!,
           name: 'Arabic Standard',
           description: 'Standard Arabic invoice template',
-          type: 'arabic',
+          type: TemplateType.ARABIC,
           isDefault: false,
           fields: defaultFields,
           style: { ...defaultStyle, fontFamily: 'Amiri, serif' },
@@ -203,7 +203,7 @@ function TemplatesContent() {
     setNewTemplate({
       name: '',
       description: '',
-      type: 'english',
+      type: TemplateType.ENGLISH,
       isDefault: false,
       fields: defaultFields,
       style: defaultStyle,
@@ -248,17 +248,17 @@ function TemplatesContent() {
                   <Label htmlFor="templateType">Template Type</Label>
                   <Select
                     value={newTemplate.type}
-                    onValueChange={(value: 'english' | 'arabic' | 'custom') => 
-                      setNewTemplate({ ...newTemplate, type: value })
-                    }
+                     onValueChange={(value: string) =>
+                       setNewTemplate({ ...newTemplate, type: value as TemplateType })
+                     }
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="english">English</SelectItem>
-                      <SelectItem value="arabic">Arabic</SelectItem>
-                      <SelectItem value="custom">Custom</SelectItem>
+                      <SelectItem value={TemplateType.ENGLISH}>English</SelectItem>
+                      <SelectItem value={TemplateType.ARABIC}>Arabic</SelectItem>
+                      <SelectItem value={TemplateType.CUSTOM}>Custom</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -393,17 +393,17 @@ function TemplatesContent() {
                   <Label htmlFor="editTemplateType">Template Type</Label>
                   <Select
                     value={editingTemplate.type}
-                    onValueChange={(value: 'english' | 'arabic' | 'custom') => 
-                      setEditingTemplate({ ...editingTemplate, type: value })
-                    }
+                     onValueChange={(value: string) =>
+                       setEditingTemplate({ ...editingTemplate!, type: value as TemplateType })
+                     }
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="english">English</SelectItem>
-                      <SelectItem value="arabic">Arabic</SelectItem>
-                      <SelectItem value="custom">Custom</SelectItem>
+                      <SelectItem value={TemplateType.ENGLISH}>English</SelectItem>
+                      <SelectItem value={TemplateType.ARABIC}>Arabic</SelectItem>
+                      <SelectItem value={TemplateType.CUSTOM}>Custom</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

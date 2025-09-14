@@ -1,11 +1,19 @@
 'use client';
 
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import React, { useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { TableStatus } from '@/types';
 import { Plus } from 'lucide-react';
 
 interface AddTableDialogProps {
@@ -19,7 +27,7 @@ interface AddTableDialogProps {
   onAddMultipleTables?: (tables: Array<{
     name: string;
     capacity: number;
-    status: 'available' | 'occupied' | 'reserved' | 'maintenance';
+    status: TableStatus;
   }>) => void;
 }
 
@@ -34,7 +42,7 @@ export function AddTableDialog({
   const [capacity, setCapacity] = useState('');
   const [bulkCount, setBulkCount] = useState('');
   const [bulkCapacity, setBulkCapacity] = useState('');
-  const [status, setStatus] = useState<'available' | 'occupied' | 'reserved' | 'maintenance'>('available');
+  const [status, setStatus] = useState<TableStatus>(TableStatus.AVAILABLE);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,7 +76,7 @@ export function AddTableDialog({
       setBulkCapacity('');
     }
 
-    setStatus('available');
+    setStatus(TableStatus.AVAILABLE);
     onOpenChange(false);
   };
 
@@ -169,15 +177,15 @@ export function AddTableDialog({
           )}
           <div>
             <Label htmlFor="tableStatus">Status</Label>
-            <Select value={status} onValueChange={(value: 'available' | 'occupied' | 'reserved' | 'maintenance') => setStatus(value)}>
+            <Select value={status} onValueChange={(value: TableStatus) => setStatus(value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="available">Available</SelectItem>
-                <SelectItem value="occupied">Occupied</SelectItem>
-                <SelectItem value="reserved">Reserved</SelectItem>
-                <SelectItem value="maintenance">Maintenance</SelectItem>
+                <SelectItem value={TableStatus.AVAILABLE}>Available</SelectItem>
+                <SelectItem value={TableStatus.OCCUPIED}>Occupied</SelectItem>
+                <SelectItem value={TableStatus.RESERVED}>Reserved</SelectItem>
+                <SelectItem value={TableStatus.MAINTENANCE}>Maintenance</SelectItem>
               </SelectContent>
             </Select>
           </div>

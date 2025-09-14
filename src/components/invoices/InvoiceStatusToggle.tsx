@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Invoice } from '@/types';
+import { Invoice, InvoiceStatus } from '@/types';
 
 interface InvoiceStatusToggleProps {
   invoice: Invoice;
@@ -16,12 +16,12 @@ export function InvoiceStatusToggle({
 }: InvoiceStatusToggleProps) {
   const getNextStatus = (currentStatus: Invoice['status']): Invoice['status'] | null => {
     switch (currentStatus) {
-      case 'draft':
-        return 'sent';
-      case 'sent':
-        return 'paid';
-      case 'overdue':
-        return 'paid';
+      case InvoiceStatus.DRAFT:
+        return InvoiceStatus.SENT;
+      case InvoiceStatus.SENT:
+        return InvoiceStatus.PAID;
+      case InvoiceStatus.OVERDUE:
+        return InvoiceStatus.PAID;
       default:
         return null;
     }

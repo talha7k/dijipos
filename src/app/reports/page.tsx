@@ -13,6 +13,7 @@ import { Calendar, Download, TrendingUp, Calculator } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { collection, getDocs, query, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { InvoiceType } from '@/types';
 
 interface InvoiceItem {
   id: string;
@@ -24,7 +25,7 @@ interface InvoiceItem {
 
 interface Invoice {
   id: string;
-  type: 'sales' | 'purchase';
+  type: InvoiceType;
   items: InvoiceItem[];
   subtotal: number;
   taxRate: number;
@@ -115,8 +116,8 @@ export default function ReportsPage() {
     });
     
     // Calculate totals
-    const salesInvoices = filteredInvoices.filter(inv => inv.type === 'sales');
-    const purchaseInvoices = filteredInvoices.filter(inv => inv.type === 'purchase');
+    const salesInvoices = filteredInvoices.filter(inv => inv.type === InvoiceType.SALES);
+  const purchaseInvoices = filteredInvoices.filter(inv => inv.type === InvoiceType.PURCHASE);
     
     const totalSales = salesInvoices.reduce((sum, inv) => sum + inv.total, 0);
     const totalPurchases = purchaseInvoices.reduce((sum, inv) => sum + inv.total, 0);
@@ -220,8 +221,8 @@ export default function ReportsPage() {
         ['Net VAT Payable', reportData.netVATPayable.toFixed(2)],
         [''],
         ['Supporting Documents', ''],
-        ['Total Sales Invoices', invoices.filter(inv => inv.type === 'sales').length],
-        ['Total Purchase Invoices', invoices.filter(inv => inv.type === 'purchase').length]
+        ['Total Sales Invoices', invoices.filter(inv => inv.type === InvoiceType.SALES).length],
+        ['Total Purchase Invoices', invoices.filter(inv => inv.type === InvoiceType.PURCHASE).length]
       ].map(row => row.join(',')).join('\n');
       
       // Create download link

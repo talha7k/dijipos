@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Invoice, Organization, Customer, Supplier } from '@/types';
+import { Invoice, Organization, Customer, Supplier, TemplateType } from '@/types';
 import { Printer } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
@@ -41,7 +41,7 @@ export function PrintPreviewDialog({
     if (!printWindow) return;
 
     // Create invoice HTML content
-    const invoiceContent = invoice.template === 'arabic' 
+    const invoiceContent = invoice.template === TemplateType.ARABIC 
       ? createArabicInvoiceHTML(invoice, organization, customer, supplier)
       : createEnglishInvoiceHTML(invoice, organization, customer, supplier);
 
@@ -371,22 +371,22 @@ export function PrintPreviewDialog({
           {/* Template Selection */}
           <div className="flex gap-4 items-center">
             <Button
-              variant={invoice.template === 'english' ? 'default' : 'outline'}
+              variant={invoice.template === TemplateType.ENGLISH ? 'default' : 'outline'}
               onClick={() => {
-                const updatedInvoice = { ...invoice, template: 'english' as const };
+                const updatedInvoice = { ...invoice, template: TemplateType.ENGLISH };
                 updateDoc(doc(db, 'organizations', organizationId, 'invoices', invoice.id), {
-                  template: 'english'
+                  template: TemplateType.ENGLISH
                 });
               }}
             >
               English Template
             </Button>
             <Button
-              variant={invoice.template === 'arabic' ? 'default' : 'outline'}
+              variant={invoice.template === TemplateType.ARABIC ? 'default' : 'outline'}
               onClick={() => {
-                const updatedInvoice = { ...invoice, template: 'arabic' as const };
+                const updatedInvoice = { ...invoice, template: TemplateType.ARABIC };
                 updateDoc(doc(db, 'organizations', organizationId, 'invoices', invoice.id), {
-                  template: 'arabic'
+                  template: TemplateType.ARABIC
                 });
               }}
             >
@@ -408,7 +408,7 @@ export function PrintPreviewDialog({
 
           {/* Print Preview */}
           <div className="border rounded-lg p-4 bg-white">
-            {invoice.template === 'english' ? (
+            {invoice.template === TemplateType.ENGLISH ? (
               <EnglishInvoice
                 invoice={invoice}
                 organization={organization}

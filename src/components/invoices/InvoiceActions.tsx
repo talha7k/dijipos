@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Invoice, Payment } from '@/types';
+import { Invoice, Payment, InvoiceStatus } from '@/types';
 import { Printer, Eye, MoreHorizontal } from 'lucide-react';
 import { InvoiceActionsDialog } from './InvoiceActionsDialog';
 
@@ -86,7 +86,7 @@ export function InvoiceActions({
           <Button
             variant="outline"
             size="sm"
-            onClick={(e) => handleStatusChange(e, 'sent')}
+            onClick={(e) => handleStatusChange(e, InvoiceStatus.SENT)}
           >
             Send
           </Button>
@@ -96,7 +96,7 @@ export function InvoiceActions({
           <Button
             variant="outline"
             size="sm"
-            onClick={(e) => handleStatusChange(e, 'paid')}
+            onClick={(e) => handleStatusChange(e, InvoiceStatus.PAID)}
           >
             Mark Paid
           </Button>
@@ -106,7 +106,7 @@ export function InvoiceActions({
           <Button
             variant="outline"
             size="sm"
-            onClick={(e) => handleStatusChange(e, 'paid')}
+            onClick={(e) => handleStatusChange(e, InvoiceStatus.PAID)}
           >
             Mark Paid
           </Button>
@@ -123,8 +123,8 @@ export function InvoiceActions({
         onEdit={() => onEdit?.(invoice)}
         onDuplicate={() => onDuplicate?.(invoice)}
         onSend={() => onSend?.(invoice)}
-        onMarkAsPaid={() => onStatusChange(invoice.id, 'paid')}
-        onMarkAsSent={() => onStatusChange(invoice.id, 'sent')}
+        onMarkAsPaid={() => onStatusChange(invoice.id, InvoiceStatus.PAID)}
+        onMarkAsSent={() => onStatusChange(invoice.id, InvoiceStatus.SENT)}
         onDownloadPDF={() => onDownloadPDF?.(invoice)}
       />
     </>

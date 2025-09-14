@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus } from 'lucide-react';
-import { Category } from '@/types';
+import { Category, CategoryType } from '@/types';
 
 interface AddServiceDialogProps {
   open: boolean;
@@ -61,7 +61,7 @@ export function AddServiceDialog({
   };
 
   const renderCategoryOptions = (parentId: string | null = null, level = 0) => {
-    const serviceCategories = categories.filter(c => c.type === 'service' || c.type === 'both');
+    const serviceCategories = categories.filter(c => c.type === CategoryType.SERVICE);
     const filteredCategories = parentId === null
       ? serviceCategories.filter(c => !c.parentId)
       : serviceCategories.filter(c => c.parentId === parentId);
