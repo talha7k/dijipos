@@ -6,5 +6,5 @@ export default function TablesLayout({
 }: {
   children: ReactNode;
 }) {
-  return <AppLayout>{children}</AppLayout>;
+  return <>{children}</>;
 }

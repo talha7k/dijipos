@@ -6,5 +6,5 @@ export default function TemplatesLayout({
 }: {
   children: ReactNode;
 }) {
-  return <AppLayout>{children}</AppLayout>;
+  return <>{children}</>;
 }

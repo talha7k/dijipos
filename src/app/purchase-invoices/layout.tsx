@@ -6,5 +6,5 @@ export default function PurchaseInvoicesLayout({
 }: {
   children: ReactNode;
 }) {
-  return <AppLayout>{children}</AppLayout>;
+  return <>{children}</>;
 }

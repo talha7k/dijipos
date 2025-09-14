@@ -6,5 +6,5 @@ export default function PurchaseProductsServicesLayout({
 }: {
   children: ReactNode;
 }) {
-  return <AppLayout>{children}</AppLayout>;
+  return <>{children}</>;
 }
