@@ -395,11 +395,21 @@ export interface PrinterSettings {
   paperWidth: number; // Width in mm (e.g., 48, 58, 80 for common thermal printer widths)
   fontSize: FontSize;
   characterPerLine: number; // Characters per line based on paper width
-  characterSet?: string; // Character set (e.g., 'korea', 'japan', 'multilingual')
+  characterSet: CharacterSet; // Character set for thermal printer
   organizationId: string;
   createdAt: Date;
   updatedAt: Date;
 }
+
+// Character set constants
+export const CHARACTER_SETS = {
+  MULTILINGUAL: 'multilingual',
+  KOREA: 'korea',
+  JAPAN: 'japan',
+  USA: 'usa',
+} as const;
+
+export type CharacterSet = typeof CHARACTER_SETS[keyof typeof CHARACTER_SETS];
 
 export interface ReceiptTemplate {
   id: string;

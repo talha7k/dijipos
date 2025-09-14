@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Printer, Download } from 'lucide-react';
-import { Order, ReceiptTemplate, PrinterSettings, Organization } from '@/types';
+import { Order, ReceiptTemplate, PrinterSettings, Organization, CHARACTER_SETS } from '@/types';
 import thermalPrinter from '@/lib/thermal-printer';
 import { toast } from 'sonner';
 
@@ -249,23 +249,41 @@ export function ReceiptPrintDialog({
               <CardHeader>
                 <CardTitle className="text-lg">Printer Settings</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="font-medium">Paper Width:</span>
-                    <span className="ml-2">{printerSettings.paperWidth}mm</span>
-                  </div>
-                  <div>
-                    <span className="font-medium">Font Size:</span>
-                    <span className="ml-2">{printerSettings.fontSize}</span>
-                  </div>
-                  <div>
-                    <span className="font-medium">Chars per Line:</span>
-                    <span className="ml-2">{printerSettings.characterPerLine}</span>
-                  </div>
+               <CardContent>
+                 <div className="grid grid-cols-2 gap-4 text-sm">
+                   <div>
+                     <span className="font-medium">Paper Width:</span>
+                     <span className="ml-2">{printerSettings.paperWidth}mm</span>
+                   </div>
+                   <div>
+                     <span className="font-medium">Font Size:</span>
+                     <span className="ml-2">{printerSettings.fontSize}</span>
+                   </div>
+                   <div>
+                     <span className="font-medium">Chars per Line:</span>
+                     <span className="ml-2">{printerSettings.characterPerLine}</span>
+                   </div>
+                   <div>
+                     <span className="font-medium">Character Set:</span>
+                     <span className="ml-2">{printerSettings.characterSet}</span>
+                   </div>
+                 </div>
 
-                </div>
-              </CardContent>
+                 {/* Print Method Info */}
+                 <div className="border-t pt-4 mt-4">
+                   <h4 className="text-sm font-medium mb-2">Print Method:</h4>
+                   <div className="bg-blue-50 border border-blue-200 rounded p-3">
+                     <div className="flex items-center gap-2 text-blue-700 mb-1">
+                       <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                       <span className="text-sm font-medium">Browser Print (Active)</span>
+                     </div>
+                     <p className="text-sm text-blue-600">
+                       Receipt will open in your browser&apos;s print dialog, optimized for thermal printers.
+                       Includes QR codes containing order details for easy scanning.
+                     </p>
+                   </div>
+                 </div>
+               </CardContent>
             </Card>
           )}
 

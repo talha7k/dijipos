@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { VATSettings, PrinterSettings, FontSize, PrinterType } from '@/types';
+import { VATSettings, PrinterSettings, FontSize, PrinterType, CHARACTER_SETS } from '@/types';
 
 export function useSettingsData(organizationId: string | undefined) {
   const [vatSettings, setVatSettings] = useState<VATSettings | null>(null);
@@ -51,7 +51,7 @@ export function useSettingsData(organizationId: string | undefined) {
           paperWidth: 80,
           fontSize: FontSize.MEDIUM,
           characterPerLine: 48,
-          characterSet: 'multilingual',
+          characterSet: CHARACTER_SETS.MULTILINGUAL,
           organizationId,
           createdAt: new Date(),
           updatedAt: new Date(),

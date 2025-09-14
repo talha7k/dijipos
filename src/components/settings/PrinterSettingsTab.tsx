@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
-import { PrinterSettings, FontSize } from '@/types';
+import { PrinterSettings, FontSize, CHARACTER_SETS } from '@/types';
 import thermalPrinter from '@/lib/thermal-printer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -29,7 +29,7 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
   const [newPrinterSettings, setNewPrinterSettings] = useState({
     paperWidth: printerSettings?.paperWidth || 80,
     fontSize: printerSettings?.fontSize || FontSize.MEDIUM,
-    characterSet: printerSettings?.characterSet || 'multilingual'
+    characterSet: printerSettings?.characterSet || CHARACTER_SETS.MULTILINGUAL
   });
 
   const handleUpdatePrinterSettings = async () => {
@@ -131,12 +131,12 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
                     id="character-set"
                     className="w-full p-2 border rounded"
                     value={newPrinterSettings.characterSet}
-                    onChange={(e) => setNewPrinterSettings({ ...newPrinterSettings, characterSet: e.target.value })}
+                    onChange={(e) => setNewPrinterSettings({ ...newPrinterSettings, characterSet: e.target.value as typeof CHARACTER_SETS[keyof typeof CHARACTER_SETS] })}
                   >
-                    <option value="multilingual">Multilingual</option>
-                    <option value="korea">Korea</option>
-                    <option value="japan">Japan</option>
-                    <option value="usa">USA</option>
+                    <option value={CHARACTER_SETS.MULTILINGUAL}>Multilingual</option>
+                    <option value={CHARACTER_SETS.KOREA}>Korea</option>
+                    <option value={CHARACTER_SETS.JAPAN}>Japan</option>
+                    <option value={CHARACTER_SETS.USA}>USA</option>
                   </select>
                 </div>
                 <Button onClick={handleUpdatePrinterSettings} className="w-full">
@@ -165,7 +165,7 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
             </div>
             <div className="flex items-center justify-between">
               <span>Character Set:</span>
-              <span className="font-medium">{printerSettings.characterSet || 'multilingual'}</span>
+              <span className="font-medium">{printerSettings.characterSet}</span>
             </div>
 
             {/* Print Method */}

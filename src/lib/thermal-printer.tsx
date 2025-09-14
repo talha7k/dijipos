@@ -1,7 +1,7 @@
 import React from 'react';
 import { Printer, Text, Line, Cut, Row, PrinterType } from 'react-thermal-printer';
 import QRCode from 'qrcode';
-import { Order, Organization, ItemType, OrderStatus, SubscriptionStatus } from '@/types';
+import { Order, Organization, ItemType, OrderStatus, SubscriptionStatus, CHARACTER_SETS } from '@/types';
 
 
 
@@ -22,7 +22,7 @@ export class ThermalPrinterService {
   private config: ThermalPrinterConfig = {
     paperWidth: 80,
     fontSize: 'medium',
-    characterSet: 'multilingual',
+    characterSet: CHARACTER_SETS.MULTILINGUAL,
   };
 
 
