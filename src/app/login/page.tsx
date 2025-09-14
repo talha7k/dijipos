@@ -2,8 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { signInWithEmailAndPassword, sendPasswordResetEmail, signInWithPopup, sendEmailVerification } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { auth, googleProvider, db } from '@/lib/firebase';
+import { auth, googleProvider } from '@/lib/firebase';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -200,22 +199,7 @@ function LoginContent() {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
 
-      // Check if organization exists, if not create one
-      const organizationRef = doc(db, 'organizations', user.uid);
-      const organizationSnap = await getDoc(organizationRef);
-
-      if (!organizationSnap.exists()) {
-        // Create organization for Google user
-        await setDoc(organizationRef, {
-          id: user.uid,
-          name: user.displayName || 'My Organization',
-          email: user.email,
-          createdAt: new Date(),
-          subscriptionStatus: 'trial',
-        });
-       }
-
-       router.push('/select-organization');
+      router.push('/select-organization');
     } catch (err: unknown) {
       console.error('Google sign-in error:', err);
       

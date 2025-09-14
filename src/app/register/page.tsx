@@ -2,8 +2,7 @@
 
 import { useState } from 'react';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
-import { auth, db } from '@/lib/firebase';
+import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,7 +14,6 @@ import { toast } from 'sonner';
 function RegisterContent() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [organizationName, setOrganizationName] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -36,17 +34,6 @@ function RegisterContent() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Create organization document
-      const organizationId = user.uid;
-      await setDoc(doc(db, 'organizations', organizationId), {
-        id: organizationId,
-        name: organizationName,
-        email: email,
-        createdAt: new Date(),
-        subscriptionStatus: 'trial',
-        emailVerified: false,
-      });
-
       // Send verification email
       await sendEmailVerification(user, {
         url: `${window.location.origin}/auth/action`,
@@ -55,10 +42,10 @@ function RegisterContent() {
 
       // Show success toast
       toast.success('Registration Successful!', {
-        description: 'Please check your email to verify your account before logging in.',
+        description: 'Please check your email to verify your account before selecting an organization.',
       });
 
-      // Sign out the user and redirect to verification pending page
+      // Sign out the user and redirect to organization selection
       await auth.signOut();
       router.push('/login?verification=true');
     } catch (err: unknown) {
@@ -93,15 +80,6 @@ function RegisterContent() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleRegister} className="space-y-4">
-            <div>
-              <Label htmlFor="organizationName">Organization Name</Label>
-              <Input
-                id="organizationName"
-                value={organizationName}
-                onChange={(e) => setOrganizationName(e.target.value)}
-                required
-              />
-            </div>
             <div>
               <Label htmlFor="email">Email</Label>
               <Input
