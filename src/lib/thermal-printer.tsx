@@ -109,33 +109,21 @@ export class ThermalPrinterService {
   }
 
   /**
-   * Generate QR code data URL for receipt
+   * Generate ZATCA compliant QR code data URL for receipt
    */
   private async generateQRCodeData(order: Order, organization: Organization | null): Promise<string> {
     try {
-      const qrData = {
-        orderId: order.id,
-        orderNumber: order.orderNumber,
-        total: order.total,
-        date: order.createdAt,
-        organization: organization?.name || '',
-        items: order.items.length,
-        paymentMethod: 'Cash', // Default payment method
-      };
+      if (!organization) return '';
 
-      const qrString = JSON.stringify(qrData);
-      const qrDataURL = await QRCode.toDataURL(qrString, {
-        width: 128,
-        margin: 1,
-        color: {
-          dark: '#000000',
-          light: '#FFFFFF'
-        }
-      });
+      // Import ZATCA QR generator
+      const { createReceiptQRData, generateZatcaQRCode } = await import('@/lib/zatca-qr');
+
+      const qrData = createReceiptQRData(order, organization);
+      const qrDataURL = await generateZatcaQRCode(qrData);
 
       return qrDataURL;
     } catch (error) {
-      console.error('Failed to generate QR code:', error);
+      console.error('Failed to generate ZATCA QR code:', error);
       return '';
     }
   }

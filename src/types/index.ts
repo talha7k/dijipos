@@ -354,6 +354,7 @@ export interface Order {
   tableName?: string;
   orderType: string; // dine-in, take-away, delivery
   notes?: string;
+  includeQR?: boolean; // Whether to include ZATCA QR code on receipt
   createdById: string; // ID of user who created the order
   createdByName: string; // Name of user who created the order
   createdAt: Date;

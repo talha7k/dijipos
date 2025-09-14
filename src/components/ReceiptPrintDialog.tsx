@@ -203,11 +203,9 @@ export function ReceiptPrintDialog({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <span data-print-receipt-trigger className="hidden">
-          {children}
-        </span>
+        {children}
       </DialogTrigger>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-4xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Printer className="h-5 w-5" />
@@ -215,138 +213,151 @@ export function ReceiptPrintDialog({
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-6">
-          {/* Order Summary */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Order Summary</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="font-medium">Order #:</span>
-                  <span className="ml-2">{order.orderNumber}</span>
-                </div>
-                <div>
-                  <span className="font-medium">Date:</span>
-                  <span className="ml-2">{new Date(order.createdAt).toLocaleString()}</span>
-                </div>
-                <div>
-                  <span className="font-medium">Total:</span>
-                  <span className="ml-2 font-bold">${(order.total || 0).toFixed(2)}</span>
-                </div>
-                <div>
-                  <span className="font-medium">Status:</span>
-                  <Badge variant="outline" className="ml-2">{order.status}</Badge>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Printer Settings */}
-          {printerSettings && (
+        <div className="grid grid-cols-2 gap-6">
+          {/* Left Column - Order & Settings */}
+          <div className="space-y-6">
+            {/* Order Summary */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Printer Settings</CardTitle>
+                <CardTitle className="text-lg">Order Summary</CardTitle>
               </CardHeader>
-               <CardContent>
-                 <div className="grid grid-cols-2 gap-4 text-sm">
-                   <div>
-                     <span className="font-medium">Paper Width:</span>
-                     <span className="ml-2">{printerSettings.paperWidth}mm</span>
-                   </div>
-                   <div>
-                     <span className="font-medium">Font Size:</span>
-                     <span className="ml-2">{printerSettings.fontSize}</span>
-                   </div>
-                   <div>
-                     <span className="font-medium">Chars per Line:</span>
-                     <span className="ml-2">{printerSettings.characterPerLine}</span>
-                   </div>
-                   <div>
-                     <span className="font-medium">Character Set:</span>
-                     <span className="ml-2">{printerSettings.characterSet}</span>
-                   </div>
-                 </div>
-
-                 {/* Print Method Info */}
-                 <div className="border-t pt-4 mt-4">
-                   <h4 className="text-sm font-medium mb-2">Print Method:</h4>
-                   <div className="bg-blue-50 border border-blue-200 rounded p-3">
-                     <div className="flex items-center gap-2 text-blue-700 mb-1">
-                       <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                       <span className="text-sm font-medium">Browser Print (Active)</span>
-                     </div>
-                     <p className="text-sm text-blue-600">
-                       Receipt will open in your browser&apos;s print dialog, optimized for thermal printers.
-                       Includes QR codes containing order details for easy scanning.
-                     </p>
-                   </div>
-                 </div>
-               </CardContent>
+              <CardContent>
+                <table className="w-full text-sm">
+                  <tbody>
+                    <tr>
+                      <td className="font-medium py-1">Order #:</td>
+                      <td className="py-1">{order.orderNumber}</td>
+                    </tr>
+                    <tr>
+                      <td className="font-medium py-1">Date:</td>
+                      <td className="py-1">{new Date(order.createdAt).toLocaleString()}</td>
+                    </tr>
+                    {order.customerName && (
+                      <tr>
+                        <td className="font-medium py-1">Customer:</td>
+                        <td className="py-1">{order.customerName}</td>
+                      </tr>
+                    )}
+                    {order.customerPhone && (
+                      <tr>
+                        <td className="font-medium py-1">Phone:</td>
+                        <td className="py-1">{order.customerPhone}</td>
+                      </tr>
+                    )}
+                    {order.tableName && (
+                      <tr>
+                        <td className="font-medium py-1">Table:</td>
+                        <td className="py-1">{order.tableName}</td>
+                      </tr>
+                    )}
+                    <tr>
+                      <td className="font-medium py-1">Total:</td>
+                      <td className="py-1 font-bold">${(order.total || 0).toFixed(2)}</td>
+                    </tr>
+                    <tr>
+                      <td className="font-medium py-1">Status:</td>
+                      <td className="py-1">
+                        <Badge variant="outline" className="ml-0">{order.status}</Badge>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </CardContent>
             </Card>
-          )}
 
-          {/* Template Selection */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Select Receipt Template</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {receiptTemplates.length === 0 ? (
-                <p className="text-muted-foreground">No receipt templates available. Please create templates in Settings.</p>
-              ) : (
-                <RadioGroup value={selectedTemplate} onValueChange={setSelectedTemplate}>
-                  <div className="grid gap-3">
-                    {receiptTemplates.map((template) => (
-                      <div key={template.id} className="flex items-center space-x-3 p-3 border rounded hover:bg-accent/50">
-                        <RadioGroupItem value={template.id} id={template.id} />
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <Label htmlFor={template.id} className="font-medium cursor-pointer">
-                              {template.name}
-                            </Label>
-                            {template.isDefault && <Badge variant="default">Default</Badge>}
-                            <Badge variant="outline">{template.type}</Badge>
-                          </div>
-                          {template.description && (
-                            <p className="text-sm text-muted-foreground">{template.description}</p>
-                          )}
-                        </div>
-                      </div>
-                    ))}
+            {/* Printer Settings */}
+            {printerSettings && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Printer Settings</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="font-medium">Paper Width:</span>
+                      <span className="ml-2">{printerSettings.paperWidth}mm</span>
+                    </div>
+                    <div>
+                      <span className="font-medium">Font Size:</span>
+                      <span className="ml-2">{printerSettings.fontSize}</span>
+                    </div>
+                    <div>
+                      <span className="font-medium">Chars per Line:</span>
+                      <span className="ml-2">{printerSettings.characterPerLine}</span>
+                    </div>
+                    <div>
+                      <span className="font-medium">Character Set:</span>
+                      <span className="ml-2">{printerSettings.characterSet}</span>
+                    </div>
                   </div>
-                </RadioGroup>
-              )}
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            )}
+          </div>
 
-          {/* Actions */}
-          <div className="flex justify-between">
-            <Button
-              variant="outline"
-              onClick={downloadReceipt}
-              disabled={!selectedTemplate || receiptTemplates.length === 0}
-              className="flex items-center gap-2"
-            >
-              <Download className="h-4 w-4" />
-              Download HTML
-            </Button>
-            <div className="flex gap-2">
+          {/* Right Column - Template Selection & Actions */}
+          <div className="space-y-6">
+            {/* Template Selection */}
+            <Card className="h-full">
+              <CardHeader>
+                <CardTitle className="text-lg">Select Receipt Template</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {receiptTemplates.length === 0 ? (
+                  <p className="text-muted-foreground">No receipt templates available. Please create templates in Settings.</p>
+                ) : (
+                  <RadioGroup value={selectedTemplate} onValueChange={setSelectedTemplate}>
+                    <div className="grid gap-3">
+                      {receiptTemplates.map((template) => (
+                        <div key={template.id} className="flex items-center space-x-3 p-3 border rounded hover:bg-accent/50">
+                          <RadioGroupItem value={template.id} id={template.id} />
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <Label htmlFor={template.id} className="font-medium cursor-pointer">
+                                {template.name}
+                              </Label>
+                              {template.isDefault && <Badge variant="default">Default</Badge>}
+                              <Badge variant="outline">{template.type}</Badge>
+                            </div>
+                            {template.description && (
+                              <p className="text-sm text-muted-foreground">{template.description}</p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </RadioGroup>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Actions */}
+            <div className="flex justify-between">
               <Button
                 variant="outline"
-                onClick={() => setOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={generateReceipt}
-                disabled={!selectedTemplate || receiptTemplates.length === 0 || isGenerating}
+                onClick={downloadReceipt}
+                disabled={!selectedTemplate || receiptTemplates.length === 0}
                 className="flex items-center gap-2"
               >
-                <Printer className="h-4 w-4" />
-                {isGenerating ? 'Generating...' : 'Print Receipt'}
+                <Download className="h-4 w-4" />
+                Download HTML
               </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={generateReceipt}
+                  disabled={!selectedTemplate || receiptTemplates.length === 0 || isGenerating}
+                  className="flex items-center gap-2"
+                >
+                  <Printer className="h-4 w-4" />
+                  {isGenerating ? 'Generating...' : 'Print Receipt'}
+                </Button>
+              </div>
             </div>
           </div>
         </div>

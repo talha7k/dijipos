@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { FileText, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { defaultReceiptTemplate } from '@/components/templates/default-receipt-template';
 
 interface ReceiptTemplatesTabProps {
   receiptTemplates: ReceiptTemplate[];
@@ -34,11 +35,11 @@ export function ReceiptTemplatesTab({ receiptTemplates, onRefresh }: ReceiptTemp
   const handleAddReceiptTemplate = async () => {
     if (!organizationId || !newReceiptTemplate.name.trim()) return;
 
-    const defaultTemplateContent = '<!DOCTYPE html>\n<html>\n<head>\n  <meta charset="utf-8">\n  <title>Receipt</title>\n  <style>\n    body { font-family: monospace; margin: 0; padding: 10px; }\n    .header { text-align: center; margin-bottom: 10px; }\n    .content { margin-bottom: 10px; }\n    .footer { text-align: center; margin-top: 10px; }\n    .line { display: flex; justify-content: space-between; }\n    .total { font-weight: bold; border-top: 1px dashed; padding-top: 5px; }\n  </style>\n</head>\n<body>\n  <div className="header">\n    <h2>{{companyName}}</h2>\n    <p>{{companyAddress}}</p>\n    <p>Tel: {{companyPhone}}</p>\n    <p>VAT: {{companyVat}}</p>\n    <hr>\n    <p>Order #: {{orderNumber}}</p>\n    <p>Date: {{orderDate}}</p>\n    <p>Table: {{tableName}}</p>\n    <p>Customer: {{customerName}}</p>\n    <hr>\n  </div>\n  \n  <div className="content">\n    {{#each items}}\n    <div className="line">\n      <span>{{name}} ({{quantity}}x)</span>\n      <span>{{total}}</span>\n    </div>\n    {{/each}}\n  </div>\n  \n  <div className="total">\n    <div className="line">\n      <span>Subtotal:</span>\n      <span>{{subtotal}}</span>\n    </div>\n    <div className="line">\n      <span>VAT ({{vatRate}}%):</span>\n      <span>{{vatAmount}}</span>\n    </div>\n    <div className="line">\n      <span>TOTAL:</span>\n      <span>{{total}}</span>\n    </div>\n  </div>\n  \n  <div className="footer">\n    <p>Payment: {{paymentMethod}}</p>\n    <p>Thank you for your business!</p>\n  </div>\n</body>\n</html>';
+
 
     await addDoc(collection(db, 'organizations', organizationId, 'receiptTemplates'), {
       ...newReceiptTemplate,
-      content: newReceiptTemplate.content || defaultTemplateContent,
+      content: newReceiptTemplate.content || defaultReceiptTemplate,
       isDefault: receiptTemplates.length === 0,
       organizationId,
       createdAt: new Date(),

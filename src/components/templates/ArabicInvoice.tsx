@@ -1,192 +1,140 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { Invoice, Organization, Customer, Supplier } from '@/types';
-import ZatcaQR from '@/components/ZatcaQR';
-import Image from 'next/image';
+import { defaultArabicInvoiceTemplate } from './default-invoice-arabic';
+import { createInvoiceQRData, generateZatcaQRCode } from '@/lib/zatca-qr';
 
 interface ArabicInvoiceProps {
   invoice: Invoice;
-  organization: Organization;
-  customer?: Customer; // Customer data if available
-  supplier?: Supplier; // Supplier data if available
+  organization: Organization | null;
+  customer?: Customer;
+  supplier?: Supplier;
 }
 
-export default function ArabicInvoice({ invoice, organization, customer, supplier }: ArabicInvoiceProps) {
+export default function ArabicInvoice({
+  invoice,
+  organization,
+  customer,
+  supplier
+}: ArabicInvoiceProps) {
+  const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
+
+  // Generate QR code on component mount
+  useEffect(() => {
+    const generateQR = async () => {
+      if (organization && invoice.includeQR) {
+        try {
+          const qrData = createInvoiceQRData(invoice, organization);
+          const qrUrl = await generateZatcaQRCode(qrData);
+          setQrCodeUrl(qrUrl);
+        } catch (error) {
+          console.error('Failed to generate QR code:', error);
+        }
+      }
+    };
+
+    generateQR();
+  }, [invoice, organization]);
+  // Prepare template data
+  const templateData = {
+    invoiceId: invoice.invoiceNumber || invoice.id.slice(-8),
+    companyName: organization?.name || '',
+    companyNameAr: organization?.nameAr || '',
+    companyAddress: organization?.address || '',
+    companyEmail: organization?.email || '',
+    companyPhone: organization?.phone || '',
+    companyVat: organization?.vatNumber || '',
+    companyLogo: organization?.logoUrl || '',
+    companyStamp: organization?.stampUrl || '',
+    clientName: invoice.clientName || '',
+    customerNameAr: customer?.nameAr || '',
+    clientAddress: invoice.clientAddress || '',
+    clientEmail: invoice.clientEmail || '',
+    clientVat: invoice.clientVAT || '',
+    customerLogo: customer?.logoUrl || '',
+    supplierName: supplier?.name || '',
+    supplierNameAr: supplier?.nameAr || '',
+    supplierAddress: supplier?.address || '',
+    supplierEmail: supplier?.email || '',
+    supplierVat: supplier?.vatNumber || '',
+    supplierLogo: supplier?.logoUrl || '',
+    invoiceDate: invoice.createdAt.toLocaleDateString('ar-SA'),
+    dueDate: invoice.dueDate.toLocaleDateString('ar-SA'),
+    status: invoice.status === 'paid' ? 'مدفوع' : invoice.status === 'sent' ? 'مرسل' : invoice.status === 'draft' ? 'مسودة' : invoice.status,
+    items: invoice.items.map(item => ({
+      name: item.name,
+      description: item.description || '',
+      quantity: item.quantity,
+      unitPrice: item.unitPrice.toFixed(2),
+      total: item.total.toFixed(2)
+    })),
+    subtotal: invoice.subtotal.toFixed(2),
+    taxRate: invoice.taxRate,
+    taxAmount: invoice.taxAmount.toFixed(2),
+    total: invoice.total.toFixed(2),
+    notes: invoice.notes || '',
+    qrCodeUrl: qrCodeUrl,
+    includeQR: invoice.includeQR && qrCodeUrl ? 'true' : ''
+  };
+
+  // Replace placeholders in template
+  let htmlContent = defaultArabicInvoiceTemplate;
+
+  // Replace simple placeholders
+  Object.entries(templateData).forEach(([key, value]) => {
+    if (key !== 'items' && key !== 'includeQR') {
+      const regex = new RegExp(`{{${key}}}`, 'g');
+      htmlContent = htmlContent.replace(regex, String(value));
+    }
+  });
+
+  // Handle conditional sections
+  if (templateData.includeQR && qrCodeUrl) {
+    htmlContent = htmlContent.replace(/{{#includeQR}}/g, '');
+    htmlContent = htmlContent.replace(/{{\/includeQR}}/g, '');
+  } else {
+    const qrRegex = /{{#includeQR}}[\s\S]*?{{\/includeQR}}/g;
+    htmlContent = htmlContent.replace(qrRegex, '');
+  }
+
+  // Handle other conditional sections
+  const conditionals = [
+    'companyLogo', 'companyName', 'companyVat', 'customerLogo', 'customerNameAr',
+    'clientVat', 'supplierLogo', 'supplierNameAr', 'supplierVat', 'notes', 'companyStamp'
+  ];
+
+  conditionals.forEach(field => {
+    const value = templateData[field as keyof typeof templateData];
+    if (value && value !== '') {
+      const regex = new RegExp(`{{#${field}}}(.*?){{\/${field}}}`, 'gs');
+      htmlContent = htmlContent.replace(regex, '$1');
+    } else {
+      const regex = new RegExp(`{{#${field}}}[\s\S]*?{{\/${field}}}`, 'gs');
+      htmlContent = htmlContent.replace(regex, '');
+    }
+  });
+
+  // Handle items loop
+  const itemsRegex = /{{#each items}}([\s\S]*?){{\/each}}/;
+  const itemsMatch = htmlContent.match(itemsRegex);
+  if (itemsMatch && templateData.items) {
+    const itemTemplate = itemsMatch[1];
+    const itemsHtml = templateData.items.map(item => {
+      let itemHtml = itemTemplate;
+      Object.entries(item).forEach(([key, value]) => {
+        const regex = new RegExp(`{{${key}}}`, 'g');
+        itemHtml = itemHtml.replace(regex, String(value));
+      });
+      return itemHtml;
+    }).join('');
+    htmlContent = htmlContent.replace(itemsRegex, itemsHtml);
+  }
+
   return (
-    <div dir="rtl" className="max-w-4xl mx-auto bg-white p-8 shadow-lg print-content" style={{ fontFamily: 'var(--font-amiri)' }}>
-      {/* Header */}
-      <div className="flex justify-between items-start mb-8 flex-row-reverse">
-        <div className="text-right">
-          {/* QR Code - positioned above invoice number */}
-          {invoice.includeQR && organization.vatNumber && (
-            <div className="mb-4">
-              <ZatcaQR invoice={invoice} organization={organization} />
-              <p className="text-sm text-gray-600 mt-2">رمز QR متوافق مع زاتكا</p>
-            </div>
-          )}
-          <h1 className="text-3xl font-bold text-gray-800">فاتورة</h1>
-          <p className="text-gray-600">رقم الفاتورة #{invoice.id.slice(-8)}</p>
-        </div>
-        <div className="text-left">
-          {/* Company Logo */}
-          {organization.logoUrl && (
-            <div className="mb-4">
-              <div className="relative w-48 h-20 mr-auto">
-                <Image
-                  src={organization.logoUrl}
-                  alt="شعار الشركة"
-                  fill
-                  className="object-contain"
-                />
-              </div>
-            </div>
-          )}
-          <h2 className="text-xl font-semibold">{organization.nameAr || organization.name}</h2>
-          {organization.nameAr && organization.name && (
-            <p className="text-lg">{organization.name}</p>
-          )}
-          <p>{organization.address}</p>
-          <p>{organization.email}</p>
-          <p>{organization.phone}</p>
-          {organization.vatNumber && <p>الرقم الضريبي: {organization.vatNumber}</p>}
-        </div>
-      </div>
-
-      {/* Invoice Details */}
-      <div className="grid grid-cols-2 gap-8 mb-8">
-        <div className="text-right">
-          <h3 className="font-semibold mb-2">:إلى</h3>
-          {/* Customer Logo */}
-          {customer?.logoUrl && (
-            <div className="mb-2">
-              <div className="relative w-32 h-16 ml-auto">
-                <Image
-                  src={customer.logoUrl}
-                  alt="شعار العميل"
-                  fill
-                  className="object-contain"
-                />
-              </div>
-            </div>
-          )}
-          <p className="font-medium">{invoice.clientName}</p>
-          {customer?.nameAr && (
-            <p className="text-md">{customer.nameAr}</p>
-          )}
-          <p>{invoice.clientAddress}</p>
-          <p>{invoice.clientEmail}</p>
-          {invoice.clientVAT && <p>الرقم الضريبي: {invoice.clientVAT}</p>}
-        </div>
-        <div className="text-left">
-          <h3 className="font-semibold mb-2">:المورد</h3>
-          {/* Supplier Logo */}
-          {supplier?.logoUrl && (
-            <div className="mb-2">
-              <div className="relative w-32 h-16">
-                <Image
-                  src={supplier.logoUrl}
-                  alt="شعار المورد"
-                  fill
-                  className="object-contain"
-                />
-              </div>
-            </div>
-          )}
-          <p className="font-medium">{supplier?.nameAr || supplier?.name || 'غير متوفر'}</p>
-          {supplier?.nameAr && supplier?.name && (
-            <p className="text-md">{supplier.name}</p>
-          )}
-          <p>{supplier?.address || 'غير متوفر'}</p>
-          <p>{supplier?.email || 'غير متوفر'}</p>
-          {supplier?.vatNumber && <p>الرقم الضريبي: {supplier.vatNumber}</p>}
-        </div>
-        <div className="text-left">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-gray-600">:تاريخ الفاتورة</p>
-              <p className="font-medium">{invoice.createdAt.toLocaleDateString('ar-SA')}</p>
-            </div>
-            <div>
-              <p className="text-gray-600">:تاريخ الاستحقاق</p>
-              <p className="font-medium">{invoice.dueDate.toLocaleDateString('ar-SA')}</p>
-            </div>
-            <div>
-              <p className="text-gray-600">:الحالة</p>
-              <p className="font-medium capitalize">{invoice.status === 'paid' ? 'مدفوع' : invoice.status === 'sent' ? 'مرسل' : invoice.status === 'draft' ? 'مسودة' : invoice.status}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Items Table */}
-      <table className="w-full mb-8 border-collapse border border-gray-300">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="border border-gray-300 px-4 py-2 text-right">الوصف</th>
-            <th className="border border-gray-300 px-4 py-2 text-center">الكمية</th>
-            <th className="border border-gray-300 px-4 py-2 text-center">سعر الوحدة</th>
-            <th className="border border-gray-300 px-4 py-2 text-center">المجموع</th>
-          </tr>
-        </thead>
-        <tbody>
-          {invoice.items.map((item, index) => (
-            <tr key={index}>
-              <td className="border border-gray-300 px-4 py-2 text-right">
-                <div>
-                  <p className="font-medium">{item.name}</p>
-                  {item.description && <p className="text-gray-600 text-sm">{item.description}</p>}
-                </div>
-              </td>
-              <td className="border border-gray-300 px-4 py-2 text-center">{item.quantity}</td>
-              <td className="border border-gray-300 px-4 py-2 text-center">{item.unitPrice.toFixed(2)} ريال</td>
-              <td className="border border-gray-300 px-4 py-2 text-center">{item.total.toFixed(2)} ريال</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      {/* Totals */}
-      <div className="flex justify-start mb-8">
-        <div className="w-64">
-          <div className="flex justify-between py-2 flex-row-reverse">
-            <span>:المجموع الفرعي</span>
-            <span>{invoice.subtotal.toFixed(2)} ريال</span>
-          </div>
-          <div className="flex justify-between py-2 flex-row-reverse">
-            <span>:الضريبة ({invoice.taxRate}%)</span>
-            <span>{invoice.taxAmount.toFixed(2)} ريال</span>
-          </div>
-          <div className="flex justify-between py-2 font-bold text-lg border-t border-gray-300 pt-2 flex-row-reverse">
-            <span>:المجموع الكلي</span>
-            <span>{invoice.total.toFixed(2)} ريال</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Notes */}
-      {invoice.notes && (
-        <div className="mb-8 text-right">
-          <h3 className="font-semibold mb-2">:ملاحظات</h3>
-          <p className="text-gray-600">{invoice.notes}</p>
-        </div>
-      )}
-
-      {/* Company Stamp */}
-      {organization.stampUrl && (
-        <div className="flex justify-start mt-8">
-          <div className="text-center">
-            <div className="relative w-32 h-32">
-              <Image
-                src={organization.stampUrl}
-                alt="ختم الشركة"
-                fill
-                className="object-contain"
-              />
-            </div>
-            <p className="text-sm text-gray-600 mt-2">ختم الشركة</p>
-          </div>
-        </div>
-      )}
-    </div>
+    <div
+      className="w-full"
+      dangerouslySetInnerHTML={{ __html: htmlContent }}
+    />
   );
 }

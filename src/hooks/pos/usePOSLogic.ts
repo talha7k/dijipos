@@ -147,6 +147,7 @@ export function usePOSLogic() {
         tableName: selectedTable?.name,
         createdById: user?.uid || 'unknown',
         createdByName: user?.displayName || user?.email || 'Unknown User',
+        includeQR: true, // Always include ZATCA QR code on receipts
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       };

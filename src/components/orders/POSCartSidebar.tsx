@@ -118,10 +118,10 @@ export function POSCartSidebar({
               <Save className="h-5 w-5" />
             </Button>
           )}
-            {onPrintReceipt && cart.length > 0 && (
+            {currentOrganization && cart.length > 0 && (
               <ReceiptPrintDialog
                 order={createTempOrderForPayment()!}
-                organization={currentOrganization || null}
+                organization={currentOrganization}
                 receiptTemplates={receiptTemplates}
                 printerSettings={printerSettings || null}
               >

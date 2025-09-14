@@ -159,7 +159,7 @@ export function OrderSummaryCard({
 
         {/* Print Button */}
         {currentOrganization && (
-          <div className="flex justify-center">
+          <div className="flex justify-center mt-2">
             <ReceiptPrintDialog
               order={order}
               organization={currentOrganization}
