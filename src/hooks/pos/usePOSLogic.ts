@@ -88,7 +88,7 @@ export function usePOSLogic() {
 
     // Clear existing cart and load order items
     clearCart();
-    
+
     const cartItems = pendingOrderToReopen.items.map(item => ({
       id: item.productId || item.serviceId || item.id,
       type: item.type === 'product' ? ItemType.PRODUCT : ItemType.SERVICE,
@@ -99,12 +99,15 @@ export function usePOSLogic() {
     }));
 
     setCart(cartItems);
-    
+
+    // Set the original order as selected so payments can be associated
+    setSelectedOrder(pendingOrderToReopen);
+
     // Set table and customer if available
     if (pendingOrderToReopen.tableId) {
       // This would need to be handled by fetching the actual table
     }
-    
+
     if (pendingOrderToReopen.customerName) {
       // This would need to be handled by fetching the actual customer
     }
@@ -112,7 +115,7 @@ export function usePOSLogic() {
     setShowOrderConfirmationDialog(false);
     setPendingOrderToReopen(null);
     setPosView('items');
-  }, [pendingOrderToReopen, clearCart, setCart]);
+  }, [pendingOrderToReopen, clearCart, setCart, setSelectedOrder]);
 
   const handleSaveOrder = useCallback(async () => {
     if (!organizationId || cart.length === 0) return;
@@ -180,8 +183,8 @@ export function usePOSLogic() {
   }, [clearCart]);
 
   const handleBackToItems = useCallback(() => {
-    setPosView('items');
-  }, []);
+    clearPOSData();
+  }, [clearPOSData]);
 
   const handleTableDeselect = useCallback(() => {
     setSelectedTable(null);
@@ -264,12 +267,14 @@ export function usePOSLogic() {
   const handlePayOrder = useCallback(() => {
     if (cart.length === 0) return;
 
-    const tempOrder = createTempOrderForPayment();
-    if (tempOrder) {
-      setSelectedOrder(tempOrder);
+    // If we already have a selected order (from reopening), use it
+    // Otherwise, create a temporary order for new cart items
+    const orderToPay = selectedOrder || createTempOrderForPayment();
+    if (orderToPay) {
+      setSelectedOrder(orderToPay);
       setPosView('payment');
     }
-  }, [cart, createTempOrderForPayment, setSelectedOrder, setPosView]);
+  }, [cart, selectedOrder, createTempOrderForPayment, setSelectedOrder, setPosView]);
 
   return {
     // State

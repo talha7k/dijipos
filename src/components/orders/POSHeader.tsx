@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
-import { Table, Customer, OrderType } from '@/types';
-import { Users, LayoutGrid, FileText, ShoppingBag } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Table, Customer, OrderType, Order } from '@/types';
+import { Users, LayoutGrid, FileText, ShoppingBag, Plus, RotateCcw } from 'lucide-react';
 import { OrderTypeSelectionDialog } from './OrderTypeSelectionDialog';
 
 interface CartItem {
@@ -17,6 +18,7 @@ interface POSHeaderProps {
   cartTotal: number;
   selectedTable?: Table | null;
   selectedCustomer?: Customer | null;
+  selectedOrder?: Order | null;
   orderTypes: OrderType[];
   selectedOrderType: OrderType | null;
   onTableSelect: () => void;
@@ -26,6 +28,7 @@ interface POSHeaderProps {
   onOrdersClick: () => void;
   onOrderTypeSelect: (orderType: OrderType) => void;
   onOrderTypeDeselect: () => void;
+  onOrderToggle?: () => void;
 }
 
 export function POSHeader({
@@ -33,6 +36,7 @@ export function POSHeader({
   cartTotal,
   selectedTable,
   selectedCustomer,
+  selectedOrder,
   orderTypes,
   selectedOrderType,
   onTableSelect,
@@ -41,12 +45,35 @@ export function POSHeader({
   onCustomerDeselect,
   onOrdersClick,
   onOrderTypeSelect,
-  onOrderTypeDeselect
+  onOrderTypeDeselect,
+  onOrderToggle
 }: POSHeaderProps) {
   return (
     <div className="bg-card shadow p-4 border-b">
       <div className="flex justify-between items-center max-w-7xl mx-auto">
-        <h1 className="text-2xl font-bold text-foreground">POS</h1>
+        <div className="flex items-center space-x-3">
+          <Badge
+            variant={selectedOrder ? "default" : "secondary"}
+            className={`flex items-center space-x-1 cursor-pointer ${
+              selectedOrder
+                ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                : 'bg-orange-100 text-orange-800 hover:bg-orange-200'
+            }`}
+            onClick={onOrderToggle}
+          >
+            {selectedOrder ? (
+              <>
+                <RotateCcw className="h-3 w-3" />
+                <span>Order #{selectedOrder.orderNumber}</span>
+              </>
+            ) : (
+              <>
+                <Plus className="h-3 w-3" />
+                <span>New Order</span>
+              </>
+            )}
+          </Badge>
+        </div>
         <div className="flex items-center space-x-4">
           {/* Table Selection */}
           <div className="flex items-center space-x-2">

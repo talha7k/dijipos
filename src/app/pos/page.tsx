@@ -10,7 +10,7 @@ import { useCustomersData } from '@/hooks/customers/use-customers-data';
 import { useOrdersData } from '@/hooks/orders/use-order-data';
 import { useOrderTypesData } from '@/hooks/orders/use-order-types-data';
 import { usePaymentTypesData } from '@/hooks/use-payment-types-data';
-import { usePaymentsData } from '@/hooks/use-payments-data';
+import { useOrderPayments } from '@/hooks/orders/use-order-payments';
 import { useReceiptTemplatesData } from '@/hooks/use-receipt-templates-data';
 
 import { POSLayout, POSLeftColumn, POSHeaderContainer, POSMainContent, POSRightColumn } from './components/POSLayout';
@@ -34,7 +34,7 @@ export default function SimplifiedPOSPage() {
   const { customers = [], loading: customersLoading } = useCustomersData(organizationId || '');
   const { orders = [], loading: ordersLoading } = useOrdersData(organizationId || '');
   const { paymentTypes = [], loading: paymentTypesLoading } = usePaymentTypesData(organizationId || '');
-  const { payments: orderPayments = {}, loading: orderPaymentsLoading } = usePaymentsData(organizationId || '');
+  const { orderPayments, loading: orderPaymentsLoading } = useOrderPayments({ organizationId: organizationId || undefined });
   const { receiptTemplates = [], loading: receiptTemplatesLoading } = useReceiptTemplatesData(organizationId || '');
   const { orderTypes = [], loading: orderTypesLoading } = useOrderTypesData(organizationId || '');
 
@@ -99,21 +99,23 @@ export default function SimplifiedPOSPage() {
     <POSLayout>
       <POSLeftColumn>
         <POSHeaderContainer>
-          <POSHeader
-            cart={cart}
-            cartTotal={cartTotal}
-            selectedTable={selectedTable}
-            selectedCustomer={selectedCustomer}
-            orderTypes={orderTypes}
-             selectedOrderType={selectedOrderType}
-             onTableSelect={handleTableSelect}
-             onCustomerSelect={handleCustomerSelect}
-             onOrderTypeSelect={handleOrderTypeSelect}
-            onTableDeselect={handleTableDeselect}
-            onCustomerDeselect={handleCustomerDeselect}
-            onOrderTypeDeselect={handleOrderTypeDeselect}
-            onOrdersClick={handleOrdersClick}
-          />
+           <POSHeader
+              cart={cart}
+              cartTotal={cartTotal}
+              selectedTable={selectedTable}
+              selectedCustomer={selectedCustomer}
+              selectedOrder={selectedOrder}
+              orderTypes={orderTypes}
+               selectedOrderType={selectedOrderType}
+              onTableSelect={handleTableSelect}
+              onCustomerSelect={handleCustomerSelect}
+              onOrderTypeSelect={handleOrderTypeSelect}
+             onTableDeselect={handleTableDeselect}
+             onCustomerDeselect={handleCustomerDeselect}
+             onOrderTypeDeselect={handleOrderTypeDeselect}
+             onOrdersClick={handleOrdersClick}
+             onOrderToggle={handleBackToItems}
+           />
         </POSHeaderContainer>
 
         <POSMainContent>
