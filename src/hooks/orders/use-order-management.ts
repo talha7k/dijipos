@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from "react";
 import { Order, OrderPayment, OrderStatus, TableStatus } from "@/types";
 import { serverTimestamp } from "firebase/firestore";

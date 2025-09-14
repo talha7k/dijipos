@@ -1,11 +1,23 @@
+'use client';
+
 import { useState, useEffect } from 'react';
 import { collection, query, onSnapshot, updateDoc, doc, addDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Category } from '@/types';
 
-export function useCategoriesData(organizationId: string | undefined) {
+export interface UseCategoriesDataResult {
+  categories: Category[];
+  loading: boolean;
+  error: string | null;
+  createCategory: (categoryData: Omit<Category, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  updateCategory: (id: string, updates: Partial<Category>) => Promise<void>;
+  deleteCategory: (id: string) => Promise<void>;
+}
+
+export function useCategoriesData(organizationId: string | undefined): UseCategoriesDataResult {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!organizationId) {
@@ -13,89 +25,78 @@ export function useCategoriesData(organizationId: string | undefined) {
       return;
     }
 
-    // Fetch categories with real-time updates
-    const categoriesQ = query(collection(db, 'organizations', organizationId, 'categories'));
-    const unsubscribe = onSnapshot(categoriesQ, (querySnapshot) => {
-      const categoriesData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-      })) as Category[];
-      setCategories(categoriesData);
-      setLoading(false);
-    }, (error) => {
-      console.error('Error fetching categories:', error);
-      setLoading(false);
-    });
+    setLoading(true);
+    setError(null);
 
-    // Return cleanup function
+    const categoriesQuery = query(collection(db, 'organizations', organizationId, 'categories'));
+
+    const unsubscribe = onSnapshot(
+      categoriesQuery,
+      (snapshot) => {
+        const categoriesData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as Category[];
+        setCategories(categoriesData);
+        setLoading(false);
+      },
+      (err) => {
+        console.error('Error fetching categories:', err);
+        setError('Failed to load categories');
+        setLoading(false);
+      }
+    );
+
     return () => unsubscribe();
   }, [organizationId]);
-
-  return {
-    categories,
-    loading,
-  };
-}
-
-export function useCategoryActions(organizationId: string | undefined) {
-  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
-
-  const updateCategory = async (categoryId: string, categoryData: Partial<Category>) => {
-    if (!organizationId) return;
-
-    setUpdatingStatus(categoryId);
-    try {
-      const categoryRef = doc(db, 'organizations', organizationId, 'categories', categoryId);
-      await updateDoc(categoryRef, {
-        ...categoryData,
-        updatedAt: new Date(),
-      });
-    } catch (error) {
-      console.error('Error updating category:', error);
-      throw error;
-    } finally {
-      setUpdatingStatus(null);
-    }
-  };
 
   const createCategory = async (categoryData: Omit<Category, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => {
     if (!organizationId) return;
 
     try {
-      const cleanedData = {
+      await addDoc(collection(db, 'organizations', organizationId, 'categories'), {
         ...categoryData,
-        description: categoryData.description || null,
-        parentId: categoryData.parentId || null,
         organizationId,
         createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      const docRef = await addDoc(collection(db, 'organizations', organizationId, 'categories'), cleanedData);
-      return docRef.id;
-    } catch (error) {
-      console.error('Error creating category:', error);
-      throw error;
+        updatedAt: new Date()
+      });
+    } catch (err) {
+      console.error('Error creating category:', err);
+      throw err;
     }
   };
 
-  const deleteCategory = async (categoryId: string) => {
+  const updateCategory = async (id: string, updates: Partial<Category>) => {
     if (!organizationId) return;
 
     try {
-      await deleteDoc(doc(db, 'organizations', organizationId, 'categories', categoryId));
-    } catch (error) {
-      console.error('Error deleting category:', error);
-      throw error;
+      await updateDoc(doc(db, 'organizations', organizationId, 'categories', id), {
+        ...updates,
+        updatedAt: new Date()
+      });
+    } catch (err) {
+      console.error('Error updating category:', err);
+      throw err;
+    }
+  };
+
+  const deleteCategory = async (id: string) => {
+    if (!organizationId) return;
+
+    try {
+      await deleteDoc(doc(db, 'organizations', organizationId, 'categories', id));
+    } catch (err) {
+      console.error('Error deleting category:', err);
+      throw err;
     }
   };
 
   return {
-    updateCategory,
+    categories,
+    loading,
+    error,
     createCategory,
-    deleteCategory,
-    updatingStatus,
+    updateCategory,
+    deleteCategory
   };
 }

@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useCallback } from 'react';
 import { Order, OrderStatus, ItemType, OrderPayment, Table, Customer, OrderType, Product, Service } from '@/types';
 import { CartItem } from '@/contexts/OrderContext';
@@ -200,6 +202,7 @@ export function usePOSLogic() {
     setPosView('orders');
   }, []);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handlePaymentClick = useCallback((_order: Order) => {
     // This would set the selected order and navigate to payment
     // Implementation depends on how order context handles this

@@ -1,11 +1,23 @@
+'use client';
+
 import { useState, useEffect } from 'react';
 import { collection, query, onSnapshot, updateDoc, doc, getDoc, addDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Customer } from '@/types';
 
-export function useCustomersData(organizationId: string | undefined) {
+export interface UseCustomersDataResult {
+  customers: Customer[];
+  loading: boolean;
+  error: string | null;
+  createCustomer: (customerData: Omit<Customer, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  updateCustomer: (id: string, updates: Partial<Customer>) => Promise<void>;
+  deleteCustomer: (id: string) => Promise<void>;
+}
+
+export function useCustomersData(organizationId: string | undefined): UseCustomersDataResult {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!organizationId) {
@@ -13,89 +25,78 @@ export function useCustomersData(organizationId: string | undefined) {
       return;
     }
 
-    // Fetch customers with real-time updates
-    const customersQ = query(collection(db, 'organizations', organizationId, 'customers'));
-    const unsubscribe = onSnapshot(customersQ, (querySnapshot) => {
-      const customersData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-      })) as Customer[];
-      setCustomers(customersData);
-      setLoading(false);
-    }, (error) => {
-      console.error('Error fetching customers:', error);
-      setLoading(false);
-    });
+    setLoading(true);
+    setError(null);
 
-    // Return cleanup function
+    const customersQuery = query(collection(db, 'organizations', organizationId, 'customers'));
+
+    const unsubscribe = onSnapshot(
+      customersQuery,
+      (snapshot) => {
+        const customersData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as Customer[];
+        setCustomers(customersData);
+        setLoading(false);
+      },
+      (err) => {
+        console.error('Error fetching customers:', err);
+        setError('Failed to load customers');
+        setLoading(false);
+      }
+    );
+
     return () => unsubscribe();
   }, [organizationId]);
-
-  return {
-    customers,
-    loading,
-  };
-}
-
-export function useCustomerActions(organizationId: string | undefined) {
-  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
-
-  const updateCustomer = async (customerId: string, customerData: Partial<Customer>) => {
-    if (!organizationId) return;
-
-    setUpdatingStatus(customerId);
-    try {
-      const customerRef = doc(db, 'organizations', organizationId, 'customers', customerId);
-      await updateDoc(customerRef, {
-        ...customerData,
-        updatedAt: new Date(),
-      });
-    } catch (error) {
-      console.error('Error updating customer:', error);
-      throw error;
-    } finally {
-      setUpdatingStatus(null);
-    }
-  };
 
   const createCustomer = async (customerData: Omit<Customer, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => {
     if (!organizationId) return;
 
     try {
-      const cleanedData = {
+      await addDoc(collection(db, 'organizations', organizationId, 'customers'), {
         ...customerData,
-        address: customerData.address || null,
-        phone: customerData.phone || null,
         organizationId,
         createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      const docRef = await addDoc(collection(db, 'organizations', organizationId, 'customers'), cleanedData);
-      return docRef.id;
-    } catch (error) {
-      console.error('Error creating customer:', error);
-      throw error;
+        updatedAt: new Date()
+      });
+    } catch (err) {
+      console.error('Error creating customer:', err);
+      throw err;
     }
   };
 
-  const deleteCustomer = async (customerId: string) => {
+  const updateCustomer = async (id: string, updates: Partial<Customer>) => {
     if (!organizationId) return;
 
     try {
-      await deleteDoc(doc(db, 'organizations', organizationId, 'customers', customerId));
-    } catch (error) {
-      console.error('Error deleting customer:', error);
-      throw error;
+      await updateDoc(doc(db, 'organizations', organizationId, 'customers', id), {
+        ...updates,
+        updatedAt: new Date()
+      });
+    } catch (err) {
+      console.error('Error updating customer:', err);
+      throw err;
+    }
+  };
+
+  const deleteCustomer = async (id: string) => {
+    if (!organizationId) return;
+
+    try {
+      await deleteDoc(doc(db, 'organizations', organizationId, 'customers', id));
+    } catch (err) {
+      console.error('Error deleting customer:', err);
+      throw err;
     }
   };
 
   return {
-    updateCustomer,
+    customers,
+    loading,
+    error,
     createCustomer,
-    deleteCustomer,
-    updatingStatus,
+    updateCustomer,
+    deleteCustomer
   };
 }
