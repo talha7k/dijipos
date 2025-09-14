@@ -24,6 +24,7 @@ export function usePOSLogic() {
     clearCart,
     addToCart: contextAddToCart,
     updateCartItem,
+    removeFromCart,
     getCartTotal
   } = useOrderContext();
 
@@ -284,6 +285,8 @@ export function usePOSLogic() {
     handleOrdersClick,
     handlePaymentClick,
     createTempOrderForPayment,
+    updateCartItem,
+    removeFromCart,
     setShowOrderConfirmationDialog,
     setPendingOrderToReopen,
     setPosView,
