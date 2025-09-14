@@ -87,13 +87,18 @@ export function POSOrderGrid({ orders, payments, organizationId, onOrderSelect, 
   };
 
   const completeOrder = async (orderId: string) => {
-    if (!organizationId) return;
+    if (!organizationId || !selectedOrder) return;
+
+    // Check if order is paid before completing
+    if (!selectedOrder.paid) {
+      toast.error('Cannot complete an unpaid order. Please process payment first.');
+      return;
+    }
 
     setUpdatingStatus(true);
     try {
       const orderRef = doc(db, 'organizations', organizationId, 'orders', orderId);
       await updateDoc(orderRef, {
-        paid: true,
         status: OrderStatus.COMPLETED,
         updatedAt: serverTimestamp(),
       });
@@ -110,6 +115,12 @@ export function POSOrderGrid({ orders, payments, organizationId, onOrderSelect, 
 
   const updateOrderStatus = async (orderId: string, newStatus: OrderStatus) => {
     if (!organizationId) return;
+
+    // Check if trying to complete an unpaid order
+    if (newStatus === OrderStatus.COMPLETED && !selectedOrder?.paid) {
+      toast.error('Cannot complete an unpaid order. Please process payment first.');
+      return;
+    }
 
     setUpdatingStatus(true);
     try {
@@ -169,16 +180,18 @@ export function POSOrderGrid({ orders, payments, organizationId, onOrderSelect, 
             >
               Reopen Order
             </Button>
-            <Button
-              onClick={() => onPaymentClick(selectedOrder)}
-              className="flex-1"
-              variant="outline"
-            >
-              Process Payment
-            </Button>
+            {!isOrderFullyPaid(selectedOrder) && (
+              <Button
+                onClick={() => onPaymentClick(selectedOrder)}
+                className="flex-1"
+                variant="outline"
+              >
+                Process Payment
+              </Button>
+            )}
           </div>
 
-          {isOrderFullyPaid(selectedOrder) && !selectedOrder.paid && (
+          {isOrderFullyPaid(selectedOrder) && !selectedOrder.paid && selectedOrder.status !== OrderStatus.COMPLETED && (
             <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
               <h3 className="text-sm font-medium text-green-800 mb-3">Payment Complete - Choose Action:</h3>
               <div className="flex gap-2 flex-wrap">
@@ -266,7 +279,7 @@ export function POSOrderGrid({ orders, payments, organizationId, onOrderSelect, 
             </div>
           )}
 
-          {selectedOrder.paid && selectedOrder.status !== 'completed' && (
+          {selectedOrder.paid && selectedOrder.status !== OrderStatus.COMPLETED && (
             <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <h3 className="text-sm font-medium text-blue-800 mb-3">Order Actions:</h3>
               <div className="flex gap-2">

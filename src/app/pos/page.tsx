@@ -348,14 +348,13 @@ export default function POSPage() {
       
       await Promise.all(paymentPromises);
 
-      // Update order status to completed and mark as paid
+      // Update order to mark as paid (don't automatically complete)
       await updateDoc(doc(db, 'organizations', organizationId, 'orders', orderToUpdate.id), {
-        status: OrderStatus.COMPLETED,
         paid: true,
         updatedAt: new Date(),
       });
 
-      toast.success('Payment processed successfully! Order marked as completed.');
+      toast.success('Payment processed successfully! Order marked as paid.');
       setSelectedOrder(null);
       setCurrentView('items');
       // Clear all POS data after successful payment (cart, table, customer, etc.)
