@@ -1,6 +1,8 @@
 import { Button } from '@/components/ui/button';
 import { ShoppingCart, Save, Printer, Trash2 } from 'lucide-react';
 import { POSCartItem } from './POSCartItem';
+import { ReceiptPrintDialog } from '@/components/ReceiptPrintDialog';
+import { Organization, ReceiptTemplate, PrinterSettings, Order } from '@/types';
 
 interface CartItem {
   id: string;
@@ -19,6 +21,10 @@ interface POSCartSidebarProps {
   onPrintReceipt?: () => void;
   onClearCart?: () => void;
   onItemClick?: (item: CartItem) => void;
+  organization?: Organization | null;
+  printerSettings?: PrinterSettings | null;
+  receiptTemplates?: ReceiptTemplate[];
+  createTempOrderForPayment?: () => Order | null;
 }
 
 export function POSCartSidebar({
@@ -28,7 +34,11 @@ export function POSCartSidebar({
   onSaveOrder,
   onPrintReceipt,
   onClearCart,
-  onItemClick
+  onItemClick,
+  organization,
+  printerSettings,
+  receiptTemplates = [],
+  createTempOrderForPayment
 }: POSCartSidebarProps) {
   return (
     <div className="w-full min-w-80 bg-card border-l flex flex-col h-full">
@@ -72,16 +82,22 @@ export function POSCartSidebar({
               <Save className="h-5 w-5" />
             </Button>
           )}
-          {onPrintReceipt && (
-            <Button
-              variant="outline"
-              className="flex-1 h-12 text-sm font-medium"
-              disabled={cart.length === 0}
-              onClick={onPrintReceipt}
-            >
-              <Printer className="h-5 w-5" />
-            </Button>
-          )}
+           {onPrintReceipt && createTempOrderForPayment && (
+             <ReceiptPrintDialog
+               order={createTempOrderForPayment() || {} as Order}
+               organization={organization || null}
+               receiptTemplates={receiptTemplates}
+               printerSettings={printerSettings || null}
+             >
+               <Button
+                 variant="outline"
+                 className="flex-1 h-12 text-sm font-medium"
+                 disabled={cart.length === 0}
+               >
+                 <Printer className="h-5 w-5" />
+               </Button>
+             </ReceiptPrintDialog>
+           )}
           {onClearCart && (
             <Button
               variant="outline"
