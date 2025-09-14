@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { FileText, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { defaultReceiptTemplate } from '@/components/templates/default-receipt-template';
+import { defaultReceiptTemplate } from '@/components/templates/default-receipt-thermal';
 
 interface ReceiptTemplatesTabProps {
   receiptTemplates: ReceiptTemplate[];

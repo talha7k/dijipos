@@ -6,16 +6,16 @@ import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Printer, Download } from 'lucide-react';
-import { Order, ReceiptTemplate, PrinterSettings, Organization } from '@/types';
+import { Order, ReceiptTemplate, Organization } from '@/types';
 import thermalPrinter from '@/lib/thermal-printer';
+import { renderReceiptTemplate } from '@/lib/template-renderer';
 import { toast } from 'sonner';
-import Receipt from '@/components/templates/Receipt';
+import html2pdf from 'html2pdf.js';
 
 interface ReceiptPrintDialogProps {
   order: Order;
   organization: Organization | null;
   receiptTemplates: ReceiptTemplate[];
-  printerSettings: PrinterSettings | null;
   children: React.ReactNode;
 }
 
@@ -23,7 +23,6 @@ export function ReceiptPrintDialog({
   order,
   organization,
   receiptTemplates,
-  printerSettings,
   children
 }: ReceiptPrintDialogProps) {
   const [open, setOpen] = useState(false);
@@ -48,15 +47,6 @@ export function ReceiptPrintDialog({
     try {
       if (template.type === 'thermal') {
         try {
-          // Update printer config if settings are available
-          if (printerSettings) {
-            thermalPrinter.updateConfig({
-              paperWidth: printerSettings.paperWidth,
-              fontSize: printerSettings.fontSize,
-              characterSet: printerSettings.characterSet,
-            });
-          }
-
           // Print the receipt using the service
           await thermalPrinter.printReceipt({ order, organization });
           setIsGenerating(false);
@@ -68,102 +58,23 @@ export function ReceiptPrintDialog({
           toast.error(error instanceof Error ? error.message : 'Failed to print receipt. Please check printer connection.');
         }
       } else {
-        // For A4 templates, use the Receipt template component
-        const printWindow = window.open('', '_blank');
-        if (printWindow) {
-          // Create a complete HTML document with the Receipt component rendered
-          const receiptHtml = `
-            <!DOCTYPE html>
-            <html>
-            <head>
-              <meta charset="utf-8">
-              <title>Receipt - ${order.orderNumber}</title>
-              <style>
-                body { 
-                  font-family: system-ui, -apple-system, sans-serif; 
-                  margin: 0; 
-                  padding: 20px; 
-                  background: white;
-                }
-                .receipt-container {
-                  max-width: 800px;
-                  margin: 0 auto;
-                  padding: 20px;
-                  border: 1px solid #ddd;
-                }
-                @media print {
-                  body { padding: 0; }
-                  .receipt-container { border: none; }
-                }
-              </style>
-            </head>
-            <body>
-              <div class="receipt-container">
-                <div style="text-align: center; margin-bottom: 20px;">
-                  <h2 style="margin: 0 0 10px 0;">${organization?.name || ''}</h2>
-                  <p style="margin: 5px 0;">${organization?.address || ''}</p>
-                  <p style="margin: 5px 0;">Tel: ${organization?.phone || ''}</p>
-                  ${organization?.vatNumber ? `<p style="margin: 5px 0;">VAT: ${organization.vatNumber}</p>` : ''}
-                  <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">
-                  <p style="margin: 5px 0;"><strong>Order #:</strong> ${order.orderNumber}</p>
-                  <p style="margin: 5px 0;"><strong>Date:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
-                  ${order.tableName ? `<p style="margin: 5px 0;"><strong>Table:</strong> ${order.tableName}</p>` : ''}
-                  ${order.customerName ? `<p style="margin: 5px 0;"><strong>Customer:</strong> ${order.customerName}</p>` : ''}
-                  <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">
-                </div>
-                
-                <div style="margin-bottom: 20px;">
-                  ${order.items.map(item => `
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; padding: 5px 0;">
-                      <span>${item.name} (${item.quantity}x)</span>
-                      <span style="font-weight: 500;">$${item.total.toFixed(2)}</span>
-                    </div>
-                  `).join('')}
-                </div>
-                
-                <div style="border-top: 2px solid #000; padding-top: 15px; margin-top: 20px;">
-                  <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                    <span>Subtotal:</span>
-                    <span>$${(order.subtotal || 0).toFixed(2)}</span>
-                  </div>
-                  ${(order.taxRate || 0) > 0 ? `
-                  <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                    <span>VAT (${order.taxRate || 0}%):</span>
-                    <span>$${(order.taxAmount || 0).toFixed(2)}</span>
-                  </div>
-                  ` : ''}
-                  <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.2em; margin-top: 10px; padding-top: 10px; border-top: 1px solid #ddd;">
-                    <span>TOTAL:</span>
-                    <span>$${(order.total || 0).toFixed(2)}</span>
-                  </div>
-                </div>
-                
-                <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #666;">
-                  <p>Thank you for your business!</p>
-                </div>
-              </div>
-              
-              <script>
-                window.onload = function() {
-                  setTimeout(function() {
-                    window.print();
-                    window.close();
-                  }, 500);
-                };
-              </script>
-            </body>
-            </html>
-          `;
+        // For A4 templates, render using template and print directly in current window
+        const renderedContent = renderReceiptTemplate(template, order, organization);
+        const originalContent = document.body.innerHTML;
+        
+        // Replace body content with rendered receipt
+        document.body.innerHTML = renderedContent;
 
-          printWindow.document.write(receiptHtml);
-          printWindow.document.close();
-          
+        // Print directly
+        window.print();
+        
+        // Restore original content after printing
+        setTimeout(() => {
+          document.body.innerHTML = originalContent;
           setIsGenerating(false);
           setOpen(false);
-        } else {
-          setIsGenerating(false);
-          toast.error('Please allow popups to print receipts');
-        }
+          toast.success('Receipt sent to printer!');
+        }, 100);
       }
     } catch (error) {
       console.error('Error generating receipt:', error);
@@ -172,99 +83,31 @@ export function ReceiptPrintDialog({
     }
   };
 
-  const downloadReceipt = () => {
+  const downloadReceipt = async () => {
     const template = receiptTemplates.find(t => t.id === selectedTemplate);
     if (!template) return;
 
     try {
-      // Generate proper HTML using the Receipt template structure
-      const htmlContent = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="utf-8">
-          <title>Receipt - ${order.orderNumber}</title>
-          <style>
-            body { 
-              font-family: system-ui, -apple-system, sans-serif; 
-              margin: 0; 
-              padding: 20px; 
-              background: white;
-            }
-            .receipt-container {
-              max-width: 800px;
-              margin: 0 auto;
-              padding: 20px;
-              border: 1px solid #ddd;
-            }
-            @media print {
-              body { padding: 0; }
-              .receipt-container { border: none; }
-            }
-          </style>
-        </head>
-        <body>
-          <div class="receipt-container">
-            <div style="text-align: center; margin-bottom: 20px;">
-              <h2 style="margin: 0 0 10px 0;">${organization?.name || ''}</h2>
-              <p style="margin: 5px 0;">${organization?.address || ''}</p>
-              <p style="margin: 5px 0;">Tel: ${organization?.phone || ''}</p>
-              ${organization?.vatNumber ? `<p style="margin: 5px 0;">VAT: ${organization.vatNumber}</p>` : ''}
-              <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">
-              <p style="margin: 5px 0;"><strong>Order #:</strong> ${order.orderNumber}</p>
-              <p style="margin: 5px 0;"><strong>Date:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
-              ${order.tableName ? `<p style="margin: 5px 0;"><strong>Table:</strong> ${order.tableName}</p>` : ''}
-              ${order.customerName ? `<p style="margin: 5px 0;"><strong>Customer:</strong> ${order.customerName}</p>` : ''}
-              <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">
-            </div>
-            
-            <div style="margin-bottom: 20px;">
-              ${order.items.map(item => `
-                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; padding: 5px 0;">
-                  <span>${item.name} (${item.quantity}x)</span>
-                  <span style="font-weight: 500;">$${item.total.toFixed(2)}</span>
-                </div>
-              `).join('')}
-            </div>
-            
-            <div style="border-top: 2px solid #000; padding-top: 15px; margin-top: 20px;">
-              <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                <span>Subtotal:</span>
-                <span>$${(order.subtotal || 0).toFixed(2)}</span>
-              </div>
-              ${(order.taxRate || 0) > 0 ? `
-              <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                <span>VAT (${order.taxRate || 0}%):</span>
-                <span>$${(order.taxAmount || 0).toFixed(2)}</span>
-              </div>
-              ` : ''}
-              <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.2em; margin-top: 10px; padding-top: 10px; border-top: 1px solid #ddd;">
-                <span>TOTAL:</span>
-                <span>$${(order.total || 0).toFixed(2)}</span>
-              </div>
-            </div>
-            
-            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #666;">
-              <p>Thank you for your business!</p>
-            </div>
-          </div>
-        </body>
-        </html>
-      `;
+      // Generate HTML using template renderer
+      const htmlContent = renderReceiptTemplate(template, order, organization);
 
-      // Create and download file
-      const blob = new Blob([htmlContent], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `receipt-${order.orderNumber}.html`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      // Convert HTML to PDF and download
+      const element = document.createElement('div');
+      element.innerHTML = htmlContent;
+      
+      const opt = {
+        margin: 10,
+        filename: `receipt-${order.orderNumber}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      await html2pdf().set(opt).from(element).save();
+      toast.success('PDF downloaded successfully!');
     } catch (error) {
-      console.error('Error downloading receipt:', error);
-      toast.error('Error downloading receipt. Please try again.');
+      console.error('Error downloading PDF:', error);
+      toast.error('Error downloading PDF. Please try again.');
     }
   };
 
@@ -333,34 +176,7 @@ export function ReceiptPrintDialog({
               </CardContent>
             </Card>
 
-            {/* Printer Settings */}
-            {printerSettings && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Printer Settings</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <span className="font-medium">Paper Width:</span>
-                      <span className="ml-2">{printerSettings.paperWidth}mm</span>
-                    </div>
-                    <div>
-                      <span className="font-medium">Font Size:</span>
-                      <span className="ml-2">{printerSettings.fontSize}</span>
-                    </div>
-                    <div>
-                      <span className="font-medium">Chars per Line:</span>
-                      <span className="ml-2">{printerSettings.characterPerLine}</span>
-                    </div>
-                    <div>
-                      <span className="font-medium">Character Set:</span>
-                      <span className="ml-2">{printerSettings.characterSet}</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+            
           </div>
 
           {/* Right Column - Template Selection & Actions */}
@@ -408,7 +224,7 @@ export function ReceiptPrintDialog({
                 className="flex items-center gap-2"
               >
                 <Download className="h-4 w-4" />
-                Download HTML
+                Download PDF
               </Button>
               <div className="flex gap-2">
                 <Button

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Order, Organization } from '@/types';
-import { defaultReceiptTemplate } from './default-receipt-template';
+import { defaultReceiptTemplate } from './default-receipt-thermal';
 import { createReceiptQRData, generateZatcaQRCode } from '@/lib/zatca-qr';
 
 interface ReceiptProps {

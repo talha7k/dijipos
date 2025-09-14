@@ -123,7 +123,6 @@ export function POSCartSidebar({
                 order={createTempOrderForPayment()!}
                 organization={currentOrganization}
                 receiptTemplates={receiptTemplates}
-                printerSettings={printerSettings || null}
               >
                <Button
                  variant="outline"
