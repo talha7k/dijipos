@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Order, OrderPayment, OrderStatus, TableStatus } from "@/types";
 import { serverTimestamp } from "firebase/firestore";
 import { toast } from "sonner";
-import { useOrderActions } from "@/hooks/orders/use-orders-data";
+import { useOrderActions } from "@/hooks/orders/use-order-data";
 import { useTableActions } from "@/hooks/tables/use-tables-data";
 
 export function useOrderManagement(organizationId: string | undefined) {

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Table, Order, TableStatus } from '@/types';
 import { useTablesData } from '@/hooks/tables/use-tables-data';
-import { useOrdersData } from '@/hooks/orders/use-orders-data';
+import { useOrdersData } from '@/hooks/orders/use-order-data';
 import { useTableManagement } from '@/hooks/tables/use-table-management';
 import { useAuth } from '@/contexts/AuthContext';
 import {

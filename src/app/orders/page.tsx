@@ -6,7 +6,7 @@ import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOrderContext } from '@/contexts/OrderContext';
 import { Order, OrderPayment, PaymentType, Organization, User as AppUser, OrderStatus } from '@/types';
-import { useOrdersData } from '@/hooks/orders/use-orders-data';
+import { useOrdersData } from '@/hooks/orders/use-order-data';
 import { useUsersData } from '@/hooks/organization/use-users-data';
 import { usePaymentTypesData } from '@/hooks/use-payment-types-data';
 import { Button } from '@/components/ui/button';
