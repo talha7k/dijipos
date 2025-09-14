@@ -16,10 +16,12 @@ export function usePOSLogic() {
     selectedTable,
     selectedCustomer,
     selectedOrderType,
+    categoryPath,
     setCart,
     setSelectedTable,
     setSelectedCustomer,
     setSelectedOrderType,
+    setCategoryPath,
     clearPOSData,
     clearCart,
     addToCart: contextAddToCart,
@@ -203,6 +205,18 @@ export function usePOSLogic() {
     setPosView('orders');
   }, []);
 
+  const handleCategoryClick = useCallback((categoryId: string) => {
+    setCategoryPath([...categoryPath, categoryId]);
+  }, [setCategoryPath, categoryPath]);
+
+  const handleNavigateToRoot = useCallback(() => {
+    setCategoryPath([]);
+  }, [setCategoryPath]);
+
+  const handleNavigateToPath = useCallback((path: string[]) => {
+    setCategoryPath(path);
+  }, [setCategoryPath]);
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handlePaymentClick = useCallback((_order: Order) => {
     // This would set the selected order and navigate to payment
@@ -252,6 +266,7 @@ export function usePOSLogic() {
     selectedTable,
     selectedCustomer,
     selectedOrderType,
+    categoryPath,
     posView,
     pendingOrderToReopen,
     showOrderConfirmationDialog,
@@ -283,6 +298,9 @@ export function usePOSLogic() {
     handleTableSelect,
     handleCustomerSelect,
     handleOrdersClick,
+    handleCategoryClick,
+    handleNavigateToRoot,
+    handleNavigateToPath,
     handlePaymentClick,
     createTempOrderForPayment,
     updateCartItem,

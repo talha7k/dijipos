@@ -46,6 +46,7 @@ export default function SimplifiedPOSPage() {
     selectedTable,
     selectedCustomer,
     selectedOrderType,
+    categoryPath,
     showOrderConfirmationDialog,
     pendingOrderToReopen,
     showPaymentSuccessDialog,
@@ -68,6 +69,9 @@ export default function SimplifiedPOSPage() {
     handleTableSelect,
     handleCustomerSelect,
     handleOrdersClick,
+    handleCategoryClick,
+    handleNavigateToRoot,
+    handleNavigateToPath,
     updateCartItem,
     removeFromCart,
     setShowOrderConfirmationDialog,
@@ -121,12 +125,12 @@ export default function SimplifiedPOSPage() {
             orders={orders}
             orderPayments={orderPayments}
             paymentTypes={paymentTypes}
-            selectedOrder={null}
-            categoryPath={[]}
-            organizationId={organizationId || undefined}
-            onCategoryClick={() => {}}
-            onNavigateToRoot={() => {}}
-            onNavigateToPath={() => {}}
+             selectedOrder={null}
+             categoryPath={categoryPath}
+             organizationId={organizationId || undefined}
+             onCategoryClick={handleCategoryClick}
+             onNavigateToRoot={handleNavigateToRoot}
+             onNavigateToPath={handleNavigateToPath}
             onItemClick={handleAddToCart}
             onTableSelect={handleTableSelected}
             onCustomerSelect={handleCustomerSelected}
