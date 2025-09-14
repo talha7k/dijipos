@@ -46,6 +46,7 @@ export default function SimplifiedPOSPage() {
     selectedTable,
     selectedCustomer,
     selectedOrderType,
+    selectedOrder,
     categoryPath,
     showOrderConfirmationDialog,
     pendingOrderToReopen,
@@ -72,6 +73,7 @@ export default function SimplifiedPOSPage() {
     handleCategoryClick,
     handleNavigateToRoot,
     handleNavigateToPath,
+    handlePayOrder,
     updateCartItem,
     removeFromCart,
     setShowOrderConfirmationDialog,
@@ -125,7 +127,7 @@ export default function SimplifiedPOSPage() {
             orders={orders}
             orderPayments={orderPayments}
             paymentTypes={paymentTypes}
-             selectedOrder={null}
+             selectedOrder={selectedOrder}
              categoryPath={categoryPath}
              organizationId={organizationId || undefined}
              onCategoryClick={handleCategoryClick}
@@ -150,10 +152,7 @@ export default function SimplifiedPOSPage() {
             setEditingCartItem(item);
             setShowCartItemModal(true);
           }}
-          onPayOrder={() => {
-            if (cart.length === 0) return;
-            // Handle payment flow
-          }}
+           onPayOrder={handlePayOrder}
           onSaveOrder={handleSaveOrder}
           onPrintReceipt={() => {}}
           onClearCart={handleClearCart}

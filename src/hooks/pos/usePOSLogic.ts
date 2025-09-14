@@ -16,11 +16,13 @@ export function usePOSLogic() {
     selectedTable,
     selectedCustomer,
     selectedOrderType,
+    selectedOrder,
     categoryPath,
     setCart,
     setSelectedTable,
     setSelectedCustomer,
     setSelectedOrderType,
+    setSelectedOrder,
     setCategoryPath,
     clearPOSData,
     clearCart,
@@ -232,7 +234,7 @@ export function usePOSLogic() {
       orderNumber: `TEMP-${Date.now()}`,
       items: cart.map(item => ({
         id: `${item.type}-${item.id}`,
-        type: item.type === 'product' ? 'product' : 'service',
+        type: item.type === 'product' ? ItemType.PRODUCT : ItemType.SERVICE,
         productId: item.type === 'product' ? item.id : undefined,
         serviceId: item.type === 'service' ? item.id : undefined,
         name: item.name,
@@ -244,7 +246,7 @@ export function usePOSLogic() {
       taxRate: 0,
       taxAmount: 0,
       total: cartTotal,
-      status: 'open',
+      status: OrderStatus.OPEN,
       paid: false,
       orderType: selectedOrderType?.name || 'dine-in',
       customerName: selectedCustomer?.name,
@@ -259,6 +261,16 @@ export function usePOSLogic() {
     };
   }, [cart, cartTotal, selectedOrderType, selectedCustomer, selectedTable, organizationId, user]);
 
+  const handlePayOrder = useCallback(() => {
+    if (cart.length === 0) return;
+
+    const tempOrder = createTempOrderForPayment();
+    if (tempOrder) {
+      setSelectedOrder(tempOrder);
+      setPosView('payment');
+    }
+  }, [cart, createTempOrderForPayment, setSelectedOrder, setPosView]);
+
   return {
     // State
     cart,
@@ -266,6 +278,7 @@ export function usePOSLogic() {
     selectedTable,
     selectedCustomer,
     selectedOrderType,
+    selectedOrder,
     categoryPath,
     posView,
     pendingOrderToReopen,
@@ -301,6 +314,7 @@ export function usePOSLogic() {
     handleCategoryClick,
     handleNavigateToRoot,
     handleNavigateToPath,
+    handlePayOrder,
     handlePaymentClick,
     createTempOrderForPayment,
     updateCartItem,
