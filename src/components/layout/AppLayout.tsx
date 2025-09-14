@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useSidebar } from '@/contexts/SidebarContext';
 import { CollapsibleSidebar } from '@/components/sidebar/collapsible-sidebar';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
-import { OrganizationManager } from '@/components/OrganizationManager';
+import { OrganizationManager } from '@/components/organization/OrganizationManager';
 
 interface AppLayoutProps {
   children: React.ReactNode;
