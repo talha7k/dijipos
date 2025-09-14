@@ -1,4 +1,5 @@
-import React from 'react';
+"use client";
+
 import { useAuth } from '@/contexts/AuthContext';
 import { useOrderContext } from '@/contexts/OrderContext';
 import { useProductsData } from '@/hooks/products_services/use-products-data';
@@ -16,199 +17,23 @@ import { POSLayout, POSLeftColumn, POSHeaderContainer, POSMainContent, POSRightC
 import { POSHeader } from '@/components/orders/POSHeader';
 import { POSViewsManager } from './components/POSViewsManager';
 import { POSCartSidebar } from '@/components/orders/POSCartSidebar';
-import { usePOSLogic } from './hooks/usePOSLogic';
+import { usePOSLogic } from '@/hooks/pos/usePOSLogic';
 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { PaymentSuccessDialog } from '@/components/PaymentSuccessDialog';
 import { CartItemModal } from '@/components/orders/CartItemModal';
 
-function SimplifiedPOSPage() {
-  const { organizationId } = useAuth();
-  const { updateCartItem, removeFromCart } = useOrderContext();
+export default function POSPage() {
+  const { user } = useAuth();
 
-  // Data hooks
-  const { products = [], loading: productsLoading } = useProductsData(organizationId || '');
-  const { services = [], loading: servicesLoading } = useServicesData(organizationId || '');
-  const { categories = [], loading: categoriesLoading } = useCategoriesData(organizationId || '');
-  const { tables = [], loading: tablesLoading } = useTablesData(organizationId || '');
-  const { customers = [], loading: customersLoading } = useCustomersData(organizationId || '');
-  const { orders = [], loading: ordersLoading } = useOrdersData(organizationId || '');
-  const { paymentTypes = [], loading: paymentTypesLoading } = usePaymentTypesData(organizationId || '');
-  const { payments: orderPayments = {}, loading: orderPaymentsLoading } = usePaymentsData(organizationId || '');
-  const { receiptTemplates = [], loading: receiptTemplatesLoading } = useReceiptTemplatesData(organizationId || '');
-  const { orderTypes = [], loading: orderTypesLoading } = useOrderTypesData(organizationId || '');
-
-  // Use the custom POS logic hook
-  const {
-    cart,
-    cartTotal,
-    posView,
-    selectedTable,
-    selectedCustomer,
-    selectedOrderType,
-    showOrderConfirmationDialog,
-    pendingOrderToReopen,
-    showPaymentSuccessDialog,
-    paymentSuccessData,
-    showCartItemModal,
-    editingCartItem,
-    handleAddToCart,
-    handleTableSelected,
-    handleCustomerSelected,
-    handleOrderTypeSelect,
-    handleOrderReopen,
-    proceedWithOrderReopen,
-    handleSaveOrder,
-    handlePaymentProcessed,
-    handleClearCart,
-    handleBackToItems,
-    handleTableDeselect,
-    handleCustomerDeselect,
-    handleOrderTypeDeselect,
-    setShowOrderConfirmationDialog,
-    setShowCartItemModal,
-    setEditingCartItem,
-    setShowPaymentSuccessDialog,
-    handleTableSelect,
-    handleCustomerSelect,
-    handleOrdersClick,
-  } = usePOSLogic();
-
-  // Loading state
-  const loading = productsLoading || servicesLoading || categoriesLoading || 
-                 tablesLoading || customersLoading || ordersLoading || 
-                 paymentTypesLoading || orderPaymentsLoading || receiptTemplatesLoading;
-
-  if (loading) {
-    return (
-      <div className="h-screen flex items-center justify-center">
-        <div className="text-lg">Loading POS...</div>
-      </div>
-    );
+  if (!user) {
+    return <div>Please log in to access POS</div>;
   }
 
   return (
-    <POSLayout>
-      <POSLeftColumn>
-        <POSHeaderContainer>
-          <POSHeader
-            cart={cart}
-            cartTotal={cartTotal}
-            selectedTable={selectedTable}
-            selectedCustomer={selectedCustomer}
-            orderTypes={orderTypes}
-            selectedOrderType={selectedOrderType}
-            onTableSelect={handleTableSelect}
-            onCustomerSelect={handleCustomerSelect}
-            onOrderTypeSelect={handleOrderTypeSelect}
-            onTableDeselect={handleTableDeselect}
-            onCustomerDeselect={handleCustomerDeselect}
-            onOrderTypeDeselect={handleOrderTypeDeselect}
-            onOrdersClick={handleOrdersClick}
-          />
-        </POSHeaderContainer>
-
-        <POSMainContent>
-          <POSViewsManager
-            currentView={posView}
-            products={products}
-            services={services}
-            categories={categories}
-            tables={tables}
-            customers={customers}
-            orders={orders}
-            orderPayments={orderPayments}
-            paymentTypes={paymentTypes}
-            selectedOrder={null}
-            categoryPath={[]}
-            organizationId={organizationId || undefined}
-            onCategoryClick={() => {}}
-            onNavigateToRoot={() => {}}
-            onNavigateToPath={() => {}}
-            onItemClick={handleAddToCart}
-            onTableSelect={handleTableSelected}
-            onCustomerSelect={handleCustomerSelected}
-            onOrderSelect={handleOrderReopen}
-            onPayOrder={() => {}}
-            onBackToItems={handleBackToItems}
-            onPaymentProcessed={handlePaymentProcessed}
-          />
-        </POSMainContent>
-      </POSLeftColumn>
-
-      <POSRightColumn>
-        <POSCartSidebar
-          cart={cart}
-          cartTotal={cartTotal}
-          onItemClick={(item) => {
-            setEditingCartItem(item);
-            setShowCartItemModal(true);
-          }}
-          onPayOrder={() => {
-            if (cart.length === 0) return;
-            // Handle payment flow
-          }}
-          onSaveOrder={handleSaveOrder}
-          onPrintReceipt={() => {}}
-          onClearCart={handleClearCart}
-        />
-      </POSRightColumn>
-
-      {/* Order Confirmation Dialog */}
-      <AlertDialog open={showOrderConfirmationDialog} onOpenChange={setShowOrderConfirmationDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Reopen Order?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will replace your current cart with order #{pendingOrderToReopen?.orderNumber}. Continue?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setShowOrderConfirmationDialog(false)}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={proceedWithOrderReopen}>
-              Continue
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Payment Success Dialog */}
-      <PaymentSuccessDialog
-        isOpen={showPaymentSuccessDialog}
-        onClose={() => setShowPaymentSuccessDialog(false)}
-        totalPaid={paymentSuccessData?.totalPaid || 0}
-        onViewOrders={handleBackToItems}
-      />
-
-      {/* Cart Item Modal */}
-      {editingCartItem && (
-        <CartItemModal
-          item={editingCartItem}
-          isOpen={showCartItemModal}
-          onClose={() => setShowCartItemModal(false)}
-          onUpdateQuantity={(itemId, newQuantity) => {
-            // Handle quantity update
-            if (editingCartItem) {
-              updateCartItem(itemId, editingCartItem.type, {
-                quantity: newQuantity,
-                total: newQuantity * editingCartItem.price
-              });
-            }
-            setShowCartItemModal(false);
-          }}
-          onDeleteItem={(itemId) => {
-            // Handle item deletion
-            if (editingCartItem) {
-              removeFromCart(itemId, editingCartItem.type);
-            }
-            setShowCartItemModal(false);
-          }}
-        />
-      )}
-    </POSLayout>
+    <div className="min-h-screen p-4">
+      <h1 className="text-2xl font-bold mb-4">Point of Sale</h1>
+      <p>Welcome to the POS system. This page is under development.</p>
+    </div>
   );
 }
-
-export default SimplifiedPOSPage;
