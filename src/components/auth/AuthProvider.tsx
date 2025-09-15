@@ -76,6 +76,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           console.log('AuthProvider: Basic user state set in', Date.now() - startTime, 'ms');
 
           // Set organizationLoading to true while we fetch organization data
+          console.log('AuthProvider: Setting organizationLoading to true');
           setOrganizationLoading(true);
           console.log('AuthProvider: Basic auth complete, organizationLoading set to true');
 
@@ -133,6 +134,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             } catch (orgError) {
               console.error('Organization fetch error:', orgError);
               setUserOrganizations([]);
+              setOrganizationError(orgError instanceof Error ? orgError.message : 'Failed to load organizations');
             } finally {
               setOrganizationLoading(false);
               if (authLoading) {
@@ -142,7 +144,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
             }
           })();
 
-          organizationFetchPromise.catch(console.error);
+          organizationFetchPromise.catch((error) => {
+              console.error('Organization fetch promise failed:', error);
+              // Ensure loading states are reset even if promise fails
+              setOrganizationLoading(false);
+              if (authLoading) {
+                setAuthLoading(false);
+              }
+            });
         } else {
           console.log('AuthProvider: No user, clearing state');
           resetAuthState();

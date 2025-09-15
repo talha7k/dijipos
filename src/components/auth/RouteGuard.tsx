@@ -15,6 +15,7 @@ export function RouteGuard({ children }: RouteGuardProps) {
     authLoading: loading, 
     organizationLoading,
     authError: error, 
+    organizationError,
     emailVerified, 
     selectedOrganization: currentOrganization, 
     userOrganizations, 
@@ -132,6 +133,7 @@ export function RouteGuard({ children }: RouteGuardProps) {
     }
   }, [
     loading,
+    organizationLoading,
     user,
     emailVerified,
     currentOrganization,
@@ -145,6 +147,7 @@ export function RouteGuard({ children }: RouteGuardProps) {
 
   // Show loading state
   if (loading || organizationLoading) {
+    console.log('RouteGuard: Showing loading - authLoading:', loading, 'organizationLoading:', organizationLoading);
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
