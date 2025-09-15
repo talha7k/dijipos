@@ -4,8 +4,13 @@ import { useState, useEffect } from 'react';
 import { collection, query, onSnapshot, updateDoc, doc, getDoc, addDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
-import { Invoice, Organization, InvoiceStatus } from '@/types';
+import { Invoice, PurchaseInvoice, Organization, InvoiceStatus } from '@/types';
 import { InvoiceTemplateType } from '@/types/enums';
+
+// Type guard to check if invoice is a PurchaseInvoice
+function isPurchaseInvoice(invoice: Invoice): invoice is PurchaseInvoice {
+  return invoice.type === 'purchase';
+}
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -68,13 +73,14 @@ function InvoicesContent() {
   };
 
   const handleCreateInvoice = async (invoiceData: Omit<Invoice, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => {
+    // Type assertion for purchase invoice specific properties
+    const purchaseData = invoiceData as Omit<PurchaseInvoice, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>;
     if (!organizationId) return;
 
     // Clean the data to remove undefined values that Firebase doesn't accept
     const cleanedData = {
       ...invoiceData,
-      clientVAT: invoiceData.clientVAT || null,
-      clientAddress: invoiceData.clientAddress || null,
+      supplierVAT: purchaseData.supplierVAT || null,
       notes: invoiceData.notes || null,
       items: invoiceData.items.map(item => ({
         ...item,
@@ -94,7 +100,7 @@ function InvoicesContent() {
   const generatePurchaseInvoiceHTML = (invoice: Invoice, org: Organization) => {
     // Prepare template data for purchase invoice
     const templateData = {
-      invoiceId: invoice.invoiceNumber || invoice.id.slice(-8),
+      invoiceId: isPurchaseInvoice(invoice) ? invoice.invoiceNumber || invoice.id.slice(-8) : invoice.id.slice(-8),
       companyName: org?.name || '',
       companyNameAr: org?.nameAr || '',
       companyAddress: org?.address || '',
@@ -103,11 +109,11 @@ function InvoicesContent() {
       companyVat: org?.vatNumber || '',
       companyLogo: org?.logoUrl || '',
       companyStamp: org?.stampUrl || '',
-      clientName: invoice.supplierName || invoice.clientName || '',
+      clientName: isPurchaseInvoice(invoice) ? invoice.supplierName || '' : '',
       customerNameAr: '', // Purchase invoices typically don't have Arabic names for suppliers
-      clientAddress: invoice.supplierAddress || invoice.clientAddress || '',
-      clientEmail: invoice.supplierEmail || invoice.clientEmail || '',
-      clientVat: invoice.supplierVAT || invoice.clientVAT || '',
+      clientAddress: isPurchaseInvoice(invoice) ? invoice.supplierAddress || '' : '',
+      clientEmail: isPurchaseInvoice(invoice) ? invoice.supplierEmail || '' : '',
+      clientVat: isPurchaseInvoice(invoice) ? invoice.supplierVAT || '' : '',
       customerLogo: '', // Purchase invoices typically don't have supplier logos
       supplierName: '', // For purchase invoices, the company is the buyer
       supplierNameAr: '',
@@ -115,15 +121,10 @@ function InvoicesContent() {
       supplierEmail: '',
       supplierVat: '',
       supplierLogo: '',
-      invoiceDate: invoice.template === InvoiceTemplateType.ARABIC
-        ? invoice.createdAt.toLocaleDateString('ar-SA')
-        : invoice.createdAt.toLocaleDateString(),
-      dueDate: invoice.template === InvoiceTemplateType.ARABIC
-        ? invoice.dueDate.toLocaleDateString('ar-SA')
-        : invoice.dueDate.toLocaleDateString(),
-      status: invoice.template === InvoiceTemplateType.ARABIC
-        ? (invoice.status === 'paid' ? 'مدفوع' : invoice.status === 'sent' ? 'مرسل' : invoice.status === 'draft' ? 'مسودة' : invoice.status)
-        : invoice.status,
+      invoiceDate: invoice.createdAt.toLocaleDateString(),
+      template: InvoiceTemplateType.ENGLISH,
+      dueDate: invoice.dueDate.toLocaleDateString(),
+      status: invoice.status,
       items: invoice.items.map(item => ({
         name: item.name,
         description: item.description || '',
@@ -136,13 +137,11 @@ function InvoicesContent() {
       taxAmount: invoice.taxAmount.toFixed(2),
       total: invoice.total.toFixed(2),
       notes: invoice.notes || '',
-      includeQR: invoice.includeQR ? 'true' : ''
+      includeQR: isPurchaseInvoice(invoice) ? (invoice.includeQR ? 'true' : '') : ''
     };
 
     // Choose template based on invoice template type
-    const template = invoice.template === InvoiceTemplateType.ARABIC
-      ? defaultArabicInvoiceTemplate
-      : defaultEnglishInvoiceTemplate;
+    const template = defaultEnglishInvoiceTemplate;
 
     // Replace placeholders in template
     let htmlContent = template;
@@ -334,7 +333,7 @@ function InvoicesContent() {
             <TableBody>
               {invoices.map((invoice) => (
                 <TableRow key={invoice.id}>
-                  <TableCell>{invoice.supplierName || invoice.clientName}</TableCell>
+                  <TableCell>{isPurchaseInvoice(invoice) ? invoice.supplierName : ''}</TableCell>
                   <TableCell>${invoice.total.toFixed(2)}</TableCell>
                   <TableCell>
                     <Badge variant={
@@ -362,7 +361,7 @@ function InvoicesContent() {
                             <div>
                               <div className="flex gap-4 mb-4 items-center">
                                 <Button
-                                  variant={selectedInvoice.template === InvoiceTemplateType.ENGLISH ? 'default' : 'outline'}
+                                  variant={InvoiceTemplateType.ENGLISH === InvoiceTemplateType.ENGLISH ? 'default' : 'outline'}
                                   onClick={() => {
                                     const updatedInvoice = { ...selectedInvoice, template: InvoiceTemplateType.ENGLISH };
                                     setSelectedInvoice(updatedInvoice);
@@ -374,7 +373,7 @@ function InvoicesContent() {
                                   English Template
                                 </Button>
                                 <Button
-                                  variant={selectedInvoice.template === InvoiceTemplateType.ARABIC ? 'default' : 'outline'}
+                                  variant={InvoiceTemplateType.ARABIC === InvoiceTemplateType.ARABIC ? 'outline' : 'outline'}
                                   onClick={() => {
                                     const updatedInvoice = { ...selectedInvoice, template: InvoiceTemplateType.ARABIC };
                                     setSelectedInvoice(updatedInvoice);
@@ -393,7 +392,7 @@ function InvoicesContent() {
                                   <Label htmlFor="qr-toggle">Show ZATCA QR</Label>
                                   <Switch
                                     id="qr-toggle"
-                                    checked={selectedInvoice.includeQR}
+                                    checked={isPurchaseInvoice(selectedInvoice) ? selectedInvoice.includeQR : false}
                                     onCheckedChange={(checked) => {
                                       const updatedInvoice = { ...selectedInvoice, includeQR: checked };
                                       setSelectedInvoice(updatedInvoice);

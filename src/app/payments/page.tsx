@@ -102,11 +102,11 @@ function PaymentsContent() {
                     <SelectValue placeholder="Select invoice" />
                   </SelectTrigger>
                   <SelectContent>
-                    {invoices.map((invoice) => (
-                      <SelectItem key={invoice.id} value={invoice.id}>
-                        {invoice.clientName} - ${invoice.total.toFixed(2)}
-                      </SelectItem>
-                    ))}
+                     {invoices.map((invoice) => (
+                       <SelectItem key={invoice.id} value={invoice.id}>
+                         {invoice.type === 'sales' ? invoice.clientName : `${invoice.supplierName || 'Unknown'} (Purchase)`} - ${invoice.total.toFixed(2)}
+                       </SelectItem>
+                     ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -164,7 +164,7 @@ function PaymentsContent() {
                 const invoice = invoices.find(inv => inv.id === payment.invoiceId);
                 return (
                   <TableRow key={payment.id}>
-                    <TableCell>{invoice?.clientName || 'Unknown'}</TableCell>
+                     <TableCell>{invoice ? (invoice.type === 'sales' ? invoice.clientName : invoice.supplierName || 'Unknown') : 'Unknown'}</TableCell>
                     <TableCell>${payment.amount.toFixed(2)}</TableCell>
                     <TableCell>{payment.paymentMethod}</TableCell>
                     <TableCell>{payment.paymentDate?.toLocaleDateString()}</TableCell>

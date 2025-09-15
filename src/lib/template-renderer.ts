@@ -1,4 +1,5 @@
 import { Order, Organization, ReceiptTemplate, Invoice, InvoiceTemplate, Customer, Supplier, Quote, QuoteTemplate } from '@/types';
+import { OrderStatus } from '@/types/enums';
 import { defaultReceiptTemplate } from '@/components/templates/default-receipt-thermal';
 import { defaultReceiptA4Template } from '@/components/templates/default-receipt-a4';
 import { defaultArabicReceiptTemplate } from '@/components/templates/default-arabic-receipt-thermal';
@@ -121,9 +122,9 @@ export async function renderInvoiceTemplate(
   supplier?: Supplier
 ): Promise<string> {
   // Prepare template data
-  const data = {
+  const data: InvoiceTemplateData = {
     invoiceId: invoice.id,
-    invoiceDate: invoice.invoiceDate ? new Date(invoice.invoiceDate).toLocaleDateString() : new Date(invoice.createdAt).toLocaleDateString(),
+    invoiceDate: 'invoiceDate' in invoice && invoice.invoiceDate ? new Date(invoice.invoiceDate).toLocaleDateString() : new Date(invoice.createdAt).toLocaleDateString(),
     dueDate: new Date(invoice.dueDate).toLocaleDateString(),
     status: invoice.status,
     companyName: organization?.name || '',
@@ -151,7 +152,7 @@ export async function renderInvoiceTemplate(
     taxAmount: (invoice.taxAmount || 0).toFixed(2),
     total: (invoice.total || 0).toFixed(2),
     notes: invoice.notes || '',
-    includeQR: invoice.includeQR,
+    includeQR: 'includeQR' in invoice ? invoice.includeQR : false,
     qrCodeUrl: await generateInvoiceQR(invoice, organization),
     items: invoice.items.map(item => ({
       name: item.name,
@@ -174,12 +175,12 @@ export async function renderInvoiceTemplate(
   return renderInvoiceTemplateContent(templateContent, data);
 }
 
-function renderInvoiceTemplateContent(template: string, data: any): string {
+function renderInvoiceTemplateContent(template: string, data: InvoiceTemplateData): string {
   let result = template;
 
   // Replace simple variables
   Object.keys(data).forEach(key => {
-    const value = data[key];
+    const value = data[key as keyof InvoiceTemplateData];
     if (typeof value === 'string') {
       result = result.replace(new RegExp(`{{${key}}}`, 'g'), value);
     }
@@ -196,13 +197,13 @@ function renderInvoiceTemplateContent(template: string, data: any): string {
 
   // Handle general conditional blocks
   result = result.replace(/{{#(\w+)}}([\s\S]*?){{\/\1}}/g, (match, variable, content) => {
-    const value = data[variable];
+    const value = data[variable as keyof InvoiceTemplateData];
     return value ? content : '';
   });
 
   // Handle items loop
   result = result.replace(/{{#each items}}([\s\S]*?){{\/each}}/g, (match, itemTemplate) => {
-    return data.items.map((item: any) => {
+    return data.items.map((item) => {
       return itemTemplate
         .replace(/{{name}}/g, item.name)
         .replace(/{{description}}/g, item.description)
@@ -235,7 +236,7 @@ async function generateInvoiceQR(invoice: Invoice, organization: Organization | 
       customerName: '',
       customerPhone: '',
       customerEmail: '',
-      status: 'completed' as any,
+      status: OrderStatus.COMPLETED,
       paid: invoice.status === 'paid',
       items: invoice.items,
       subtotal: invoice.subtotal,
@@ -372,7 +373,7 @@ async function generateQuoteQR(quote: Quote, organization: Organization | null):
       customerName: '',
       customerPhone: '',
       customerEmail: '',
-      status: 'completed' as any,
+      status: OrderStatus.COMPLETED,
       paid: false,
       items: quote.items,
       subtotal: quote.subtotal,

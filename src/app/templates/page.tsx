@@ -15,6 +15,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { InvoiceTemplate, TemplateField, TemplateStyle, TemplateFieldType } from '@/types';
 import { InvoiceTemplateType } from '@/types/enums';
 import { Plus, Edit, Trash2, Copy, Eye } from 'lucide-react';
+import { defaultEnglishInvoiceTemplate } from '@/components/templates/default-invoice-english';
+import { defaultArabicInvoiceTemplate } from '@/components/templates/default-invoice-arabic';
 
 const defaultFields: TemplateField[] = [
   {
@@ -110,6 +112,7 @@ function TemplatesContent() {
           isDefault: true,
           fields: defaultFields,
           style: defaultStyle,
+          content: defaultEnglishInvoiceTemplate,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -122,6 +125,7 @@ function TemplatesContent() {
           isDefault: false,
           fields: defaultFields,
           style: { ...defaultStyle, fontFamily: 'Amiri, serif' },
+          content: defaultArabicInvoiceTemplate,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -153,6 +157,7 @@ function TemplatesContent() {
         isDefault: newTemplate.isDefault,
         fields: newTemplate.fields,
         style: newTemplate.style,
+        content: newTemplate.type === InvoiceTemplateType.ARABIC ? defaultArabicInvoiceTemplate : defaultEnglishInvoiceTemplate,
         createdAt: new Date(),
         updatedAt: new Date(),
       };

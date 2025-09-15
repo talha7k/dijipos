@@ -17,6 +17,11 @@ import {
   Download
 } from 'lucide-react';
 
+// Type guard to check if invoice is a SalesInvoice
+function isSalesInvoice(invoice: Invoice): invoice is Invoice & { type: 'sales' } {
+  return invoice.type === 'sales';
+}
+
 interface InvoiceActionsDialogProps {
   invoice: Invoice | null;
   payments: Payment[];
@@ -135,7 +140,7 @@ export function InvoiceActionsDialog({
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Client</p>
-                <p className="font-medium">{invoice.clientName}</p>
+                <p className="font-medium">{isSalesInvoice(invoice) ? invoice.clientName : 'N/A'}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Total Amount</p>

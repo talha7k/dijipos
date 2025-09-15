@@ -6,6 +6,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Invoice, InvoiceStatus } from '@/types';
 import { Receipt, MoreHorizontal } from 'lucide-react';
 
+// Type guard to check if invoice is a PurchaseInvoice
+function isPurchaseInvoice(invoice: Invoice): invoice is Invoice & { type: 'purchase' } {
+  return invoice.type === 'purchase';
+}
+
 interface InvoiceTableProps {
   invoices: Invoice[];
   onInvoiceClick: (invoice: Invoice) => void;
@@ -44,7 +49,13 @@ export function InvoiceTable({
               onInvoiceClick(invoice);
             }}
           >
-            <TableCell>{invoice.clientName}</TableCell>
+            <TableCell>
+              {isPurchaseInvoice(invoice) ? (
+                (invoice as Invoice & { supplierName?: string }).supplierName || 'Supplier'
+              ) : (
+                (invoice as Invoice & { customerName?: string }).customerName || 'Customer'
+              )}
+            </TableCell>
             <TableCell>${invoice.total.toFixed(2)}</TableCell>
             <TableCell>
               <Badge variant={

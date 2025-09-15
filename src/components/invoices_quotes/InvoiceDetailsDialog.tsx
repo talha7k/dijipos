@@ -8,6 +8,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Invoice, Payment, Organization, Customer, Supplier } from '@/types';
 import { CreditCard, Printer, Eye } from 'lucide-react';
 
+// Type guard to check if invoice is a PurchaseInvoice
+function isPurchaseInvoice(invoice: Invoice): invoice is Invoice & { type: 'purchase' } {
+  return invoice.type === 'purchase';
+}
+
 
 
 interface InvoiceDetailsDialogProps {
@@ -99,21 +104,64 @@ export function InvoiceDetailsDialog({
               <div>
                 <h3 className="font-semibold mb-2">Client Information</h3>
                 <div className="space-y-1 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Client:</span>
-                    <span>{invoice.clientName}</span>
-                  </div>
-                  {invoice.clientEmail && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Email:</span>
-                      <span>{invoice.clientEmail}</span>
-                    </div>
-                  )}
-                  {invoice.clientAddress && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Address:</span>
-                      <span>{invoice.clientAddress}</span>
-                    </div>
+                  {isPurchaseInvoice(invoice) ? (
+                    (() => {
+                      const supplier = suppliers.find(s => s.id === (invoice as Invoice & { supplierId?: string }).supplierId);
+                      return supplier ? (
+                        <>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Supplier:</span>
+                            <span>{supplier.name}</span>
+                          </div>
+                          {supplier.email && (
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Email:</span>
+                              <span>{supplier.email}</span>
+                            </div>
+                          )}
+                          {supplier.address && (
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Address:</span>
+                              <span>{supplier.address}</span>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Supplier:</span>
+                          <span>Supplier not found</span>
+                        </div>
+                      );
+                    })()
+                  ) : (
+                    (() => {
+                      const customer = customers.find(c => c.id === (invoice as Invoice & { customerId?: string }).customerId);
+                      return customer ? (
+                        <>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Customer:</span>
+                            <span>{customer.name}</span>
+                          </div>
+                          {customer.email && (
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Email:</span>
+                              <span>{customer.email}</span>
+                            </div>
+                          )}
+                          {customer.address && (
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Address:</span>
+                              <span>{customer.address}</span>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Customer:</span>
+                          <span>Customer not found</span>
+                        </div>
+                      );
+                    })()
                   )}
                 </div>
               </div>

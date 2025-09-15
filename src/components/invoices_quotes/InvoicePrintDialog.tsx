@@ -13,6 +13,11 @@ import { renderInvoiceTemplate } from '@/lib/template-renderer';
 import { toast } from 'sonner';
 import html2pdf from 'html2pdf.js';
 
+// Type guard to check if invoice is a PurchaseInvoice
+function isPurchaseInvoice(invoice: Invoice): invoice is Invoice & { type: 'purchase' } {
+  return invoice.type === 'purchase';
+}
+
 interface InvoicePrintDialogProps {
   invoice: Invoice;
   organization: Organization | null;
@@ -185,7 +190,7 @@ export function InvoicePrintDialog({
                       <td className="font-medium py-1">Date:</td>
                       <td className="py-1">{new Date(invoice.createdAt).toLocaleString()}</td>
                     </tr>
-                    {invoice.invoiceDate && (
+                    {isPurchaseInvoice(invoice) && invoice.invoiceDate && (
                       <tr>
                         <td className="font-medium py-1">Invoice Date:</td>
                         <td className="py-1">{new Date(invoice.invoiceDate).toLocaleDateString()}</td>

@@ -425,11 +425,6 @@ const generateInvoices = (count: number, customers: Omit<Customer, 'organization
             const invoice: Omit<Invoice, 'organizationId'> = {
                 ...baseInvoice,
                 type: InvoiceType.SALES,
-                clientName: customer.name,
-                clientEmail: customer.email,
-                clientAddress: customer.address,
-                template: InvoiceTemplateType.ENGLISH,
-                includeQR: true,
             };
             allInvoices.push(invoice);
         } else {
@@ -437,12 +432,6 @@ const generateInvoices = (count: number, customers: Omit<Customer, 'organization
             const invoice: Omit<Invoice, 'organizationId'> = {
                 ...baseInvoice,
                 type: InvoiceType.PURCHASE,
-                supplierId: supplier.id,
-                supplierName: supplier.name,
-                supplierEmail: supplier.email,
-                supplierAddress: supplier.address,
-                template: InvoiceTemplateType.ENGLISH,
-                includeQR: true,
             };
             allInvoices.push(invoice);
         }

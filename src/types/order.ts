@@ -1,5 +1,5 @@
 // Import enums from the main enums file
-import { TableStatus, OrderStatus } from './enums';
+import { TableStatus, OrderStatus, ItemType } from './enums';
 
 export interface Table {
   id: string;
@@ -79,5 +79,3 @@ export interface PaymentType {
   updatedAt: Date;
 }
 
-// Import ItemType from product-service types
-import { ItemType } from './product-service';

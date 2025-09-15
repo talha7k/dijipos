@@ -6,6 +6,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Invoice, Payment, Organization, Customer, Supplier } from '@/types';
 import { formatCurrency, formatDate } from '@/lib/utils';
 
+// Type guard to check if invoice is a PurchaseInvoice
+function isPurchaseInvoice(invoice: Invoice): invoice is Invoice & { type: 'purchase' } {
+  return invoice.type === 'purchase';
+}
+
 interface InvoiceDetailsProps {
   invoice: Invoice;
   organization: Organization | null;
@@ -29,7 +34,7 @@ export function InvoiceDetails({
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold">Invoice #{invoice.invoiceNumber}</h1>
+          <h1 className="text-3xl font-bold">Invoice #{isPurchaseInvoice(invoice) ? invoice.invoiceNumber || invoice.id.slice(-8) : invoice.id.slice(-8)}</h1>
           <Badge variant={
             invoice.status === 'paid' ? 'default' :
             invoice.status === 'overdue' ? 'destructive' :
@@ -72,10 +77,29 @@ export function InvoiceDetails({
             <CardTitle>Bill To</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="font-semibold">{invoice.clientName}</p>
-            {invoice.clientEmail && <p className="text-sm text-gray-600">{invoice.clientEmail}</p>}
-            {invoice.clientAddress && <p className="text-sm text-gray-600">{invoice.clientAddress}</p>}
-            {invoice.clientVAT && <p className="text-sm text-gray-600">VAT: {invoice.clientVAT}</p>}
+            {isPurchaseInvoice(invoice) ? (
+              supplier ? (
+                <div>
+                  <p className="font-semibold">{supplier.name}</p>
+                  {supplier.email && <p className="text-sm text-gray-600">{supplier.email}</p>}
+                  {supplier.address && <p className="text-sm text-gray-600">{supplier.address}</p>}
+                  {supplier.vatNumber && <p className="text-sm text-gray-600">VAT: {supplier.vatNumber}</p>}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500">Supplier information not available</p>
+              )
+            ) : (
+              customer ? (
+                <div>
+                  <p className="font-semibold">{customer.name}</p>
+                  {customer.email && <p className="text-sm text-gray-600">{customer.email}</p>}
+                  {customer.address && <p className="text-sm text-gray-600">{customer.address}</p>}
+                  {customer.vatNumber && <p className="text-sm text-gray-600">VAT: {customer.vatNumber}</p>}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500">Customer information not available</p>
+              )
+            )}
           </CardContent>
         </Card>
       </div>

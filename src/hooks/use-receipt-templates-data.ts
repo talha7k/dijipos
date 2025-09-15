@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { collection, query, onSnapshot, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { ReceiptTemplate, PrinterFormat } from '@/types';
+import { ReceiptTemplate, PrinterFormat, ReceiptTemplateType } from '@/types';
 import { defaultReceiptTemplate } from '@/components/templates/default-receipt-thermal';
 import { defaultArabicReceiptTemplate } from '@/components/templates/default-arabic-receipt-thermal';
 
@@ -43,7 +43,7 @@ export function useReceiptTemplatesData(organizationId: string | undefined) {
               id: 'default-thermal',
               name: 'Default Thermal Receipt',
               description: 'Default thermal printer receipt template in English',
-              type: PrinterFormat.THERMAL,
+              type: ReceiptTemplateType.ENGLISH_THERMAL,
               content: defaultReceiptTemplate,
               isDefault: true,
               organizationId,
@@ -54,7 +54,7 @@ export function useReceiptTemplatesData(organizationId: string | undefined) {
               id: 'arabic-thermal',
               name: 'Arabic Thermal Receipt',
               description: 'Arabic thermal printer receipt template',
-              type: PrinterFormat.THERMAL,
+              type: ReceiptTemplateType.ARABIC_THERMAL,
               content: defaultArabicReceiptTemplate,
               isDefault: false,
               organizationId,
@@ -65,7 +65,7 @@ export function useReceiptTemplatesData(organizationId: string | undefined) {
               id: 'default-a4',
               name: 'Default A4 Receipt',
               description: 'Default A4 paper receipt template',
-              type: PrinterFormat.A4,
+              type: ReceiptTemplateType.ENGLISH_A4,
               content: defaultReceiptTemplate,
               isDefault: false,
               organizationId,

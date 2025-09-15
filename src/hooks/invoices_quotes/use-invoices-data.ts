@@ -151,8 +151,6 @@ export function useInvoiceActions(organizationId: string | undefined) {
     // Clean data to remove undefined values that Firebase doesn't accept
     const cleanedData = {
       ...invoiceData,
-      clientVAT: invoiceData.clientVAT || null,
-      clientAddress: invoiceData.clientAddress || null,
       notes: invoiceData.notes || null,
       items: invoiceData.items.map(item => ({
         ...item,

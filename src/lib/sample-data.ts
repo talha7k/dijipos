@@ -1,7 +1,7 @@
 // Sample data for customers, products, and services
 // This would typically come from a database
 
-import { Invoice, Category, Product, Service, Table, Order, Customer, Supplier, OrderType, PaymentType, ItemType, CategoryType, TableStatus, OrderStatus, InvoiceStatus, InvoiceType } from '@/types';
+import { Invoice, PurchaseInvoice, SalesInvoice, Category, Product, Service, Table, Order, Customer, Supplier, OrderType, PaymentType, ItemType, CategoryType, TableStatus, OrderStatus, InvoiceStatus, PurchaseInvoiceStatus, InvoiceType } from '@/types';
 import { InvoiceTemplateType } from '@/types/enums';
 
 // Sample categories
@@ -533,7 +533,7 @@ export const getSupplierById = (suppliers: Omit<Supplier, 'organizationId'>[], i
 }
 
 // Sample purchase invoices
-export const samplePurchaseInvoices: Omit<Invoice, 'organizationId'>[] = [
+export const samplePurchaseInvoices: Omit<PurchaseInvoice, 'organizationId'>[] = [
   {
     id: 'pi1',
     type: InvoiceType.PURCHASE,
@@ -570,10 +570,9 @@ export const samplePurchaseInvoices: Omit<Invoice, 'organizationId'>[] = [
     taxRate: 15,
     taxAmount: 255.00,
     total: 1955.00,
-    status: InvoiceStatus.PAID,
+    status: PurchaseInvoiceStatus.PAID,
     dueDate: new Date('2024-02-14'),
     notes: 'Weekly food supplies',
-    template: InvoiceTemplateType.ENGLISH,
     includeQR: false,
     createdAt: new Date('2024-01-15'),
     updatedAt: new Date('2024-01-20'),
@@ -614,10 +613,9 @@ export const samplePurchaseInvoices: Omit<Invoice, 'organizationId'>[] = [
     taxRate: 15,
     taxAmount: 172.50,
     total: 1322.50,
-    status: InvoiceStatus.PAID,
+    status: PurchaseInvoiceStatus.PAID,
     dueDate: new Date('2024-03-01'),
     notes: 'Monthly beverage supplies',
-    template: InvoiceTemplateType.ENGLISH,
     includeQR: false,
     createdAt: new Date('2024-02-01'),
     updatedAt: new Date('2024-02-10'),
@@ -625,14 +623,13 @@ export const samplePurchaseInvoices: Omit<Invoice, 'organizationId'>[] = [
 ]
 
 // Sample sales invoices
-export const sampleSalesInvoices: Omit<Invoice, 'organizationId'>[] = [
+export const sampleSalesInvoices: Omit<SalesInvoice, 'organizationId'>[] = [
   {
     id: 'si1',
     type: InvoiceType.SALES,
     clientName: 'John Smith',
     clientEmail: 'john.smith@email.com',
     clientAddress: '123 Main St, City, Country',
-    clientVAT: 'VAT987654',
     items: [
       {
         id: 'item5',
@@ -662,8 +659,7 @@ export const sampleSalesInvoices: Omit<Invoice, 'organizationId'>[] = [
     status: InvoiceStatus.PAID,
     dueDate: new Date('2024-01-25'),
     notes: 'Dinner order',
-    template: InvoiceTemplateType.ENGLISH,
-    includeQR: true,
+    payments: [],
     createdAt: new Date('2024-01-20'),
     updatedAt: new Date('2024-01-20'),
   },
@@ -673,7 +669,6 @@ export const sampleSalesInvoices: Omit<Invoice, 'organizationId'>[] = [
     clientName: 'Sarah Johnson',
     clientEmail: 'sarah.j@email.com',
     clientAddress: '456 Oak Ave, City, Country',
-    clientVAT: 'VAT654321',
     items: [
       {
         id: 'item7',
@@ -713,8 +708,7 @@ export const sampleSalesInvoices: Omit<Invoice, 'organizationId'>[] = [
     status: InvoiceStatus.PAID,
     dueDate: new Date('2024-02-05'),
     notes: 'Take away order',
-    template: InvoiceTemplateType.ENGLISH,
-    includeQR: true,
+    payments: [],
     createdAt: new Date('2024-02-01'),
     updatedAt: new Date('2024-02-01'),
   }

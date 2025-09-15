@@ -81,7 +81,7 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
                         onChange={(e) => setNewSettings({ ...newSettings, defaultReceiptTemplateId: e.target.value })}
                       >
                         <option value="">Select a template</option>
-                        {receiptTemplates.filter(t => t.type === 'thermal').map((template) => (
+                        {receiptTemplates.filter(t => t.type.toString().includes('thermal')).map((template) => (
                           <option key={template.id} value={template.id}>
                             {template.name}
                           </option>
@@ -97,7 +97,7 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
                         onChange={(e) => setNewSettings({ ...newSettings, defaultInvoiceTemplateId: e.target.value })}
                       >
                         <option value="">Select a template</option>
-                        {receiptTemplates.filter(t => t.type === 'a4').map((template) => (
+                        {receiptTemplates.filter(t => t.type.toString().includes('a4')).map((template) => (
                           <option key={template.id} value={template.id}>
                             {template.name}
                           </option>
@@ -113,7 +113,7 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
                         onChange={(e) => setNewSettings({ ...newSettings, defaultQuoteTemplateId: e.target.value })}
                       >
                         <option value="">Select a template</option>
-                        {receiptTemplates.filter(t => t.type === 'a4').map((template) => (
+                        {receiptTemplates.filter(t => t.type.toString().includes('a4')).map((template) => (
                           <option key={template.id} value={template.id}>
                             {template.name}
                           </option>

@@ -34,6 +34,8 @@ export function InvoiceStatusToggle({
       paid: { current: 'Paid', next: '' },
       overdue: { current: 'Overdue', next: 'Mark Paid' },
       cancelled: { current: 'Cancelled', next: '' },
+      received: { current: 'Received', next: 'Mark Paid' },
+      partially_paid: { current: 'Partially Paid', next: 'Mark Paid' },
     };
     return labels[status];
   };

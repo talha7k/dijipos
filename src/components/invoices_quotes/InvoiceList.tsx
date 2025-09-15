@@ -8,6 +8,11 @@ import { Receipt } from 'lucide-react';
 import { InvoiceStatusToggle } from './InvoiceStatusToggle';
 import { InvoiceActions } from './InvoiceActions';
 
+// Type guard to check if invoice is a PurchaseInvoice
+function isPurchaseInvoice(invoice: Invoice): invoice is Invoice & { type: 'purchase' } {
+  return invoice.type === 'purchase';
+}
+
 interface InvoiceListProps {
   invoices: Invoice[];
   customers: Customer[];
@@ -57,8 +62,20 @@ export function InvoiceList({
               className="cursor-pointer hover:bg-muted/50 transition-colors"
               onClick={() => onInvoiceClick(invoice)}
             >
-              <TableCell>{invoice.clientName}</TableCell>
-              <TableCell>{invoice.invoiceNumber}</TableCell>
+              <TableCell>
+                {isPurchaseInvoice(invoice) ? (
+                  (() => {
+                    const supplier = suppliers.find(s => s.id === (invoice as Invoice & { supplierId?: string }).supplierId);
+                    return supplier ? supplier.name : 'Supplier not found';
+                  })()
+                ) : (
+                  (() => {
+                    const customer = customers.find(c => c.id === (invoice as Invoice & { customerId?: string }).customerId);
+                    return customer ? customer.name : 'Customer not found';
+                  })()
+                )}
+              </TableCell>
+              <TableCell>{isPurchaseInvoice(invoice) ? invoice.invoiceNumber || invoice.id.slice(-8) : invoice.id.slice(-8)}</TableCell>
               <TableCell>${invoice.total.toFixed(2)}</TableCell>
               <TableCell>
                 <Badge variant={
