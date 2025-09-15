@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, query, onSnapshot, addDoc, doc, deleteDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
+import { useOrganizationId } from '@/hooks/useAuthState';
+import { usePurchaseProductsData, usePurchaseServicesData, usePurchaseProductsActions, usePurchaseServicesActions } from '@/hooks/usePurchaseProductsServices';
+import { useCategoriesData } from '@/hooks/products_services/useCategories';
 import { Product, Service, Category } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,11 +15,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Package, Wrench } from 'lucide-react';
 function ProductsContent() {
-  const user = useUser();
   const organizationId = useOrganizationId();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [services, setServices] = useState<Service[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const { products, loading: productsLoading } = usePurchaseProductsData(organizationId || undefined);
+  const { services, loading: servicesLoading } = usePurchaseServicesData(organizationId || undefined);
+  const { categories, loading: categoriesLoading } = useCategoriesData(organizationId || undefined);
+  const { createProduct, deleteProduct } = usePurchaseProductsActions(organizationId || undefined);
+  const { createService, deleteService } = usePurchaseServicesActions(organizationId || undefined);
+  
   const [loading, setLoading] = useState(true);
   const [productDialogOpen, setProductDialogOpen] = useState(false);
   const [serviceDialogOpen, setServiceDialogOpen] = useState(false);
@@ -37,102 +39,61 @@ function ProductsContent() {
   const [serviceCategory, setServiceCategory] = useState('');
 
   useEffect(() => {
-    if (!organizationId) return;
-
-    // Fetch products
-    const productsQ = query(collection(db, 'organizations', organizationId, 'purchase-products'));
-    const productsUnsubscribe = onSnapshot(productsQ, (querySnapshot) => {
-      const productsData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-      })) as Product[];
-      setProducts(productsData);
-    });
-
-    // Fetch services
-    const servicesQ = query(collection(db, 'organizations', organizationId, 'purchase-services'));
-    const servicesUnsubscribe = onSnapshot(servicesQ, (querySnapshot) => {
-      const servicesData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-      })) as Service[];
-      setServices(servicesData);
-    });
-
-    // Fetch categories
-    const categoriesQ = query(collection(db, 'organizations', organizationId, 'categories'));
-    const categoriesUnsubscribe = onSnapshot(categoriesQ, (querySnapshot) => {
-      const categoriesData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-      })) as Category[];
-      setCategories(categoriesData);
-      setLoading(false);
-    });
-
-    return () => {
-      productsUnsubscribe();
-      servicesUnsubscribe();
-      categoriesUnsubscribe();
-    };
-  }, [organizationId]);
+    setLoading(productsLoading || servicesLoading || categoriesLoading);
+  }, [productsLoading, servicesLoading, categoriesLoading]);
 
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!organizationId) return;
-
-    await addDoc(collection(db, 'organizations', organizationId, 'purchase-products'), {
-      name: productName,
-      description: productDescription,
-      price: parseFloat(productPrice),
-      category: productCategory,
-      organizationId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-
-    setProductDialogOpen(false);
-    setProductName('');
-    setProductDescription('');
-    setProductPrice('');
-    setProductCategory('');
+    try {
+      await createProduct({
+        name: productName,
+        description: productDescription,
+        price: parseFloat(productPrice),
+        category: productCategory,
+      });
+      setProductDialogOpen(false);
+      setProductName('');
+      setProductDescription('');
+      setProductPrice('');
+      setProductCategory('');
+    } catch (error) {
+      console.error('Error creating product:', error);
+    }
   };
 
   const handleAddService = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!organizationId) return;
-
-    await addDoc(collection(db, 'organizations', organizationId, 'purchase-services'), {
-      name: serviceName,
-      description: serviceDescription,
-      price: parseFloat(servicePrice),
-      category: serviceCategory,
-      organizationId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-
-    setServiceDialogOpen(false);
-    setServiceName('');
-    setServiceDescription('');
-    setServicePrice('');
-    setServiceCategory('');
+    try {
+      await createService({
+        name: serviceName,
+        description: serviceDescription,
+        price: parseFloat(servicePrice),
+        category: serviceCategory,
+      });
+      setServiceDialogOpen(false);
+      setServiceName('');
+      setServiceDescription('');
+      setServicePrice('');
+      setServiceCategory('');
+    } catch (error) {
+      console.error('Error creating service:', error);
+    }
   };
 
   const handleDeleteProduct = async (id: string) => {
-    if (!organizationId) return;
-    await deleteDoc(doc(db, 'organizations', organizationId, 'purchase-products', id));
+    try {
+      await deleteProduct(id);
+    } catch (error) {
+      console.error('Error deleting product:', error);
+    }
   };
 
   const handleDeleteService = async (id: string) => {
-    if (!organizationId) return;
-    await deleteDoc(doc(db, 'organizations', organizationId, 'purchase-services', id));
+    try {
+      await deleteService(id);
+    } catch (error) {
+      console.error('Error deleting service:', error);
+    }
   };
 
   if (loading) return <div>Loading...</div>;

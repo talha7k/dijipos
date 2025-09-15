@@ -1,17 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { collection, query, onSnapshot, addDoc, doc, deleteDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
-import { Product, Service, Category, CategoryType } from '@/types';
+import { useState } from 'react';
+import { useOrganizationId } from '@/hooks/useAuthState';
+import { useProductsData, useProductActions } from '@/hooks/products_services/useProducts';
+import { useServicesData, useServiceActions } from '@/hooks/products_services/useServices';
+import { useCategoriesData } from '@/hooks/products_services/useCategories';
+import { Product, Service, CategoryType } from '@/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Package, Wrench, Search, Trash2 } from 'lucide-react';
+import { Package, Wrench, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { AddProductDialog } from '@/components/products_services/AddProductDialog';
 import { AddServiceDialog } from '@/components/products_services/AddServiceDialog';
@@ -22,10 +23,11 @@ import { CategoryTree } from '@/components/products_services/CategoryTree';
 
 export default function ProductsServicesPage() {
   const organizationId = useOrganizationId();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [services, setServices] = useState<Service[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { products, loading: productsLoading } = useProductsData(organizationId || undefined);
+  const { services, loading: servicesLoading } = useServicesData(organizationId || undefined);
+  const { categories, loading: categoriesLoading, createCategory, deleteCategory: deleteCategoryHook } = useCategoriesData(organizationId || undefined);
+  const { createProduct, deleteProduct: deleteProductHook } = useProductActions(organizationId || undefined);
+  const { createService, deleteService: deleteServiceHook } = useServiceActions(organizationId || undefined);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [productDialogOpen, setProductDialogOpen] = useState(false);
@@ -35,52 +37,7 @@ export default function ProductsServicesPage() {
   const [deleteCategoryName, setDeleteCategoryName] = useState<string>('');
   const [deleteCategoryItemCount, setDeleteCategoryItemCount] = useState<number>(0);
 
-  useEffect(() => {
-    if (!organizationId) return;
-
-    // Fetch products
-    const productsQuery = query(collection(db, 'organizations', organizationId, 'products'));
-    const unsubscribeProducts = onSnapshot(productsQuery, (querySnapshot) => {
-      const productsData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-      })) as Product[];
-      setProducts(productsData);
-    });
-
-    // Fetch services
-    const servicesQuery = query(collection(db, 'organizations', organizationId, 'services'));
-    const unsubscribeServices = onSnapshot(servicesQuery, (querySnapshot) => {
-      const servicesData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-      })) as Service[];
-      setServices(servicesData);
-    });
-
-    // Fetch categories
-    const categoriesQuery = query(collection(db, 'organizations', organizationId, 'categories'));
-    const unsubscribeCategories = onSnapshot(categoriesQuery, (querySnapshot) => {
-      const categoriesData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-      })) as Category[];
-      setCategories(categoriesData);
-      setLoading(false);
-    });
-
-    return () => {
-      unsubscribeProducts();
-      unsubscribeServices();
-      unsubscribeCategories();
-    };
-  }, [organizationId]);
+  const loading = productsLoading || servicesLoading || categoriesLoading;
 
   const handleAddProduct = async (product: {
     name: string;
@@ -90,12 +47,15 @@ export default function ProductsServicesPage() {
   }) => {
     if (!organizationId) return;
 
-    await addDoc(collection(db, 'organizations', organizationId, 'products'), {
-      ...product,
-      organizationId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
+    try {
+      await createProduct({
+        ...product,
+        categoryId: product.categoryId || undefined,
+      });
+    } catch (error) {
+      console.error('Error creating product:', error);
+      toast.error('Failed to create product');
+    }
   };
 
   const handleAddService = async (service: {
@@ -106,12 +66,15 @@ export default function ProductsServicesPage() {
   }) => {
     if (!organizationId) return;
 
-    await addDoc(collection(db, 'organizations', organizationId, 'services'), {
-      ...service,
-      organizationId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
+    try {
+      await createService({
+        ...service,
+        categoryId: service.categoryId || undefined,
+      });
+    } catch (error) {
+      console.error('Error creating service:', error);
+      toast.error('Failed to create service');
+    }
   };
 
   const handleAddCategory = async (category: {
@@ -122,12 +85,16 @@ export default function ProductsServicesPage() {
   }) => {
     if (!organizationId) return;
 
-    await addDoc(collection(db, 'organizations', organizationId, 'categories'), {
-      ...category,
-      organizationId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
+    try {
+      await createCategory({
+        ...category,
+        type: category.type as CategoryType,
+        parentId: category.parentId || undefined,
+      });
+    } catch (error) {
+      console.error('Error creating category:', error);
+      toast.error('Failed to create category');
+    }
   };
 
   const handleDeleteCategory = (categoryId: string) => {
@@ -145,7 +112,7 @@ export default function ProductsServicesPage() {
     if (!organizationId || !deleteCategoryId) return;
     
     try {
-      await deleteDoc(doc(db, 'organizations', organizationId, 'categories', deleteCategoryId));
+      await deleteCategoryHook(deleteCategoryId);
       toast.success('Category deleted successfully');
     } catch (error) {
       console.error('Error deleting category:', error);
@@ -160,13 +127,23 @@ export default function ProductsServicesPage() {
   const handleDeleteProduct = async (productId: string) => {
     if (!organizationId) return;
 
-    await deleteDoc(doc(db, 'organizations', organizationId, 'products', productId));
+    try {
+      await deleteProductHook(productId);
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      toast.error('Failed to delete product');
+    }
   };
 
   const handleDeleteService = async (serviceId: string) => {
     if (!organizationId) return;
 
-    await deleteDoc(doc(db, 'organizations', organizationId, 'services', serviceId));
+    try {
+      await deleteServiceHook(serviceId);
+    } catch (error) {
+      console.error('Error deleting service:', error);
+      toast.error('Failed to delete service');
+    }
   };
 
   if (loading) return <div>Loading...</div>;

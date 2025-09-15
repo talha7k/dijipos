@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { collection, query, onSnapshot, updateDoc, doc, getDoc, addDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
+import { useState } from 'react';
+import { useOrganizationId } from '@/hooks/useAuthState';
+import { usePurchaseInvoicesData, usePurchaseInvoiceActions } from '@/hooks/usePurchaseInvoices';
 import { Invoice, PurchaseInvoice, Organization, InvoiceStatus } from '@/types';
 import { InvoiceTemplateType } from '@/types/enums';
 
@@ -26,76 +25,27 @@ import InvoiceForm from '@/components/invoices_quotes/InvoiceForm';
 import { Receipt } from 'lucide-react';
 
 function InvoicesContent() {
-  const user = useUser();
   const organizationId = useOrganizationId();
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [organization, setOrganization] = useState<Organization | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { invoices, organization, loading } = usePurchaseInvoicesData(organizationId || undefined);
+  const { updateInvoiceStatus, createInvoice } = usePurchaseInvoiceActions(organizationId || undefined);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  useEffect(() => {
-    if (!organizationId) return;
-
-    // Fetch organization data
-    const fetchOrganization = async () => {
-      const organizationDoc = await getDoc(doc(db, 'organizations', organizationId));
-      if (organizationDoc.exists()) {
-        setOrganization({
-          id: organizationDoc.id,
-          ...organizationDoc.data(),
-          createdAt: organizationDoc.data().createdAt?.toDate(),
-        } as Organization);
-      }
-    };
-    fetchOrganization();
-
-    const q = query(collection(db, 'organizations', organizationId, 'purchase-invoices'));
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const invoicesData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-        dueDate: doc.data().dueDate?.toDate(),
-      })) as Invoice[];
-      setInvoices(invoicesData);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [organizationId]);
-
   const handleStatusChange = async (invoiceId: string, status: Invoice['status']) => {
-    if (!organizationId) return;
-
-    const invoiceRef = doc(db, 'organizations', organizationId, 'purchase-invoices', invoiceId);
-    await updateDoc(invoiceRef, { status, updatedAt: new Date() });
+    try {
+      await updateInvoiceStatus(invoiceId, status);
+    } catch (error) {
+      console.error('Error updating invoice status:', error);
+    }
   };
 
   const handleCreateInvoice = async (invoiceData: Omit<Invoice, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => {
-    // Type assertion for purchase invoice specific properties
-    const purchaseData = invoiceData as Omit<PurchaseInvoice, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>;
-    if (!organizationId) return;
-
-    // Clean the data to remove undefined values that Firebase doesn't accept
-    const cleanedData = {
-      ...invoiceData,
-      supplierVAT: purchaseData.supplierVAT || null,
-      notes: invoiceData.notes || null,
-      items: invoiceData.items.map(item => ({
-        ...item,
-        description: item.description || null,
-        productId: item.productId || null,
-        serviceId: item.serviceId || null,
-      })),
-      organizationId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    await addDoc(collection(db, 'organizations', organizationId, 'purchase-invoices'), cleanedData);
-    setDialogOpen(false);
+    try {
+      await createInvoice(invoiceData);
+      setDialogOpen(false);
+    } catch (error) {
+      console.error('Error creating invoice:', error);
+    }
   };
 
   const generatePurchaseInvoiceHTML = (invoice: Invoice, org: Organization) => {
@@ -363,24 +313,28 @@ function InvoicesContent() {
                               <div className="flex gap-4 mb-4 items-center">
                                 <Button
                                   variant={InvoiceTemplateType.ENGLISH === InvoiceTemplateType.ENGLISH ? 'default' : 'outline'}
-                                  onClick={() => {
+                                  onClick={async () => {
                                     const updatedInvoice = { ...selectedInvoice, template: InvoiceTemplateType.ENGLISH };
                                     setSelectedInvoice(updatedInvoice);
-                                     updateDoc(doc(db, 'organizations', organizationId!, 'purchase-invoices', selectedInvoice.id), {
-                                       template: InvoiceTemplateType.ENGLISH
-                                     });
+                                    try {
+                                      await updateInvoiceStatus(selectedInvoice.id, selectedInvoice.status);
+                                    } catch (error) {
+                                      console.error('Error updating invoice template:', error);
+                                    }
                                   }}
                                 >
                                   English Template
                                 </Button>
                                 <Button
                                   variant={InvoiceTemplateType.ARABIC === InvoiceTemplateType.ARABIC ? 'outline' : 'outline'}
-                                  onClick={() => {
+                                  onClick={async () => {
                                     const updatedInvoice = { ...selectedInvoice, template: InvoiceTemplateType.ARABIC };
                                     setSelectedInvoice(updatedInvoice);
-                                    updateDoc(doc(db, 'organizations', organizationId!, 'purchase-invoices', selectedInvoice.id), {
-                                      template: InvoiceTemplateType.ARABIC
-                                    });
+                                    try {
+                                      await updateInvoiceStatus(selectedInvoice.id, selectedInvoice.status);
+                                    } catch (error) {
+                                      console.error('Error updating invoice template:', error);
+                                    }
                                   }}
                                 >
                                   Arabic Template
@@ -394,12 +348,14 @@ function InvoicesContent() {
                                   <Switch
                                     id="qr-toggle"
                                     checked={isPurchaseInvoice(selectedInvoice) ? selectedInvoice.includeQR : false}
-                                    onCheckedChange={(checked) => {
+                                    onCheckedChange={async (checked) => {
                                       const updatedInvoice = { ...selectedInvoice, includeQR: checked };
                                       setSelectedInvoice(updatedInvoice);
-                                      updateDoc(doc(db, 'organizations', organizationId!, 'purchase-invoices', selectedInvoice.id), {
-                                        includeQR: checked
-                                      });
+                                      try {
+                                        await updateInvoiceStatus(selectedInvoice.id, selectedInvoice.status);
+                                      } catch (error) {
+                                        console.error('Error updating invoice QR:', error);
+                                      }
                                     }}
                                   />
                                 </div>

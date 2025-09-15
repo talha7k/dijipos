@@ -20,9 +20,9 @@ interface OrderActionsDialogProps {
   payments?: OrderPayment[];
   updatingStatus?: boolean;
   children: React.ReactNode;
-  onMarkAsPaid?: (orderId: string) => any;
-  onCompleteOrder?: (orderId: string) => any;
-  onUpdateStatus?: (orderId: string, status: OrderStatus) => any;
+  onMarkAsPaid?: (orderId: string) => Promise<void>;
+  onCompleteOrder?: (orderId: string) => Promise<void>;
+  onUpdateStatus?: (orderId: string, status: OrderStatus) => Promise<void>;
 }
 
 export function OrderActionsDialog({

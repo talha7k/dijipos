@@ -41,7 +41,7 @@ function OrdersContent() {
 
   const getOrderTotalPaid = (orderId: string) => {
     const orderPaymentsForOrder = orderPayments[orderId] || [];
-    return orderPaymentsForOrder.reduce((sum: number, payment: any) => sum + payment.amount, 0);
+    return orderPaymentsForOrder.reduce((sum: number, payment: OrderPayment) => sum + payment.amount, 0);
   };
 
   const isOrderPaid = (order: Order) => {
@@ -57,21 +57,21 @@ function OrdersContent() {
 
   const clearSelection = () => setSelectedOrder(null);
 
-  const handleMarkAsPaid = (orderId: string) => {
-    markOrderAsPaid(orderId);
+  const handleMarkAsPaid = async (orderId: string) => {
+    await markOrderAsPaid(orderId);
     clearSelection();
   };
 
-  const handleCompleteOrder = (orderId: string) => {
+  const handleCompleteOrder = async (orderId: string) => {
     const order = orders.find(o => o.id === orderId);
     if (order) {
-      completeOrder(order);
+      await completeOrder(order);
       clearSelection();
     }
   };
 
-  const handleUpdateOrderStatus = (orderId: string, newStatus: OrderStatus) => {
-    updateOrderStatus(orderId, newStatus);
+  const handleUpdateOrderStatus = async (orderId: string, newStatus: OrderStatus) => {
+    await updateOrderStatus(orderId, newStatus);
     clearSelection();
   };
 
@@ -261,7 +261,7 @@ function OrdersContent() {
                                     </div>
                                     {orderPayments[selectedOrder.id] && orderPayments[selectedOrder.id].length > 0 ? (
                                       <>
-                                        {orderPayments[selectedOrder.id].map((payment: any, index: number) => (
+                                        {orderPayments[selectedOrder.id].map((payment: OrderPayment, index: number) => (
                                           <div key={index} className="flex justify-between text-sm">
                                             <span>{payment.paymentMethod}:</span>
                                             <span>{formatCurrency(payment.amount)}</span>

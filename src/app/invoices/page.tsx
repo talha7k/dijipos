@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useOrganizationId } from '@/hooks/useAuthState';
+import { useOrganizationId, useSelectedOrganization } from '@/hooks/useAuthState';
 import { Invoice } from '@/types';
 import { InvoiceList } from '@/components/invoices_quotes/InvoiceList';
 import InvoiceForm from '@/components/invoices_quotes/InvoiceForm';
@@ -20,6 +20,7 @@ import { useInvoicesData, useInvoiceActions } from '@/hooks/useInvoices';
 
 export default function InvoicesPage() {
   const organizationId = useOrganizationId();
+  const selectedOrganization = useSelectedOrganization();
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
@@ -28,7 +29,7 @@ export default function InvoicesPage() {
 
   // Use custom hooks for data fetching
   const { invoices, customers, suppliers, payments, loading } = useInvoicesData(organizationId || undefined);
-  const { updateInvoiceStatus, updatingStatus } = useInvoiceActions(organizationId || undefined);
+  const { updateInvoiceStatus } = useInvoiceActions(organizationId || undefined);
 
   const handleStatusChange = async (invoiceId: string, newStatus: Invoice['status']) => {
     try {

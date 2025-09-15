@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { collection, query, onSnapshot, addDoc } from 'firebase/firestore';
+import { useState } from 'react';
+import { addDoc, collection } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
-import { Payment, Invoice } from '@/types';
+import { useOrganizationId } from '@/hooks/useAuthState';
+import { usePaymentsData } from '@/hooks/usePayments';
+import { useInvoicesData } from '@/hooks/useInvoices';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -15,51 +17,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { CreditCard } from 'lucide-react';
 
 function PaymentsContent() {
-  const user = useUser();
   const organizationId = useOrganizationId();
-  const [payments, setPayments] = useState<Payment[]>([]);
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { payments, loading: paymentsLoading } = usePaymentsData(organizationId || undefined);
+  const { invoices, loading: invoicesLoading } = useInvoicesData(organizationId || undefined);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedInvoiceId, setSelectedInvoiceId] = useState('');
   const [amount, setAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
   const [notes, setNotes] = useState('');
 
-  useEffect(() => {
-    if (!organizationId) return;
-
-    // Fetch payments
-    const paymentsQ = query(collection(db, 'organizations', organizationId, 'payments'));
-    const paymentsUnsubscribe = onSnapshot(paymentsQ, (querySnapshot) => {
-      const paymentsData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        paymentDate: doc.data().paymentDate?.toDate(),
-        createdAt: doc.data().createdAt?.toDate(),
-      })) as Payment[];
-      setPayments(paymentsData);
-    });
-
-    // Fetch invoices for payment creation
-    const invoicesQ = query(collection(db, 'organizations', organizationId, 'invoices'));
-    const invoicesUnsubscribe = onSnapshot(invoicesQ, (querySnapshot) => {
-      const invoicesData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        dueDate: doc.data().dueDate?.toDate(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-      })) as Invoice[];
-      setInvoices(invoicesData);
-      setLoading(false);
-    });
-
-    return () => {
-      paymentsUnsubscribe();
-      invoicesUnsubscribe();
-    };
-  }, [organizationId]);
+  const loading = paymentsLoading || invoicesLoading;
 
   const handleAddPayment = async (e: React.FormEvent) => {
     e.preventDefault();

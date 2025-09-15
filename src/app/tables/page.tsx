@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, query, onSnapshot, addDoc, doc, deleteDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
+import { useOrganizationId } from '@/hooks/useAuthState';
+import { useTablesData, useTableActions } from '@/hooks/tables/useTables';
+import { TableStatus } from '@/types/enums';
 import { Table as TableType } from '@/types';
-import { useTablesData } from '@/hooks/tables/useTables';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,6 +25,7 @@ import { TableActionsDialog } from '@/components/tables/TableActionsDialog';
 export default function TablesPage() {
   const organizationId = useOrganizationId();
   const { tables, loading: tablesLoading } = useTablesData(organizationId || undefined);
+  const { createTable, deleteTable } = useTableActions(organizationId || undefined);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -36,45 +37,35 @@ export default function TablesPage() {
   const handleAddTable = async (table: {
     name: string;
     capacity: number;
-    status: 'available' | 'occupied' | 'reserved' | 'maintenance';
+    status: TableStatus;
   }) => {
-    if (!organizationId) return;
-
-    await addDoc(collection(db, 'organizations', organizationId, 'tables'), {
-      name: table.name,
-      capacity: table.capacity,
-      status: table.status,
-      organizationId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
+    try {
+      await createTable(table);
+    } catch (error) {
+      console.error('Error creating table:', error);
+    }
   };
 
   const handleAddMultipleTables = async (tables: Array<{
     name: string;
     capacity: number;
-    status: 'available' | 'occupied' | 'reserved' | 'maintenance';
+    status: TableStatus;
   }>) => {
-    if (!organizationId) return;
-
-    const promises = tables.map(table =>
-      addDoc(collection(db, 'organizations', organizationId, 'tables'), {
-        name: table.name,
-        capacity: table.capacity,
-        status: table.status,
-        organizationId,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      })
-    );
-
-    await Promise.all(promises);
+    try {
+      const promises = tables.map(table => createTable(table));
+      await Promise.all(promises);
+    } catch (error) {
+      console.error('Error creating multiple tables:', error);
+    }
   };
 
   const handleDeleteTable = async (tableId: string) => {
-    if (!organizationId) return;
-    await deleteDoc(doc(db, 'organizations', organizationId, 'tables', tableId));
-    toast.success('Table deleted successfully');
+    try {
+      await deleteTable(tableId);
+      toast.success('Table deleted successfully');
+    } catch (error) {
+      console.error('Error deleting table:', error);
+    }
   };
 
   const getStatusStats = () => {

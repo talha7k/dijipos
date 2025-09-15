@@ -3,7 +3,7 @@ import { atomWithStorage } from 'jotai/utils';
 import { Organization, User as AppUser, OrganizationUser } from '@/types';
 import { Order, OrderItem, OrderPayment, Table, OrderType } from '@/types/order';
 import { Customer, Supplier } from '@/types/customer-supplier';
-import { Product, Service } from '@/types/product-service';
+import { Product, Service, Category } from '@/types/product-service';
 import { Invoice, Quote, Payment, PaymentType } from '@/types';
 import { User } from 'firebase/auth';
 import { indexedDBStorage } from '@/lib/storage';
@@ -196,7 +196,7 @@ export const suppliersLoadingAtom = atom<boolean>(false);
 export const suppliersErrorAtom = atom<string | null>(null);
 
 // Categories state
-export const categoriesAtom = atom<any[]>([]);
+export const categoriesAtom = atom<Category[]>([]);
 export const categoriesLoadingAtom = atom<boolean>(false);
 export const categoriesErrorAtom = atom<string | null>(null);
 

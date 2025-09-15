@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { collection, query, onSnapshot, addDoc, updateDoc, doc, deleteDoc } from 'firebase/firestore';
+import { useState } from 'react';
+import { addDoc, collection, updateDoc, doc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
+import { useOrganizationUsersData } from '@/hooks/organization/use-organization-users-data';
+import { useInvitationCodesData } from '@/hooks/organization/use-invitation-codes-data';
 import { OrganizationUser, UserRole } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,24 +20,11 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Users, Plus, Edit, Trash2, Shield, Settings, Copy, Link } from 'lucide-react';
 import { toast } from 'sonner';
 
-interface InvitationCode {
-  id: string;
-  code: string;
-  organizationId: string;
-  role: UserRole;
-  expiresAt: Date;
-  isUsed: boolean;
-  usedBy?: string;
-  createdAt: Date;
-}
-
 function UsersContent() {
   const organizationId = useOrganizationId();
-  const currentUser = useUser();
-  const selectedOrganization = useSelectedOrganization();
-  const [organizationUsers, setOrganizationUsers] = useState<OrganizationUser[]>([]);
-  const [invitationCodes, setInvitationCodes] = useState<InvitationCode[]>([]);
-  const [loading, setLoading] = useState(true);
+  
+  const { organizationUsers, loading: usersLoading } = useOrganizationUsersData(organizationId || undefined);
+  const { invitationCodes, loading: codesLoading } = useInvitationCodesData(organizationId || undefined);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [invitationDialogOpen, setInvitationDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<OrganizationUser | null>(null);
@@ -48,39 +37,7 @@ function UsersContent() {
     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
   });
 
-  useEffect(() => {
-    if (!organizationId) return;
-
-    // Fetch organization users
-    const usersQuery = query(collection(db, 'organizations', organizationId, 'organizationUsers'));
-    const usersUnsubscribe = onSnapshot(usersQuery, (querySnapshot) => {
-      const usersData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-      })) as OrganizationUser[];
-      setOrganizationUsers(usersData);
-    });
-
-    // Fetch invitation codes
-    const codesQuery = query(collection(db, 'organizations', organizationId, 'invitationCodes'));
-    const codesUnsubscribe = onSnapshot(codesQuery, (querySnapshot) => {
-      const codesData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        expiresAt: doc.data().expiresAt?.toDate(),
-        createdAt: doc.data().createdAt?.toDate(),
-      })) as InvitationCode[];
-      setInvitationCodes(codesData);
-      setLoading(false);
-    });
-
-    return () => {
-      usersUnsubscribe();
-      codesUnsubscribe();
-    };
-  }, [organizationId]);
+  const loading = usersLoading || codesLoading;
 
   const generateInvitationCode = () => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';

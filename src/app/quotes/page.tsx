@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { collection, query, onSnapshot, addDoc, updateDoc, doc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
+import { useState } from 'react';
+import { useOrganizationId } from '@/hooks/useAuthState';
 import { Quote } from '@/types';
-import { QuoteTemplateType } from '@/types/enums';
+import { QuoteTemplateType, QuoteStatus, InvoiceStatus } from '@/types/enums';
+import { useQuotesData, useQuoteActions } from '@/hooks/useQuotes';
+import { useInvoiceActions } from '@/hooks/useInvoices';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -14,91 +14,53 @@ import QuoteForm from '@/components/invoices_quotes/QuoteForm';
 import { FileText } from 'lucide-react';
 
 function QuotesContent() {
-  const user = useUser();
   const organizationId = useOrganizationId();
-  const [quotes, setQuotes] = useState<Quote[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { quotes, loading } = useQuotesData(organizationId || undefined);
+  const { createQuote, updateQuote } = useQuoteActions(organizationId || undefined);
+  const { createInvoice } = useInvoiceActions(organizationId || undefined);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  useEffect(() => {
-    if (!organizationId) return;
-
-    const q = query(collection(db, 'organizations', organizationId, 'quotes'));
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const quotesData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-        validUntil: doc.data().validUntil?.toDate(),
-      })) as Quote[];
-      setQuotes(quotesData);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [organizationId]);
-
   const handleCreateQuote = async (quoteData: Omit<Quote, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => {
-    if (!organizationId) return;
+    if (!organizationId || !createQuote) return;
 
-    // Clean the data to remove undefined values that Firebase doesn't accept
-    const cleanedData = {
-      ...quoteData,
-      clientAddress: quoteData.clientAddress || null,
-      notes: quoteData.notes || null,
-      validUntil: quoteData.validUntil || null,
-      items: quoteData.items.map(item => ({
-        ...item,
-        description: item.description || null,
-        productId: item.productId || null,
-        serviceId: item.serviceId || null,
-      })),
-      organizationId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    await addDoc(collection(db, 'organizations', organizationId, 'quotes'), cleanedData);
+    await createQuote(quoteData);
     setDialogOpen(false);
   };
 
   const handleConvertToInvoice = async (quoteId: string) => {
-    if (!organizationId) return;
+    if (!organizationId || !createQuote || !createInvoice) return;
 
-    const quoteRef = doc(db, 'organizations', organizationId, 'quotes', quoteId);
-    await updateDoc(quoteRef, { status: 'converted' });
+    // Update quote status to converted
+    await updateQuote(quoteId, { status: QuoteStatus.CONVERTED });
 
     const quote = quotes.find(q => q.id === quoteId);
     if (quote) {
-      // Clean the data to remove undefined values that Firebase doesn't accept
-      const cleanedQuoteData = {
+      // Create invoice from quote data
+      const invoiceData = {
+        type: 'sales' as const,
         clientName: quote.clientName,
         clientEmail: quote.clientEmail,
-        clientAddress: quote.clientAddress || null,
-        clientVAT: null, // Quotes don't have VAT, set to null for invoices
+        clientAddress: quote.clientAddress || undefined,
+        clientVAT: undefined, // Quotes don't have VAT
         items: quote.items.map(item => ({
           ...item,
-          description: item.description || null,
-          productId: item.productId || null,
-          serviceId: item.serviceId || null,
+          description: item.description || undefined,
+          productId: item.productId || undefined,
+          serviceId: item.serviceId || undefined,
         })),
         subtotal: quote.subtotal,
         taxRate: quote.taxRate,
         taxAmount: quote.taxAmount,
         total: quote.total,
-        status: 'draft',
+        status: InvoiceStatus.DRAFT,
         dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
-        notes: quote.notes || null,
+        notes: quote.notes || undefined,
         template: QuoteTemplateType.ENGLISH, // default template
         includeQR: false, // default no QR
         quoteId,
-        organizationId,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       };
 
-      await addDoc(collection(db, 'organizations', organizationId, 'invoices'), cleanedQuoteData);
+      await createInvoice(invoiceData);
     }
   };
 

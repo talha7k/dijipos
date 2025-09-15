@@ -22,7 +22,7 @@ interface AddTableDialogProps {
   onAddTable: (table: {
     name: string;
     capacity: number;
-    status: 'available' | 'occupied' | 'reserved' | 'maintenance';
+    status: TableStatus;
   }) => void;
   onAddMultipleTables?: (tables: Array<{
     name: string;

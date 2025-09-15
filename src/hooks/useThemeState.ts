@@ -1,5 +1,5 @@
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 import {
   themeAtom
@@ -8,14 +8,18 @@ import {
 export function useThemeState() {
   const [theme, setTheme] = useAtom(themeAtom);
 
-  // Initialize theme from system preference only if no theme is set
+  // Initialize theme from system preference only on first mount
+  const initializedRef = useRef(false);
   useEffect(() => {
-    // Only set theme if it hasn't been set before (check if it's the default value)
-    if (theme === 'light') {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      setTheme(prefersDark ? 'dark' : 'light');
+    if (!initializedRef.current) {
+      initializedRef.current = true;
+      // Only set theme if it hasn't been set before (check if it's the default value)
+      if (theme === 'light') {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        setTheme(prefersDark ? 'dark' : 'light');
+      }
     }
-  }, [setTheme, theme]);
+  }, [setTheme]);
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
