@@ -61,6 +61,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       console.log('AuthProvider: Auth state changed, user:', user?.email || 'null');
       const startTime = Date.now();
+      console.log('AuthProvider: Setting authLoading to true');
       setAuthLoading(true);
       setAuthError(null);
 
@@ -137,9 +138,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
               setOrganizationError(orgError instanceof Error ? orgError.message : 'Failed to load organizations');
             } finally {
               setOrganizationLoading(false);
-              if (authLoading) {
-                setAuthLoading(false);
-              }
+              console.log('AuthProvider: Setting authLoading to false in finally block');
+              setAuthLoading(false);
               console.log('AuthProvider: Organization loading complete, auth process finished');
             }
           })();
@@ -175,6 +175,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const authTimeout = setTimeout(() => {
       if (authLoading) {
         console.warn('AuthProvider: Auth loading timeout reached, forcing loading to false');
+        console.log('AuthProvider: Timeout - Setting authLoading to false and setting error');
         setAuthLoading(false);
         setAuthError('Authentication timeout - please check your internet connection and refresh the page');
       }
