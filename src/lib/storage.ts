@@ -28,7 +28,8 @@ export const indexedDBStorage = {
       if (!currentStore) {
         return null;
       }
-      return await getItem(key, currentStore);
+      const value = await getItem(key, currentStore);
+      return value === undefined ? null : value;
     } catch (error) {
       console.error(`Error getting item from IndexedDB for key ${key}:`, error);
       if (error instanceof Error && error.name === 'UnknownError') {

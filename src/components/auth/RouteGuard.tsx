@@ -129,6 +129,17 @@ export function RouteGuard({ children }: RouteGuardProps) {
           }
           return;
         }
+      } else if (organizationId && !currentOrganization && !organizationLoading) {
+        // organizationId is set but selectedOrganization is not - this might be a timing issue
+        // Allow access to protected routes if organizationId exists and user has organizations
+        if (userOrganizations.some(ou => ou.organizationId === organizationId)) {
+          // organizationId is valid, allow access
+          return;
+        } else {
+          // organizationId is invalid, redirect to select-organization
+          router.push('/select-organization');
+          return;
+        }
       }
     }
   }, [
@@ -204,7 +215,7 @@ export function RouteGuard({ children }: RouteGuardProps) {
   }
 
   // For protected routes, render children only if user is authenticated and has organization
-  if (user && emailVerified && (currentOrganization || organizationId)) {
+  if (user && emailVerified && (currentOrganization || (organizationId && userOrganizations.some(ou => ou.organizationId === organizationId)))) {
     return <>{children}</>;
   }
 

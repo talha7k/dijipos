@@ -11,7 +11,7 @@ export interface Table {
   updatedAt: Date;
 }
 
-export interface OrderItem {
+export interface CartItem {
   id: string;
   type: ItemType;
   productId?: string;
@@ -28,7 +28,7 @@ export interface Order {
   id: string;
   organizationId: string;
   orderNumber: string;
-  items: OrderItem[];
+  items: CartItem[];
   subtotal: number;
   taxRate: number;
   taxAmount: number;

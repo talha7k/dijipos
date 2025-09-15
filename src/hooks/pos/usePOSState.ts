@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import { useAtomValue } from 'jotai';
 import { cartTotalAtom } from '@/store/atoms';
-import { Order, OrderStatus, ItemType, OrderPayment, Table, Customer, OrderType, Product, Service, TableStatus, OrderItem } from '@/types';
+import { Order, OrderStatus, ItemType, OrderPayment, Table, Customer, OrderType, Product, Service, TableStatus, CartItem } from '@/types';
 import { useAuthState } from '@/hooks/useAuthState';
 import { useOrderState } from '@/hooks/useOrderState';
 import { toast } from 'sonner';
@@ -40,15 +40,15 @@ export function usePOSLogic() {
   const [showPaymentSuccessDialog, setShowPaymentSuccessDialog] = useState(false);
   const [paymentSuccessData, setPaymentSuccessData] = useState<{ totalPaid: number; order?: Order } | null>(null);
   const [showCartItemModal, setShowCartItemModal] = useState(false);
-  const [editingCartItem, setEditingCartItem] = useState<OrderItem | null>(null);
+  const [editingCartItem, setEditingCartItem] = useState<CartItem | null>(null);
 
   const cartTotal = useAtomValue(cartTotalAtom);
 
   const handleAddToCart = useCallback((item: Product | Service, type: 'product' | 'service') => {
     if (!item) return;
 
-    const existingItem = cartItems.find(
-      (cartItem: OrderItem) => cartItem.id === item.id && cartItem.type === (type === 'product' ? ItemType.PRODUCT : ItemType.SERVICE)
+    const existingItem = (cartItems || []).find(
+      (cartItem: CartItem) => cartItem.id === item.id && cartItem.type === (type === 'product' ? ItemType.PRODUCT : ItemType.SERVICE)
     );
 
     if (existingItem) {
@@ -90,7 +90,7 @@ export function usePOSLogic() {
     // Clear existing cart and load order items
     clearCart();
 
-    const newCartItems = pendingOrderToReopen.items.map((item: OrderItem) => ({
+    const newCartItems = pendingOrderToReopen.items.map((item: CartItem) => ({
       id: item.productId || item.serviceId || item.id,
       type: item.type === 'product' ? ItemType.PRODUCT : ItemType.SERVICE,
       name: item.name,
@@ -119,16 +119,16 @@ export function usePOSLogic() {
   }, [pendingOrderToReopen, clearCart, setCartItems, setCurrentOrder]);
 
   const handleSaveOrder = useCallback(async () => {
-    if (!organizationId || cartItems.length === 0) return;
+    if (!organizationId || (cartItems || []).length === 0) return;
 
     try {
       // Generate a simple order number (in production, this should be more sophisticated)
       const orderNumber = `ORD-${Date.now()}`;
-      
+
       const orderData = {
         organizationId,
         orderNumber,
-        items: cartItems.map((item: OrderItem) => ({
+        items: (cartItems || []).map((item: CartItem) => ({
           id: `${item.type}-${item.id}`,
           type: item.type,
           productId: item.type === ItemType.PRODUCT ? item.id : undefined,
@@ -236,13 +236,13 @@ export function usePOSLogic() {
   }, []);
 
   const createTempOrderForPayment = useCallback(() => {
-    if (cartItems.length === 0) return null;
+    if ((cartItems || []).length === 0) return null;
 
     return {
       id: 'temp-checkout',
       organizationId: organizationId || '',
       orderNumber: `TEMP-${Date.now()}`,
-      items: cartItems.map((item: OrderItem) => ({
+      items: (cartItems || []).map((item: CartItem) => ({
         id: `${item.type}-${item.id}`,
         type: item.type === 'product' ? ItemType.PRODUCT : ItemType.SERVICE,
         productId: item.type === 'product' ? item.id : undefined,
@@ -272,7 +272,7 @@ export function usePOSLogic() {
   }, [cartItems, cartTotal, selectedOrderType, selectedCustomer, selectedTable, organizationId, user]);
 
   const handlePayOrder = useCallback(() => {
-    if (cartItems.length === 0) return;
+    if ((cartItems || []).length === 0) return;
 
     // If we already have a selected order (from reopening), use it
     // Otherwise, create a temporary order for new cart items

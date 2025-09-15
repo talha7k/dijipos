@@ -2,11 +2,11 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ShoppingCart } from 'lucide-react';
-import { OrderItem } from '@/types';
+import { CartItem } from '@/types';
 import { OrderItemDisplay } from './OrderItemDisplay';
 
 interface OrderItemListProps {
-  items: OrderItem[];
+  items: CartItem[];
   className?: string;
 }
 

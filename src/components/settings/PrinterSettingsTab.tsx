@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Settings, FileText, File } from 'lucide-react';
 import { toast } from 'sonner';
@@ -23,6 +24,7 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
   const organizationId = useOrganizationId();
   const { receiptTemplates, loading: templatesLoading } = useReceiptTemplatesData(organizationId || undefined);
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [newSettings, setNewSettings] = useState({
     defaultReceiptTemplateId: printerSettings?.defaultReceiptTemplateId || '',
     defaultInvoiceTemplateId: printerSettings?.defaultInvoiceTemplateId || '',
@@ -33,21 +35,29 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
   const handleUpdateSettings = async () => {
     if (!organizationId) return;
 
-    const updatedSettings: PrinterSettings = {
-      id: 'printer',
-      ...newSettings,
-      defaultReceiptTemplateId: newSettings.defaultReceiptTemplateId || undefined,
-      defaultInvoiceTemplateId: newSettings.defaultInvoiceTemplateId || undefined,
-      defaultQuoteTemplateId: newSettings.defaultQuoteTemplateId || undefined,
-      organizationId,
-      createdAt: printerSettings?.createdAt || new Date(),
-      updatedAt: new Date(),
-    };
+    setIsSaving(true);
+    try {
+      const updatedSettings: PrinterSettings = {
+        id: 'printer',
+        ...newSettings,
+        ...(newSettings.defaultReceiptTemplateId && { defaultReceiptTemplateId: newSettings.defaultReceiptTemplateId }),
+        ...(newSettings.defaultInvoiceTemplateId && { defaultInvoiceTemplateId: newSettings.defaultInvoiceTemplateId }),
+        ...(newSettings.defaultQuoteTemplateId && { defaultQuoteTemplateId: newSettings.defaultQuoteTemplateId }),
+        organizationId,
+        createdAt: printerSettings?.createdAt || new Date(),
+        updatedAt: new Date(),
+      };
 
-    await setDoc(doc(db, 'organizations', organizationId, 'settings', 'printer'), updatedSettings);
-    onPrinterSettingsUpdate(updatedSettings);
-    setSettingsDialogOpen(false);
-    toast.success('Settings updated successfully!');
+      await setDoc(doc(db, 'organizations', organizationId, 'settings', 'printer'), updatedSettings);
+      onPrinterSettingsUpdate(updatedSettings);
+      setSettingsDialogOpen(false);
+      toast.success('Settings updated successfully!');
+    } catch (error) {
+      console.error('Error updating printer settings:', error);
+      toast.error('Failed to update settings. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -72,72 +82,79 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
               <div className="space-y-4">
                 {!templatesLoading && receiptTemplates.length > 0 && (
                   <>
-                    <div>
-                      <Label htmlFor="default-receipt-template">Default Receipt Template</Label>
-                      <select
-                        id="default-receipt-template"
-                        className="w-full p-2 border rounded"
-                        value={newSettings.defaultReceiptTemplateId}
-                        onChange={(e) => setNewSettings({ ...newSettings, defaultReceiptTemplateId: e.target.value })}
-                      >
-                        <option value="">Select a template</option>
-                        {receiptTemplates.filter(t => t.type.toString().includes('thermal')).map((template) => (
-                          <option key={template.id} value={template.id}>
-                            {template.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <Label htmlFor="default-invoice-template">Default Invoice Template</Label>
-                      <select
-                        id="default-invoice-template"
-                        className="w-full p-2 border rounded"
-                        value={newSettings.defaultInvoiceTemplateId}
-                        onChange={(e) => setNewSettings({ ...newSettings, defaultInvoiceTemplateId: e.target.value })}
-                      >
-                        <option value="">Select a template</option>
-                        {receiptTemplates.filter(t => t.type.toString().includes('a4')).map((template) => (
-                          <option key={template.id} value={template.id}>
-                            {template.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <Label htmlFor="default-quote-template">Default Quote Template</Label>
-                      <select
-                        id="default-quote-template"
-                        className="w-full p-2 border rounded"
-                        value={newSettings.defaultQuoteTemplateId}
-                        onChange={(e) => setNewSettings({ ...newSettings, defaultQuoteTemplateId: e.target.value })}
-                      >
-                        <option value="">Select a template</option>
-                        {receiptTemplates.filter(t => t.type.toString().includes('a4')).map((template) => (
-                          <option key={template.id} value={template.id}>
-                            {template.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                     <div>
+                       <Label htmlFor="default-receipt-template">Default Receipt Template</Label>
+                       <Select
+                         value={newSettings.defaultReceiptTemplateId}
+                         onValueChange={(value) => setNewSettings({ ...newSettings, defaultReceiptTemplateId: value })}
+                       >
+                         <SelectTrigger>
+                           <SelectValue placeholder="Select a template" />
+                         </SelectTrigger>
+                         <SelectContent>
+                           {receiptTemplates.filter(t => t.type.toString().includes('thermal')).map((template) => (
+                             <SelectItem key={template.id} value={template.id}>
+                               {template.name}
+                             </SelectItem>
+                           ))}
+                         </SelectContent>
+                       </Select>
+                     </div>
+                     <div>
+                       <Label htmlFor="default-invoice-template">Default Invoice Template</Label>
+                       <Select
+                         value={newSettings.defaultInvoiceTemplateId}
+                         onValueChange={(value) => setNewSettings({ ...newSettings, defaultInvoiceTemplateId: value })}
+                       >
+                         <SelectTrigger>
+                           <SelectValue placeholder="Select a template" />
+                         </SelectTrigger>
+                         <SelectContent>
+                           {receiptTemplates.filter(t => t.type.toString().includes('a4')).map((template) => (
+                             <SelectItem key={template.id} value={template.id}>
+                               {template.name}
+                             </SelectItem>
+                           ))}
+                         </SelectContent>
+                       </Select>
+                     </div>
+                     <div>
+                       <Label htmlFor="default-quote-template">Default Quote Template</Label>
+                       <Select
+                         value={newSettings.defaultQuoteTemplateId}
+                         onValueChange={(value) => setNewSettings({ ...newSettings, defaultQuoteTemplateId: value })}
+                       >
+                         <SelectTrigger>
+                           <SelectValue placeholder="Select a template" />
+                         </SelectTrigger>
+                         <SelectContent>
+                           {receiptTemplates.filter(t => t.type.toString().includes('a4')).map((template) => (
+                             <SelectItem key={template.id} value={template.id}>
+                               {template.name}
+                             </SelectItem>
+                           ))}
+                         </SelectContent>
+                       </Select>
+                     </div>
                   </>
                 )}
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="include-qr">Include ZATCA QR Code</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Add QR code to receipts for tax compliance
-                    </p>
-                  </div>
-                  <Switch
-                    id="include-qr"
-                    checked={newSettings.includeQRCode}
-                    onCheckedChange={(checked) => setNewSettings({ ...newSettings, includeQRCode: checked })}
-                  />
-                </div>
-                <Button onClick={handleUpdateSettings} className="w-full">
-                  Update Settings
-                </Button>
+                 <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/20">
+                   <div className="space-y-0.5 flex-1">
+                     <Label htmlFor="include-qr" className="text-sm font-medium">Include ZATCA QR Code</Label>
+                     <p className="text-sm text-muted-foreground">
+                       Add QR code to receipts for tax compliance
+                     </p>
+                   </div>
+                   <Switch
+                     id="include-qr"
+                     checked={newSettings.includeQRCode}
+                     onCheckedChange={(checked) => setNewSettings({ ...newSettings, includeQRCode: checked })}
+                     className="ml-4"
+                   />
+                 </div>
+                 <Button onClick={handleUpdateSettings} disabled={isSaving} className="w-full">
+                   {isSaving ? 'Saving...' : 'Update Settings'}
+                 </Button>
               </div>
             </DialogContent>
           </Dialog>
@@ -179,27 +196,17 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
                 </span>
               </div>
             )}
-            <div className="flex items-center justify-between">
-              <span>Include ZATCA QR Code:</span>
-              <span className="font-medium">
-                {printerSettings.includeQRCode ? 'Enabled' : 'Disabled'}
-              </span>
-            </div>
+             <div className="flex items-center justify-between">
+               <span className="flex items-center gap-2">
+                 <div className={`w-2 h-2 rounded-full ${printerSettings.includeQRCode ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                 Include ZATCA QR Code:
+               </span>
+               <span className={`font-medium px-2 py-1 rounded text-xs ${printerSettings.includeQRCode ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
+                 {printerSettings.includeQRCode ? 'Enabled' : 'Disabled'}
+               </span>
+             </div>
 
-            {/* Print Method Info */}
-            <div className="border-t pt-4 mb-4">
-              <h4 className="text-sm font-medium mb-3">Print Method:</h4>
-              <div className="bg-blue-50 border border-blue-200 rounded p-3">
-                <div className="flex items-center gap-2 text-blue-700 mb-2">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                  <span className="text-sm font-medium">Browser Print (Active)</span>
-                </div>
-                <p className="text-sm text-blue-600">
-                  Receipts will open in your browser&apos;s print dialog, optimized for thermal printers.
-                  Includes QR codes containing order details for easy scanning.
-                </p>
-              </div>
-            </div>
+
           </div>
         ) : (
           <p className="text-muted-foreground">Print settings not configured.</p>

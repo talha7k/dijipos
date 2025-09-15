@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useAtom, useSetAtom } from 'jotai';
 import { auth, db } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -23,24 +23,28 @@ import {
 } from '@/store/atoms';
 import { ReactNode } from 'react';
 import { autoRepairIndexedDB } from '@/lib/debug-indexeddb';
+import { indexedDBStorage } from '@/lib/storage';
 
 interface AuthProviderProps {
   children: ReactNode;
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = useAtom(userAtom);
+  const [user, setUser] = useAtom(userAtom); // eslint-disable-line @typescript-eslint/no-unused-vars
   const [authLoading, setAuthLoading] = useAtom(authLoadingAtom);
-  const [authError, setAuthError] = useAtom(authErrorAtom);
+  const [authError, setAuthError] = useAtom(authErrorAtom); // eslint-disable-line @typescript-eslint/no-unused-vars
   const [authInitialized, setAuthInitialized] = useAtom(authInitializedAtom);
-  const [emailVerified, setEmailVerified] = useAtom(emailVerifiedAtom);
-  const [selectedOrganization, setSelectedOrganization] = useAtom(selectedOrganizationAtom);
-  const [organizationUser, setOrganizationUser] = useAtom(organizationUserAtom);
-  const [userOrganizations, setUserOrganizations] = useAtom(userOrganizationsAtom);
+  const [emailVerified, setEmailVerified] = useAtom(emailVerifiedAtom); // eslint-disable-line @typescript-eslint/no-unused-vars
+  const [selectedOrganization, setSelectedOrganization] = useAtom(selectedOrganizationAtom); // eslint-disable-line @typescript-eslint/no-unused-vars
+  const [organizationUser, setOrganizationUser] = useAtom(organizationUserAtom); // eslint-disable-line @typescript-eslint/no-unused-vars
+  const [userOrganizations, setUserOrganizations] = useAtom(userOrganizationsAtom); // eslint-disable-line @typescript-eslint/no-unused-vars
   const [organizationLoading, setOrganizationLoading] = useAtom(organizationLoadingAtom);
-  const [organizationError, setOrganizationError] = useAtom(organizationErrorAtom);
+  const [organizationError, setOrganizationError] = useAtom(organizationErrorAtom); // eslint-disable-line @typescript-eslint/no-unused-vars
   const [organizationId, setOrganizationId] = useAtom(organizationIdAtom);
   const resetAuthState = useSetAtom(resetAuthStateAtom);
+  
+  // Flag to prevent multiple simultaneous auth operations
+  const authProcessingRef = useRef(false);
 
   // Initialize IndexedDB auto-repair on component mount
   useEffect(() => {
@@ -60,6 +64,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     console.log('AuthProvider: Setting up auth state listener');
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       console.log('AuthProvider: Auth state changed, user:', user?.email || 'null');
+
+      // Prevent multiple simultaneous auth operations
+      if (authProcessingRef.current) {
+        console.log('AuthProvider: Auth already processing, skipping duplicate call');
+        return;
+      }
+
+      authProcessingRef.current = true;
       const startTime = Date.now();
       console.log('AuthProvider: Setting authLoading to true');
       setAuthLoading(true);
@@ -104,7 +116,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
               setUserOrganizations(organizationAssociations);
 
               // Handle organization selection logic
-              const currentOrganizationId = organizationId;
+              // Try to get organizationId from storage directly
+              let currentOrganizationId = organizationId;
+              if (!currentOrganizationId) {
+                try {
+                  currentOrganizationId = await indexedDBStorage.getItem('dijipos-organization-id');
+                } catch (storageError) {
+                  console.error('Error reading organizationId from storage:', storageError);
+                }
+              }
 
               if (currentOrganizationId && organizationAssociations.some(ou => ou.organizationId === currentOrganizationId)) {
                 console.log('AuthProvider: Auto-selecting organization');
@@ -123,14 +143,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
                         updatedAt: organizationDoc.data()?.updatedAt?.toDate(),
                       } as Organization;
                       setSelectedOrganization(organizationData);
+                      // Also update the atom to ensure consistency
+                      setOrganizationId(currentOrganizationId);
                     } else {
                       // Organization doesn't exist, clear stored ID
                       setOrganizationId(null);
+                      await indexedDBStorage.removeItem('dijipos-organization-id');
                     }
                   }
                 } catch (selectError) {
                   console.error('Organization auto-selection error:', selectError);
+                  // Clear invalid organizationId
+                  setOrganizationId(null);
+                  await indexedDBStorage.removeItem('dijipos-organization-id');
                 }
+              } else if (currentOrganizationId && !organizationAssociations.some(ou => ou.organizationId === currentOrganizationId)) {
+                // organizationId exists but is not valid for this user, clear it
+                console.log('AuthProvider: Clearing invalid organizationId');
+                setOrganizationId(null);
+                await indexedDBStorage.removeItem('dijipos-organization-id');
               }
             } catch (orgError) {
               console.error('Organization fetch error:', orgError);
@@ -140,6 +171,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
               setOrganizationLoading(false);
               console.log('AuthProvider: Setting authLoading to false in finally block');
               setAuthLoading(false);
+              authProcessingRef.current = false;
               console.log('AuthProvider: Organization loading complete, auth process finished');
             }
           })();
@@ -161,6 +193,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         console.error('Auth state change error:', err);
         setAuthError(err instanceof Error ? err.message : 'An unknown error occurred');
         setAuthLoading(false);
+        authProcessingRef.current = false;
       }
     });
 
@@ -168,7 +201,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       console.log('AuthProvider: Cleaning up auth state listener');
       unsubscribe();
     };
-  }, [authInitialized]); // Only re-run when authInitialized changes
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+
 
   // Add timeouts to prevent infinite loading
   useEffect(() => {
@@ -182,7 +217,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }, 30000);
 
     return () => clearTimeout(authTimeout);
-  }, [authLoading]);
+  }, [authLoading, setAuthError, setAuthLoading]);
 
   useEffect(() => {
     const orgTimeout = setTimeout(() => {
@@ -194,7 +229,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }, 9000);
 
     return () => clearTimeout(orgTimeout);
-  }, [organizationLoading]);
+  }, [organizationLoading, setOrganizationError, setOrganizationLoading]);
 
   return <>{children}</>;
 }

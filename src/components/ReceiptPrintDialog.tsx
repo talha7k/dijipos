@@ -3,8 +3,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Printer, Download } from 'lucide-react';
 import { Order, ReceiptTemplate, Organization } from '@/types';
 import { renderReceiptTemplate } from '@/lib/template-renderer';
@@ -221,31 +221,48 @@ export function ReceiptPrintDialog({
                 <CardTitle className="text-lg">Select Receipt Template</CardTitle>
               </CardHeader>
               <CardContent>
-                {receiptTemplates.length === 0 ? (
-                  <p className="text-muted-foreground">No receipt templates available. Please create templates in Settings.</p>
-                ) : (
-                  <RadioGroup value={selectedTemplate} onValueChange={setSelectedTemplate}>
-                    <div className="grid gap-3">
-                      {receiptTemplates.map((template) => (
-                        <div key={template.id} className="flex items-center space-x-3 p-3 border rounded hover:bg-accent/50">
-                          <RadioGroupItem value={template.id} id={template.id} />
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <Label htmlFor={template.id} className="font-medium cursor-pointer">
-                                {template.name}
-                              </Label>
-                              {template.isDefault && <Badge variant="default">Default</Badge>}
-                              <Badge variant="outline">{template.type}</Badge>
-                            </div>
-                            {template.description && (
-                              <p className="text-sm text-muted-foreground">{template.description}</p>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </RadioGroup>
-                )}
+                 {receiptTemplates.length === 0 ? (
+                   <p className="text-muted-foreground">No receipt templates available. Please create templates in Settings.</p>
+                 ) : (
+                   <div className="space-y-3">
+                     <Label htmlFor="template-select">Select Receipt Template</Label>
+                     <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
+                       <SelectTrigger>
+                         <SelectValue placeholder="Choose a template" />
+                       </SelectTrigger>
+                       <SelectContent>
+                         {receiptTemplates.map((template) => (
+                           <SelectItem key={template.id} value={template.id}>
+                             <div className="flex items-center gap-2">
+                               <span>{template.name}</span>
+                               {template.isDefault && <Badge variant="default" className="text-xs">Default</Badge>}
+                               <Badge variant="outline" className="text-xs">{template.type}</Badge>
+                             </div>
+                           </SelectItem>
+                         ))}
+                       </SelectContent>
+                     </Select>
+                     {selectedTemplate && (
+                       <div className="p-3 bg-muted/50 rounded-md">
+                         {(() => {
+                           const template = receiptTemplates.find(t => t.id === selectedTemplate);
+                           return template ? (
+                             <div>
+                               <div className="flex items-center gap-2 mb-1">
+                                 <span className="font-medium">{template.name}</span>
+                                 {template.isDefault && <Badge variant="default">Default</Badge>}
+                                 <Badge variant="outline">{template.type}</Badge>
+                               </div>
+                               {template.description && (
+                                 <p className="text-sm text-muted-foreground">{template.description}</p>
+                               )}
+                             </div>
+                           ) : null;
+                         })()}
+                       </div>
+                     )}
+                   </div>
+                 )}
               </CardContent>
             </Card>
 

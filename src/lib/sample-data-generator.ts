@@ -1,6 +1,6 @@
 import { db } from '@/lib/firebase';
 import { collection, doc, writeBatch } from 'firebase/firestore';
-import { Product, Service, Quote, Customer, Supplier, Item, Payment, PurchaseInvoice, Invoice, Category, Order, OrderPayment, OrderItem, OrderType, PaymentType, Table, TableStatus, OrderStatus, CategoryType, ItemType, InvoiceType, QuoteStatus, InvoiceStatus } from '@/types';
+import { Product, Service, Quote, Customer, Supplier, Item, Payment, PurchaseInvoice, Invoice, Category, Order, OrderPayment, CartItem, OrderType, PaymentType, Table, TableStatus, OrderStatus, CategoryType, ItemType, InvoiceType, QuoteStatus, InvoiceStatus } from '@/types';
 import { InvoiceTemplateType } from '@/types/enums';
  
 // --- HELPER FUNCTIONS ---
@@ -180,8 +180,8 @@ const generatePaymentTypes = (): Omit<PaymentType, 'organizationId'>[] => {
     }));
 };
 
-const generateOrderItems = (products: Omit<Product, 'organizationId'>[], services: Omit<Service, 'organizationId'>[]): OrderItem[] => {
-    const items: OrderItem[] = [];
+const generateOrderItems = (products: Omit<Product, 'organizationId'>[], services: Omit<Service, 'organizationId'>[]): CartItem[] => {
+    const items: CartItem[] = [];
     const itemCount = getRandomInt(1, 4);
 
     for (let i = 0; i < itemCount; i++) {

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useOrganizationId } from "@/hooks/useAuthState";
-import { OrderItem, ItemType } from "@/types";
+import { CartItem, ItemType } from "@/types";
 import { useProductsData } from "@/hooks/products_services/useProducts";
 import { useServicesData } from "@/hooks/products_services/useServices";
 import { useCategoriesData } from "@/hooks/products_services/useCategories";
@@ -128,8 +128,8 @@ export default function SimplifiedPOSPage() {
     );
   }
 
-  // Transform OrderItem[] to CartItem[] for component compatibility
-  const cartForComponents = cartItems.map((item) => ({
+  // Transform CartItem[] to CartItem[] for component compatibility
+  const cartForComponents = (cartItems || []).map((item) => ({
     id: item.id,
     type: item.type === "product" ? ("product" as const) : ("service" as const),
     name: item.name,
@@ -194,8 +194,8 @@ export default function SimplifiedPOSPage() {
           cartItems={cartForComponents}
           cartTotal={cartTotal}
           onItemClick={(item) => {
-            // Transform CartItem back to OrderItem for state management
-            const orderItem: OrderItem = {
+            // Transform CartItem back to CartItem for state management
+            const CartItem: CartItem = {
               id: item.id,
               type:
                 item.type === "product" ? ItemType.PRODUCT : ItemType.SERVICE,
@@ -204,7 +204,7 @@ export default function SimplifiedPOSPage() {
               unitPrice: item.price,
               total: item.total,
             };
-            setEditingCartItem(orderItem);
+            setEditingCartItem(CartItem);
             setShowCartItemModal(true);
           }}
           onPayOrder={handlePayOrder}

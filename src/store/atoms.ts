@@ -1,7 +1,7 @@
 import { atom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
 import { Organization, User as AppUser, OrganizationUser } from '@/types';
-import { Order, OrderItem, OrderPayment, Table, OrderType } from '@/types/order';
+import { Order, CartItem, OrderPayment, Table, OrderType } from '@/types/order';
 import { Customer, Supplier } from '@/types/customer-supplier';
 import { Product, Service, Category } from '@/types/product-service';
 import { Invoice, Quote, Payment, PaymentType } from '@/types';
@@ -68,8 +68,11 @@ export const orderTypesRefreshKeyAtom = atom<number>(0);
 // =====================
 
 // Cart state
-export const cartItemsAtom = atomWithStorage<OrderItem[]>('dijipos-cart-items', [], indexedDBStorage);
-export const cartTotalAtom = atom<number>(0);
+export const cartItemsAtom = atomWithStorage<CartItem[]>('dijipos-cart-items', [], indexedDBStorage);
+export const cartTotalAtom = atom(async (get) => {
+  const cartItems = await get(cartItemsAtom);
+  return cartItems.reduce((sum: number, item: CartItem) => sum + item.total, 0);
+});
 export const cartLoadingAtom = atom<boolean>(false);
 
 // POS selection state
@@ -93,11 +96,11 @@ export const hasOrganizationsAtom = atom((get) => get(userOrganizationsAtom).len
 // Cart derived atoms
 export const hasItemsInCartAtom = atom(async (get) => {
   const cartItems = await get(cartItemsAtom);
-  return cartItems.length > 0;
+  return cartItems && cartItems.length > 0;
 });
 export const cartItemCountAtom = atom(async (get) => {
   const cartItems = await get(cartItemsAtom);
-  return cartItems.reduce((count, item) => count + (item.quantity || 1), 0);
+  return cartItems ? cartItems.reduce((count, item) => count + (item.quantity || 1), 0) : 0;
 });
 
 // Order derived atoms
@@ -137,7 +140,6 @@ export const resetAuthStateAtom = atom(null, (get, set) => {
 
 export const resetPOSStateAtom = atom(null, (get, set) => {
   set(cartItemsAtom, []);
-  set(cartTotalAtom, 0);
   set(selectedTableAtom, null);
   set(selectedCustomerAtom, null);
   // Don't clear order type - preserve user preference

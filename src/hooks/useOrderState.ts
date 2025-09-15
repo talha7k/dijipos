@@ -1,6 +1,6 @@
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { useEffect, useCallback } from 'react';
-import { Order, OrderPayment, OrderStatus, Table, Customer, OrderType, OrderItem } from '@/types';
+import { Order, OrderPayment, OrderStatus, Table, Customer, OrderType, CartItem } from '@/types';
 import {
   ordersAtom,
   currentOrderAtom,
@@ -32,7 +32,7 @@ export function useOrderState() {
 
   // POS state
   const [cartItems, setCartItems] = useAtom(cartItemsAtom);
-  const [cartTotal, setCartTotal] = useAtom(cartTotalAtom);
+  const cartTotal = useAtomValue(cartTotalAtom);
   const [cartLoading, setCartLoading] = useAtom(cartLoadingAtom);
   const [selectedTable, setSelectedTable] = useAtom(selectedTableAtom);
   const [selectedCustomer, setSelectedCustomer] = useAtom(selectedCustomerAtom);
@@ -117,7 +117,7 @@ export function useOrderState() {
   }, [payments]);
 
   // Cart management functions
-  const addToCart = useCallback(async (item: OrderItem) => {
+  const addToCart = useCallback(async (item: CartItem) => {
     const currentCart = await cartItems;
     const existingItem = currentCart.find(cartItem =>
       cartItem.id === item.id && cartItem.type === item.type
@@ -139,7 +139,7 @@ export function useOrderState() {
     }
   }, [cartItems, setCartItems]);
 
-  const updateCartItem = useCallback(async (itemId: string, type: string, updates: Partial<OrderItem>) => {
+  const updateCartItem = useCallback(async (itemId: string, type: string, updates: Partial<CartItem>) => {
     const currentCart = await cartItems;
     const updatedCart = currentCart.map(item =>
       item.id === itemId && item.type === type
@@ -157,15 +157,12 @@ export function useOrderState() {
 
   const clearCart = useCallback(() => {
     setCartItems([]);
-    setCartTotal(0);
-  }, [setCartItems, setCartTotal]);
+  }, [setCartItems]);
 
   const calculateCartTotal = useCallback(async () => {
     const currentCart = await cartItems;
-    const total = currentCart.reduce((sum, item) => sum + item.total, 0);
-    setCartTotal(total);
-    return total;
-  }, [cartItems, setCartTotal]);
+    return currentCart.reduce((sum, item) => sum + item.total, 0);
+  }, [cartItems]);
 
   const getCartTotal = useCallback(async () => {
     const currentCart = await cartItems;
@@ -243,7 +240,6 @@ export function useOrderState() {
 
     // Cart actions
     setCartItems,
-    setCartTotal,
     setCartLoading,
     addToCart,
     updateCartItem,
