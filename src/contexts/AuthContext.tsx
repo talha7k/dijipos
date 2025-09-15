@@ -54,7 +54,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setLoading(false);
         setError('Authentication timeout - please refresh the page');
       }
-    }, 10000); // 10 second timeout
+    }, 5000); // Reduced to 5 second timeout
 
     return () => clearTimeout(timeout);
   }, [loading]);
@@ -143,37 +143,53 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (user) {
           setEmailVerified(user.emailVerified || false);
 
-          // Fetch user's organization associations from Firebase
-          const organizationUsersQuery = query(
-            collection(db, 'organizationUsers'),
-            where('userId', '==', user.uid),
-            where('isActive', '==', true)
-          );
-          const organizationUsersSnapshot = await getDocs(organizationUsersQuery);
-          const organizationAssociations = organizationUsersSnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-            createdAt: doc.data().createdAt?.toDate(),
-            updatedAt: doc.data().updatedAt?.toDate(),
-          })) as OrganizationUser[];
+          // Start organization fetch immediately but don't wait for it to set basic auth state
+          const organizationFetchPromise = (async () => {
+            try {
+              const organizationUsersQuery = query(
+                collection(db, 'organizationUsers'),
+                where('userId', '==', user.uid),
+                where('isActive', '==', true)
+              );
+              const organizationUsersSnapshot = await getDocs(organizationUsersQuery);
+              const organizationAssociations = organizationUsersSnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data(),
+                createdAt: doc.data().createdAt?.toDate(),
+                updatedAt: doc.data().updatedAt?.toDate(),
+              })) as OrganizationUser[];
 
-           setUserOrganizations(organizationAssociations);
+              setUserOrganizations(organizationAssociations);
 
-           // Handle organization selection logic at root level
-           const storedOrganizationId = localStorage.getItem('selectedOrganizationId');
+              // Handle organization selection logic
+              const storedOrganizationId = localStorage.getItem('selectedOrganizationId');
 
-           if (storedOrganizationId && organizationAssociations.some(ou => ou.organizationId === storedOrganizationId)) {
-             // Auto-select locally stored organization
-             await selectOrganization(storedOrganizationId);
-           }
-          // If user has multiple organizations, let them choose via select-organization page
+              if (storedOrganizationId && organizationAssociations.some(ou => ou.organizationId === storedOrganizationId)) {
+                await selectOrganization(storedOrganizationId);
+              }
+            } catch (orgError) {
+              console.error('Organization fetch error:', orgError);
+              // Don't fail the entire auth process for organization errors
+              setUserOrganizations([]);
+            }
+          })();
+
+          // Set a timeout for organization fetch to prevent hanging
+          const orgFetchTimeout = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Organization fetch timeout')), 5000);
+          });
+
+          try {
+            await Promise.race([organizationFetchPromise, orgFetchTimeout]);
+          } catch (timeoutError) {
+            console.warn('Organization fetch timed out, continuing with basic auth');
+          }
         } else {
           setOrganizationId(null);
           setOrganizationUser(null);
           setCurrentOrganization(null);
           setUserOrganizations([]);
           setEmailVerified(false);
-          // Clear stored organization when user logs out
           localStorage.removeItem('selectedOrganizationId');
         }
       } catch (err) {
