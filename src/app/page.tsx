@@ -1,6 +1,6 @@
 'use client';
 
-import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
+import { useOrganizationId, useUser, useSelectedOrganization, useAuthLoading, useEmailVerified, useUserOrganizations } from '@/hooks/useAuthState';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,7 +11,11 @@ import { Suspense } from 'react';
 import { toast } from 'sonner';
 
 function HomeContent() {
-  const { user, authLoading, emailVerified, organizationId, userOrganizations } = useAuthState();
+  const user = useUser();
+  const authLoading = useAuthLoading();
+  const emailVerified = useEmailVerified();
+  const organizationId = useOrganizationId();
+  const userOrganizations = useUserOrganizations();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isProcessing, setIsProcessing] = useState(false);

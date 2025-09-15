@@ -4,7 +4,7 @@ import { useAuthLoading } from '@/hooks/useAuthState';
 import { OrganizationManager } from '@/components/organization/OrganizationManager';
 
 export default function SelectOrganizationPage() {
-  const { authLoading: loading } = useAuthState();
+  const loading = useAuthLoading();
 
   // Show loading state while auth is initializing
   if (loading) {

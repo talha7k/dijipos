@@ -349,3 +349,7 @@ export function useOrganizationLoading() {
 export function useOrganizationId() {
   return useAtomValue(organizationIdAtom);
 }
+
+export function useEmailVerified() {
+  return useAtomValue(emailVerifiedAtom);
+}

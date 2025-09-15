@@ -21,7 +21,8 @@ import { OrderActionsDialog } from '@/components/orders/OrderStatusActionsDialog
 
 
 function OrdersContent() {
-  const { user, selectedOrganization } = useAuthState();
+  const user = useUser();
+  const selectedOrganization = useSelectedOrganization();
   const { orders, payments, setOrders, setPayments } = useOrderState();
   const organizationId = selectedOrganization?.id || '';
   const { orders: fetchedOrders, loading: ordersLoading } = useOrdersData(organizationId || undefined);
