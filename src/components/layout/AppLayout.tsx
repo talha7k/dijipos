@@ -1,8 +1,8 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
-import { useSidebar } from '@/contexts/SidebarContext';
+import { useAuthState } from '@/hooks/useAuthState';
+import { useSidebarState } from '@/hooks/useSidebarState';
 import { CollapsibleSidebar } from '@/components/sidebar/collapsible-sidebar';
 import { OrganizationManager } from '@/components/organization/OrganizationManager';
 
@@ -12,8 +12,8 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const pathname = usePathname();
-  const { loading, organizationLoading, currentOrganization, user, userOrganizations } = useAuth();
-  const { isCollapsed } = useSidebar();
+  const { authLoading: loading, organizationLoading, selectedOrganization: currentOrganization, user, userOrganizations } = useAuthState();
+  const { sidebarCollapsed: isCollapsed } = useSidebarState();
 
   const isPublicRoute = pathname ? (pathname === '/login' || pathname === '/register' || pathname === '/verify-email' || pathname === '/reset-password' || pathname.startsWith('/auth')) : false;
 
@@ -29,7 +29,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   // Check if we should show organization selector
   const storedOrganizationId = typeof window !== 'undefined' ? localStorage.getItem('selectedOrganizationId') : null;
-  const hasStoredOrganization = storedOrganizationId && userOrganizations.some(ou => ou.organizationId === storedOrganizationId);
+  const hasStoredOrganization = storedOrganizationId && userOrganizations.some((ou: { organizationId: string }) => ou.organizationId === storedOrganizationId);
   const shouldShowOrganizationSelector = !loading && !organizationLoading && user && userOrganizations.length > 0 && !currentOrganization && !hasStoredOrganization;
 
   // For protected pages, check if organization is selected

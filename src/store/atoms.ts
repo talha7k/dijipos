@@ -1,0 +1,135 @@
+import { atom } from 'jotai';
+import { atomWithStorage } from 'jotai/utils';
+import { Organization, User as AppUser, OrganizationUser } from '@/types';
+import { Order, OrderItem, OrderPayment, Table, OrderType } from '@/types/order';
+import { Customer } from '@/types/customer-supplier';
+import { User } from 'firebase/auth';
+import { indexedDBStorage } from '@/lib/storage';
+
+// =====================
+// AUTH STATE ATOMS
+// =====================
+
+// Firebase User state
+export const userAtom = atom<User | null>(null);
+export const authLoadingAtom = atom<boolean>(true);
+export const authErrorAtom = atom<string | null>(null);
+export const authInitializedAtom = atom<boolean>(false);
+export const emailVerifiedAtom = atom<boolean>(false);
+
+// Organization state
+export const selectedOrganizationAtom = atom<Organization | null>(null);
+export const organizationUserAtom = atom<OrganizationUser | null>(null);
+export const userOrganizationsAtom = atom<OrganizationUser[]>([]);
+export const organizationLoadingAtom = atom<boolean>(false);
+export const organizationErrorAtom = atom<string | null>(null);
+export const organizationIdAtom = atomWithStorage<string | null>('dijipos-organization-id', null, indexedDBStorage);
+
+// =====================
+// THEME STATE ATOMS
+// =====================
+
+export const themeAtom = atomWithStorage<'light' | 'dark'>('dijipos-theme', 'light', indexedDBStorage);
+
+// =====================
+// SIDEBAR STATE ATOMS
+// =====================
+
+export const sidebarCollapsedAtom = atomWithStorage<boolean>('dijipos-sidebar-collapsed', false, indexedDBStorage);
+export const mobileSidebarOpenAtom = atom<boolean>(false);
+
+// =====================
+// ORDER STATE ATOMS
+// =====================
+
+// Order management
+export const ordersAtom = atom<Order[]>([]);
+export const currentOrderAtom = atom<Order | null>(null);
+export const ordersLoadingAtom = atom<boolean>(false);
+export const ordersErrorAtom = atom<string | null>(null);
+
+// Order payments
+export const paymentsAtom = atom<{ [orderId: string]: OrderPayment[] }>({});
+
+// =====================
+// POS STATE ATOMS
+// =====================
+
+// Cart state
+export const cartItemsAtom = atomWithStorage<OrderItem[]>('dijipos-cart-items', [], indexedDBStorage);
+export const cartTotalAtom = atom<number>(0);
+export const cartLoadingAtom = atom<boolean>(false);
+
+// POS selection state
+export const selectedTableAtom = atomWithStorage<Table | null>('dijipos-selected-table', null, indexedDBStorage);
+export const selectedCustomerAtom = atomWithStorage<Customer | null>('dijipos-selected-customer', null, indexedDBStorage);
+export const selectedOrderTypeAtom = atomWithStorage<OrderType | null>('dijipos-selected-order-type', null, indexedDBStorage);
+
+// POS navigation state
+export const currentViewAtom = atom<'items' | 'tables' | 'customers' | 'orders' | 'payment'>('items');
+export const categoryPathAtom = atom<string[]>([]);
+
+// =====================
+// DERIVED ATOMS
+// =====================
+
+// Auth derived atoms
+export const isAuthenticatedAtom = atom((get) => get(userAtom) !== null);
+export const hasOrganizationAtom = atom((get) => get(selectedOrganizationAtom) !== null);
+export const hasOrganizationsAtom = atom((get) => get(userOrganizationsAtom).length > 0);
+
+// Cart derived atoms
+export const hasItemsInCartAtom = atom(async (get) => {
+  const cartItems = await get(cartItemsAtom);
+  return cartItems.length > 0;
+});
+export const cartItemCountAtom = atom(async (get) => {
+  const cartItems = await get(cartItemsAtom);
+  return cartItems.reduce((count, item) => count + (item.quantity || 1), 0);
+});
+
+// Order derived atoms
+export const hasOrdersAtom = atom((get) => get(ordersAtom).length > 0);
+export const activeOrdersAtom = atom((get) => 
+  get(ordersAtom).filter(order => order.status !== 'completed' && order.status !== 'cancelled')
+);
+
+// =====================
+// PERSISTENCE ATOMS
+// =====================
+
+// Note: Persistence is now handled directly by IndexedDB atoms above
+
+// =====================
+// ASYNC ATOMS
+// =====================
+
+// These atoms can be used for async data fetching
+// Example: export const fetchOrdersAtom = atom(async (get) => { ... });
+
+// =====================
+// UTILITY ATOMS
+// =====================
+
+// Reset atoms for clearing state
+export const resetAuthStateAtom = atom(null, (get, set) => {
+  set(userAtom, null);
+  set(organizationUserAtom, null);
+  set(selectedOrganizationAtom, null);
+  set(userOrganizationsAtom, []);
+  set(organizationIdAtom, null);
+  set(emailVerifiedAtom, false);
+  set(authLoadingAtom, false);
+  set(authErrorAtom, null);
+});
+
+export const resetPOSStateAtom = atom(null, (get, set) => {
+  set(cartItemsAtom, []);
+  set(cartTotalAtom, 0);
+  set(selectedTableAtom, null);
+  set(selectedCustomerAtom, null);
+  // Don't clear order type - preserve user preference
+  set(currentViewAtom, 'items');
+  set(categoryPathAtom, []);
+  set(currentOrderAtom, null);
+});

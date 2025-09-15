@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { collection, query, onSnapshot, addDoc, doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthState } from '@/hooks/useAuthState';
 import { Customer } from '@/types';
 import { useCustomersData } from '@/hooks/customers/use-customers-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,7 +21,7 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/lib/firebase';
 
 export default function CustomersPage() {
-  const { organizationId } = useAuth();
+  const { organizationId } = useAuthState();
   const { customers, loading: customersLoading } = useCustomersData(organizationId || undefined);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);

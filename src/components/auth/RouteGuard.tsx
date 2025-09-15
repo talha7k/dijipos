@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthState } from '@/hooks/useAuthState';
 import { toast } from 'sonner';
 
 interface RouteGuardProps {
@@ -12,15 +12,15 @@ interface RouteGuardProps {
 export function RouteGuard({ children }: RouteGuardProps) {
   const { 
     user, 
-    loading, 
+    authLoading: loading, 
     organizationLoading,
-    error, 
+    authError: error, 
     emailVerified, 
-    currentOrganization, 
+    selectedOrganization: currentOrganization, 
     userOrganizations, 
     organizationId,
     retryOrganizationLoad
-  } = useAuth();
+  } = useAuthState();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -84,11 +84,16 @@ export function RouteGuard({ children }: RouteGuardProps) {
 
       // For select-organization page, check if user actually needs to select
       if (pathname === '/select-organization') {
-        if (organizationId) {
-          // User already has organization selected, redirect to dashboard
+        // Allow access to select-organization page if user has organizations 
+        // or if explicitly navigating there (even with existing organization)
+        // This allows users to switch organizations or create new ones
+        if (organizationId && userOrganizations.length === 0) {
+          // User has organizationId but no organizations (invalid state), redirect to dashboard
           router.push('/dashboard');
           return;
         }
+        // Otherwise, allow access to the page
+        return;
       }
       return;
     }

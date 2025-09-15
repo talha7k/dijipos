@@ -1,28 +1,27 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { Order, OrderStatus, ItemType, OrderPayment, Table, Customer, OrderType, Product, Service, TableStatus } from '@/types';
-import { CartItem } from '@/contexts/OrderContext';
-import { useAuth } from '@/contexts/AuthContext';
-import { useOrderContext } from '@/contexts/OrderContext';
+import { Order, OrderStatus, ItemType, OrderPayment, Table, Customer, OrderType, Product, Service, TableStatus, OrderItem } from '@/types';
+import { useAuthState } from '@/hooks/useAuthState';
+import { useOrderState } from '@/hooks/useOrderState';
 import { toast } from 'sonner';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, updateDoc, doc, serverTimestamp } from 'firebase/firestore';
 
 export function usePOSLogic() {
-  const { organizationId, user } = useAuth();
+  const { organizationId, user } = useAuthState();
   const {
-    cart,
+    cartItems,
     selectedTable,
     selectedCustomer,
     selectedOrderType,
-    selectedOrder,
+    currentOrder,
     categoryPath,
-    setCart,
+    setCartItems,
     setSelectedTable,
     setSelectedCustomer,
     setSelectedOrderType,
-    setSelectedOrder,
+    setCurrentOrder,
     setCategoryPath,
     clearPOSData,
     clearCart,
@@ -30,7 +29,7 @@ export function usePOSLogic() {
     updateCartItem,
     removeFromCart,
     getCartTotal
-  } = useOrderContext();
+  } = useOrderState();
 
   const [posView, setPosView] = useState<'items' | 'tables' | 'customers' | 'orders' | 'payment'>('items');
   const [pendingOrderToReopen, setPendingOrderToReopen] = useState<Order | null>(null);
@@ -39,30 +38,30 @@ export function usePOSLogic() {
   const [showPaymentSuccessDialog, setShowPaymentSuccessDialog] = useState(false);
   const [paymentSuccessData, setPaymentSuccessData] = useState<{ totalPaid: number; order?: Order } | null>(null);
   const [showCartItemModal, setShowCartItemModal] = useState(false);
-  const [editingCartItem, setEditingCartItem] = useState<CartItem | null>(null);
+  const [editingCartItem, setEditingCartItem] = useState<OrderItem | null>(null);
 
   const cartTotal = getCartTotal();
 
   const handleAddToCart = useCallback((item: Product | Service, type: 'product' | 'service') => {
     if (!item) return;
 
-    const existingItem = cart.find(
-      cartItem => cartItem.id === item.id && cartItem.type === type
+    const existingItem = cartItems.find(
+      (cartItem: OrderItem) => cartItem.id === item.id && cartItem.type === (type === 'product' ? ItemType.PRODUCT : ItemType.SERVICE)
     );
 
     if (existingItem) {
-      updateCartItem(item.id, type, { quantity: existingItem.quantity + 1, total: (existingItem.quantity + 1) * item.price });
+      updateCartItem(item.id, type, { quantity: (existingItem.quantity || 1) + 1, total: ((existingItem.quantity || 1) + 1) * item.price });
     } else {
       contextAddToCart({
         id: item.id,
-        type: type,
+        type: type === 'product' ? ItemType.PRODUCT : ItemType.SERVICE,
         name: item.name,
-        price: item.price,
+        unitPrice: item.price,
         quantity: 1,
         total: item.price
       });
     }
-  }, [cart, contextAddToCart, updateCartItem]);
+  }, [cartItems, contextAddToCart, updateCartItem]);
 
   const handleTableSelected = useCallback((table: Table) => {
     setSelectedTable(table);
@@ -89,19 +88,19 @@ export function usePOSLogic() {
     // Clear existing cart and load order items
     clearCart();
 
-    const cartItems = pendingOrderToReopen.items.map(item => ({
+    const newCartItems = pendingOrderToReopen.items.map((item: any) => ({
       id: item.productId || item.serviceId || item.id,
       type: item.type === 'product' ? ItemType.PRODUCT : ItemType.SERVICE,
       name: item.name,
-      price: item.unitPrice,
+      unitPrice: item.unitPrice,
       quantity: item.quantity,
       total: item.total
     }));
 
-    setCart(cartItems);
+    setCartItems(newCartItems);
 
     // Set the original order as selected so payments can be associated
-    setSelectedOrder(pendingOrderToReopen);
+    setCurrentOrder(pendingOrderToReopen);
 
     // Set table and customer if available
     if (pendingOrderToReopen.tableId) {
@@ -115,10 +114,10 @@ export function usePOSLogic() {
     setShowOrderConfirmationDialog(false);
     setPendingOrderToReopen(null);
     setPosView('items');
-  }, [pendingOrderToReopen, clearCart, setCart, setSelectedOrder]);
+  }, [pendingOrderToReopen, clearCart, setCartItems, setCurrentOrder]);
 
   const handleSaveOrder = useCallback(async () => {
-    if (!organizationId || cart.length === 0) return;
+    if (!organizationId || cartItems.length === 0) return;
 
     try {
       // Generate a simple order number (in production, this should be more sophisticated)
@@ -127,14 +126,14 @@ export function usePOSLogic() {
       const orderData = {
         organizationId,
         orderNumber,
-        items: cart.map(item => ({
+        items: cartItems.map((item: OrderItem) => ({
           id: `${item.type}-${item.id}`,
           type: item.type,
-          productId: item.type === 'product' ? item.id : undefined,
-          serviceId: item.type === 'service' ? item.id : undefined,
+          productId: item.type === ItemType.PRODUCT ? item.id : undefined,
+          serviceId: item.type === ItemType.SERVICE ? item.id : undefined,
           name: item.name,
           quantity: item.quantity,
-          unitPrice: item.price,
+          unitPrice: item.unitPrice,
           total: item.total,
         })),
         subtotal: cartTotal,
@@ -175,7 +174,7 @@ export function usePOSLogic() {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       toast.error(`Failed to save order: ${errorMessage}`);
     }
-  }, [organizationId, cart, cartTotal, selectedOrderType, selectedCustomer, selectedTable, user, clearCart, clearPOSData]);
+  }, [organizationId, cartItems, cartTotal, selectedOrderType, selectedCustomer, selectedTable, user, clearCart, clearPOSData]);
 
   const handlePaymentProcessed = useCallback(async (payments: OrderPayment[]) => {
     setPaymentSuccessData({ totalPaid: payments.reduce((sum, payment) => sum + payment.amount, 0) });
@@ -235,20 +234,20 @@ export function usePOSLogic() {
   }, []);
 
   const createTempOrderForPayment = useCallback(() => {
-    if (cart.length === 0) return null;
+    if (cartItems.length === 0) return null;
 
     return {
       id: 'temp-checkout',
       organizationId: organizationId || '',
       orderNumber: `TEMP-${Date.now()}`,
-      items: cart.map(item => ({
+      items: cartItems.map((item: OrderItem) => ({
         id: `${item.type}-${item.id}`,
         type: item.type === 'product' ? ItemType.PRODUCT : ItemType.SERVICE,
         productId: item.type === 'product' ? item.id : undefined,
         serviceId: item.type === 'service' ? item.id : undefined,
         name: item.name,
         quantity: item.quantity,
-        unitPrice: item.price,
+        unitPrice: item.unitPrice,
         total: item.total,
       })),
       subtotal: cartTotal,
@@ -268,28 +267,28 @@ export function usePOSLogic() {
       createdAt: new Date(),
       updatedAt: new Date(),
     };
-  }, [cart, cartTotal, selectedOrderType, selectedCustomer, selectedTable, organizationId, user]);
+  }, [cartItems, cartTotal, selectedOrderType, selectedCustomer, selectedTable, organizationId, user]);
 
   const handlePayOrder = useCallback(() => {
-    if (cart.length === 0) return;
+    if (cartItems.length === 0) return;
 
     // If we already have a selected order (from reopening), use it
     // Otherwise, create a temporary order for new cart items
-    const orderToPay = selectedOrder || createTempOrderForPayment();
+    const orderToPay = currentOrder || createTempOrderForPayment();
     if (orderToPay) {
-      setSelectedOrder(orderToPay);
+      setCurrentOrder(orderToPay);
       setPosView('payment');
     }
-  }, [cart, selectedOrder, createTempOrderForPayment, setSelectedOrder, setPosView]);
+  }, [cartItems, currentOrder, createTempOrderForPayment, setCurrentOrder, setPosView]);
 
   return {
     // State
-    cart,
+    cartItems,
     cartTotal,
     selectedTable,
     selectedCustomer,
     selectedOrderType,
-    selectedOrder,
+    currentOrder,
     categoryPath,
     posView,
     pendingOrderToReopen,

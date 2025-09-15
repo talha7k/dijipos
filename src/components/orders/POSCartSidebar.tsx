@@ -3,8 +3,8 @@ import { ShoppingCart, Save, Printer, Trash2 } from 'lucide-react';
 import { POSCartItem } from './POSCartItem';
 import { ReceiptPrintDialog } from '@/components/ReceiptPrintDialog';
 import { Order, OrderStatus, ItemType } from '@/types';
-import { useAuth } from '@/contexts/AuthContext';
-import { useOrderContext } from '@/contexts/OrderContext';
+import { useAuthState } from '@/hooks/useAuthState';
+import { useOrderState } from '@/hooks/useOrderState';
 import { usePrinterSettingsData } from '@/hooks/organization/use-printer-settings-data';
 import { useReceiptTemplatesData } from '@/hooks/use-receipt-templates-data';
 
@@ -36,10 +36,11 @@ export function POSCartSidebar({
   onClearCart,
   onItemClick
 }: POSCartSidebarProps) {
-  const { currentOrganization } = useAuth();
-  const { selectedTable, selectedCustomer, selectedOrderType, organizationId } = useOrderContext();
-  const { printerSettings } = usePrinterSettingsData(currentOrganization?.id || undefined);
-  const { receiptTemplates = [] } = useReceiptTemplatesData(currentOrganization?.id || '');
+  const { selectedOrganization } = useAuthState();
+  const { selectedTable, selectedCustomer, selectedOrderType } = useOrderState();
+  const organizationId = selectedOrganization?.id || '';
+  const { printerSettings } = usePrinterSettingsData(selectedOrganization?.id || undefined);
+  const { receiptTemplates = [] } = useReceiptTemplatesData(selectedOrganization?.id || '');
 
   const createTempOrderForPayment = () => {
     if (cart.length === 0) return null;
@@ -118,10 +119,10 @@ export function POSCartSidebar({
               <Save className="h-5 w-5" />
             </Button>
           )}
-            {currentOrganization && cart.length > 0 && (
+            {selectedOrganization && cart.length > 0 && (
               <ReceiptPrintDialog
                 order={createTempOrderForPayment()!}
-                organization={currentOrganization}
+                organization={selectedOrganization}
                 receiptTemplates={receiptTemplates}
               >
                <Button

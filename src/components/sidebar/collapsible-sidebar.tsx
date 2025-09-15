@@ -3,16 +3,16 @@
 import * as React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { useTheme } from "@/contexts/ThemeContext";
-import { useAuth } from "@/contexts/AuthContext";
-import { useSidebar } from "@/contexts/SidebarContext";
+import { useThemeState } from "@/hooks/useThemeState";
+import { useAuthState } from "@/hooks/useAuthState";
+import { useSidebarState } from "@/hooks/useSidebarState";
 import { auth } from "@/lib/firebase";
 import { DesktopSidebar } from "./desktop-sidebar";
 import { MobileSidebar } from "./mobile-sidebar";
 import { SidebarProps } from "./sidebar-types";
 
 export function CollapsibleSidebar({ className }: SidebarProps) {
-  const { isCollapsed, toggleCollapse } = useSidebar();
+  const { sidebarCollapsed: isCollapsed, toggleSidebar: toggleCollapse } = useSidebarState();
   const [openSections, setOpenSections] = React.useState<{
     [key: string]: boolean;
   }>({
@@ -21,8 +21,8 @@ export function CollapsibleSidebar({ className }: SidebarProps) {
   });
   const pathname = usePathname();
   const router = useRouter();
-  const { theme, toggleTheme } = useTheme();
-  const { user, organizationId } = useAuth();
+  const { theme, toggleTheme } = useThemeState();
+  const { user, organizationId } = useAuthState();
 
   const toggleSection = (title: string) => {
     setOpenSections((prev) => ({

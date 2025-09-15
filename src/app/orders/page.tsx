@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { collection, query, onSnapshot, getDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { useAuth } from '@/contexts/AuthContext';
-import { useOrderContext } from '@/contexts/OrderContext';
+import { useAuthState } from '@/hooks/useAuthState';
+import { useOrderState } from '@/hooks/useOrderState';
 import { Order, OrderPayment, PaymentType, Organization, User as AppUser, OrderStatus } from '@/types';
 import { useOrdersData } from '@/hooks/orders/use-order-data';
 import { useUsersData } from '@/hooks/organization/use-users-data';
@@ -21,8 +21,9 @@ import { OrderActionsDialog } from '@/components/orders/OrderStatusActionsDialog
 
 
 function OrdersContent() {
-  const { user, organizationId } = useAuth();
-  const { orders, payments, setOrders, setPayments } = useOrderContext();
+  const { user, selectedOrganization } = useAuthState();
+  const { orders, payments, setOrders, setPayments } = useOrderState();
+  const organizationId = selectedOrganization?.id || '';
   const { orders: fetchedOrders, loading: ordersLoading } = useOrdersData(organizationId || undefined);
   const { users: usersArray, loading: usersLoading } = useUsersData(organizationId || undefined);
   const { paymentTypes, loading: paymentTypesLoading } = usePaymentTypesData(organizationId || undefined);
