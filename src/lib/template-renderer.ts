@@ -1,4 +1,4 @@
-import { Order, Organization, ReceiptTemplate, Invoice, InvoiceTemplate, Customer, Supplier, Quote, QuoteTemplate } from '@/types';
+import { Order, Organization, ReceiptTemplate, Invoice, InvoiceTemplate, Customer, Supplier, Quote, QuoteTemplate, OrderPayment } from '@/types';
 import { OrderStatus } from '@/types/enums';
 import { defaultReceiptTemplate } from '@/components/templates/default-receipt-thermal';
 import { defaultReceiptA4Template } from '@/components/templates/default-receipt-a4';
@@ -31,48 +31,61 @@ async function convertImageToBase64(imageUrl: string): Promise<string> {
 
 
 export async function renderReceiptTemplate(
-  template: ReceiptTemplate,
-  order: Order,
-  organization: Organization | null
-): Promise<string> {
-  console.log('=== Receipt Template Debug ===');
-  console.log('Organization:', organization);
-  console.log('Organization logo URL:', organization?.logoUrl);
-  console.log('Organization stamp URL:', organization?.stampUrl);
+   template: ReceiptTemplate,
+   order: Order,
+   organization: Organization | null,
+   payments: OrderPayment[] = []
+ ): Promise<string> {
+   console.log('=== Receipt Template Debug ===');
+   console.log('Organization:', organization);
+   console.log('Organization logo URL:', organization?.logoUrl);
+   console.log('Organization stamp URL:', organization?.stampUrl);
 
-  // For PDF generation, use original URLs and let html2canvas handle them
-  const companyLogoUrl = organization?.logoUrl || '';
-  const qrCodeBase64 = await generateZatcaQR(order, organization);
+   // For PDF generation, use original URLs and let html2canvas handle them
+   const companyLogoUrl = organization?.logoUrl || '';
+   const qrCodeBase64 = await generateZatcaQR(order, organization);
 
-  console.log('Company logo URL:', companyLogoUrl);
-  console.log('QR code base64 length:', qrCodeBase64.length);
+   console.log('Company logo URL:', companyLogoUrl);
+   console.log('QR code base64 length:', qrCodeBase64.length);
 
-  // Prepare template data
-  const data: ReceiptTemplateData = {
-    companyName: organization?.name || '',
-    companyNameAr: organization?.nameAr || '',
-    companyAddress: organization?.address || '',
-    companyPhone: organization?.phone || '',
-    companyVat: organization?.vatNumber || '',
-    companyLogo: companyLogoUrl,
-    orderNumber: order.orderNumber,
-    orderDate: new Date(order.createdAt).toLocaleString(),
-    tableName: order.tableName || '',
-    customerName: order.customerName || '',
-    createdByName: order.createdByName || '',
-    paymentMethod: 'Cash', // Default payment method
-    subtotal: (order.subtotal || 0).toFixed(2),
-    vatRate: (order.taxRate || 0).toString(),
-    vatAmount: (order.taxAmount || 0).toFixed(2),
-    total: (order.total || 0).toFixed(2),
-    items: order.items.map(item => ({
-      name: item.name,
-      quantity: item.quantity,
-      total: item.total.toFixed(2)
-    })),
-    includeQR: true, // Always include QR code for receipts
-    qrCodeUrl: qrCodeBase64
-  };
+   // Calculate total quantity
+   const totalQty = order.items.reduce((sum, item) => sum + item.quantity, 0);
+
+   // Prepare template data
+   const data: ReceiptTemplateData = {
+     companyName: organization?.name || '',
+     companyNameAr: organization?.nameAr || '',
+     companyAddress: organization?.address || '',
+     companyPhone: organization?.phone || '',
+     companyVat: organization?.vatNumber || '',
+     companyLogo: companyLogoUrl,
+     orderNumber: order.orderNumber,
+     queueNumber: order.queueNumber || '',
+     orderDate: new Date(order.createdAt).toLocaleString(),
+     tableName: order.tableName || '',
+     customerName: order.customerName || '',
+     createdByName: order.createdByName || '',
+     orderType: order.orderType || 'dine-in',
+     paymentMethod: 'Cash', // Default payment method
+     subtotal: (order.subtotal || 0).toFixed(2),
+     vatRate: (order.taxRate || 0).toString(),
+     vatAmount: (order.taxAmount || 0).toFixed(2),
+     total: (order.total || 0).toFixed(2),
+     customHeader: template.customHeader || '',
+     customFooter: template.customFooter || '',
+     totalQty: totalQty,
+     items: order.items.map(item => ({
+       name: item.name,
+       quantity: item.quantity,
+       total: item.total.toFixed(2)
+     })),
+     payments: payments.map(payment => ({
+       paymentType: payment.paymentMethod,
+       amount: payment.amount.toFixed(2)
+     })),
+     includeQR: true, // Always include QR code for receipts
+     qrCodeUrl: qrCodeBase64
+   };
 
   // Use template content or default template
   let templateContent = template.content;
@@ -106,6 +119,11 @@ function renderTemplate(template: string, data: ReceiptTemplateData): string {
   result = result.replace(/{{vatRate}}/g, data.vatRate);
   result = result.replace(/{{vatAmount}}/g, data.vatAmount);
   result = result.replace(/{{total}}/g, data.total);
+  result = result.replace(/{{customHeader}}/g, data.customHeader || '');
+  result = result.replace(/{{customFooter}}/g, data.customFooter || '');
+  result = result.replace(/{{totalQty}}/g, data.totalQty.toString());
+  result = result.replace(/{{queueNumber}}/g, data.queueNumber || '');
+  result = result.replace(/{{orderType}}/g, data.orderType);
 
   // Handle QR code conditional block (both syntaxes)
   if (data.includeQR && data.qrCodeUrl) {
@@ -134,6 +152,15 @@ function renderTemplate(template: string, data: ReceiptTemplateData): string {
         .replace(/{{name}}/g, item.name)
         .replace(/{{quantity}}/g, item.quantity.toString())
         .replace(/{{total}}/g, item.total);
+    }).join('');
+  });
+
+  // Handle payments loop
+  result = result.replace(/{{#each payments}}([\s\S]*?){{\/each}}/g, (match, paymentTemplate) => {
+    return data.payments.map(payment => {
+      return paymentTemplate
+        .replace(/{{paymentType}}/g, payment.paymentType)
+        .replace(/{{amount}}/g, payment.amount);
     }).join('');
   });
 

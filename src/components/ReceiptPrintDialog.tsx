@@ -5,29 +5,29 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Printer, Download } from 'lucide-react';
-import { Order, ReceiptTemplate, Organization } from '@/types';
+import { Printer } from 'lucide-react';
+import { Order, ReceiptTemplate, Organization, OrderPayment } from '@/types';
 import { renderReceiptTemplate } from '@/lib/template-renderer';
 import { toast } from 'sonner';
-import html2pdf from 'html2pdf.js';
 
 interface ReceiptPrintDialogProps {
-  order: Order;
-  organization: Organization | null;
-  receiptTemplates: ReceiptTemplate[];
-  children: React.ReactNode;
+   order: Order;
+   organization: Organization | null;
+   receiptTemplates: ReceiptTemplate[];
+   payments?: OrderPayment[];
+   children: React.ReactNode;
 }
 
 export function ReceiptPrintDialog({
-  order,
-  organization,
-  receiptTemplates,
-  children
-}: ReceiptPrintDialogProps) {
+   order,
+   organization,
+   receiptTemplates,
+   payments = [],
+   children
+ }: ReceiptPrintDialogProps) {
   const [open, setOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isDownloading, setIsDownloading] = useState(false);
 
   // Set default template on open
   const handleOpenChange = (newOpen: boolean) => {
@@ -46,7 +46,7 @@ export function ReceiptPrintDialog({
 
     try {
       // Render the receipt using template
-      const renderedContent = await renderReceiptTemplate(template, order, organization);
+      const renderedContent = await renderReceiptTemplate(template, order, organization, payments);
 
       // Create a new window for printing (safer than manipulating current DOM)
       const printWindow = window.open('', '_blank', 'width=800,height=600');
@@ -94,83 +94,6 @@ export function ReceiptPrintDialog({
     }
   };
 
-  const downloadReceipt = async () => {
-    const template = receiptTemplates.find(t => t.id === selectedTemplate);
-    if (!template) return;
-
-    setIsDownloading(true);
-
-    try {
-      // Generate HTML using template renderer
-      const htmlContent = await renderReceiptTemplate(template, order, organization);
-
-      // Convert HTML to PDF and download
-      const element = document.createElement('div');
-      element.innerHTML = htmlContent;
-
-      // Preload images before generating PDF
-      const images = element.querySelectorAll('img');
-      const imagePromises = Array.from(images).map(img => {
-        return new Promise<void>((resolve) => {
-          if (img.complete) {
-            resolve();
-          } else {
-            img.onload = () => resolve();
-            img.onerror = () => resolve(); // Continue even if image fails
-          }
-        });
-      });
-
-      // Wait for all images to load
-      await Promise.all(imagePromises);
-
-      const opt = {
-        margin: 10,
-        filename: `receipt-${order.orderNumber}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          allowTaint: true, // Allow tainting for external images
-          backgroundColor: '#ffffff',
-          logging: false,
-          letterRendering: true,
-          foreignObjectRendering: true,
-          proxy: undefined,
-          removeContainer: true
-        },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
-
-      await html2pdf().set(opt).from(element).save();
-
-      // Clean up the temporary element
-      if (element.parentNode) {
-        element.parentNode.removeChild(element);
-      }
-
-      toast.success('PDF downloaded successfully!');
-    } catch (error) {
-      console.error('Error downloading PDF:', error);
-
-      // Provide more specific error messages
-      let errorMessage = 'Error downloading PDF. Please try again.';
-      if (error instanceof Error) {
-        if (error.message.includes('html2canvas')) {
-          errorMessage = 'Error rendering receipt content. Please try a different template.';
-        } else if (error.message.includes('jsPDF')) {
-          errorMessage = 'Error generating PDF. Please check your browser settings.';
-        } else {
-          errorMessage = error.message;
-        }
-      }
-
-      toast.error(errorMessage);
-    } finally {
-      setIsDownloading(false);
-    }
-  };
-
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
@@ -184,15 +107,6 @@ export function ReceiptPrintDialog({
               Print Receipt
             </DialogTitle>
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={downloadReceipt}
-                disabled={!selectedTemplate || receiptTemplates.length === 0 || isDownloading}
-                className="flex items-center gap-2"
-              >
-                <Download className="h-4 w-4" />
-                {isDownloading ? 'Downloading...' : 'Download PDF'}
-              </Button>
               <Button
                 variant="outline"
                 onClick={() => setOpen(false)}
@@ -262,8 +176,6 @@ export function ReceiptPrintDialog({
                 </table>
               </CardContent>
             </Card>
-
-            
           </div>
 
           {/* Right Column - Template Selection & Actions */}
@@ -320,32 +232,21 @@ export function ReceiptPrintDialog({
             </Card>
 
             {/* Actions */}
-            <div className="flex justify-between">
-               <Button
-                 variant="outline"
-                 onClick={downloadReceipt}
-                 disabled={!selectedTemplate || receiptTemplates.length === 0 || isDownloading}
-                 className="flex items-center gap-2"
-               >
-                 <Download className="h-4 w-4" />
-                 {isDownloading ? 'Downloading...' : 'Download PDF'}
-               </Button>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={generateReceipt}
-                  disabled={!selectedTemplate || receiptTemplates.length === 0 || isGenerating}
-                  className="flex items-center gap-2"
-                >
-                  <Printer className="h-4 w-4" />
-                  {isGenerating ? 'Generating...' : 'Print Receipt'}
-                </Button>
-              </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={generateReceipt}
+                disabled={!selectedTemplate || receiptTemplates.length === 0 || isGenerating}
+                className="flex items-center gap-2"
+              >
+                <Printer className="h-4 w-4" />
+                {isGenerating ? 'Generating...' : 'Print Receipt'}
+              </Button>
             </div>
           </div>
         </div>

@@ -28,6 +28,7 @@ export interface Order {
   id: string;
   organizationId: string;
   orderNumber: string;
+  queueNumber?: string; // Queue number for queuing system
   items: CartItem[];
   subtotal: number;
   taxRate: number;

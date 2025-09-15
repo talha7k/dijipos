@@ -32,7 +32,9 @@ export function TemplatesTab({ receiptTemplates, onRefresh }: TemplatesTabProps)
     name: '',
     description: '',
     content: '',
-    type: 'thermal' as 'thermal' | 'a4'
+    type: 'thermal' as 'thermal' | 'a4',
+    customHeader: '',
+    customFooter: ''
   });
 
   const { templates, loading, addTemplate, setDefaultTemplate, deleteTemplate } = useTemplatesData(organizationId || undefined, selectedCategory);
@@ -46,11 +48,13 @@ export function TemplatesTab({ receiptTemplates, onRefresh }: TemplatesTabProps)
       category: selectedCategory,
       type: newTemplate.type,
       content: newTemplate.content || defaultReceiptTemplate,
+      customHeader: newTemplate.customHeader,
+      customFooter: newTemplate.customFooter,
       isDefault: templates.length === 0,
       organizationId,
     });
 
-    setNewTemplate({ name: '', description: '', content: '', type: 'thermal' });
+    setNewTemplate({ name: '', description: '', content: '', type: 'thermal', customHeader: '', customFooter: '' });
     setTemplateDialogOpen(false);
     onRefresh?.();
     toast.success(`${selectedCategory} template added successfully`);
@@ -135,6 +139,24 @@ export function TemplatesTab({ receiptTemplates, onRefresh }: TemplatesTabProps)
                   />
                 </div>
                 <div>
+                  <Label htmlFor="custom-header">Custom Header (Optional)</Label>
+                  <Input
+                    id="custom-header"
+                    placeholder="Custom header text (will appear at the top of receipts)"
+                    value={newTemplate.customHeader}
+                    onChange={(e) => setNewTemplate({ ...newTemplate, customHeader: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="custom-footer">Custom Footer (Optional)</Label>
+                  <Input
+                    id="custom-footer"
+                    placeholder="Custom footer text (will appear before final footer)"
+                    value={newTemplate.customFooter}
+                    onChange={(e) => setNewTemplate({ ...newTemplate, customFooter: e.target.value })}
+                  />
+                </div>
+                <div>
                   <Label htmlFor="template-type">Template Type</Label>
                   <select
                     id="template-type"
@@ -156,7 +178,7 @@ export function TemplatesTab({ receiptTemplates, onRefresh }: TemplatesTabProps)
                     onChange={(e) => setNewTemplate({ ...newTemplate, content: e.target.value })}
                   />
                   <p className="text-sm text-muted-foreground mt-1">
-                    Available placeholders: {'{{companyName}}'}, {'{{companyAddress}}'}, {'{{companyPhone}}'}, {'{{companyVat}}'}, {'{{orderNumber}}'}, {'{{orderDate}}'}, {'{{tableName}}'}, {'{{customerName}}'}, {'{{#each items}}...{{/each}}'}, {'{{subtotal}}'}, {'{{vatRate}}'}, {'{{vatAmount}}'}, {'{{total}}'}, {'{{paymentMethod}}'}
+                    Available placeholders: {'{{companyName}}'}, {'{{companyAddress}}'}, {'{{companyPhone}}'}, {'{{companyVat}}'}, {'{{orderNumber}}'}, {'{{queueNumber}}'}, {'{{orderType}}'}, {'{{orderDate}}'}, {'{{tableName}}'}, {'{{customerName}}'}, {'{{#each items}}...{{/each}}'}, {'{{subtotal}}'}, {'{{vatRate}}'}, {'{{vatAmount}}'}, {'{{total}}'}, {'{{totalQty}}'}, {'{{customHeader}}'}, {'{{customFooter}}'}, {'{{#each payments}}...{{/each}}'}, {'{{paymentMethod}}'}
                   </p>
                 </div>
                 <Button onClick={handleAddTemplate} className="w-full">

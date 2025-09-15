@@ -63,6 +63,8 @@ export interface ReceiptTemplate {
   description?: string;
   type: ReceiptTemplateType;
   content: string; // HTML template content
+  customHeader?: string;
+  customFooter?: string;
   isDefault: boolean;
   organizationId: string;
   createdAt: Date;
@@ -77,19 +79,28 @@ export interface ReceiptTemplateData {
   companyVat: string;
   companyLogo: string;
   orderNumber: string;
+  queueNumber?: string;
   orderDate: string;
   tableName: string;
   customerName: string;
   createdByName: string;
+  orderType: string;
   paymentMethod: string;
   subtotal: string;
   vatRate: string;
   vatAmount: string;
   total: string;
+  customHeader?: string;
+  customFooter?: string;
+  totalQty: number;
   items: Array<{
     name: string;
     quantity: number;
     total: string;
+  }>;
+  payments: Array<{
+    paymentType: string;
+    amount: string;
   }>;
   includeQR: boolean;
   qrCodeUrl?: string;
@@ -188,6 +199,8 @@ export interface UnifiedTemplate {
   category: TemplateCategory;
   type: string; // Will be the specific type like 'thermal', 'a4', etc.
   content: string;
+  customHeader?: string;
+  customFooter?: string;
   isDefault: boolean;
   createdAt: Date;
   updatedAt: Date;

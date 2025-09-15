@@ -7,11 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { Printer, Download } from 'lucide-react';
+import { Printer } from 'lucide-react';
 import { Quote, Organization, Customer, QuoteTemplate } from '@/types';
 import { renderQuoteTemplate } from '@/lib/template-renderer';
 import { toast } from 'sonner';
-import html2pdf from 'html2pdf.js';
 
 interface QuotePrintDialogProps {
   quote: Quote;
@@ -35,7 +34,6 @@ export function QuotePrintDialog({
   const [internalOpen, setInternalOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isDownloading, setIsDownloading] = useState(false);
 
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
   const setOpen = controlledOnOpenChange || setInternalOpen;
@@ -105,61 +103,7 @@ export function QuotePrintDialog({
     }
   };
 
-  const downloadQuote = async () => {
-    const template = quoteTemplates.find(t => t.id === selectedTemplate);
-    if (!template) return;
 
-    setIsDownloading(true);
-
-    try {
-      // Generate HTML using template renderer
-      const htmlContent = await renderQuoteTemplate(template, quote, organization, customer);
-
-      // Convert HTML to PDF and download
-      const element = document.createElement('div');
-      element.innerHTML = htmlContent;
-
-      const opt = {
-        margin: 10,
-        filename: `quote-${quote.id}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          allowTaint: true,
-          backgroundColor: '#ffffff'
-        },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
-
-      await html2pdf().set(opt).from(element).save();
-
-      // Clean up the temporary element
-      if (element.parentNode) {
-        element.parentNode.removeChild(element);
-      }
-
-      toast.success('PDF downloaded successfully!');
-    } catch (error) {
-      console.error('Error downloading PDF:', error);
-
-      // Provide more specific error messages
-      let errorMessage = 'Error downloading PDF. Please try again.';
-      if (error instanceof Error) {
-        if (error.message.includes('html2canvas')) {
-          errorMessage = 'Error rendering quote content. Please try a different template.';
-        } else if (error.message.includes('jsPDF')) {
-          errorMessage = 'Error generating PDF. Please check your browser settings.';
-        } else {
-          errorMessage = error.message;
-        }
-      }
-
-      toast.error(errorMessage);
-    } finally {
-      setIsDownloading(false);
-    }
-  };
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -176,15 +120,6 @@ export function QuotePrintDialog({
               Print Quote
             </DialogTitle>
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={downloadQuote}
-                disabled={!selectedTemplate || quoteTemplates.length === 0 || isDownloading}
-                className="flex items-center gap-2"
-              >
-                <Download className="h-4 w-4" />
-                {isDownloading ? 'Downloading...' : 'Download PDF'}
-              </Button>
               <Button
                 variant="outline"
                 onClick={() => setOpen(false)}

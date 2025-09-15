@@ -124,6 +124,7 @@ export function POSCartSidebar({
                 order={createTempOrderForPayment()!}
                 organization={selectedOrganization}
                 receiptTemplates={receiptTemplates}
+                payments={[]}
               >
                <Button
                  variant="outline"

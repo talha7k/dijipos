@@ -164,6 +164,7 @@ export function OrderSummaryCard({
               order={order}
               organization={selectedOrganization}
               receiptTemplates={receiptTemplates}
+              payments={payments}
             >
               <Button
                 variant="outline"
