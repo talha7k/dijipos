@@ -134,6 +134,8 @@ export function RouteGuard({ children }: RouteGuardProps) {
   }, [
     loading,
     organizationLoading,
+    error,
+    organizationError,
     user,
     emailVerified,
     currentOrganization,
