@@ -1,10 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { addDoc, collection } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import { useOrganizationId } from '@/hooks/useAuthState';
-import { usePaymentsData } from '@/hooks/usePayments';
+import { usePaymentsData, usePaymentsActions } from '@/hooks/usePayments';
 import { useInvoicesData } from '@/hooks/useInvoices';
 
 import { Button } from '@/components/ui/button';
@@ -20,6 +18,7 @@ function PaymentsContent() {
   const organizationId = useOrganizationId();
   const { payments, loading: paymentsLoading } = usePaymentsData(organizationId || undefined);
   const { invoices, loading: invoicesLoading } = useInvoicesData(organizationId || undefined);
+  const { createPayment } = usePaymentsActions(organizationId || undefined);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedInvoiceId, setSelectedInvoiceId] = useState('');
   const [amount, setAmount] = useState('');
@@ -32,20 +31,23 @@ function PaymentsContent() {
     e.preventDefault();
     if (!organizationId || !selectedInvoiceId) return;
 
-    await addDoc(collection(db, 'organizations', organizationId, 'payments'), {
-      organizationId,
-      invoiceId: selectedInvoiceId,
-      amount: parseFloat(amount),
-      paymentDate: new Date(),
-      paymentMethod,
-      notes,
-    });
+    try {
+      await createPayment({
+        invoiceId: selectedInvoiceId,
+        amount: parseFloat(amount),
+        paymentDate: new Date(),
+        paymentMethod,
+        notes: notes || undefined,
+      });
 
-    setDialogOpen(false);
-    setSelectedInvoiceId('');
-    setAmount('');
-    setPaymentMethod('');
-    setNotes('');
+      setDialogOpen(false);
+      setSelectedInvoiceId('');
+      setAmount('');
+      setPaymentMethod('');
+      setNotes('');
+    } catch (error) {
+      console.error('Error creating payment:', error);
+    }
   };
 
   if (loading) return <div>Loading...</div>;

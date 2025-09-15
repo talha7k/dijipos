@@ -1,59 +1,55 @@
-import { useState } from 'react';
-import { doc, addDoc, deleteDoc, collection } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { InvitationCode } from '@/types';
+import { UserRole } from '@/types';
 
 export function useInvitationCodesActions(organizationId: string | undefined) {
-  const [loading, setLoading] = useState(false);
+  const createInvitationCode = async (invitationData: {
+    code: string;
+    role: UserRole;
+    expiresAt: Date;
+  }) => {
+    if (!organizationId) {
+      throw new Error('Organization ID is required');
+    }
 
-  const generateInvitationCode = () => {
+    const invitationCode = {
+      organizationId,
+      ...invitationData,
+      isUsed: false,
+      createdAt: new Date(),
+    };
+
+    const docRef = await addDoc(collection(db, 'organizations', organizationId, 'invitationCodes'), invitationCode);
+    return docRef.id;
+  };
+
+  const createInvitationCodeSimple = async (role: string, expiresAt: Date) => {
+    // Generate a random code
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let code = '';
     for (let i = 0; i < 8; i++) {
       code += chars.charAt(Math.floor(Math.random() * chars.length));
     }
-    return code;
-  };
 
-  const createInvitationCode = async (role: 'admin' | 'manager' | 'waiter' | 'cashier', expiresAt: Date) => {
-    if (!organizationId) return;
-
-    setLoading(true);
-    try {
-      const code = generateInvitationCode();
-      await addDoc(collection(db, 'invitationCodes'), {
-        code,
-        organizationId,
-        role,
-        expiresAt,
-        isUsed: false,
-        createdAt: new Date(),
-      });
-    } catch (error) {
-      console.error('Error creating invitation code:', error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
+    return createInvitationCode({
+      code,
+      role: role as UserRole,
+      expiresAt,
+    });
   };
 
   const deleteInvitationCode = async (codeId: string) => {
-    if (!organizationId) return;
-
-    setLoading(true);
-    try {
-      await deleteDoc(doc(db, 'invitationCodes', codeId));
-    } catch (error) {
-      console.error('Error deleting invitation code:', error);
-      throw error;
-    } finally {
-      setLoading(false);
+    if (!organizationId) {
+      throw new Error('Organization ID is required');
     }
+
+    const codeRef = doc(db, 'organizations', organizationId, 'invitationCodes', codeId);
+    await deleteDoc(codeRef);
   };
 
   return {
     createInvitationCode,
+    createInvitationCodeSimple,
     deleteInvitationCode,
-    loading,
   };
 }

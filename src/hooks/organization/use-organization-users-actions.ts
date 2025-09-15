@@ -1,47 +1,54 @@
-import { useState } from 'react';
-import { doc, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, updateDoc, doc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { OrganizationUser } from '@/types';
+import { OrganizationUser, UserRole } from '@/types';
 
 export function useOrganizationUsersActions(organizationId: string | undefined) {
-  const [updating, setUpdating] = useState(false);
+  const updateUser = async (userId: string, updates: Partial<OrganizationUser>) => {
+    if (!organizationId) {
+      throw new Error('Organization ID is required');
+    }
+
+    const userRef = doc(db, 'organizations', organizationId, 'organizationUsers', userId);
+    await updateDoc(userRef, {
+      ...updates,
+      updatedAt: new Date(),
+    });
+  };
 
   const updateOrganizationUser = async (userId: string, updates: Partial<OrganizationUser>) => {
-    if (!organizationId) return;
+    return updateUser(userId, updates);
+  };
 
-    setUpdating(true);
-    try {
-      const userRef = doc(db, 'organizationUsers', userId);
-      await updateDoc(userRef, {
-        ...updates,
-        updatedAt: new Date(),
-      });
-    } catch (error) {
-      console.error('Error updating organization user:', error);
-      throw error;
-    } finally {
-      setUpdating(false);
+  const toggleUserStatus = async (userId: string, isActive: boolean) => {
+    if (!organizationId) {
+      throw new Error('Organization ID is required');
     }
+
+    const userRef = doc(db, 'organizations', organizationId, 'organizationUsers', userId);
+    await updateDoc(userRef, {
+      isActive: !isActive,
+      updatedAt: new Date(),
+    });
   };
 
   const updateUserStatus = async (userId: string, isActive: boolean) => {
-    if (!organizationId) return;
+    return toggleUserStatus(userId, isActive);
+  };
 
-    setUpdating(true);
-    try {
-      const userRef = doc(db, 'users', userId);
-      await updateDoc(userRef, { isActive });
-    } catch (error) {
-      console.error('Error updating user status:', error);
-      throw error;
-    } finally {
-      setUpdating(false);
+  const deleteUser = async (userId: string) => {
+    if (!organizationId) {
+      throw new Error('Organization ID is required');
     }
+
+    const userRef = doc(db, 'organizations', organizationId, 'organizationUsers', userId);
+    await deleteDoc(userRef);
   };
 
   return {
+    updateUser,
     updateOrganizationUser,
+    toggleUserStatus,
     updateUserStatus,
-    updating,
+    deleteUser,
   };
 }

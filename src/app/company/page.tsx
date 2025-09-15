@@ -34,7 +34,7 @@ function CompanyContent() {
   const { organizationUsers, loading: usersLoading, error: usersError } = useOrganizationUsersData(organizationId || undefined);
   const { invitationCodes, loading: codesLoading, error: codesError } = useInvitationCodesData(organizationId || undefined);
   const { updateOrganization, updateOrganizationBranding } = useOrganizationActions(organizationId || undefined);
-  const { createInvitationCode, deleteInvitationCode } = useInvitationCodesActions(organizationId || undefined);
+  const { createInvitationCodeSimple, deleteInvitationCode } = useInvitationCodesActions(organizationId || undefined);
   const { updateOrganizationUser, updateUserStatus } = useOrganizationUsersActions(organizationId || undefined);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -143,7 +143,7 @@ function CompanyContent() {
     if (!organizationId) return;
 
     try {
-      await createInvitationCode(invitationFormData.role, invitationFormData.expiresAt);
+      await createInvitationCodeSimple(invitationFormData.role, invitationFormData.expiresAt);
 
       setInvitationDialogOpen(false);
       setInvitationFormData({

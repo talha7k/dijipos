@@ -55,3 +55,35 @@ export function usePaymentsData(organizationId: string | undefined) {
     loading,
   };
 }
+
+export function usePaymentsActions(organizationId: string | undefined) {
+  const createPayment = async (paymentData: {
+    invoiceId: string;
+    amount: number;
+    paymentDate: Date;
+    paymentMethod: string;
+    notes?: string;
+    reference?: string;
+  }) => {
+    if (!organizationId) {
+      throw new Error('Organization ID is required');
+    }
+
+    const { addDoc, collection } = await import('firebase/firestore');
+    const { db } = await import('@/lib/firebase');
+
+    const payment = {
+      organizationId,
+      ...paymentData,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    const docRef = await addDoc(collection(db, 'organizations', organizationId, 'payments'), payment);
+    return docRef.id;
+  };
+
+  return {
+    createPayment,
+  };
+}

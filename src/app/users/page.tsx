@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { addDoc, collection, updateDoc, doc, deleteDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
 import { useOrganizationUsersData } from '@/hooks/organization/use-organization-users-data';
 import { useInvitationCodesData } from '@/hooks/organization/use-invitation-codes-data';
+import { useOrganizationUsersActions } from '@/hooks/organization/use-organization-users-actions';
+import { useInvitationCodesActions } from '@/hooks/organization/use-invitation-codes-actions';
 import { OrganizationUser, UserRole } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,9 +22,11 @@ import { toast } from 'sonner';
 
 function UsersContent() {
   const organizationId = useOrganizationId();
-  
+
   const { organizationUsers, loading: usersLoading } = useOrganizationUsersData(organizationId || undefined);
   const { invitationCodes, loading: codesLoading } = useInvitationCodesData(organizationId || undefined);
+  const { updateUser, toggleUserStatus } = useOrganizationUsersActions(organizationId || undefined);
+  const { createInvitationCode, deleteInvitationCode } = useInvitationCodesActions(organizationId || undefined);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [invitationDialogOpen, setInvitationDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<OrganizationUser | null>(null);
@@ -53,13 +55,10 @@ function UsersContent() {
 
     try {
       const code = generateInvitationCode();
-      await addDoc(collection(db, 'organizations', organizationId, 'invitationCodes'), {
+      await createInvitationCode({
         code,
-        organizationId,
         role: invitationFormData.role,
         expiresAt: invitationFormData.expiresAt,
-        isUsed: false,
-        createdAt: new Date(),
       });
 
       setInvitationDialogOpen(false);
@@ -77,7 +76,7 @@ function UsersContent() {
     if (!organizationId) return;
 
     try {
-      await deleteDoc(doc(db, 'organizations', organizationId, 'invitationCodes', codeId));
+      await deleteInvitationCode(codeId);
     } catch (error) {
       console.error('Error deleting invitation code:', error);
       toast.error('Failed to delete invitation code. Please try again.');
@@ -98,11 +97,7 @@ function UsersContent() {
     if (!editingUser || !organizationId) return;
 
     try {
-      const userRef = doc(db, 'organizations', organizationId, 'organizationUsers', editingUser.id);
-      await updateDoc(userRef, {
-        ...formData,
-        updatedAt: new Date(),
-      });
+      await updateUser(editingUser.id, formData);
 
       setDialogOpen(false);
       setEditingUser(null);
@@ -120,11 +115,7 @@ function UsersContent() {
     if (!organizationId) return;
 
     try {
-      const userRef = doc(db, 'organizations', organizationId, 'organizationUsers', userId);
-      await updateDoc(userRef, {
-        isActive: !currentStatus,
-        updatedAt: new Date(),
-      });
+      await toggleUserStatus(userId, currentStatus);
     } catch (error) {
       console.error('Error toggling user status:', error);
       toast.error('Failed to update user status. Please try again.');

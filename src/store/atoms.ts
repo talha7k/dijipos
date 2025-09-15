@@ -71,7 +71,7 @@ export const orderTypesRefreshKeyAtom = atom<number>(0);
 export const cartItemsAtom = atomWithStorage<CartItem[]>('dijibill-cart-items', [], indexedDBStorage);
 export const cartTotalAtom = atom(async (get) => {
   const cartItems = await get(cartItemsAtom);
-  return cartItems.reduce((sum: number, item: CartItem) => sum + item.total, 0);
+  return (cartItems || []).reduce((sum: number, item: CartItem) => sum + item.total, 0);
 });
 export const cartLoadingAtom = atom<boolean>(false);
 

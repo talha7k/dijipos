@@ -33,8 +33,10 @@ function LoginContent() {
     setError('');
     setIsLoading(true);
     try {
+      console.log('Attempting login with email:', email);
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+      console.log('Login successful for user:', user.email);
       
       // Check if email is verified
       if (!user.emailVerified) {
