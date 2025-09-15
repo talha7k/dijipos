@@ -18,6 +18,7 @@ interface AuthContextType {
   emailVerified: boolean;
   selectOrganization: (organizationId: string) => Promise<void>;
   refreshUserOrganizations: () => Promise<void>;
+  retryOrganizationLoad: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -33,6 +34,7 @@ const AuthContext = createContext<AuthContextType>({
   emailVerified: false,
   selectOrganization: async () => {},
   refreshUserOrganizations: async () => {},
+  retryOrganizationLoad: async () => {},
   logout: async () => {},
 });
 
@@ -52,24 +54,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Add timeouts to prevent infinite loading
   useEffect(() => {
     const authTimeout = setTimeout(() => {
-      if (loading) {
+      if (loading && !organizationLoading) {
         console.warn('AuthContext: Auth loading timeout reached, forcing loading to false');
         setLoading(false);
         setError('Authentication timeout - please refresh the page');
       }
-    }, 8000); // 8 second timeout for auth
+    }, 12000); // 12 second timeout for auth (increased)
 
     return () => clearTimeout(authTimeout);
-  }, [loading]);
+  }, [loading, organizationLoading]);
 
   useEffect(() => {
     const orgTimeout = setTimeout(() => {
       if (organizationLoading) {
         console.warn('AuthContext: Organization loading timeout reached, forcing organizationLoading to false');
         setOrganizationLoading(false);
-        setError('Organization loading timeout - please try selecting your organization again');
+        setError('Organization loading timeout - please check your connection and try again');
       }
-    }, 10000); // 10 second timeout for organization loading
+    }, 15000); // 15 second timeout for organization loading (increased)
 
     return () => clearTimeout(orgTimeout);
   }, [organizationLoading]);
@@ -129,7 +131,44 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     } catch (error) {
       console.error('Error selecting organization:', error);
-      setError('Failed to switch organization');
+      // Don't set error state here as it might break the auth flow
+      // Instead, just log the error and let the user try again
+    } finally {
+      setOrganizationLoading(false);
+    }
+  };
+
+  const retryOrganizationLoad = async () => {
+    if (!user) return;
+    
+    console.log('AuthContext: Retrying organization load');
+    setOrganizationLoading(true);
+    setError(null);
+    
+    try {
+      const organizationUsersQuery = query(
+        collection(db, 'organizationUsers'),
+        where('userId', '==', user.uid),
+        where('isActive', '==', true)
+      );
+      const organizationUsersSnapshot = await getDocs(organizationUsersQuery);
+      const organizationAssociations = organizationUsersSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate(),
+        updatedAt: doc.data().updatedAt?.toDate(),
+      })) as OrganizationUser[];
+
+      setUserOrganizations(organizationAssociations);
+
+      // Try to auto-select organization if one was stored
+      const storedOrganizationId = localStorage.getItem('selectedOrganizationId');
+      if (storedOrganizationId && organizationAssociations.some(ou => ou.organizationId === storedOrganizationId)) {
+        await selectOrganization(storedOrganizationId);
+      }
+    } catch (error) {
+      console.error('Retry organization load error:', error);
+      setError('Failed to load organizations. Please check your connection.');
     } finally {
       setOrganizationLoading(false);
     }
@@ -199,13 +238,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
               if (storedOrganizationId && organizationAssociations.some(ou => ou.organizationId === storedOrganizationId)) {
                 console.log('AuthContext: Auto-selecting organization');
-                await selectOrganization(storedOrganizationId);
+                try {
+                  await selectOrganization(storedOrganizationId);
+                } catch (selectError) {
+                  console.error('Organization auto-selection error:', selectError);
+                  // Don't fail the entire process if auto-selection fails
+                  // User can manually select organization later
+                }
               }
             } catch (orgError) {
               console.error('Organization fetch error:', orgError);
               // Don't fail the entire auth process for organization errors
               setUserOrganizations([]);
-              setError('Failed to load organizations. Please refresh the page or check your connection.');
+              // Don't set error state here as it will break the auth flow
+              // Instead, let the timeout handle it if needed
             } finally {
               setOrganizationLoading(false);
               console.log('AuthContext: Organization loading complete');
@@ -239,7 +285,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, organizationUser, currentOrganization, userOrganizations, loading, organizationLoading, organizationId, error, emailVerified, selectOrganization, refreshUserOrganizations, logout }}>
+    <AuthContext.Provider value={{ user, organizationUser, currentOrganization, userOrganizations, loading, organizationLoading, organizationId, error, emailVerified, selectOrganization, refreshUserOrganizations, retryOrganizationLoad, logout }}>
       {children}
     </AuthContext.Provider>
   );

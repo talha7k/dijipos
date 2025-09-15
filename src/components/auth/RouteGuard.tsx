@@ -18,7 +18,8 @@ export function RouteGuard({ children }: RouteGuardProps) {
     emailVerified, 
     currentOrganization, 
     userOrganizations, 
-    organizationId 
+    organizationId,
+    retryOrganizationLoad
   } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
@@ -151,11 +152,29 @@ export function RouteGuard({ children }: RouteGuardProps) {
 
   // Show error state
   if (error) {
+    const isOrganizationError = error.toLowerCase().includes('organization') || error.toLowerCase().includes('timeout');
+    
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 max-w-md">
-          <h3 className="text-red-800 font-medium">Authentication Error</h3>
-          <p className="text-red-600 mt-1">{error}</p>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md w-full">
+          <h3 className="text-red-800 font-medium text-lg">
+            {isOrganizationError ? 'Organization Loading Error' : 'Authentication Error'}
+          </h3>
+          <p className="text-red-600 mt-2">{error}</p>
+          {isOrganizationError && (
+            <button
+              onClick={retryOrganizationLoad}
+              className="mt-4 w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition-colors"
+            >
+              Retry Loading Organizations
+            </button>
+          )}
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-2 w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 transition-colors"
+          >
+            Refresh Page
+          </button>
         </div>
       </div>
     );
