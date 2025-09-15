@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
+import { useAuthState } from '@/hooks/useAuthState';
 import { Building2, Plus, Users, ArrowRight, Crown, Mail, LogOut } from 'lucide-react';
 import { collection, query, where, getDocs, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';

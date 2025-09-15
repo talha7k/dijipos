@@ -8,11 +8,11 @@ import Link from 'next/link';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
-import { useQuotesData } from '@/hooks/invoices_quotes/use-quotes-data';
-import { useInvoicesData } from '@/hooks/invoices_quotes/use-invoices-data';
-import { usePaymentsData } from '@/hooks/use-payments-data';
+import { useQuotesData } from '@/hooks/useQuotes';
+import { useInvoicesData } from '@/hooks/useInvoices';
+import { usePaymentsData } from '@/hooks/usePayments';
 import { useProductsData } from '@/hooks/products_services/useProducts';
-import { useServicesData } from '@/hooks/products_services/use-services-data';
+import { useServicesData } from '@/hooks/products_services/useServices';
 import { useTablesData } from '@/hooks/tables/useTables';
 import { TableStatus } from '@/types';
 

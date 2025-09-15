@@ -6,9 +6,9 @@ import { db } from '@/lib/firebase';
 import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
 import { useOrderState } from '@/hooks/useOrderState';
 import { Order, OrderPayment, PaymentType, Organization, User as AppUser, OrderStatus } from '@/types';
-import { useOrdersData } from '@/hooks/orders/use-order-data';
+import { useOrders } from '@/hooks/orders/useOrders';
 import { useUsersData } from '@/hooks/organization/use-users-data';
-import { usePaymentTypesData } from '@/hooks/use-payment-types-data';
+import { usePaymentTypesData } from '@/hooks/uePaymentTypes';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -23,9 +23,9 @@ import { OrderActionsDialog } from '@/components/orders/OrderStatusActionsDialog
 function OrdersContent() {
   const user = useUser();
   const selectedOrganization = useSelectedOrganization();
-  const { orders, payments, setOrders, setPayments } = useOrderState();
+  const { orders, setOrders, setPayments } = useOrderState();
   const organizationId = selectedOrganization?.id || '';
-  const { orders: fetchedOrders, loading: ordersLoading } = useOrdersData(organizationId || undefined);
+  const { orders: fetchedOrders, loading: ordersLoading, orderPayments } = useOrders(organizationId || undefined);
   const { users: usersArray, loading: usersLoading } = useUsersData(organizationId || undefined);
   const { paymentTypes, loading: paymentTypesLoading } = usePaymentTypesData(organizationId || undefined);
   const [users, setUsers] = useState<{ [userId: string]: AppUser }>({});
@@ -109,8 +109,8 @@ function OrdersContent() {
   };
 
   const getOrderTotalPaid = (orderId: string) => {
-    const orderPayments = payments[orderId] || [];
-    return orderPayments.reduce((sum, payment) => sum + payment.amount, 0);
+    const orderPaymentsForOrder = orderPayments[orderId] || [];
+    return orderPaymentsForOrder.reduce((sum: number, payment: any) => sum + payment.amount, 0);
   };
 
   const isOrderPaid = (order: Order) => {
@@ -175,9 +175,9 @@ function OrdersContent() {
     let isPaid = selectedOrder.paid;
     
     // Fallback: check payments directly if paid field is false
-    if (!isPaid && payments[selectedOrder.id]) {
-      const orderPayments = payments[selectedOrder.id];
-      const totalPaid = orderPayments.reduce((sum, payment) => sum + payment.amount, 0);
+    if (!isPaid && orderPayments[selectedOrder.id]) {
+      const orderPaymentsForOrder = orderPayments[selectedOrder.id];
+      const totalPaid = orderPaymentsForOrder.reduce((sum: number, payment: any) => sum + payment.amount, 0);
       isPaid = totalPaid >= selectedOrder.total;
     }
     
@@ -393,9 +393,9 @@ function OrdersContent() {
                                         {selectedOrder.paid ? "Paid" : "Unpaid"}
                                       </Badge>
                                     </div>
-                                    {payments[selectedOrder.id] && payments[selectedOrder.id].length > 0 ? (
+                                    {orderPayments[selectedOrder.id] && orderPayments[selectedOrder.id].length > 0 ? (
                                       <>
-                                        {payments[selectedOrder.id].map((payment, index) => (
+                                        {orderPayments[selectedOrder.id].map((payment: any, index: number) => (
                                           <div key={index} className="flex justify-between text-sm">
                                             <span>{payment.paymentMethod}:</span>
                                             <span>{formatCurrency(payment.amount)}</span>
@@ -488,7 +488,7 @@ function OrdersContent() {
                        
 <OrderActionsDialog
                           order={order}
-                          payments={payments[order.id] || []}
+                          payments={orderPayments[order.id] || []}
                           updatingStatus={updatingStatus}
                           onMarkAsPaid={markOrderAsPaid}
                           onCompleteOrder={completeOrder}

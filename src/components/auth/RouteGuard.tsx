@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
+import { useAuthState } from '@/hooks/useAuthState';
 import { toast } from 'sonner';
 
 interface RouteGuardProps {

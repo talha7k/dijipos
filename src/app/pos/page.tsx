@@ -4,14 +4,12 @@ import React from "react";
 import { useOrganizationId } from "@/hooks/useAuthState";
 import { OrderItem, ItemType } from "@/types";
 import { useProductsData } from "@/hooks/products_services/useProducts";
-import { useServicesData } from "@/hooks/products_services/use-services-data";
-import { useCategoriesData } from "@/hooks/products_services/use-categories-data";
+import { useServicesData } from "@/hooks/products_services/useServices";
+import { useCategoriesData } from "@/hooks/products_services/useCategories";
 import { useTablesData } from "@/hooks/tables/useTables";
-import { useCustomersData } from "@/hooks/customers/useCustomerState";
-import { useOrdersData } from "@/hooks/orders/use-order-data";
-import { useOrderTypesData } from "@/hooks/orders/use-order-types-data";
-import { usePaymentTypesData } from "@/hooks/use-payment-types-data";
-import { useOrderPayments } from "@/hooks/orders/use-order-payments";
+import { useCustomersData } from "@/hooks/useCustomerState";
+import { useOrders } from "@/hooks/orders/useOrders";
+import { usePaymentTypesData } from "@/hooks/uePaymentTypes";
 
 import {
   POSLayout,
@@ -57,15 +55,15 @@ export default function SimplifiedPOSPage() {
   const { customers = [], loading: customersLoading } = useCustomersData(
     organizationId || ""
   );
-  const { orders = [], loading: ordersLoading } = useOrdersData(
-    organizationId || ""
-  );
+  const { 
+    orders = [], 
+    orderTypes = [], 
+    orderPayments = {},
+    loading: ordersLoading,
+    paymentsLoading: orderPaymentsLoading 
+  } = useOrders(organizationId || undefined);
   const { paymentTypes = [], loading: paymentTypesLoading } =
     usePaymentTypesData(organizationId || "");
-  const { orderPayments, loading: orderPaymentsLoading } = useOrderPayments({
-    organizationId: organizationId || undefined,
-  });
-  const { orderTypes = [] } = useOrderTypesData(organizationId || "");
 
   // Use the custom POS logic hook
   const {

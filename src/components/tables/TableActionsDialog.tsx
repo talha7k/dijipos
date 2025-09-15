@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Table, Order, TableStatus } from '@/types';
 import { useTablesData } from '@/hooks/tables/useTables';
-import { useOrdersData } from '@/hooks/orders/use-order-data';
+import { useOrders } from '@/hooks/orders/useOrders';
 import { useTableManagement } from '@/hooks/tables/use-table-management';
 import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
 import {
@@ -27,7 +27,7 @@ interface TableActionsDialogProps {
 export function TableActionsDialog({ table, children }: TableActionsDialogProps) {
   const organizationId = useOrganizationId();
   const { tables } = useTablesData(organizationId || undefined);
-  const { orders } = useOrdersData(organizationId || undefined);
+  const { orders } = useOrders(organizationId || undefined);
   const { releaseTable, moveOrderToTable, updating } = useTableManagement(organizationId || undefined);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedTableId, setSelectedTableId] = useState<string>('');

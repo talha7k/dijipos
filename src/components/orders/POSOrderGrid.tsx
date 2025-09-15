@@ -1,8 +1,7 @@
 import { Order, OrderPayment, OrderStatus } from "@/types";
 import { OrderList } from "@/components/orders/OrderList";
 import { OrderDetailView } from "@/components/orders/OrderDetailView";
-import { useOrderManagement } from "@/hooks/orders/use-order-management";
-import { useOrderSelection } from "@/hooks/orders/use-order-selection";
+import { useOrders } from "@/hooks/orders/useOrders";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -28,8 +27,14 @@ export function POSOrderGrid({
   onBack,
   onOrderUpdate,
 }: POSOrderGridProps) {
-  const { selectedOrder, selectOrder, clearSelection } = useOrderSelection();
-  const { markOrderAsPaid, completeOrder, updateOrderStatus, updatingStatus } = useOrderManagement(organizationId);
+  const { 
+    selectedOrder, 
+    selectOrder, 
+    clearSelection,
+    markOrderAsPaid, 
+    completeOrder, 
+    updateOrderStatus 
+  } = useOrders(organizationId);
   const [filterStatus, setFilterStatus] = useState<'all' | 'open' | 'completed' | 'preparing' | 'cancelled' | 'on_hold'>('open');
 
   const handleMarkAsPaid = async (orderId: string) => {
@@ -42,7 +47,7 @@ export function POSOrderGrid({
 
   const handleCompleteOrder = async () => {
     if (!selectedOrder) return;
-    const success = await completeOrder(selectedOrder, payments);
+    const success = await completeOrder(selectedOrder);
     if (success) {
       onOrderUpdate?.();
       clearSelection();
@@ -50,7 +55,7 @@ export function POSOrderGrid({
   };
 
   const handleUpdateOrderStatus = async (order: Order, newStatus: OrderStatus) => {
-    const success = await updateOrderStatus(order, newStatus, payments);
+    const success = await updateOrderStatus(order.id, newStatus);
     if (success) {
       onOrderUpdate?.();
       clearSelection();
@@ -111,7 +116,7 @@ export function POSOrderGrid({
       <OrderDetailView
         order={selectedOrder}
         payments={payments[selectedOrder.id] || []}
-        updatingStatus={updatingStatus}
+        updatingStatus={false}
         onBack={handleBackToList}
         onReopenOrder={handleReopenOrder}
         onPayOrder={handlePayOrder}

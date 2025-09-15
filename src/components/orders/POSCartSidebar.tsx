@@ -3,7 +3,7 @@ import { ShoppingCart, Save, Printer, Trash2 } from 'lucide-react';
 import { POSCartItem } from './POSCartItem';
 import { ReceiptPrintDialog } from '@/components/ReceiptPrintDialog';
 import { Order, OrderStatus, ItemType } from '@/types';
-import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
+import { useAuthState } from '@/hooks/useAuthState';
 import { useOrderState } from '@/hooks/useOrderState';
 import { usePrinterSettingsData } from '@/hooks/organization/use-printer-settings-data';
 import { useReceiptTemplatesData } from '@/hooks/use-receipt-templates-data';

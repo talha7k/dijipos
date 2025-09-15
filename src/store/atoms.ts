@@ -53,6 +53,16 @@ export const ordersErrorAtom = atom<string | null>(null);
 // Order payments
 export const paymentsAtom = atom<{ [orderId: string]: OrderPayment[] }>({});
 
+// Order types state
+export const orderTypesAtom = atom<OrderType[]>([]);
+export const orderTypesLoadingAtom = atom<boolean>(false);
+export const orderTypesErrorAtom = atom<string | null>(null);
+
+// Refresh keys for data refetching
+export const ordersRefreshKeyAtom = atom<number>(0);
+export const paymentsRefreshKeyAtom = atom<number>(0);
+export const orderTypesRefreshKeyAtom = atom<number>(0);
+
 // =====================
 // POS STATE ATOMS
 // =====================

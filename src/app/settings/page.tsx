@@ -3,9 +3,9 @@
 import { useState } from 'react';
 import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
 
-import { usePaymentTypesData } from '@/hooks/use-payment-types-data';
+import { usePaymentTypesData } from '@/hooks/uePaymentTypes';
 import { useReceiptTemplatesData } from '@/hooks/use-receipt-templates-data';
-import { useOrderTypesData } from '@/hooks/orders/use-order-types-data';
+import { useOrders } from '@/hooks/orders/useOrders';
 import { useTablesData } from '@/hooks/tables/useTables';
 import { useSettingsData } from '@/hooks/organization/use-settings-data';
 
@@ -22,7 +22,7 @@ function SettingsContent() {
   const organizationId = useOrganizationId();
   const { paymentTypes, loading: paymentTypesLoading } = usePaymentTypesData(organizationId || undefined);
   const { receiptTemplates, loading: receiptTemplatesLoading } = useReceiptTemplatesData(organizationId || undefined);
-  const { orderTypes, loading: orderTypesLoading } = useOrderTypesData(organizationId || undefined);
+  const { orderTypes, loading: orderTypesLoading } = useOrders(organizationId || undefined);
   const { tables, loading: tablesLoading } = useTablesData(organizationId || undefined);
   const { 
     vatSettings, 
