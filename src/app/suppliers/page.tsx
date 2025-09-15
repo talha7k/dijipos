@@ -1,11 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { collection, query, onSnapshot, addDoc, doc, deleteDoc, updateDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { useState } from 'react';
 import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
 import { Supplier } from '@/types';
-import { useSuppliersData } from '@/hooks/suppliers/use-suppliers-data';
+import { useSuppliersData, useSupplierActions } from '@/hooks/suppliers/useSuppliers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,27 +14,14 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Trash2, Edit, Search, Users, X, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { ActionButtons } from '@/components/ui/action-buttons';
-import { sampleSuppliers } from '@/lib/sample-data';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/lib/firebase';
 
 export default function SuppliersPage() {
-  const [suppliers, setSuppliers] = useState<Supplier[]>(
-    sampleSuppliers.map(s => ({
-      id: s.id,
-      name: s.name,
-      nameAr: '',
-      email: s.email,
-      address: s.address || '',
-      phone: s.phone || '',
-      vatNumber: '',
-      contactPerson: '',
-      logoUrl: '',
-      organizationId: 'default',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }))
-  );
+  const organizationId = useOrganizationId() || undefined;
+  const { suppliers, loading } = useSuppliersData(organizationId);
+  const { createSupplier, updateSupplier, deleteSupplier, updatingStatus } = useSupplierActions(organizationId);
+  
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -82,8 +67,13 @@ export default function SuppliersPage() {
     setIsDialogOpen(true);
   };
 
-  const handleDeleteSupplier = (id: string) => {
-    setSuppliers(suppliers.filter(s => s.id !== id));
+  const handleDeleteSupplier = async (id: string) => {
+    try {
+      await deleteSupplier(id);
+      toast.success('Supplier deleted successfully');
+    } catch (error) {
+      toast.error('Failed to delete supplier');
+    }
   };
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -115,23 +105,26 @@ export default function SuppliersPage() {
     try {
       if (editingSupplier) {
         // Update existing supplier
-        setSuppliers(suppliers.map(s =>
-          s.id === editingSupplier.id
-            ? { ...s, ...formData, updatedAt: new Date() }
-            : s
-        ));
+        await updateSupplier(editingSupplier.id, formData);
+        toast.success('Supplier updated successfully');
       } else {
         // Add new supplier
-        const newSupplier: Supplier = {
-          id: `s${Date.now()}`,
-          ...formData,
-          organizationId: 'default',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        };
-        setSuppliers([...suppliers, newSupplier]);
+        await createSupplier(formData);
+        toast.success('Supplier created successfully');
       }
       setIsDialogOpen(false);
+      setFormData({
+        name: '',
+        nameAr: '',
+        email: '',
+        address: '',
+        phone: '',
+        vatNumber: '',
+        contactPerson: '',
+        logoUrl: '',
+      });
+    } catch (error) {
+      toast.error('Failed to save supplier');
     } finally {
       setSaving(false);
     }
@@ -155,7 +148,11 @@ export default function SuppliersPage() {
           <CardTitle>Supplier Management</CardTitle>
         </CardHeader>
         <CardContent>
-          {suppliers.length === 0 ? (
+          {loading ? (
+            <p className="text-muted-foreground text-center py-8">
+              Loading suppliers...
+            </p>
+          ) : suppliers.length === 0 ? (
             <p className="text-muted-foreground text-center py-8">
               No suppliers found. Add your first supplier to get started.
             </p>

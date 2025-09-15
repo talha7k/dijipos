@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { RouteGuard } from "@/components/auth/RouteGuard";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { JotaiProvider } from "@/components/JotaiProvider";
+import { AuthProvider } from "@/components/auth/AuthProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,10 +17,12 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <JotaiProvider>
-          <RouteGuard>
-            <AppLayout>{children}</AppLayout>
-          </RouteGuard>
-          <Toaster />
+          <AuthProvider>
+            <RouteGuard>
+              <AppLayout>{children}</AppLayout>
+            </RouteGuard>
+            <Toaster />
+          </AuthProvider>
         </JotaiProvider>
       </body>
     </html>

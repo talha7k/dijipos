@@ -1,14 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, query, onSnapshot, getDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
-import { useOrderState } from '@/hooks/useOrderState';
-import { Order, OrderPayment, PaymentType, Organization, User as AppUser, OrderStatus } from '@/types';
+import { useSelectedOrganization } from '@/hooks/useAuthState';
+import { Order, OrderPayment, OrderStatus } from '@/types';
 import { useOrders } from '@/hooks/orders/useOrders';
 import { useUsersData } from '@/hooks/organization/use-users-data';
-import { usePaymentTypesData } from '@/hooks/uePaymentTypes';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -21,79 +18,13 @@ import { OrderActionsDialog } from '@/components/orders/OrderStatusActionsDialog
 
 
 function OrdersContent() {
-  const user = useUser();
   const selectedOrganization = useSelectedOrganization();
-  const { orders, setOrders, setPayments } = useOrderState();
   const organizationId = selectedOrganization?.id || '';
-  const { orders: fetchedOrders, loading: ordersLoading, orderPayments } = useOrders(organizationId || undefined);
+  const { orders: fetchedOrders, loading: ordersLoading, orderPayments, markOrderAsPaid, completeOrder, updateOrderStatus } = useOrders(organizationId || undefined);
   const { users: usersArray, loading: usersLoading } = useUsersData(organizationId || undefined);
-  const { paymentTypes, loading: paymentTypesLoading } = usePaymentTypesData(organizationId || undefined);
-  const [users, setUsers] = useState<{ [userId: string]: AppUser }>({});
-  const [organization, setOrganization] = useState<Organization | null>(null);
-  const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [updatingStatus, setUpdatingStatus] = useState(false);
-  
 
-  useEffect(() => {
-    if (!organizationId) return;
-
-    // Sync fetched orders with context
-    if (fetchedOrders) {
-      setOrders(fetchedOrders);
-    }
-
-    // Fetch organization data
-    const fetchOrganization = async () => {
-      const organizationDoc = await getDoc(doc(db, 'organizations', organizationId));
-      if (organizationDoc.exists()) {
-        setOrganization({
-          id: organizationDoc.id,
-          ...organizationDoc.data(),
-          createdAt: organizationDoc.data().createdAt?.toDate(),
-        } as Organization);
-      }
-    };
-    fetchOrganization();
-
-    // Update loading state based on all data sources
-    const allDataLoaded = !ordersLoading && !usersLoading && !paymentTypesLoading;
-    setLoading(!allDataLoaded);
-
-    // Map users array to dictionary for easy lookup
-    if (usersArray) {
-      const usersById: { [userId: string]: AppUser } = {};
-      usersArray.forEach((user: AppUser) => {
-        usersById[user.id] = user;
-      });
-      setUsers(usersById);
-    }
-
-    // Fetch payments for each order
-    const paymentsQ = query(collection(db, 'organizations', organizationId, 'orderPayments'));
-    const paymentsUnsubscribe = onSnapshot(paymentsQ, (querySnapshot) => {
-      const paymentsData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        paymentDate: doc.data().paymentDate?.toDate(),
-        createdAt: doc.data().createdAt?.toDate(),
-      })) as OrderPayment[];
-
-      // Group payments by orderId
-      const paymentsByOrder: { [orderId: string]: OrderPayment[] } = {};
-      paymentsData.forEach(payment => {
-        if (!paymentsByOrder[payment.orderId]) {
-          paymentsByOrder[payment.orderId] = [];
-        }
-        paymentsByOrder[payment.orderId].push(payment);
-      });
-      setPayments(paymentsByOrder);
-    });
-
-    return () => {
-      paymentsUnsubscribe();
-    };
-  }, [organizationId, ordersLoading, usersLoading, paymentTypesLoading, usersArray, fetchedOrders, setOrders, setPayments]);
+  const orders = fetchedOrders || [];
 
   const getStatusColor = (status: Order['status']) => {
     switch (status) {
@@ -124,92 +55,27 @@ function OrdersContent() {
     }).format(amount);
   };
 
-  const updateOrderStatus = async (orderId: string, newStatus: OrderStatus) => {
-    if (!organizationId) return;
+  const clearSelection = () => setSelectedOrder(null);
 
-    try {
-      const orderRef = doc(db, 'organizations', organizationId, 'orders', orderId);
-      await updateDoc(orderRef, {
-        status: newStatus,
-        updatedAt: serverTimestamp(),
-      });
+  const handleMarkAsPaid = (orderId: string) => {
+    markOrderAsPaid(orderId);
+    clearSelection();
+  };
 
-      toast.success(`Order ${newStatus === OrderStatus.COMPLETED ? 'completed' : 'updated'} successfully!`);
-
-      // Close the dialog after successful update
-      setSelectedOrder(null);
-    } catch (error) {
-      console.error('Error updating order status:', error);
-      toast.error('Failed to update order status');
+  const handleCompleteOrder = (orderId: string) => {
+    const order = orders.find(o => o.id === orderId);
+    if (order) {
+      completeOrder(order);
+      clearSelection();
     }
   };
 
-  const markOrderAsPaid = async (orderId: string) => {
-    if (!organizationId) return;
-
-    try {
-      const orderRef = doc(
-        db,
-        "organizations",
-        organizationId,
-        "orders",
-        orderId
-      );
-      await updateDoc(orderRef, {
-        paid: true,
-        updatedAt: serverTimestamp(),
-      });
-
-       toast.success("Order marked as paid successfully!");
-       setSelectedOrder(null);
-    } catch (error) {
-      console.error("Error marking order as paid:", error);
-      toast.error("Failed to mark order as paid");
-    }
+  const handleUpdateOrderStatus = (orderId: string, newStatus: OrderStatus) => {
+    updateOrderStatus(orderId, newStatus);
+    clearSelection();
   };
 
-  const completeOrder = async (orderId: string) => {
-    if (!organizationId || !selectedOrder) return;
-
-    // Check if order is paid before completing
-    let isPaid = selectedOrder.paid;
-    
-    // Fallback: check payments directly if paid field is false
-    if (!isPaid && orderPayments[selectedOrder.id]) {
-      const orderPaymentsForOrder = orderPayments[selectedOrder.id];
-      const totalPaid = orderPaymentsForOrder.reduce((sum: number, payment: any) => sum + payment.amount, 0);
-      isPaid = totalPaid >= selectedOrder.total;
-    }
-    
-    if (!isPaid) {
-      toast.error(
-        "Cannot complete an unpaid order. Please process payment first."
-      );
-      return;
-    }
-
-    try {
-      const orderRef = doc(
-        db,
-        "organizations",
-        organizationId,
-        "orders",
-        orderId
-      );
-      await updateDoc(orderRef, {
-        status: OrderStatus.COMPLETED,
-        updatedAt: serverTimestamp(),
-      });
-
-       toast.success("Order completed successfully!");
-       setSelectedOrder(null);
-    } catch (error) {
-      console.error("Error completing order:", error);
-      toast.error("Failed to complete order");
-    }
-  };
-
-  if (loading) return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  if (ordersLoading || usersLoading) return <div className="flex items-center justify-center h-screen">Loading...</div>;
 
   return (
     <div className="container mx-auto p-4">
@@ -486,13 +352,12 @@ function OrdersContent() {
 </DialogContent>
                        </Dialog>
                        
-<OrderActionsDialog
+                        <OrderActionsDialog
                           order={order}
                           payments={orderPayments[order.id] || []}
-                          updatingStatus={updatingStatus}
-                          onMarkAsPaid={markOrderAsPaid}
-                          onCompleteOrder={completeOrder}
-                          onUpdateStatus={updateOrderStatus}
+                          onMarkAsPaid={handleMarkAsPaid}
+                          onCompleteOrder={handleCompleteOrder}
+                          onUpdateStatus={handleUpdateOrderStatus}
                         >
                           <Button
                             variant="outline"

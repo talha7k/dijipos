@@ -1,7 +1,6 @@
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { useEffect } from 'react';
-import { auth, db } from '@/lib/firebase';
-import { onAuthStateChanged } from 'firebase/auth';
+import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { Organization, OrganizationUser } from '@/types';
 import {
@@ -40,143 +39,6 @@ export function useAuthState() {
   const isAuthenticated = useAtomValue(isAuthenticatedAtom);
   const hasOrganization = useAtomValue(hasOrganizationAtom);
   const hasOrganizations = useAtomValue(hasOrganizationsAtom);
-
-  // Initialize auth state listener
-  useEffect(() => {
-    console.log('useAuthState: Setting up auth state listener');
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      console.log('useAuthState: Auth state changed, user:', user?.email || 'null');
-      const startTime = Date.now();
-      setAuthLoading(true);
-      setAuthError(null);
-
-      // Mark auth as initialized on first call
-      if (!authInitialized) {
-        setAuthInitialized(true);
-      }
-
-      try {
-        setUser(user);
-        if (user) {
-          setEmailVerified(user.emailVerified || false);
-          console.log('useAuthState: Basic user state set in', Date.now() - startTime, 'ms');
-
-          // Note: OrganizationId is now persisted automatically via IndexedDB
-
-          // Set organizationLoading to true while we fetch organization data
-          setOrganizationLoading(true);
-          console.log('useAuthState: Basic auth complete, organizationLoading set to true');
-
-          // Start organization fetch in background
-          const organizationFetchPromise = (async () => {
-            try {
-              console.log('useAuthState: Starting organization fetch');
-              const orgStartTime = Date.now();
-
-              const organizationUsersQuery = query(
-                collection(db, 'organizationUsers'),
-                where('userId', '==', user.uid),
-                where('isActive', '==', true)
-              );
-              const organizationUsersSnapshot = await getDocs(organizationUsersQuery);
-              const organizationAssociations = organizationUsersSnapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data(),
-                createdAt: doc.data().createdAt?.toDate(),
-                updatedAt: doc.data().updatedAt?.toDate(),
-              })) as OrganizationUser[];
-
-              console.log('useAuthState: Organization fetch completed in', Date.now() - orgStartTime, 'ms');
-              setUserOrganizations(organizationAssociations);
-
-              // Handle organization selection logic
-              const currentOrganizationId = organizationId; // Remove await, it's not a promise
-
-              if (currentOrganizationId && organizationAssociations.some(ou => ou.organizationId === currentOrganizationId)) {
-                console.log('useAuthState: Auto-selecting organization');
-                try {
-                  // Move organization selection logic here instead of calling selectOrganization
-                  const organizationAssociation = organizationAssociations.find(ou => ou.organizationId === currentOrganizationId);
-                  if (organizationAssociation) {
-                    setOrganizationUser(organizationAssociation);
-
-                    // Fetch organization details from Firebase
-                    const organizationDoc = await getDoc(doc(db, 'organizations', currentOrganizationId));
-                    if (organizationDoc.exists()) {
-                      const organizationData = {
-                        id: organizationDoc.id,
-                        ...organizationDoc.data(),
-                        createdAt: organizationDoc.data()?.createdAt?.toDate(),
-                        updatedAt: organizationDoc.data()?.updatedAt?.toDate(),
-                      } as Organization;
-                      setSelectedOrganization(organizationData);
-                    } else {
-                      // Organization doesn't exist, clear stored ID
-                      setOrganizationId(null);
-                    }
-                  }
-                } catch (selectError) {
-                  console.error('Organization auto-selection error:', selectError);
-                  // Don't fail the entire process if auto-selection fails
-                  // User can manually select organization later
-                }
-              }
-            } catch (orgError) {
-              console.error('Organization fetch error:', orgError);
-              // Don't fail the entire auth process for organization errors
-              setUserOrganizations([]);
-              // Don't set error state here as it will break the auth flow
-            } finally {
-              setOrganizationLoading(false);
-              setAuthLoading(false);
-              console.log('useAuthState: Organization loading complete, auth process finished');
-            }
-          })();
-
-          // Fire and forget - don't await this
-          organizationFetchPromise.catch(console.error);
-        } else {
-          console.log('useAuthState: No user, clearing state');
-          resetAuthState();
-          setAuthLoading(false);
-        }
-      } catch (err) {
-        console.error('Auth state change error:', err);
-        setAuthError(err instanceof Error ? err.message : 'An unknown error occurred');
-        setAuthLoading(false);
-      }
-    });
-
-    return () => {
-      console.log('useAuthState: Cleaning up auth state listener');
-      unsubscribe();
-    };
-  }, []); // Remove dependencies to prevent re-running the effect
-
-  // Add timeouts to prevent infinite loading
-  useEffect(() => {
-    const authTimeout = setTimeout(() => {
-      if (authLoading && !organizationLoading) {
-        console.warn('useAuthState: Auth loading timeout reached, forcing loading to false');
-        setAuthLoading(false);
-        setAuthError('Authentication timeout - please check your internet connection and refresh the page');
-      }
-    }, 30000); // 30 second timeout for auth
-
-    return () => clearTimeout(authTimeout);
-  }, [authLoading, organizationLoading]);
-
-  useEffect(() => {
-    const orgTimeout = setTimeout(() => {
-      if (organizationLoading) {
-        console.warn('useAuthState: Organization loading timeout reached, forcing organizationLoading to false');
-        setOrganizationLoading(false);
-        setOrganizationError('Organization loading timeout - please check your connection and try again');
-      }
-    }, 9000); // 9 second timeout for organization loading
-
-    return () => clearTimeout(orgTimeout);
-  }, [organizationLoading]);
 
   const selectOrganization = async (selectedOrganizationId: string) => {
     if (!user) return;
@@ -261,7 +123,7 @@ export function useAuthState() {
       setUserOrganizations(organizationAssociations);
 
       // Try to auto-select organization if one was stored
-      const currentOrganizationId = await organizationId;
+      const currentOrganizationId = organizationId;
       if (currentOrganizationId && organizationAssociations.some(ou => ou.organizationId === currentOrganizationId)) {
         await selectOrganization(currentOrganizationId);
       }
@@ -275,6 +137,7 @@ export function useAuthState() {
 
   const logout = async () => {
     try {
+      const { auth } = await import('@/lib/firebase');
       await auth.signOut();
       resetAuthState();
     } catch (error) {
