@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
+import { useOrganizationId } from '@/hooks/useAuthState';
 import { Supplier } from '@/types';
 import { useSuppliersData, useSupplierActions } from '@/hooks/suppliers/useSuppliers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

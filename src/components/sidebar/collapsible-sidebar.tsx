@@ -4,7 +4,7 @@ import * as React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useThemeState } from "@/hooks/useThemeState";
-import { useAuthState } from "@/hooks/useAuthState";
+import { useAuthState, useUser, useOrganizationId } from "@/hooks/useAuthState";
 import { useSidebarState } from "@/hooks/useSidebarState";
 import { auth } from "@/lib/firebase";
 import { DesktopSidebar } from "./desktop-sidebar";

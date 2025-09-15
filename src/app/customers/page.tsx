@@ -1,9 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { collection, query, onSnapshot, addDoc, doc, deleteDoc, updateDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
+import { useState } from 'react';
+import { useOrganizationId } from '@/hooks/useAuthState';
 import { Customer } from '@/types';
 import { useCustomersData } from '@/hooks/useCustomerState';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,8 +20,7 @@ import { storage } from '@/lib/firebase';
 
 export default function CustomersPage() {
   const organizationId = useOrganizationId();
-  const { customers, loading: customersLoading } = useCustomersData(organizationId || undefined);
-  const [loading, setLoading] = useState(true);
+  const { customers, loading: customersLoading, createCustomer, updateCustomer, deleteCustomer } = useCustomersData(organizationId || undefined);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -36,10 +33,6 @@ export default function CustomersPage() {
     vatNumber: '',
     logoUrl: '',
   });
-
-  useEffect(() => {
-    setLoading(customersLoading);
-  }, [customersLoading]);
 
   const handleAddCustomer = () => {
     setEditingCustomer(null);
@@ -72,10 +65,13 @@ export default function CustomersPage() {
   const [deleteCustomerId, setDeleteCustomerId] = useState<string | null>(null);
 
   const handleDeleteCustomer = async (id: string) => {
-    if (!organizationId) return;
-    await deleteDoc(doc(db, 'organizations', organizationId, 'customers', id));
-    toast.success('Customer deleted successfully');
-    setDeleteCustomerId(null);
+    try {
+      await deleteCustomer(id);
+      toast.success('Customer deleted successfully');
+      setDeleteCustomerId(null);
+    } catch (error) {
+      toast.error('Failed to delete customer');
+    }
   };
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -103,27 +99,30 @@ export default function CustomersPage() {
   };
 
   const handleSaveCustomer = async () => {
-    if (!organizationId) return;
-
-    if (editingCustomer) {
-      // Update existing customer
-      await updateDoc(doc(db, 'organizations', organizationId, 'customers', editingCustomer.id), {
-        ...formData,
-        updatedAt: new Date(),
+    try {
+      if (editingCustomer) {
+        await updateCustomer(editingCustomer.id, formData);
+        toast.success('Customer updated successfully');
+      } else {
+        await createCustomer(formData);
+        toast.success('Customer added successfully');
+      }
+      setIsDialogOpen(false);
+      setFormData({
+        name: '',
+        nameAr: '',
+        email: '',
+        address: '',
+        phone: '',
+        vatNumber: '',
+        logoUrl: '',
       });
-    } else {
-      // Add new customer
-      await addDoc(collection(db, 'organizations', organizationId, 'customers'), {
-        ...formData,
-        organizationId,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
+    } catch (error) {
+      toast.error('Failed to save customer');
     }
-    setIsDialogOpen(false);
   };
 
-  if (loading) return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  if (customersLoading) return <div className="flex items-center justify-center h-screen">Loading...</div>;
 
   return (
     <div className="container mx-auto p-6">

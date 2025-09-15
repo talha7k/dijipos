@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useAtom, useAtomValue, useSetAtom } from 'jotai';
+import { useAtom, useSetAtom } from 'jotai';
 import { auth, db } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
@@ -19,9 +19,7 @@ import {
   organizationErrorAtom,
   organizationIdAtom,
   resetAuthStateAtom,
-  isAuthenticatedAtom,
-  hasOrganizationAtom,
-  hasOrganizationsAtom
+  
 } from '@/store/atoms';
 import { ReactNode } from 'react';
 

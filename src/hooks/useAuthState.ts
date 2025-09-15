@@ -1,5 +1,5 @@
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
-import { useEffect } from 'react';
+
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { Organization, OrganizationUser } from '@/types';
@@ -25,7 +25,7 @@ export function useAuthState() {
   const [user, setUser] = useAtom(userAtom);
   const [authLoading, setAuthLoading] = useAtom(authLoadingAtom);
   const [authError, setAuthError] = useAtom(authErrorAtom);
-  const [authInitialized, setAuthInitialized] = useAtom(authInitializedAtom);
+  const [authInitialized] = useAtom(authInitializedAtom);
   const [emailVerified, setEmailVerified] = useAtom(emailVerifiedAtom);
   const [selectedOrganization, setSelectedOrganization] = useAtom(selectedOrganizationAtom);
   const [organizationUser, setOrganizationUser] = useAtom(organizationUserAtom);
