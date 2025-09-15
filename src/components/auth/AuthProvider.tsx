@@ -120,7 +120,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
               let currentOrganizationId = organizationId;
               if (!currentOrganizationId) {
                 try {
-                  currentOrganizationId = await indexedDBStorage.getItem('dijipos-organization-id');
+                  currentOrganizationId = await indexedDBStorage.getItem('dijibill-organization-id');
                 } catch (storageError) {
                   console.error('Error reading organizationId from storage:', storageError);
                 }
@@ -148,20 +148,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
                     } else {
                       // Organization doesn't exist, clear stored ID
                       setOrganizationId(null);
-                      await indexedDBStorage.removeItem('dijipos-organization-id');
+                      await indexedDBStorage.removeItem('dijibill-organization-id');
                     }
                   }
                 } catch (selectError) {
                   console.error('Organization auto-selection error:', selectError);
                   // Clear invalid organizationId
                   setOrganizationId(null);
-                  await indexedDBStorage.removeItem('dijipos-organization-id');
+                  await indexedDBStorage.removeItem('dijibill-organization-id');
                 }
               } else if (currentOrganizationId && !organizationAssociations.some(ou => ou.organizationId === currentOrganizationId)) {
                 // organizationId exists but is not valid for this user, clear it
                 console.log('AuthProvider: Clearing invalid organizationId');
                 setOrganizationId(null);
-                await indexedDBStorage.removeItem('dijipos-organization-id');
+                await indexedDBStorage.removeItem('dijibill-organization-id');
               }
             } catch (orgError) {
               console.error('Organization fetch error:', orgError);

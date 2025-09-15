@@ -6,7 +6,7 @@ let storeInitialized = false;
 const initializeStore = () => {
   if (!storeInitialized) {
     try {
-      store = createStore('dijipos-db', 'dijipos-store');
+      store = createStore('dijibill-db', 'dijibill-store');
       storeInitialized = true;
     } catch (error) {
       console.error('Failed to initialize IndexedDB store:', error);

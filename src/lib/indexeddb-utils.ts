@@ -8,7 +8,7 @@ export const clearIndexedDB = async (): Promise<boolean> => {
     const databases = await indexedDB.databases();
     
     for (const db of databases) {
-      if (db.name && db.name.startsWith('dijipos-')) {
+      if (db.name && db.name.startsWith('dijibill-')) {
         await new Promise<void>((resolve, reject) => {
           const request = indexedDB.deleteDatabase(db.name!);
           
@@ -49,7 +49,7 @@ export const repairIndexedDB = async (): Promise<boolean> => {
     
     // Test creating a new database
     await new Promise<void>((resolve, reject) => {
-      const request = indexedDB.open('dijipos-test', 1);
+      const request = indexedDB.open('dijibill-test', 1);
       
       request.onsuccess = () => {
         request.result.close();
@@ -68,7 +68,7 @@ export const repairIndexedDB = async (): Promise<boolean> => {
     
     // Clean up test database
     await new Promise<void>((resolve, reject) => {
-      const request = indexedDB.deleteDatabase('dijipos-test');
+      const request = indexedDB.deleteDatabase('dijibill-test');
       request.onsuccess = () => resolve();
       request.onerror = () => reject(request.error);
     });

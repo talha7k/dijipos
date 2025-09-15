@@ -25,19 +25,19 @@ export const organizationUserAtom = atom<OrganizationUser | null>(null);
 export const userOrganizationsAtom = atom<OrganizationUser[]>([]);
 export const organizationLoadingAtom = atom<boolean>(false);
 export const organizationErrorAtom = atom<string | null>(null);
-export const organizationIdAtom = atomWithStorage<string | null>('dijipos-organization-id', null, indexedDBStorage);
+export const organizationIdAtom = atomWithStorage<string | null>('dijibill-organization-id', null, indexedDBStorage);
 
 // =====================
 // THEME STATE ATOMS
 // =====================
 
-export const themeAtom = atomWithStorage<'light' | 'dark'>('dijipos-theme', 'light', indexedDBStorage);
+export const themeAtom = atomWithStorage<'light' | 'dark'>('dijibill-theme', 'light', indexedDBStorage);
 
 // =====================
 // SIDEBAR STATE ATOMS
 // =====================
 
-export const sidebarCollapsedAtom = atomWithStorage<boolean>('dijipos-sidebar-collapsed', false, indexedDBStorage);
+export const sidebarCollapsedAtom = atomWithStorage<boolean>('dijibill-sidebar-collapsed', false, indexedDBStorage);
 export const mobileSidebarOpenAtom = atom<boolean>(false);
 
 // =====================
@@ -68,7 +68,7 @@ export const orderTypesRefreshKeyAtom = atom<number>(0);
 // =====================
 
 // Cart state
-export const cartItemsAtom = atomWithStorage<CartItem[]>('dijipos-cart-items', [], indexedDBStorage);
+export const cartItemsAtom = atomWithStorage<CartItem[]>('dijibill-cart-items', [], indexedDBStorage);
 export const cartTotalAtom = atom(async (get) => {
   const cartItems = await get(cartItemsAtom);
   return cartItems.reduce((sum: number, item: CartItem) => sum + item.total, 0);
@@ -76,9 +76,9 @@ export const cartTotalAtom = atom(async (get) => {
 export const cartLoadingAtom = atom<boolean>(false);
 
 // POS selection state
-export const selectedTableAtom = atomWithStorage<Table | null>('dijipos-selected-table', null, indexedDBStorage);
-export const selectedCustomerAtom = atomWithStorage<Customer | null>('dijipos-selected-customer', null, indexedDBStorage);
-export const selectedOrderTypeAtom = atomWithStorage<OrderType | null>('dijipos-selected-order-type', null, indexedDBStorage);
+export const selectedTableAtom = atomWithStorage<Table | null>('dijibill-selected-table', null, indexedDBStorage);
+export const selectedCustomerAtom = atomWithStorage<Customer | null>('dijibill-selected-customer', null, indexedDBStorage);
+export const selectedOrderTypeAtom = atomWithStorage<OrderType | null>('dijibill-selected-order-type', null, indexedDBStorage);
 
 // POS navigation state
 export const currentViewAtom = atom<'items' | 'tables' | 'customers' | 'orders' | 'payment'>('items');
