@@ -135,7 +135,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
               setUserOrganizations([]);
             } finally {
               setOrganizationLoading(false);
-              setAuthLoading(false);
+              if (authLoading) {
+                setAuthLoading(false);
+              }
               console.log('AuthProvider: Organization loading complete, auth process finished');
             }
           })();
@@ -162,7 +164,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Add timeouts to prevent infinite loading
   useEffect(() => {
     const authTimeout = setTimeout(() => {
-      if (authLoading && !organizationLoading) {
+      if (authLoading) {
         console.warn('AuthProvider: Auth loading timeout reached, forcing loading to false');
         setAuthLoading(false);
         setAuthError('Authentication timeout - please check your internet connection and refresh the page');
@@ -170,7 +172,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }, 30000);
 
     return () => clearTimeout(authTimeout);
-  }, [authLoading, organizationLoading]);
+  }, [authLoading]);
 
   useEffect(() => {
     const orgTimeout = setTimeout(() => {
