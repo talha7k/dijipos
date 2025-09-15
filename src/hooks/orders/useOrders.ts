@@ -123,6 +123,16 @@ export function useOrders(organizationId: string | undefined): UseOrdersResult {
     return () => unsubscribe();
   }, [organizationId, ordersRefreshKey, setOrders, setLoading, setError]);
 
+  // Keep selectedOrder in sync with updated orders list
+  useEffect(() => {
+    if (selectedOrder && orders.length > 0) {
+      const updatedOrder = orders.find(order => order.id === selectedOrder.id);
+      if (updatedOrder && (updatedOrder.updatedAt !== selectedOrder.updatedAt || JSON.stringify(updatedOrder.items) !== JSON.stringify(selectedOrder.items))) {
+        setSelectedOrder(updatedOrder);
+      }
+    }
+  }, [orders, selectedOrder, setSelectedOrder]);
+
   // Fetch order types
   useEffect(() => {
     if (!organizationId) {

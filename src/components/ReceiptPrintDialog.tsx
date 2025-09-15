@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -48,6 +48,30 @@ export function ReceiptPrintDialog({
       // Render the receipt using template
       const renderedContent = await renderReceiptTemplate(template, order, organization, payments);
 
+      console.log('=== RECEIPT PRINT DEBUG ===');
+      console.log('Template ID:', template.id);
+      console.log('Template Type:', template.type);
+      console.log('Rendered Content Length:', renderedContent.length);
+      console.log('Rendered Content Preview:', renderedContent.substring(0, 300) + '...');
+
+      // Check if key fields are present in rendered content
+      const hasOrderType = renderedContent.includes('Dine-in') || renderedContent.includes('dine-in');
+      const hasQueueNumber = renderedContent.includes('Queue #') || renderedContent.includes('رقم الدور');
+      const hasSubtotal = renderedContent.includes('Items Value') || renderedContent.includes('قيمة الأصناف');
+      const hasVAT = renderedContent.includes('VAT') || renderedContent.includes('الضريبة');
+      const hasTotal = renderedContent.includes('TOTAL AMOUNT') || renderedContent.includes('المبلغ الإجمالي');
+      const hasPayments = renderedContent.includes('Payment Type') || renderedContent.includes('نوع الدفع');
+      const hasDijibill = renderedContent.includes('Powered by') || renderedContent.includes('مشغل بواسطة');
+
+      console.log('Rendered Content Field Check:');
+      console.log('- Order Type:', hasOrderType);
+      console.log('- Queue Number:', hasQueueNumber);
+      console.log('- Subtotal:', hasSubtotal);
+      console.log('- VAT:', hasVAT);
+      console.log('- Total:', hasTotal);
+      console.log('- Payments:', hasPayments);
+      console.log('- Dijibill Branding:', hasDijibill);
+
       // Create a new window for printing (safer than manipulating current DOM)
       const printWindow = window.open('', '_blank', 'width=800,height=600');
       if (!printWindow) {
@@ -55,7 +79,7 @@ export function ReceiptPrintDialog({
       }
 
       // Write the receipt content to the new window
-      printWindow.document.write(`
+      const fullHtmlContent = `
         <!DOCTYPE html>
         <html>
           <head>
@@ -71,7 +95,13 @@ export function ReceiptPrintDialog({
             ${renderedContent}
           </body>
         </html>
-      `);
+      `;
+
+      console.log('=== PRINT WINDOW DEBUG ===');
+      console.log('Full HTML Content Length:', fullHtmlContent.length);
+      console.log('Full HTML Content Preview:', fullHtmlContent.substring(0, 500) + '...');
+
+      printWindow.document.write(fullHtmlContent);
 
       printWindow.document.close();
 
@@ -101,12 +131,17 @@ export function ReceiptPrintDialog({
       </DialogTrigger>
       <DialogContent className="max-w-4xl">
         <DialogHeader>
-          <div className="flex justify-between items-center">
-            <DialogTitle className="flex items-center gap-2">
-              <Printer className="h-5 w-5" />
-              Print Receipt
-            </DialogTitle>
-            <div className="flex gap-2">
+           <div className="flex justify-between items-center">
+             <div>
+               <DialogTitle className="flex items-center gap-2">
+                 <Printer className="h-5 w-5" />
+                 Print Receipt
+               </DialogTitle>
+               <DialogDescription>
+                 Select a receipt template and print your order receipt
+               </DialogDescription>
+             </div>
+             <div className="flex gap-2">
               <Button
                 variant="outline"
                 onClick={() => setOpen(false)}

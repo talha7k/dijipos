@@ -13,6 +13,7 @@ import {
   selectedTableAtom,
   selectedCustomerAtom,
   selectedOrderTypeAtom,
+  selectedCartOrderAtom,
   currentViewAtom,
   categoryPathAtom,
   hasOrdersAtom,
@@ -23,7 +24,7 @@ import {
 export function useOrderState() {
   // Order management state
   const [orders, setOrders] = useAtom(ordersAtom);
-  const [selectedOrder, setCurrentOrder] = useAtom(currentOrderAtom);
+  const [selectedOrder, setCurrentOrder] = useAtom(selectedCartOrderAtom);
   const [ordersLoading, setOrdersLoading] = useAtom(ordersLoadingAtom);
   const [ordersError, setOrdersError] = useAtom(ordersErrorAtom);
   const [payments, setPayments] = useAtom(paymentsAtom);

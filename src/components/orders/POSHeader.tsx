@@ -60,15 +60,14 @@ export function POSHeader({
   onOrderToggle
 }: POSHeaderProps) {
   const handleOrderToggle = () => {
-    if (selectedOrder) {
-      // If there's an existing order, directly toggle
-      if (onOrderToggle) onOrderToggle();
-    } else {
-      // If it's "New Order", the reusable dialog will handle it
-    }
+    if (onOrderToggle) onOrderToggle();
   };
 
   const handleConfirmNewOrder = () => {
+    if (onOrderToggle) onOrderToggle();
+  };
+
+  const handleConfirmOrderReset = () => {
     if (onOrderToggle) onOrderToggle();
   };
   return (
@@ -76,14 +75,34 @@ export function POSHeader({
       <div className="flex justify-between items-center max-w-7xl mx-auto">
         <div className="flex items-center space-x-3">
           {selectedOrder ? (
-            <Badge
-              variant="default"
-              className="flex items-center space-x-1 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white"
-              onClick={handleOrderToggle}
-            >
-              <RotateCcw className="h-3 w-3" />
-              <span>Order #{selectedOrder.orderNumber}</span>
-            </Badge>
+            cartItems.length > 0 ? (
+              <ClearOrderDialog
+                title="Reset Order?"
+                description="This will clear all items from the current cart. Any unsaved changes will be lost."
+                confirmText="Reset"
+                onConfirm={handleConfirmOrderReset}
+              >
+                {({ openDialog }) => (
+                  <Badge
+                    variant="default"
+                    className="flex items-center space-x-1 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white"
+                    onClick={openDialog}
+                  >
+                    <RotateCcw className="h-3 w-3" />
+                    <span>Order #{selectedOrder.orderNumber}</span>
+                  </Badge>
+                )}
+              </ClearOrderDialog>
+            ) : (
+              <Badge
+                variant="default"
+                className="flex items-center space-x-1 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white"
+                onClick={handleOrderToggle}
+              >
+                <RotateCcw className="h-3 w-3" />
+                <span>Order #{selectedOrder.orderNumber}</span>
+              </Badge>
+            )
           ) : (
             <ClearOrderDialog
               title="Confirm New Order"
@@ -168,8 +187,10 @@ export function POSHeader({
               <span>Orders</span>
             </Button>
           </div>
-          <Badge className='w-12'>{cartItems.length}</Badge>
-          <Badge className='w-12'>{cartTotal}</Badge>
+          <div className="flex flex-col gap-1 items-center">
+            <Badge className='w-12 bg-blue-500 hover:bg-blue-600 text-white'>{cartItems.length}</Badge>
+            <Badge className='w-15 bg-green-500 hover:bg-green-600  text-white'>{cartTotal}</Badge>
+          </div>
         </div>
       </div>
     </div>

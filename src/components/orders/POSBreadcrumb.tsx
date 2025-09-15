@@ -30,11 +30,11 @@ export function POSBreadcrumb({
           <Button
             variant="ghost"
             size="sm"
-            onClick={onNavigateToRoot}
+            onClick={() => onNavigateToPath(categoryPath.slice(0, -1))}
             className="flex items-center space-x-1 h-8 px-3"
           >
             <ArrowLeft className="h-4 w-4" />
-            <span className="font-medium text-sm">Categories</span>
+            <span className="font-medium text-sm">Back</span>
           </Button>
           {categoryPath.map((categoryId, index) => (
             <React.Fragment key={categoryId}>

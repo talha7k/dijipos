@@ -3,7 +3,7 @@ import { ShoppingCart, Save, Printer, RotateCcw } from 'lucide-react';
 import { ClearOrderDialog } from '@/components/ui/clear-order-dialog';
 import { POSCartItem } from './POSCartItem';
 import { ReceiptPrintDialog } from '@/components/ReceiptPrintDialog';
-import { Order, OrderStatus, ItemType } from '@/types';
+import { Order, OrderStatus, ItemType, OrderPayment } from '@/types';
 import { useAuthState } from '@/hooks/useAuthState';
 import { useOrderState } from '@/hooks/useOrderState';
 import { usePrinterSettingsData } from '@/hooks/organization/use-printer-settings-data';
@@ -50,10 +50,20 @@ export function POSCartSidebar({
   const createTempOrderForPayment = () => {
     if (cartItems.length === 0) return null;
 
+    // Calculate tax (assuming 15% VAT rate for preview)
+    const taxRate = 15; // Could be made configurable
+    const subtotal = cartTotal;
+    const taxAmount = (subtotal * taxRate) / 100;
+    const total = subtotal + taxAmount;
+
+    // Generate queue number for preview
+    const queueNumber = Math.floor(Math.random() * 1000) + 1;
+
     return {
       id: 'temp-checkout',
       organizationId: organizationId || '',
       orderNumber: `TEMP-${Date.now()}`,
+      queueNumber: queueNumber.toString(),
       items: cartItems.map(item => ({
         id: `${item.type}-${item.id}`,
         type: item.type === 'product' ? ItemType.PRODUCT : ItemType.SERVICE,
@@ -64,10 +74,10 @@ export function POSCartSidebar({
         unitPrice: item.price,
         total: item.total,
       })),
-      subtotal: cartTotal,
-      taxRate: 0,
-      taxAmount: 0,
-      total: cartTotal,
+      subtotal: subtotal,
+      taxRate: taxRate,
+      taxAmount: taxAmount,
+      total: total,
       status: OrderStatus.OPEN,
       paid: false,
       orderType: selectedOrderType?.name || 'dine-in',
@@ -124,21 +134,31 @@ export function POSCartSidebar({
               <Save className="h-5 w-5" />
             </Button>
           )}
-            {selectedOrganization && cartItems.length > 0 && (
-              <ReceiptPrintDialog
-                order={createTempOrderForPayment()!}
-                organization={selectedOrganization}
-                receiptTemplates={receiptTemplates}
-                payments={[]}
+           {selectedOrganization && cartItems.length > 0 && (
+             <ReceiptPrintDialog
+               order={createTempOrderForPayment()!}
+               organization={selectedOrganization}
+               receiptTemplates={receiptTemplates}
+               payments={[
+                 {
+                   id: 'temp-payment',
+                   organizationId: organizationId || '',
+                   orderId: 'temp-checkout',
+                   paymentMethod: 'Cash',
+                   amount: createTempOrderForPayment()!.total,
+                   paymentDate: new Date(),
+                   createdAt: new Date(),
+                 }
+               ]}
+             >
+              <Button
+                variant="outline"
+                className="flex-1 h-12 text-sm font-medium"
+                disabled={cartItems.length === 0}
               >
-               <Button
-                 variant="outline"
-                 className="flex-1 h-12 text-sm font-medium"
-                 disabled={cartItems.length === 0}
-               >
-                 <Printer className="h-5 w-5" />
-               </Button>
-             </ReceiptPrintDialog>
+                <Printer className="h-5 w-5" />
+              </Button>
+            </ReceiptPrintDialog>
            )}
           {onClearCart && (
             <ClearOrderDialog

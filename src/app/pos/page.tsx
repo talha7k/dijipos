@@ -69,7 +69,7 @@ export default function SimplifiedPOSPage() {
   const {
     cartItems,
     cartTotal,
-    posView,
+    posView: currentView,
     selectedTable,
     selectedCustomer,
     selectedOrderType,
@@ -109,16 +109,16 @@ export default function SimplifiedPOSPage() {
     setShowPaymentSuccessDialog,
   } = usePOSLogic();
 
-  // Loading state - exclude ordersLoading when viewing orders to prevent stuck loading
+  // Loading state - exclude ordersLoading and orderPaymentsLoading when viewing orders to prevent stuck loading
   const loading =
     productsLoading ||
     servicesLoading ||
     categoriesLoading ||
     tablesLoading ||
     customersLoading ||
-    (posView !== 'orders' ? ordersLoading : false) ||
+    (currentView !== 'orders' ? ordersLoading : false) ||
     paymentTypesLoading ||
-    orderPaymentsLoading;
+    (currentView !== 'orders' ? orderPaymentsLoading : false);
 
   if (loading) {
     return (
@@ -162,8 +162,8 @@ export default function SimplifiedPOSPage() {
         </POSHeaderContainer>
 
         <POSMainContent>
-          <POSViewsManager
-            currentView={posView}
+           <POSViewsManager
+             currentView={currentView}
             products={products}
             services={services}
             categories={categories}

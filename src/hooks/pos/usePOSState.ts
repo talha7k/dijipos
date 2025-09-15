@@ -6,6 +6,7 @@ import { cartTotalAtom } from '@/store/atoms';
 import { Order, OrderStatus, ItemType, OrderPayment, Table, Customer, OrderType, Product, Service, TableStatus, CartItem } from '@/types';
 import { useAuthState } from '@/hooks/useAuthState';
 import { useOrderState } from '@/hooks/useOrderState';
+import { useOrders } from '@/hooks/orders/useOrders';
 import { toast } from 'sonner';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, updateDoc, doc, serverTimestamp, FieldValue } from 'firebase/firestore';
@@ -17,6 +18,7 @@ type OrderCreateData = Omit<Order, 'id' | 'createdAt' | 'updatedAt'> & {
 
 export function usePOSLogic() {
   const { organizationId, user } = useAuthState();
+  const { refreshOrders } = useOrders(organizationId || undefined);
   const {
     cartItems,
     selectedTable,
@@ -24,12 +26,14 @@ export function usePOSLogic() {
     selectedOrderType,
     selectedOrder,
     categoryPath,
+    currentView,
     setCartItems,
     setSelectedTable,
     setSelectedCustomer,
     setSelectedOrderType,
     setCurrentOrder,
     setCategoryPath,
+    setCurrentView,
     clearPOSData,
     clearCart,
     addToCart: contextAddToCart,
@@ -37,8 +41,6 @@ export function usePOSLogic() {
     removeFromCart,
     getCartTotal
   } = useOrderState();
-
-  const [posView, setPosView] = useState<'items' | 'tables' | 'customers' | 'orders' | 'payment'>('items');
   const [pendingOrderToReopen, setPendingOrderToReopen] = useState<Order | null>(null);
   const [showOrderConfirmationDialog, setShowOrderConfirmationDialog] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -72,13 +74,13 @@ export function usePOSLogic() {
 
   const handleTableSelected = useCallback((table: Table) => {
     setSelectedTable(table);
-    setPosView('items');
-  }, [setSelectedTable]);
+    setCurrentView('items');
+  }, [setSelectedTable, setCurrentView]);
 
   const handleCustomerSelected = useCallback((customer: Customer) => {
     setSelectedCustomer(customer);
-    setPosView('items');
-  }, [setSelectedCustomer]);
+    setCurrentView('items');
+  }, [setSelectedCustomer, setCurrentView]);
 
   const handleOrderTypeSelect = useCallback((orderType: OrderType) => {
     setSelectedOrderType(orderType);
@@ -120,81 +122,163 @@ export function usePOSLogic() {
 
     setShowOrderConfirmationDialog(false);
     setPendingOrderToReopen(null);
-    setPosView('items');
+    setCurrentView('items');
   }, [pendingOrderToReopen, clearCart, setCartItems, setCurrentOrder]);
 
   const handleSaveOrder = useCallback(async () => {
     if (!organizationId || (cartItems || []).length === 0) return;
 
     try {
-      // Generate a simple order number (in production, this should be more sophisticated)
-      const orderNumber = `ORD-${Date.now()}`;
+      // Calculate tax (assuming 15% VAT rate)
+      const taxRate = 15; // Could be made configurable
+      const subtotal = cartTotal;
+      const taxAmount = (subtotal * taxRate) / 100;
+      const total = subtotal + taxAmount;
 
-      const orderData: OrderCreateData = {
-        organizationId,
-        orderNumber,
-        items: (cartItems || []).map((item: CartItem) => {
-          const itemObj: CartItem = {
-            id: `${item.type}-${item.id}`,
-            type: item.type,
-            name: item.name,
-            quantity: item.quantity,
-            unitPrice: item.unitPrice,
-            total: item.total,
-          };
-          if (item.type === ItemType.PRODUCT && item.id !== undefined) {
-            itemObj.productId = item.id;
-          } else if (item.id !== undefined) {
-            itemObj.serviceId = item.id;
+      if (selectedOrder) {
+        // Update existing order
+        const orderRef = doc(db, 'organizations', organizationId, 'orders', selectedOrder.id);
+        const updateData: {
+          items: CartItem[];
+          subtotal: number;
+          taxRate: number;
+          taxAmount: number;
+          total: number;
+          orderType: string;
+          updatedAt: FieldValue;
+          customerName?: string;
+          customerPhone?: string;
+          customerEmail?: string;
+          tableId?: string;
+          tableName?: string;
+        } = {
+          items: (cartItems || []).map((item: CartItem) => {
+            const itemObj: CartItem = {
+              id: `${item.type}-${item.id}`,
+              type: item.type,
+              name: item.name,
+              quantity: item.quantity,
+              unitPrice: item.unitPrice,
+              total: item.total,
+            };
+            if (item.type === ItemType.PRODUCT && item.id !== undefined) {
+              itemObj.productId = item.id;
+            } else if (item.id !== undefined) {
+              itemObj.serviceId = item.id;
+            }
+            return itemObj;
+          }),
+          subtotal: subtotal,
+          taxRate: taxRate,
+          taxAmount: taxAmount,
+          total: total,
+          orderType: selectedOrderType?.name || selectedOrder.orderType || 'dine-in',
+          updatedAt: serverTimestamp(),
+        };
+
+        // Add customer and table info if changed
+        if (selectedCustomer?.name !== undefined) updateData.customerName = selectedCustomer.name;
+        if (selectedCustomer?.phone !== undefined) updateData.customerPhone = selectedCustomer.phone;
+        if (selectedCustomer?.email !== undefined) updateData.customerEmail = selectedCustomer.email;
+        if (selectedTable?.id !== undefined) updateData.tableId = selectedTable.id;
+        if (selectedTable?.name !== undefined) updateData.tableName = selectedTable.name;
+
+        await updateDoc(orderRef, updateData);
+
+        // Update table status if table is selected and different from original
+        if (selectedTable?.id && selectedTable.id !== selectedOrder.tableId) {
+          // Release old table if it exists
+          if (selectedOrder.tableId) {
+            await updateDoc(doc(db, 'organizations', organizationId, 'tables', selectedOrder.tableId), {
+              status: TableStatus.AVAILABLE,
+              updatedAt: serverTimestamp()
+            });
           }
-          return itemObj;
-        }),
-        subtotal: cartTotal,
-        taxRate: 0,
-        taxAmount: 0,
-        total: cartTotal,
-        status: OrderStatus.OPEN,
-        paid: false,
-        orderType: selectedOrderType?.name || 'dine-in',
-        createdById: user?.uid || 'unknown',
-        createdByName: user?.displayName || user?.email || 'Unknown User',
-        includeQR: true, // Always include ZATCA QR code on receipts
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      };
+          // Occupy new table
+          await updateDoc(doc(db, 'organizations', organizationId, 'tables', selectedTable.id), {
+            status: TableStatus.OCCUPIED,
+            updatedAt: serverTimestamp()
+          });
+        }
 
-      if (selectedCustomer?.name !== undefined) orderData.customerName = selectedCustomer.name;
-      if (selectedCustomer?.phone !== undefined) orderData.customerPhone = selectedCustomer.phone;
-      if (selectedCustomer?.email !== undefined) orderData.customerEmail = selectedCustomer.email;
-      if (selectedTable?.id !== undefined) orderData.tableId = selectedTable.id;
-      if (selectedTable?.name !== undefined) orderData.tableName = selectedTable.name;
+        toast.success('Order updated successfully');
+        refreshOrders();
+      } else {
+        // Create new order
+        // Generate a simple order number (in production, this should be more sophisticated)
+        const orderNumber = `ORD-${Date.now()}`;
 
-      await addDoc(collection(db, 'organizations', organizationId, 'orders'), orderData);
-      
-      // Update table status if table is selected
-      if (selectedTable?.id) {
-        await updateDoc(doc(db, 'organizations', organizationId, 'tables', selectedTable.id), {
-          status: TableStatus.OCCUPIED,
-          updatedAt: serverTimestamp()
-        });
+        // Generate queue number for the order
+        const queueNumber = Math.floor(Math.random() * 1000) + 1;
+
+        const orderData: OrderCreateData = {
+          organizationId,
+          orderNumber,
+          queueNumber: queueNumber.toString(),
+          items: (cartItems || []).map((item: CartItem) => {
+            const itemObj: CartItem = {
+              id: `${item.type}-${item.id}`,
+              type: item.type,
+              name: item.name,
+              quantity: item.quantity,
+              unitPrice: item.unitPrice,
+              total: item.total,
+            };
+            if (item.type === ItemType.PRODUCT && item.id !== undefined) {
+              itemObj.productId = item.id;
+            } else if (item.id !== undefined) {
+              itemObj.serviceId = item.id;
+            }
+            return itemObj;
+          }),
+          subtotal: subtotal,
+          taxRate: taxRate,
+          taxAmount: taxAmount,
+          total: total,
+          status: OrderStatus.OPEN,
+          paid: false,
+          orderType: selectedOrderType?.name || 'dine-in',
+          createdById: user?.uid || 'unknown',
+          createdByName: user?.displayName || user?.email || 'Unknown User',
+          includeQR: true, // Always include ZATCA QR code on receipts
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        };
+
+        if (selectedCustomer?.name !== undefined) orderData.customerName = selectedCustomer.name;
+        if (selectedCustomer?.phone !== undefined) orderData.customerPhone = selectedCustomer.phone;
+        if (selectedCustomer?.email !== undefined) orderData.customerEmail = selectedCustomer.email;
+        if (selectedTable?.id !== undefined) orderData.tableId = selectedTable.id;
+        if (selectedTable?.name !== undefined) orderData.tableName = selectedTable.name;
+
+        await addDoc(collection(db, 'organizations', organizationId, 'orders'), orderData);
+
+        // Update table status if table is selected
+        if (selectedTable?.id) {
+          await updateDoc(doc(db, 'organizations', organizationId, 'tables', selectedTable.id), {
+            status: TableStatus.OCCUPIED,
+            updatedAt: serverTimestamp()
+          });
+        }
+
+        toast.success('Order saved successfully');
       }
 
-      toast.success('Order saved successfully');
       clearCart();
       clearPOSData();
-      
+
     } catch (error) {
       console.error('Error saving order:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       toast.error(`Failed to save order: ${errorMessage}`);
     }
-  }, [organizationId, cartItems, cartTotal, selectedOrderType, selectedCustomer, selectedTable, user, clearCart, clearPOSData]);
+  }, [organizationId, cartItems, cartTotal, selectedOrder, selectedOrderType, selectedCustomer, selectedTable, user, clearCart, clearPOSData, refreshOrders]);
 
   const handlePaymentProcessed = useCallback(async (payments: OrderPayment[]) => {
     setPaymentSuccessData({ totalPaid: payments.reduce((sum, payment) => sum + payment.amount, 0) });
     setShowPaymentSuccessDialog(true);
-    setPosView('items');
-  }, []);
+    setCurrentView('items');
+  }, [setCurrentView]);
 
   const handleClearCart = useCallback(() => {
     clearCart();
@@ -218,16 +302,16 @@ export function usePOSLogic() {
   }, [setSelectedOrderType]);
 
   const handleTableSelect = useCallback(() => {
-    setPosView('tables');
-  }, []);
+    setCurrentView('tables');
+  }, [setCurrentView]);
 
   const handleCustomerSelect = useCallback(() => {
-    setPosView('customers');
-  }, []);
+    setCurrentView('customers');
+  }, [setCurrentView]);
 
   const handleOrdersClick = useCallback(() => {
-    setPosView('orders');
-  }, []);
+    setCurrentView('orders');
+  }, [setCurrentView]);
 
   const handleCategoryClick = useCallback((categoryId: string) => {
     setCategoryPath([...categoryPath, categoryId]);
@@ -250,10 +334,20 @@ export function usePOSLogic() {
   const createTempOrderForPayment = useCallback(() => {
     if ((cartItems || []).length === 0) return null;
 
+    // Calculate tax (assuming 15% VAT rate for preview)
+    const taxRate = 15; // Could be made configurable
+    const subtotal = cartTotal;
+    const taxAmount = (subtotal * taxRate) / 100;
+    const total = subtotal + taxAmount;
+
+    // Generate queue number for preview
+    const queueNumber = Math.floor(Math.random() * 1000) + 1;
+
     const orderData: Order = {
       id: 'temp-checkout',
       organizationId: organizationId || '',
       orderNumber: `TEMP-${Date.now()}`,
+      queueNumber: queueNumber.toString(),
       items: (cartItems || []).map((item: CartItem) => {
         const itemObj: CartItem = {
           id: `${item.type}-${item.id}`,
@@ -270,10 +364,10 @@ export function usePOSLogic() {
         }
         return itemObj;
       }),
-      subtotal: cartTotal,
-      taxRate: 0,
-      taxAmount: 0,
-      total: cartTotal,
+      subtotal: subtotal,
+      taxRate: taxRate,
+      taxAmount: taxAmount,
+      total: total,
       status: OrderStatus.OPEN,
       paid: false,
       orderType: selectedOrderType?.name || 'dine-in',
@@ -300,9 +394,9 @@ export function usePOSLogic() {
     const orderToPay = selectedOrder || createTempOrderForPayment();
     if (orderToPay) {
       setCurrentOrder(orderToPay);
-      setPosView('payment');
+      setCurrentView('payment');
     }
-  }, [cartItems, selectedOrder, createTempOrderForPayment, setCurrentOrder, setPosView]);
+  }, [cartItems, selectedOrder, createTempOrderForPayment, setCurrentOrder, setCurrentView]);
 
   return {
     // State
@@ -313,7 +407,7 @@ export function usePOSLogic() {
     selectedOrderType,
     selectedOrder,
     categoryPath,
-    posView,
+    posView: currentView,
     pendingOrderToReopen,
     showOrderConfirmationDialog,
     isCartOpen,
@@ -354,6 +448,6 @@ export function usePOSLogic() {
     removeFromCart,
     setShowOrderConfirmationDialog,
     setPendingOrderToReopen,
-    setPosView,
+    setPosView: setCurrentView,
   };
 }

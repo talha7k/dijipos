@@ -31,25 +31,39 @@ async function convertImageToBase64(imageUrl: string): Promise<string> {
 
 
 export async function renderReceiptTemplate(
-   template: ReceiptTemplate,
-   order: Order,
-   organization: Organization | null,
-   payments: OrderPayment[] = []
- ): Promise<string> {
-   console.log('=== Receipt Template Debug ===');
-   console.log('Organization:', organization);
-   console.log('Organization logo URL:', organization?.logoUrl);
-   console.log('Organization stamp URL:', organization?.stampUrl);
+    template: ReceiptTemplate,
+    order: Order,
+    organization: Organization | null,
+    payments: OrderPayment[] = []
+  ): Promise<string> {
+    console.log('=== Receipt Template Debug ===');
+    console.log('Template:', template);
+    console.log('Template type:', template.type);
+    console.log('Template content length:', template.content?.length || 0);
+    console.log('Order:', order);
+    console.log('Order fields:', {
+      orderNumber: order.orderNumber,
+      queueNumber: order.queueNumber,
+      orderType: order.orderType,
+      subtotal: order.subtotal,
+      taxRate: order.taxRate,
+      taxAmount: order.taxAmount,
+      total: order.total,
+      totalQty: order.items.reduce((sum, item) => sum + item.quantity, 0)
+    });
+    console.log('Organization:', organization);
+    console.log('Organization logo URL:', organization?.logoUrl);
+    console.log('Payments:', payments);
 
-   // For PDF generation, use original URLs and let html2canvas handle them
-   const companyLogoUrl = organization?.logoUrl || '';
-   const qrCodeBase64 = await generateZatcaQR(order, organization);
+    // For PDF generation, use original URLs and let html2canvas handle them
+    const companyLogoUrl = organization?.logoUrl || '';
+    const qrCodeBase64 = await generateZatcaQR(order, organization);
 
-   console.log('Company logo URL:', companyLogoUrl);
-   console.log('QR code base64 length:', qrCodeBase64.length);
+    console.log('Company logo URL:', companyLogoUrl);
+    console.log('QR code base64 length:', qrCodeBase64.length);
 
-   // Calculate total quantity
-   const totalQty = order.items.reduce((sum, item) => sum + item.quantity, 0);
+    // Calculate total quantity
+    const totalQty = order.items.reduce((sum, item) => sum + item.quantity, 0);
 
    // Prepare template data
    const data: ReceiptTemplateData = {
@@ -89,41 +103,94 @@ export async function renderReceiptTemplate(
 
   // Use template content or default template
   let templateContent = template.content;
-  
+
+  console.log('=== TEMPLATE SELECTION DEBUG ===');
+  console.log('Template has content:', !!template.content);
+  console.log('Template content length:', template.content?.length || 0);
+  console.log('Template type:', template.type);
+
   // If no template content, use default receipt template based on type
   if (!templateContent) {
+    console.log('Using default template for type:', template.type);
     templateContent = getDefaultReceiptTemplate(template.type || 'thermal');
+  } else {
+    console.log('Using custom template content');
   }
+
+  console.log('Final template content length:', templateContent.length);
+  console.log('Final template content preview:', templateContent.substring(0, 500) + '...');
+
+  // Show specific sections of the template - more specific patterns
+  const orderTypePattern = templateContent.match(/\{\{orderType\}\}/g);
+  console.log('{{orderType}} found:', orderTypePattern);
+
+  const queueNumberPattern = templateContent.match(/\{\{queueNumber\}\}/g);
+  console.log('{{queueNumber}} found:', queueNumberPattern);
+
+  const subtotalPattern = templateContent.match(/\{\{subtotal\}\}/g);
+  console.log('{{subtotal}} found:', subtotalPattern);
+
+  const arabicOrderPattern = templateContent.match(/النوع.*\{\{orderType\}\}/g);
+  console.log('Arabic order type pattern:', arabicOrderPattern);
+
+  const arabicQueuePattern = templateContent.match(/رقم الدور.*\{\{queueNumber\}\}/g);
+  console.log('Arabic queue pattern:', arabicQueuePattern);
 
   // Render the template
   return renderTemplate(templateContent, data);
 }
 
 function renderTemplate(template: string, data: ReceiptTemplateData): string {
-  let result = template;
+   console.log('=== Template Rendering Debug ===');
+   console.log('Original template length:', template.length);
+   console.log('Template data keys:', Object.keys(data));
+   console.log('Sample data values:', {
+     companyName: data.companyName,
+     orderNumber: data.orderNumber,
+     orderType: data.orderType,
+     queueNumber: data.queueNumber,
+     subtotal: data.subtotal,
+     total: data.total,
+     totalQty: data.totalQty,
+     paymentsCount: data.payments.length
+   });
 
-  // Replace simple variables
-  result = result.replace(/{{companyName}}/g, data.companyName);
-  result = result.replace(/{{companyNameAr}}/g, data.companyNameAr);
-  result = result.replace(/{{companyAddress}}/g, data.companyAddress);
-  result = result.replace(/{{companyPhone}}/g, data.companyPhone);
-  result = result.replace(/{{companyVat}}/g, data.companyVat);
-  result = result.replace(/{{companyLogo}}/g, data.companyLogo);
-  result = result.replace(/{{orderNumber}}/g, data.orderNumber);
-  result = result.replace(/{{orderDate}}/g, data.orderDate);
-  result = result.replace(/{{tableName}}/g, data.tableName);
-  result = result.replace(/{{customerName}}/g, data.customerName);
-  result = result.replace(/{{createdByName}}/g, data.createdByName);
-  result = result.replace(/{{paymentMethod}}/g, data.paymentMethod);
-  result = result.replace(/{{subtotal}}/g, data.subtotal);
-  result = result.replace(/{{vatRate}}/g, data.vatRate);
-  result = result.replace(/{{vatAmount}}/g, data.vatAmount);
-  result = result.replace(/{{total}}/g, data.total);
-  result = result.replace(/{{customHeader}}/g, data.customHeader || '');
-  result = result.replace(/{{customFooter}}/g, data.customFooter || '');
-  result = result.replace(/{{totalQty}}/g, data.totalQty.toString());
-  result = result.replace(/{{queueNumber}}/g, data.queueNumber || '');
-  result = result.replace(/{{orderType}}/g, data.orderType);
+   let result = template;
+
+   // Replace simple variables
+   console.log('=== STARTING PLACEHOLDER REPLACEMENT ===');
+   console.log('Before replacement - template contains {{orderType}}:', result.includes('{{orderType}}'));
+   console.log('Before replacement - template contains {{queueNumber}}:', result.includes('{{queueNumber}}'));
+   console.log('Before replacement - template contains {{subtotal}}:', result.includes('{{subtotal}}'));
+
+   result = result.replace(/{{companyName}}/g, data.companyName);
+   result = result.replace(/{{companyNameAr}}/g, data.companyNameAr);
+   result = result.replace(/{{companyAddress}}/g, data.companyAddress);
+   result = result.replace(/{{companyPhone}}/g, data.companyPhone);
+   result = result.replace(/{{companyVat}}/g, data.companyVat);
+   result = result.replace(/{{companyLogo}}/g, data.companyLogo);
+   result = result.replace(/{{orderNumber}}/g, data.orderNumber);
+   result = result.replace(/{{orderDate}}/g, data.orderDate);
+   result = result.replace(/{{tableName}}/g, data.tableName);
+   result = result.replace(/{{customerName}}/g, data.customerName);
+   result = result.replace(/{{createdByName}}/g, data.createdByName);
+   result = result.replace(/{{paymentMethod}}/g, data.paymentMethod);
+   result = result.replace(/{{subtotal}}/g, data.subtotal);
+   result = result.replace(/{{vatRate}}/g, data.vatRate);
+   result = result.replace(/{{vatAmount}}/g, data.vatAmount);
+   result = result.replace(/{{total}}/g, data.total);
+   result = result.replace(/{{customHeader}}/g, data.customHeader || '');
+   result = result.replace(/{{customFooter}}/g, data.customFooter || '');
+   result = result.replace(/{{totalQty}}/g, data.totalQty.toString());
+   result = result.replace(/{{queueNumber}}/g, data.queueNumber || '');
+   result = result.replace(/{{orderType}}/g, data.orderType);
+
+   console.log('After simple replacements - template contains {{orderType}}:', result.includes('{{orderType}}'));
+   console.log('After simple replacements - template contains {{queueNumber}}:', result.includes('{{queueNumber}}'));
+   console.log('After simple replacements - template contains {{subtotal}}:', result.includes('{{subtotal}}'));
+   console.log('After simple replacements - contains "Dine-in":', result.includes('Dine-in'));
+   console.log('After simple replacements - contains "722":', result.includes('722'));
+   console.log('After simple replacements - contains "1122.62":', result.includes('1122.62'));
 
   // Handle QR code conditional block (both syntaxes)
   if (data.includeQR && data.qrCodeUrl) {
@@ -286,6 +353,21 @@ function renderInvoiceTemplateContent(template: string, data: InvoiceTemplateDat
         .replace(/{{total}}/g, item.total);
     }).join('');
   });
+
+  console.log('Final rendered result length:', result.length);
+  console.log('Final result preview:', result.substring(0, 500) + '...');
+
+  // Check if key placeholders were replaced
+  const hasOrderType = result.includes('Dine-in') || result.includes('dine-in');
+  const hasQueueNumber = result.includes('989') || result.includes('Queue #:');
+  const hasSubtotal = result.includes('1131.48') || result.includes('Items Value:');
+  const hasPayments = result.includes('Payment Type') || result.includes('نوع الدفع');
+
+  console.log('Template rendering verification:');
+  console.log('- Order type present:', hasOrderType);
+  console.log('- Queue number present:', hasQueueNumber);
+  console.log('- Subtotal present:', hasSubtotal);
+  console.log('- Payments section present:', hasPayments);
 
   return result;
 }

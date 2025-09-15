@@ -79,6 +79,7 @@ export const cartLoadingAtom = atom<boolean>(false);
 export const selectedTableAtom = atomWithStorage<Table | null>('dijibill-selected-table', null, indexedDBStorage);
 export const selectedCustomerAtom = atomWithStorage<Customer | null>('dijibill-selected-customer', null, indexedDBStorage);
 export const selectedOrderTypeAtom = atomWithStorage<OrderType | null>('dijibill-selected-order-type', null, indexedDBStorage);
+export const selectedCartOrderAtom = atom<Order | null>(null);
 
 // POS navigation state
 export const currentViewAtom = atom<'items' | 'tables' | 'customers' | 'orders' | 'payment'>('items');
@@ -145,7 +146,7 @@ export const resetPOSStateAtom = atom(null, (get, set) => {
   // Don't clear order type - preserve user preference
   set(currentViewAtom, 'items');
   set(categoryPathAtom, []);
-  set(currentOrderAtom, null);
+  set(selectedCartOrderAtom, null);
 });
 
 // =====================
