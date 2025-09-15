@@ -1,24 +1,32 @@
 'use client';
 
 import { useState } from 'react';
-import { useOrganizationId } from '@/hooks/useAuthState';
+import { useOrganizationId, useSelectedOrganization } from '@/hooks/useAuthState';
 import { Quote } from '@/types';
 import { QuoteTemplateType, QuoteStatus, InvoiceStatus } from '@/types/enums';
 import { useQuotesData, useQuoteActions } from '@/hooks/useQuotes';
 import { useInvoiceActions } from '@/hooks/useInvoices';
+import { useQuoteTemplatesData } from '@/hooks/use-quote-templates-data';
+import { useCustomersData } from '@/hooks/useCustomerState';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import QuoteForm from '@/components/invoices_quotes/QuoteForm';
-import { FileText } from 'lucide-react';
+import { QuotePrintDialog } from '@/components/invoices_quotes/QuotePrintDialog';
+import { FileText, Printer } from 'lucide-react';
 
 function QuotesContent() {
   const organizationId = useOrganizationId();
+  const selectedOrganization = useSelectedOrganization();
   const { quotes, loading } = useQuotesData(organizationId || undefined);
   const { createQuote, updateQuote } = useQuoteActions(organizationId || undefined);
   const { createInvoice } = useInvoiceActions(organizationId || undefined);
+  const { quoteTemplates } = useQuoteTemplatesData(organizationId || undefined);
+  const { customers } = useCustomersData(organizationId || undefined);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedQuote, setSelectedQuote] = useState<Quote | null>(null);
+  const [printDialogOpen, setPrintDialogOpen] = useState(false);
 
   const handleCreateQuote = async (quoteData: Omit<Quote, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => {
     if (!organizationId || !createQuote) return;
@@ -64,6 +72,11 @@ function QuotesContent() {
     }
   };
 
+  const handlePrint = (quote: Quote) => {
+    setSelectedQuote(quote);
+    setPrintDialogOpen(true);
+  };
+
   if (loading) return <div>Loading...</div>;
 
   return (
@@ -105,17 +118,27 @@ function QuotesContent() {
                   <TableCell>${quote.total.toFixed(2)}</TableCell>
                   <TableCell>{quote.status}</TableCell>
                   <TableCell>{quote.createdAt?.toLocaleDateString()}</TableCell>
-                  <TableCell>
-                    {quote.status !== 'converted' && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleConvertToInvoice(quote.id)}
-                      >
-                        Convert to Invoice
-                      </Button>
-                    )}
-                  </TableCell>
+                   <TableCell>
+                     <div className="flex gap-2">
+                       <Button
+                         variant="outline"
+                         size="sm"
+                         onClick={() => handlePrint(quote)}
+                       >
+                         <Printer className="w-4 h-4 mr-1" />
+                         Print
+                       </Button>
+                       {quote.status !== 'converted' && (
+                         <Button
+                           variant="outline"
+                           size="sm"
+                           onClick={() => handleConvertToInvoice(quote.id)}
+                         >
+                           Convert to Invoice
+                         </Button>
+                       )}
+                     </div>
+                   </TableCell>
                 </TableRow>
               ))}
               {quotes.length === 0 && (
@@ -132,6 +155,20 @@ function QuotesContent() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Print Dialog */}
+      {selectedQuote && (
+        <QuotePrintDialog
+          quote={selectedQuote}
+          organization={selectedOrganization}
+          quoteTemplates={quoteTemplates}
+          customer={customers.find(c => c.name === selectedQuote.clientName)}
+          open={printDialogOpen}
+          onOpenChange={setPrintDialogOpen}
+        >
+          <div>Print Preview</div>
+        </QuotePrintDialog>
+      )}
     </div>
   );
 }

@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
 
 import { usePaymentTypesData } from '@/hooks/uePaymentTypes';
-import { useReceiptTemplatesData } from '@/hooks/use-receipt-templates-data';
+import { useTemplatesData } from '@/hooks/use-templates-data';
+import { TemplateCategory } from '@/types';
 import { useOrders } from '@/hooks/orders/useOrders';
 import { useTablesData } from '@/hooks/tables/useTables';
 import { useSettingsData } from '@/hooks/organization/use-settings-data';
@@ -15,13 +16,13 @@ import { OrderTypesTab } from '@/components/settings/OrderTypesTab';
 import { PaymentTypesTab } from '@/components/settings/PaymentTypesTab';
 import { StoreSettingsTab } from '@/components/settings/StoreSettingsTab';
 import { PrinterSettingsTab } from '@/components/settings/PrinterSettingsTab';
-import { ReceiptTemplatesTab } from '@/components/settings/ReceiptTemplatesTab';
+import { TemplatesTab } from '@/components/settings/TemplatesTab';
 import { TablesTab } from '@/components/settings/TablesTab';
 
 function SettingsContent() {
   const organizationId = useOrganizationId();
   const { paymentTypes, loading: paymentTypesLoading } = usePaymentTypesData(organizationId || undefined);
-  const { receiptTemplates, loading: receiptTemplatesLoading } = useReceiptTemplatesData(organizationId || undefined);
+  const { templates: receiptTemplates, loading: receiptTemplatesLoading } = useTemplatesData(organizationId || undefined, TemplateCategory.RECEIPT);
   const { orderTypes, loading: orderTypesLoading } = useOrders(organizationId || undefined);
   const { tables, loading: tablesLoading } = useTablesData(organizationId || undefined);
   const { 
@@ -47,7 +48,7 @@ function SettingsContent() {
           <TabsTrigger value="tables">Tables</TabsTrigger>
           <TabsTrigger value="store-settings">Store Settings</TabsTrigger>
           <TabsTrigger value="printer-settings">Printer</TabsTrigger>
-          <TabsTrigger value="receipt-templates">Receipts</TabsTrigger>
+          <TabsTrigger value="templates">Templates</TabsTrigger>
         </TabsList>
 
         <TabsContent value="order-types" className="space-y-4">
@@ -85,8 +86,8 @@ function SettingsContent() {
           />
         </TabsContent>
 
-        <TabsContent value="receipt-templates" className="space-y-4">
-          <ReceiptTemplatesTab
+        <TabsContent value="templates" className="space-y-4">
+          <TemplatesTab
             receiptTemplates={receiptTemplates}
             onRefresh={() => {}} // Real-time updates via onSnapshot
           />

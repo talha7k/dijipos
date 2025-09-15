@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { collection, addDoc, deleteDoc, setDoc, doc } from 'firebase/firestore';
+import { collection, addDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
-import { ReceiptTemplate } from '@/types';
+import { ReceiptTemplate, TemplateCategory, UnifiedTemplate } from '@/types';
+import { useTemplatesData } from '@/hooks/use-templates-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,59 +13,54 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { FileText, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { defaultReceiptTemplate } from '@/components/templates/default-receipt-thermal';
 
-interface ReceiptTemplatesTabProps {
-  receiptTemplates: ReceiptTemplate[];
+interface TemplatesTabProps {
+  receiptTemplates: UnifiedTemplate[];
   onRefresh?: () => void;
 }
 
-export function ReceiptTemplatesTab({ receiptTemplates, onRefresh }: ReceiptTemplatesTabProps) {
+export function TemplatesTab({ receiptTemplates, onRefresh }: TemplatesTabProps) {
   const organizationId = useOrganizationId();
   const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
   const [deleteTemplateId, setDeleteTemplateId] = useState<string | null>(null);
-  const [newReceiptTemplate, setNewReceiptTemplate] = useState({
+  const [selectedCategory, setSelectedCategory] = useState<TemplateCategory>(TemplateCategory.RECEIPT);
+  const [newTemplate, setNewTemplate] = useState({
     name: '',
     description: '',
     content: '',
     type: 'thermal' as 'thermal' | 'a4'
   });
 
-  const handleAddReceiptTemplate = async () => {
-    if (!organizationId || !newReceiptTemplate.name.trim()) return;
+  const { templates, loading, addTemplate, setDefaultTemplate, deleteTemplate } = useTemplatesData(organizationId || undefined, selectedCategory);
 
+  const handleAddTemplate = async () => {
+    if (!organizationId || !newTemplate.name.trim()) return;
 
-
-    await addDoc(collection(db, 'organizations', organizationId, 'receiptTemplates'), {
-      ...newReceiptTemplate,
-      content: newReceiptTemplate.content || defaultReceiptTemplate,
-      isDefault: receiptTemplates.length === 0,
+    await addTemplate({
+      name: newTemplate.name,
+      description: newTemplate.description,
+      category: selectedCategory,
+      type: newTemplate.type,
+      content: newTemplate.content || defaultReceiptTemplate,
+      isDefault: templates.length === 0,
       organizationId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
     });
 
-    setNewReceiptTemplate({ name: '', description: '', content: '', type: 'thermal' });
+    setNewTemplate({ name: '', description: '', content: '', type: 'thermal' });
     setTemplateDialogOpen(false);
     onRefresh?.();
-    toast.success('Receipt template added successfully');
+    toast.success(`${selectedCategory} template added successfully`);
   };
 
   const handleSetDefaultTemplate = async (templateId: string) => {
     if (!organizationId) return;
 
-    const updatePromises = receiptTemplates.map(template => {
-      const templateRef = doc(db, 'organizations', organizationId, 'receiptTemplates', template.id);
-      return setDoc(templateRef, {
-        ...template,
-        isDefault: template.id === templateId,
-        updatedAt: new Date()
-      });
-    });
-
-    await Promise.all(updatePromises);
+    // Use the hook's setDefaultTemplate method
+    await setDefaultTemplate(templateId);
     onRefresh?.();
   };
 
@@ -74,14 +70,14 @@ export function ReceiptTemplatesTab({ receiptTemplates, onRefresh }: ReceiptTemp
 
   const confirmDeleteTemplate = async () => {
     if (!organizationId || !deleteTemplateId) return;
-    
+
     try {
-      await deleteDoc(doc(db, 'organizations', organizationId, 'receiptTemplates', deleteTemplateId));
-      toast.success('Receipt template deleted successfully');
+      await deleteTemplate(deleteTemplateId);
+      toast.success(`${selectedCategory} template deleted successfully`);
       onRefresh?.();
     } catch (error) {
-      console.error('Error deleting receipt template:', error);
-      toast.error('Failed to delete receipt template');
+      console.error(`Error deleting ${selectedCategory.toLowerCase()} template:`, error);
+      toast.error(`Failed to delete ${selectedCategory.toLowerCase()} template`);
     } finally {
       setDeleteTemplateId(null);
     }
@@ -93,7 +89,7 @@ export function ReceiptTemplatesTab({ receiptTemplates, onRefresh }: ReceiptTemp
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            Receipt Templates
+            Templates
           </div>
           <Dialog open={templateDialogOpen} onOpenChange={setTemplateDialogOpen}>
             <DialogTrigger asChild>
@@ -104,16 +100,29 @@ export function ReceiptTemplatesTab({ receiptTemplates, onRefresh }: ReceiptTemp
             </DialogTrigger>
             <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Add Receipt Template</DialogTitle>
+                <DialogTitle>Add {selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)} Template</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
+                <div>
+                  <Label>Template Category</Label>
+                  <ToggleGroup
+                    type="single"
+                    value={selectedCategory}
+                    onValueChange={(value) => value && setSelectedCategory(value as TemplateCategory)}
+                    className="justify-start"
+                  >
+                    <ToggleGroupItem value={TemplateCategory.RECEIPT}>Receipt</ToggleGroupItem>
+                    <ToggleGroupItem value={TemplateCategory.INVOICE}>Invoice</ToggleGroupItem>
+                    <ToggleGroupItem value={TemplateCategory.QUOTE}>Quote</ToggleGroupItem>
+                  </ToggleGroup>
+                </div>
                 <div>
                   <Label htmlFor="template-name">Template Name</Label>
                   <Input
                     id="template-name"
-                    placeholder="e.g., Thermal Receipt, A4 Receipt"
-                    value={newReceiptTemplate.name}
-                    onChange={(e) => setNewReceiptTemplate({ ...newReceiptTemplate, name: e.target.value })}
+                    placeholder={`e.g., Thermal ${selectedCategory}, A4 ${selectedCategory}`}
+                    value={newTemplate.name}
+                    onChange={(e) => setNewTemplate({ ...newTemplate, name: e.target.value })}
                   />
                 </div>
                 <div>
@@ -121,8 +130,8 @@ export function ReceiptTemplatesTab({ receiptTemplates, onRefresh }: ReceiptTemp
                   <Input
                     id="template-description"
                     placeholder="Description for this template"
-                    value={newReceiptTemplate.description}
-                    onChange={(e) => setNewReceiptTemplate({ ...newReceiptTemplate, description: e.target.value })}
+                    value={newTemplate.description}
+                    onChange={(e) => setNewTemplate({ ...newTemplate, description: e.target.value })}
                   />
                 </div>
                 <div>
@@ -130,8 +139,8 @@ export function ReceiptTemplatesTab({ receiptTemplates, onRefresh }: ReceiptTemp
                   <select
                     id="template-type"
                     className="w-full p-2 border rounded"
-                    value={newReceiptTemplate.type}
-                    onChange={(e) => setNewReceiptTemplate({ ...newReceiptTemplate, type: e.target.value as 'thermal' | 'a4' })}
+                    value={newTemplate.type}
+                    onChange={(e) => setNewTemplate({ ...newTemplate, type: e.target.value as 'thermal' | 'a4' })}
                   >
                     <option value="thermal">Thermal Printer</option>
                     <option value="a4">A4 Printer</option>
@@ -143,14 +152,14 @@ export function ReceiptTemplatesTab({ receiptTemplates, onRefresh }: ReceiptTemp
                     id="template-content"
                     className="w-full h-64 p-2 border rounded font-mono text-sm"
                     placeholder="Enter HTML template with placeholders like {{companyName}}, {{orderNumber}}, etc."
-                    value={newReceiptTemplate.content}
-                    onChange={(e) => setNewReceiptTemplate({ ...newReceiptTemplate, content: e.target.value })}
+                    value={newTemplate.content}
+                    onChange={(e) => setNewTemplate({ ...newTemplate, content: e.target.value })}
                   />
                   <p className="text-sm text-muted-foreground mt-1">
                     Available placeholders: {'{{companyName}}'}, {'{{companyAddress}}'}, {'{{companyPhone}}'}, {'{{companyVat}}'}, {'{{orderNumber}}'}, {'{{orderDate}}'}, {'{{tableName}}'}, {'{{customerName}}'}, {'{{#each items}}...{{/each}}'}, {'{{subtotal}}'}, {'{{vatRate}}'}, {'{{vatAmount}}'}, {'{{total}}'}, {'{{paymentMethod}}'}
                   </p>
                 </div>
-                <Button onClick={handleAddReceiptTemplate} className="w-full">
+                <Button onClick={handleAddTemplate} className="w-full">
                   Add Template
                 </Button>
               </div>
@@ -159,11 +168,11 @@ export function ReceiptTemplatesTab({ receiptTemplates, onRefresh }: ReceiptTemp
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {receiptTemplates.length === 0 ? (
-          <p className="text-muted-foreground">No receipt templates added yet.</p>
+        {templates.length === 0 ? (
+          <p className="text-muted-foreground">No {selectedCategory.toLowerCase()} templates added yet.</p>
         ) : (
           <div className="grid gap-2">
-            {receiptTemplates.map((template) => (
+            {templates.map((template) => (
               <div key={template.id} className="flex items-center justify-between p-3 border rounded">
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
@@ -200,7 +209,7 @@ export function ReceiptTemplatesTab({ receiptTemplates, onRefresh }: ReceiptTemp
                       <AlertDialogHeader>
                         <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                         <AlertDialogDescription>
-                          This will permanently delete the receipt template &ldquo;{template.name}&rdquo;. This action cannot be undone.
+                          This will permanently delete the {selectedCategory.toLowerCase()} template &ldquo;{template.name}&rdquo;. This action cannot be undone.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>

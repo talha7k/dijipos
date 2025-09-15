@@ -1,4 +1,5 @@
 import { Order, Organization, ReceiptTemplate, Invoice, InvoiceTemplate, Customer, Supplier, Quote, QuoteTemplate } from '@/types';
+import { Order, Organization, ReceiptTemplate, Invoice, InvoiceTemplate, Customer, Supplier, Quote, QuoteTemplate } from '@/types';
 import { OrderStatus } from '@/types/enums';
 import { defaultReceiptTemplate } from '@/components/templates/default-receipt-thermal';
 import { defaultReceiptA4Template } from '@/components/templates/default-receipt-a4';
@@ -10,6 +11,38 @@ import { defaultEnglishQuoteTemplate } from '@/components/templates/default-quot
 import { defaultArabicQuoteTemplate } from '@/components/templates/default-quote-arabic';
 import { createReceiptQRData, generateZatcaQRCode } from '@/lib/zatca-qr';
 import { ReceiptTemplateData, InvoiceTemplateData, QuoteTemplateData, TemplateData } from '@/types/template';
+
+// Utility function to convert image URL to base64
+async function convertImageToBase64(imageUrl: string): Promise<string> {
+  if (!imageUrl || !imageUrl.startsWith('http')) {
+    return imageUrl; // Return as-is if not a URL
+  }
+
+  try {
+    const response = await fetch(imageUrl, {
+      mode: 'cors',
+      headers: {
+        'Accept': 'image/*',
+      }
+    });
+
+    if (!response.ok) {
+      console.warn(`Failed to fetch image: ${imageUrl}`);
+      return imageUrl; // Return original URL if fetch fails
+    }
+
+    const blob = await response.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => resolve(imageUrl); // Return original URL on error
+      reader.readAsDataURL(blob);
+    });
+  } catch (error) {
+    console.warn(`Error converting image to base64: ${imageUrl}`, error);
+    return imageUrl; // Return original URL on error
+  }
+}
 
 
 

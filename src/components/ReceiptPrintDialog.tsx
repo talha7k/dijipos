@@ -152,12 +152,39 @@ export function ReceiptPrintDialog({
       </DialogTrigger>
       <DialogContent className="max-w-4xl">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Printer className="h-5 w-5" />
-            Print Receipt
-          </DialogTitle>
+          <div className="flex justify-between items-center">
+            <DialogTitle className="flex items-center gap-2">
+              <Printer className="h-5 w-5" />
+              Print Receipt
+            </DialogTitle>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={downloadReceipt}
+                disabled={!selectedTemplate || receiptTemplates.length === 0 || isDownloading}
+                className="flex items-center gap-2"
+              >
+                <Download className="h-4 w-4" />
+                {isDownloading ? 'Downloading...' : 'Download PDF'}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={generateReceipt}
+                disabled={!selectedTemplate || receiptTemplates.length === 0 || isGenerating}
+                className="flex items-center gap-2"
+              >
+                <Printer className="h-4 w-4" />
+                {isGenerating ? 'Generating...' : 'Print Receipt'}
+              </Button>
+            </div>
+          </div>
         </DialogHeader>
-        
+
         <div className="grid grid-cols-2 gap-6">
           {/* Left Column - Order & Settings */}
           <div className="space-y-6">

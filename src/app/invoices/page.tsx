@@ -9,6 +9,7 @@ import { InvoiceDetails } from '@/components/invoices_quotes/InvoiceDetails';
 import { InvoicePrintDialog } from '@/components/invoices_quotes/InvoicePrintDialog';
 import { Button } from '@/components/ui/button';
 import { Plus, Printer } from 'lucide-react';
+import { useInvoiceTemplatesData } from '@/hooks/use-invoice-templates-data';
 import {
   Dialog,
   DialogContent,
@@ -30,6 +31,7 @@ export default function InvoicesPage() {
   // Use custom hooks for data fetching
   const { invoices, customers, suppliers, payments, loading } = useInvoicesData(organizationId || undefined);
   const { updateInvoiceStatus } = useInvoiceActions(organizationId || undefined);
+  const { invoiceTemplates } = useInvoiceTemplatesData(organizationId || undefined);
 
   const handleStatusChange = async (invoiceId: string, newStatus: Invoice['status']) => {
     try {
@@ -172,25 +174,20 @@ export default function InvoicesPage() {
       </Dialog>
 
       {/* Print Dialog */}
-      <Dialog open={showPrint} onOpenChange={setShowPrint}>
-        <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto print:hidden">
-          <DialogHeader>
-            <DialogTitle>Print Preview</DialogTitle>
-          </DialogHeader>
-          {selectedInvoice && (
-            <InvoicePrintDialog
-              invoice={selectedInvoice}
-              organization={selectedOrganization}
-              invoiceTemplates={[]} // TODO: pass actual templates
-              customer={selectedInvoice.type === 'sales' && selectedInvoice.clientName ? customers.find(c => c.name === selectedInvoice.clientName) : undefined}
-              supplier={selectedInvoice.type === 'purchase' && selectedInvoice.supplierId ? suppliers.find(s => s.id === selectedInvoice.supplierId) : undefined}
-              payments={getPaymentsForInvoice(selectedInvoice.id)}
-            >
-              <div>Print Preview</div>
-            </InvoicePrintDialog>
-          )}
-        </DialogContent>
-      </Dialog>
+      {selectedInvoice && (
+        <InvoicePrintDialog
+          invoice={selectedInvoice}
+          organization={selectedOrganization}
+          invoiceTemplates={invoiceTemplates}
+          customer={selectedInvoice.type === 'sales' && selectedInvoice.clientName ? customers.find(c => c.name === selectedInvoice.clientName) : undefined}
+          supplier={selectedInvoice.type === 'purchase' && selectedInvoice.supplierId ? suppliers.find(s => s.id === selectedInvoice.supplierId) : undefined}
+          payments={getPaymentsForInvoice(selectedInvoice.id)}
+          open={showPrint}
+          onOpenChange={setShowPrint}
+        >
+          <div>Print Preview</div>
+        </InvoicePrintDialog>
+      )}
     </div>
   );
 }

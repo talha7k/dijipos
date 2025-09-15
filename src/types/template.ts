@@ -172,5 +172,26 @@ export interface QuoteTemplateData {
 
 export type TemplateData = ReceiptTemplateData | InvoiceTemplateData | QuoteTemplateData;
 
+// Template categories
+export enum TemplateCategory {
+  RECEIPT = 'receipt',
+  INVOICE = 'invoice',
+  QUOTE = 'quote'
+}
+
+// Unified template interface
+export interface UnifiedTemplate {
+  id: string;
+  organizationId: string;
+  name: string;
+  description?: string;
+  category: TemplateCategory;
+  type: string; // Will be the specific type like 'thermal', 'a4', etc.
+  content: string;
+  isDefault: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 // Union type for all template types
 export type TemplateType = ReceiptTemplate | InvoiceTemplate | QuoteTemplate;
