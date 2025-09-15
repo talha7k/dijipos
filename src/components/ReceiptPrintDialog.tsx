@@ -108,11 +108,35 @@ export function ReceiptPrintDialog({
       const element = document.createElement('div');
       element.innerHTML = htmlContent;
 
+      // Preload images before generating PDF
+      const images = element.querySelectorAll('img');
+      const imagePromises = Array.from(images).map(img => {
+        return new Promise<void>((resolve) => {
+          if (img.complete) {
+            resolve();
+          } else {
+            img.onload = () => resolve();
+            img.onerror = () => resolve(); // Continue even if image fails
+          }
+        });
+      });
+
+      // Wait for all images to load
+      await Promise.all(imagePromises);
+
       const opt = {
         margin: 10,
         filename: `receipt-${order.orderNumber}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+          logging: true,
+          letterRendering: true,
+          foreignObjectRendering: true
+        },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
 

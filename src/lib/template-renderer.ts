@@ -18,25 +18,59 @@ async function convertImageToBase64(imageUrl: string): Promise<string> {
     return imageUrl; // Return as-is if not a URL
   }
 
+  // Check if it's already a data URL
+  if (imageUrl.startsWith('data:')) {
+    return imageUrl;
+  }
+
   try {
-    const response = await fetch(imageUrl, {
-      mode: 'cors',
-      headers: {
-        'Accept': 'image/*',
-      }
-    });
+    console.log('Converting image to base64:', imageUrl);
 
-    if (!response.ok) {
-      console.warn(`Failed to fetch image: ${imageUrl}`);
-      return imageUrl; // Return original URL if fetch fails
-    }
-
-    const blob = await response.blob();
+    // Create an image element to load the image
     return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = () => resolve(imageUrl); // Return original URL on error
-      reader.readAsDataURL(blob);
+      const img = new Image();
+      img.crossOrigin = 'anonymous'; // Try to enable CORS
+
+      img.onload = () => {
+        try {
+          // Create a canvas to convert the image to base64
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+
+          if (!ctx) {
+            console.warn('Canvas context not available');
+            resolve(imageUrl);
+            return;
+          }
+
+          canvas.width = img.naturalWidth || img.width;
+          canvas.height = img.naturalHeight || img.height;
+
+          // Draw the image on the canvas
+          ctx.drawImage(img, 0, 0);
+
+          // Convert to base64
+          const base64 = canvas.toDataURL('image/png');
+          console.log('Image converted to base64 via canvas, length:', base64.length);
+          resolve(base64);
+        } catch (canvasError) {
+          console.warn('Canvas conversion failed:', canvasError);
+          resolve(imageUrl);
+        }
+      };
+
+      img.onerror = (error) => {
+        console.warn('Image loading failed:', imageUrl, error);
+        resolve(imageUrl);
+      };
+
+      // Set a timeout in case the image takes too long to load
+      setTimeout(() => {
+        console.warn('Image loading timeout:', imageUrl);
+        resolve(imageUrl);
+      }, 10000); // 10 second timeout
+
+      img.src = imageUrl;
     });
   } catch (error) {
     console.warn(`Error converting image to base64: ${imageUrl}`, error);
@@ -51,6 +85,18 @@ export async function renderReceiptTemplate(
   order: Order,
   organization: Organization | null
 ): Promise<string> {
+  console.log('=== Receipt Template Debug ===');
+  console.log('Organization:', organization);
+  console.log('Organization logo URL:', organization?.logoUrl);
+  console.log('Organization stamp URL:', organization?.stampUrl);
+
+  // Convert images to base64 for PDF compatibility
+  const companyLogoBase64 = await convertImageToBase64(organization?.logoUrl || '');
+  const qrCodeBase64 = await generateZatcaQR(order, organization);
+
+  console.log('Company logo base64 length:', companyLogoBase64.length);
+  console.log('QR code base64 length:', qrCodeBase64.length);
+
   // Prepare template data
   const data: ReceiptTemplateData = {
     companyName: organization?.name || '',
@@ -58,7 +104,7 @@ export async function renderReceiptTemplate(
     companyAddress: organization?.address || '',
     companyPhone: organization?.phone || '',
     companyVat: organization?.vatNumber || '',
-    companyLogo: organization?.logoUrl || '',
+    companyLogo: companyLogoBase64,
     orderNumber: order.orderNumber,
     orderDate: new Date(order.createdAt).toLocaleString(),
     tableName: order.tableName || '',
@@ -75,7 +121,7 @@ export async function renderReceiptTemplate(
       total: item.total.toFixed(2)
     })),
     includeQR: true, // Always include QR code for receipts
-    qrCodeUrl: await generateZatcaQR(order, organization)
+    qrCodeUrl: qrCodeBase64
   };
 
   // Use template content or default template
@@ -165,6 +211,13 @@ export async function renderInvoiceTemplate(
   customer?: Customer,
   supplier?: Supplier
 ): Promise<string> {
+  // Convert images to base64 for PDF compatibility
+  const companyLogoBase64 = await convertImageToBase64(organization?.logoUrl || '');
+  const companyStampBase64 = await convertImageToBase64(organization?.stampUrl || '');
+  const customerLogoBase64 = await convertImageToBase64(customer?.logoUrl || supplier?.logoUrl || '');
+  const supplierLogoBase64 = await convertImageToBase64(supplier?.logoUrl || '');
+  const qrCodeBase64 = await generateInvoiceQR(invoice, organization);
+
   // Prepare template data
   const data: InvoiceTemplateData = {
     invoiceId: invoice.id,
@@ -177,27 +230,27 @@ export async function renderInvoiceTemplate(
     companyEmail: organization?.email || '',
     companyPhone: organization?.phone || '',
     companyVat: organization?.vatNumber || '',
-    companyLogo: organization?.logoUrl || '',
-    companyStamp: organization?.stampUrl || '',
+    companyLogo: companyLogoBase64,
+    companyStamp: companyStampBase64,
     clientName: customer?.name || supplier?.name || '',
     customerNameAr: customer?.nameAr || supplier?.nameAr || '',
     clientAddress: customer?.address || supplier?.address || '',
     clientEmail: customer?.email || supplier?.email || '',
     clientVat: customer?.vatNumber || supplier?.vatNumber || '',
-    customerLogo: customer?.logoUrl || supplier?.logoUrl || '',
+    customerLogo: customerLogoBase64,
     supplierName: supplier?.name || '',
     supplierNameAr: supplier?.nameAr || '',
     supplierAddress: supplier?.address || '',
     supplierEmail: supplier?.email || '',
     supplierVat: supplier?.vatNumber || '',
-    supplierLogo: supplier?.logoUrl || '',
+    supplierLogo: supplierLogoBase64,
     subtotal: (invoice.subtotal || 0).toFixed(2),
     taxRate: (invoice.taxRate || 0).toString(),
     taxAmount: (invoice.taxAmount || 0).toFixed(2),
     total: (invoice.total || 0).toFixed(2),
     notes: invoice.notes || '',
     includeQR: 'includeQR' in invoice ? invoice.includeQR : false,
-    qrCodeUrl: await generateInvoiceQR(invoice, organization),
+    qrCodeUrl: qrCodeBase64,
     items: invoice.items.map(item => ({
       name: item.name,
       description: item.description || '',
@@ -309,6 +362,10 @@ export async function renderQuoteTemplate(
   organization: Organization | null,
   customer?: Customer
 ): Promise<string> {
+  // Convert images to base64 for PDF compatibility
+  const companyLogoBase64 = await convertImageToBase64(organization?.logoUrl || '');
+  const customerLogoBase64 = await convertImageToBase64(customer?.logoUrl || '');
+
   // Prepare template data
   const data: QuoteTemplateData = {
     quoteId: quote.id,
@@ -321,13 +378,13 @@ export async function renderQuoteTemplate(
     companyEmail: organization?.email || '',
     companyPhone: organization?.phone || '',
     companyVat: organization?.vatNumber || '',
-    companyLogo: organization?.logoUrl || '',
+    companyLogo: companyLogoBase64,
     clientName: customer?.name || quote.clientName || '',
     customerNameAr: customer?.nameAr || '',
     clientAddress: customer?.address || quote.clientAddress || '',
     clientEmail: customer?.email || quote.clientEmail || '',
     clientVat: customer?.vatNumber || '',
-    customerLogo: customer?.logoUrl || '',
+    customerLogo: customerLogoBase64,
     subtotal: (quote.subtotal || 0).toFixed(2),
     taxRate: (quote.taxRate || 0).toString(),
     taxAmount: (quote.taxAmount || 0).toFixed(2),
