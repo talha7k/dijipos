@@ -1,5 +1,4 @@
 import { Order, Organization, ReceiptTemplate, Invoice, InvoiceTemplate, Customer, Supplier, Quote, QuoteTemplate } from '@/types';
-import { Order, Organization, ReceiptTemplate, Invoice, InvoiceTemplate, Customer, Supplier, Quote, QuoteTemplate } from '@/types';
 import { OrderStatus } from '@/types/enums';
 import { defaultReceiptTemplate } from '@/components/templates/default-receipt-thermal';
 import { defaultReceiptA4Template } from '@/components/templates/default-receipt-a4';
@@ -23,59 +22,10 @@ async function convertImageToBase64(imageUrl: string): Promise<string> {
     return imageUrl;
   }
 
-  try {
-    console.log('Converting image to base64:', imageUrl);
-
-    // Create an image element to load the image
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.crossOrigin = 'anonymous'; // Try to enable CORS
-
-      img.onload = () => {
-        try {
-          // Create a canvas to convert the image to base64
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-
-          if (!ctx) {
-            console.warn('Canvas context not available');
-            resolve(imageUrl);
-            return;
-          }
-
-          canvas.width = img.naturalWidth || img.width;
-          canvas.height = img.naturalHeight || img.height;
-
-          // Draw the image on the canvas
-          ctx.drawImage(img, 0, 0);
-
-          // Convert to base64
-          const base64 = canvas.toDataURL('image/png');
-          console.log('Image converted to base64 via canvas, length:', base64.length);
-          resolve(base64);
-        } catch (canvasError) {
-          console.warn('Canvas conversion failed:', canvasError);
-          resolve(imageUrl);
-        }
-      };
-
-      img.onerror = (error) => {
-        console.warn('Image loading failed:', imageUrl, error);
-        resolve(imageUrl);
-      };
-
-      // Set a timeout in case the image takes too long to load
-      setTimeout(() => {
-        console.warn('Image loading timeout:', imageUrl);
-        resolve(imageUrl);
-      }, 10000); // 10 second timeout
-
-      img.src = imageUrl;
-    });
-  } catch (error) {
-    console.warn(`Error converting image to base64: ${imageUrl}`, error);
-    return imageUrl; // Return original URL on error
-  }
+  // For now, return the original URL and let html2canvas handle it
+  // This is a temporary solution while we debug the CORS issues
+  console.log('Returning original image URL for PDF generation:', imageUrl);
+  return imageUrl;
 }
 
 

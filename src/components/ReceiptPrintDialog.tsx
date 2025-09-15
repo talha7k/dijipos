@@ -131,11 +131,15 @@ export function ReceiptPrintDialog({
         html2canvas: {
           scale: 2,
           useCORS: true,
-          allowTaint: true,
+          allowTaint: false, // Changed to false to avoid taint issues
           backgroundColor: '#ffffff',
-          logging: true,
+          logging: false,
           letterRendering: true,
-          foreignObjectRendering: true
+          foreignObjectRendering: false, // Disabled for better compatibility
+          proxy: undefined,
+          removeContainer: true,
+          width: 794, // A4 width in pixels at 96 DPI
+          height: 1123 // A4 height in pixels at 96 DPI
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };

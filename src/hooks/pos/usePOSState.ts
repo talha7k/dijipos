@@ -8,7 +8,12 @@ import { useAuthState } from '@/hooks/useAuthState';
 import { useOrderState } from '@/hooks/useOrderState';
 import { toast } from 'sonner';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, updateDoc, doc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, doc, serverTimestamp, FieldValue } from 'firebase/firestore';
+
+type OrderCreateData = Omit<Order, 'id' | 'createdAt' | 'updatedAt'> & {
+  createdAt: FieldValue;
+  updatedAt: FieldValue;
+};
 
 export function usePOSLogic() {
   const { organizationId, user } = useAuthState();
@@ -125,11 +130,11 @@ export function usePOSLogic() {
       // Generate a simple order number (in production, this should be more sophisticated)
       const orderNumber = `ORD-${Date.now()}`;
 
-      const orderData: any = {
+      const orderData: OrderCreateData = {
         organizationId,
         orderNumber,
         items: (cartItems || []).map((item: CartItem) => {
-          const itemObj: any = {
+          const itemObj: CartItem = {
             id: `${item.type}-${item.id}`,
             type: item.type,
             name: item.name,
@@ -245,12 +250,12 @@ export function usePOSLogic() {
   const createTempOrderForPayment = useCallback(() => {
     if ((cartItems || []).length === 0) return null;
 
-    const orderData: any = {
+    const orderData: Order = {
       id: 'temp-checkout',
       organizationId: organizationId || '',
       orderNumber: `TEMP-${Date.now()}`,
       items: (cartItems || []).map((item: CartItem) => {
-        const itemObj: any = {
+        const itemObj: CartItem = {
           id: `${item.type}-${item.id}`,
           type: item.type === 'product' ? ItemType.PRODUCT : ItemType.SERVICE,
           name: item.name,
