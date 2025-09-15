@@ -164,7 +164,6 @@ export function OrderSummaryCard({
               order={order}
               organization={currentOrganization}
               receiptTemplates={receiptTemplates}
-              printerSettings={printerSettings || null}
             >
               <Button
                 variant="outline"

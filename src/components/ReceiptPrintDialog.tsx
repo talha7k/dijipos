@@ -59,7 +59,7 @@ export function ReceiptPrintDialog({
         }
       } else {
         // For A4 templates, render using template and print directly in current window
-        const renderedContent = renderReceiptTemplate(template, order, organization);
+        const renderedContent = await renderReceiptTemplate(template, order, organization);
         const originalContent = document.body.innerHTML;
         
         // Replace body content with rendered receipt
@@ -89,7 +89,7 @@ export function ReceiptPrintDialog({
 
     try {
       // Generate HTML using template renderer
-      const htmlContent = renderReceiptTemplate(template, order, organization);
+      const htmlContent = await renderReceiptTemplate(template, order, organization);
 
       // Convert HTML to PDF and download
       const element = document.createElement('div');

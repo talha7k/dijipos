@@ -1,6 +1,7 @@
 import { Order, Organization, ReceiptTemplate } from '@/types';
 import { defaultReceiptTemplate } from '@/components/templates/default-receipt-thermal';
 import { defaultReceiptA4Template } from '@/components/templates/default-receipt-a4';
+import { createReceiptQRData, generateZatcaQRCode } from '@/lib/zatca-qr';
 
 interface TemplateData {
   companyName: string;
@@ -25,11 +26,11 @@ interface TemplateData {
   qrCodeUrl?: string;
 }
 
-export function renderReceiptTemplate(
+export async function renderReceiptTemplate(
   template: ReceiptTemplate,
   order: Order,
   organization: Organization | null
-): string {
+): Promise<string> {
   // Prepare template data
   const data: TemplateData = {
     companyName: organization?.name || '',
@@ -50,8 +51,8 @@ export function renderReceiptTemplate(
       quantity: item.quantity,
       total: item.total.toFixed(2)
     })),
-    includeQR: order.includeQR || false,
-    qrCodeUrl: order.includeQR ? generateZatcaQR(order, organization) : undefined
+    includeQR: true, // Always include QR code for receipts
+    qrCodeUrl: await generateZatcaQR(order, organization)
   };
 
   // Use template content or default template
@@ -95,7 +96,7 @@ function renderTemplate(template: string, data: TemplateData): string {
 
   // Handle general conditional blocks {{#variable}}content{{/variable}}
   result = result.replace(/{{#(\w+)}}([\s\S]*?){{\/\1}}/g, (match, variable, content) => {
-    const value = (data as any)[variable];
+    const value = data[variable as keyof TemplateData];
     return value ? content : '';
   });
 
@@ -124,8 +125,13 @@ function getDefaultReceiptTemplate(templateType: string = 'thermal'): string {
   return defaultReceiptTemplate;
 }
 
-function generateZatcaQR(order: Order, organization: Organization | null): string {
-  // This is a placeholder - in a real implementation, you would generate
-  // an actual ZATCA-compliant QR code URL
-  return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
+async function generateZatcaQR(order: Order, organization: Organization | null): Promise<string> {
+  try {
+    const qrData = createReceiptQRData(order, organization);
+    return await generateZatcaQRCode(qrData);
+  } catch (error) {
+    console.error('Failed to generate QR code:', error);
+    // Return a placeholder if QR generation fails
+    return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
+  }
 }
