@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
-import { ShoppingCart, Save, Printer, Trash2 } from 'lucide-react';
+import { ShoppingCart, Save, Printer, RotateCcw } from 'lucide-react';
+import { ClearOrderDialog } from '@/components/ui/clear-order-dialog';
 import { POSCartItem } from './POSCartItem';
 import { ReceiptPrintDialog } from '@/components/ReceiptPrintDialog';
 import { Order, OrderStatus, ItemType } from '@/types';
@@ -41,6 +42,10 @@ export function POSCartSidebar({
   const organizationId = selectedOrganization?.id || '';
   const { printerSettings } = usePrinterSettingsData(selectedOrganization?.id || undefined);
   const { receiptTemplates = [] } = useReceiptTemplatesData(selectedOrganization?.id || '');
+
+  const handleClearConfirm = () => {
+    if (onClearCart) onClearCart();
+  };
 
   const createTempOrderForPayment = () => {
     if (cartItems.length === 0) return null;
@@ -136,14 +141,21 @@ export function POSCartSidebar({
              </ReceiptPrintDialog>
            )}
           {onClearCart && (
-            <Button
-              variant="outline"
-              className="flex-1 h-12 text-sm font-medium"
-              disabled={cartItems.length === 0}
-              onClick={onClearCart}
+            <ClearOrderDialog
+              title="Clear Cart"
+              onConfirm={handleClearConfirm}
             >
-              <Trash2 className="h-5 w-5" />
-            </Button>
+              {({ openDialog }) => (
+                <Button
+                  variant="outline"
+                  className="flex-1 h-12 text-sm font-medium"
+                  disabled={cartItems.length === 0}
+                  onClick={openDialog}
+                >
+                  <RotateCcw className="h-5 w-5" />
+                </Button>
+              )}
+            </ClearOrderDialog>
           )}
         </div>
         <Button

@@ -109,14 +109,14 @@ export default function SimplifiedPOSPage() {
     setShowPaymentSuccessDialog,
   } = usePOSLogic();
 
-  // Loading state
+  // Loading state - exclude ordersLoading when viewing orders to prevent stuck loading
   const loading =
     productsLoading ||
     servicesLoading ||
     categoriesLoading ||
     tablesLoading ||
     customersLoading ||
-    ordersLoading ||
+    (posView !== 'orders' ? ordersLoading : false) ||
     paymentTypesLoading ||
     orderPaymentsLoading;
 

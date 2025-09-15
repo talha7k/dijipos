@@ -5,7 +5,7 @@ import { useOrders } from "@/hooks/orders/useOrders";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { ArrowLeft, Clock } from "lucide-react";
+import { ArrowLeft, Clock, Loader2 } from "lucide-react";
 import { OrderSummaryCard } from "./OrderSummaryCard";
 
 interface POSOrderGridProps {
@@ -27,13 +27,14 @@ export function POSOrderGrid({
   onBack,
   onOrderUpdate,
 }: POSOrderGridProps) {
-  const { 
-    selectedOrder, 
-    selectOrder, 
+  const {
+    selectedOrder,
+    selectOrder,
     clearSelection,
-    markOrderAsPaid, 
-    completeOrder, 
-    updateOrderStatus 
+    markOrderAsPaid,
+    completeOrder,
+    updateOrderStatus,
+    loading
   } = useOrders(organizationId);
   const [filterStatus, setFilterStatus] = useState<'all' | 'open' | 'completed' | 'preparing' | 'cancelled' | 'on_hold'>('open');
 
@@ -125,6 +126,26 @@ export function POSOrderGrid({
         onCompleteOrder={wrapCompleteOrder}
         onUpdateStatus={wrapUpdateStatus}
       />
+    );
+  }
+
+  // Show loading state if orders are still loading
+  if (loading) {
+    return (
+      <div className="h-full flex flex-col bg-background">
+        <div className="flex items-center gap-4 p-4 border-b">
+          <Button variant="ghost" onClick={onBack}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+        </div>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center py-12 text-muted-foreground">
+            <Loader2 className="h-12 w-12 mx-auto mb-4 animate-spin" />
+            <p>Loading orders...</p>
+          </div>
+        </div>
+      </div>
     );
   }
 

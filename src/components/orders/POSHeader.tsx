@@ -1,5 +1,16 @@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { ClearOrderDialog } from '@/components/ui/clear-order-dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Table, Customer, OrderType, Order } from '@/types';
 import { Users, LayoutGrid, FileText, ShoppingBag, Plus, RotateCcw } from 'lucide-react';
 import { OrderTypeSelectionDialog } from './OrderTypeSelectionDialog';
@@ -48,31 +59,48 @@ export function POSHeader({
   onOrderTypeDeselect,
   onOrderToggle
 }: POSHeaderProps) {
+  const handleOrderToggle = () => {
+    if (selectedOrder) {
+      // If there's an existing order, directly toggle
+      if (onOrderToggle) onOrderToggle();
+    } else {
+      // If it's "New Order", the reusable dialog will handle it
+    }
+  };
+
+  const handleConfirmNewOrder = () => {
+    if (onOrderToggle) onOrderToggle();
+  };
   return (
     <div className="bg-card shadow p-4 border-b">
       <div className="flex justify-between items-center max-w-7xl mx-auto">
         <div className="flex items-center space-x-3">
-          <Badge
-            variant={selectedOrder ? "default" : "secondary"}
-            className={`flex items-center space-x-1 cursor-pointer ${
-              selectedOrder
-                ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                : 'bg-orange-100 text-orange-800 hover:bg-orange-200'
-            }`}
-            onClick={onOrderToggle}
-          >
-            {selectedOrder ? (
-              <>
-                <RotateCcw className="h-3 w-3" />
-                <span>Order #{selectedOrder.orderNumber}</span>
-              </>
-            ) : (
-              <>
-                <Plus className="h-3 w-3" />
-                <span>New Order</span>
-              </>
-            )}
-          </Badge>
+          {selectedOrder ? (
+            <Badge
+              variant="default"
+              className="flex items-center space-x-1 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white"
+              onClick={handleOrderToggle}
+            >
+              <RotateCcw className="h-3 w-3" />
+              <span>Order #{selectedOrder.orderNumber}</span>
+            </Badge>
+          ) : (
+            <ClearOrderDialog
+              title="Confirm New Order"
+              onConfirm={handleConfirmNewOrder}
+            >
+              {({ openDialog }) => (
+                <Badge
+                  variant="secondary"
+                  className="flex items-center space-x-1 cursor-pointer bg-orange-100 text-orange-800 hover:bg-orange-200"
+                  onClick={openDialog}
+                >
+                  <Plus className="h-3 w-3" />
+                  <span>New Order</span>
+                </Badge>
+              )}
+            </ClearOrderDialog>
+          )}
         </div>
         <div className="flex items-center space-x-4">
           {/* Table Selection */}

@@ -1,5 +1,5 @@
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import { Order, OrderPayment, OrderStatus, Table, Customer, OrderType, CartItem } from '@/types';
 import {
   ordersAtom,
@@ -15,8 +15,6 @@ import {
   selectedOrderTypeAtom,
   currentViewAtom,
   categoryPathAtom,
-  hasItemsInCartAtom,
-  cartItemCountAtom,
   hasOrdersAtom,
   activeOrdersAtom,
   resetPOSStateAtom
@@ -32,7 +30,6 @@ export function useOrderState() {
 
   // POS state
   const [cartItems, setCartItems] = useAtom(cartItemsAtom);
-  const cartTotal = useAtomValue(cartTotalAtom);
   const [cartLoading, setCartLoading] = useAtom(cartLoadingAtom);
   const [selectedTable, setSelectedTable] = useAtom(selectedTableAtom);
   const [selectedCustomer, setSelectedCustomer] = useAtom(selectedCustomerAtom);
@@ -40,11 +37,53 @@ export function useOrderState() {
   const [currentView, setCurrentView] = useAtom(currentViewAtom);
   const [categoryPath, setCategoryPath] = useAtom(categoryPathAtom);
 
-  // Derived state
-  const hasItemsInCart = useAtomValue(hasItemsInCartAtom);
-  const cartItemCount = useAtomValue(cartItemCountAtom);
+  // Computed derived state for async atoms
+  const [cartTotal, setCartTotal] = useState(0);
+  const [hasItemsInCart, setHasItemsInCart] = useState(false);
+  const [cartItemCount, setCartItemCount] = useState(0);
+  const [computedSelectedTable, setComputedSelectedTable] = useState<Table | null>(null);
+  const [computedSelectedCustomer, setComputedSelectedCustomer] = useState<Customer | null>(null);
+  const [computedSelectedOrderType, setComputedSelectedOrderType] = useState<OrderType | null>(null);
+
+  // Other derived state
   const hasOrders = useAtomValue(hasOrdersAtom);
   const activeOrders = useAtomValue(activeOrdersAtom);
+
+  // Update computed derived state when cartItems changes
+  useEffect(() => {
+    const updateDerivedState = async () => {
+      const currentCart = (await cartItems) || [];
+      setCartTotal(currentCart.reduce((sum, item) => sum + item.total, 0));
+      setHasItemsInCart(currentCart.length > 0);
+      setCartItemCount(currentCart.reduce((count, item) => count + (item.quantity || 1), 0));
+    };
+    updateDerivedState();
+  }, [cartItems]);
+
+  // Update computed state for async storage atoms
+  useEffect(() => {
+    const loadSelectedTable = async () => {
+      const table = await selectedTable;
+      setComputedSelectedTable(table);
+    };
+    loadSelectedTable();
+  }, [selectedTable]);
+
+  useEffect(() => {
+    const loadSelectedCustomer = async () => {
+      const customer = await selectedCustomer;
+      setComputedSelectedCustomer(customer);
+    };
+    loadSelectedCustomer();
+  }, [selectedCustomer]);
+
+  useEffect(() => {
+    const loadSelectedOrderType = async () => {
+      const orderType = await selectedOrderType;
+      setComputedSelectedOrderType(orderType);
+    };
+    loadSelectedOrderType();
+  }, [selectedOrderType]);
 
   // Reset POS state
   const resetPOSState = useSetAtom(resetPOSStateAtom);
@@ -118,7 +157,7 @@ export function useOrderState() {
 
   // Cart management functions
   const addToCart = useCallback(async (item: CartItem) => {
-    const currentCart = await cartItems;
+    const currentCart = (await cartItems) || [];
     const existingItem = currentCart.find(cartItem =>
       cartItem.id === item.id && cartItem.type === item.type
     );
@@ -140,7 +179,7 @@ export function useOrderState() {
   }, [cartItems, setCartItems]);
 
   const updateCartItem = useCallback(async (itemId: string, type: string, updates: Partial<CartItem>) => {
-    const currentCart = await cartItems;
+    const currentCart = (await cartItems) || [];
     const updatedCart = currentCart.map(item =>
       item.id === itemId && item.type === type
         ? { ...item, ...updates }
@@ -150,7 +189,7 @@ export function useOrderState() {
   }, [cartItems, setCartItems]);
 
   const removeFromCart = useCallback(async (itemId: string, type: string) => {
-    const currentCart = await cartItems;
+    const currentCart = (await cartItems) || [];
     const updatedCart = currentCart.filter(item => !(item.id === itemId && item.type === type));
     setCartItems(updatedCart);
   }, [cartItems, setCartItems]);
@@ -160,12 +199,12 @@ export function useOrderState() {
   }, [setCartItems]);
 
   const calculateCartTotal = useCallback(async () => {
-    const currentCart = await cartItems;
+    const currentCart = (await cartItems) || [];
     return currentCart.reduce((sum, item) => sum + item.total, 0);
   }, [cartItems]);
 
   const getCartTotal = useCallback(async () => {
-    const currentCart = await cartItems;
+    const currentCart = (await cartItems) || [];
     return currentCart.reduce((sum, item) => sum + item.total, 0);
   }, [cartItems]);
 
@@ -208,9 +247,9 @@ export function useOrderState() {
     cartItems,
     cartTotal,
     cartLoading,
-    selectedTable,
-    selectedCustomer,
-    selectedOrderType,
+    selectedTable: computedSelectedTable,
+    selectedCustomer: computedSelectedCustomer,
+    selectedOrderType: computedSelectedOrderType,
     currentView,
     categoryPath,
 
