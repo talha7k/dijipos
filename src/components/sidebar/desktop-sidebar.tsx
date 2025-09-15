@@ -7,7 +7,7 @@ import { SidebarNavSection } from "./sidebar-nav-section";
 import { SidebarNavItem } from "./sidebar-nav-item";
 import { UserProfileWithOrganization } from "../layout/UserProfileWithOrganization";
 import { SidebarProps, NavigationItem } from "./sidebar-types";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuthState } from "@/hooks/useAuthState";
 import {
   BarChart3,
   Building2,
@@ -150,7 +150,7 @@ export function DesktopSidebar({
   onExpandSidebar,
   openSections = {},
 }: SidebarProps) {
-  const { organizationUser } = useAuth();
+  const { organizationUser } = useAuthState();
   const navigationItems = getNavigationItems(organizationUser?.role || 'waiter');
   return (
     <div

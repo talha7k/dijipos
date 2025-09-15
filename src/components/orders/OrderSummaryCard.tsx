@@ -16,7 +16,7 @@ import {
 import { Order, OrderStatus, OrderPayment } from "@/types";
 import { OrderActionsDialog } from "./OrderStatusActionsDialog";
 import { ReceiptPrintDialog } from "@/components/ReceiptPrintDialog";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuthState } from "@/hooks/useAuthState";
 import { usePrinterSettingsData } from "@/hooks/organization/use-printer-settings-data";
 import { useReceiptTemplatesData } from "@/hooks/use-receipt-templates-data";
 
@@ -52,9 +52,9 @@ export function OrderSummaryCard({
   onCompleteOrder,
   className = "",
 }: OrderSummaryCardProps) {
-  const { currentOrganization } = useAuth();
-  const { printerSettings } = usePrinterSettingsData(currentOrganization?.id || undefined);
-  const { receiptTemplates = [] } = useReceiptTemplatesData(currentOrganization?.id || '');
+  const { selectedOrganization } = useAuthState();
+  const { printerSettings } = usePrinterSettingsData(selectedOrganization?.id || undefined);
+  const { receiptTemplates = [] } = useReceiptTemplatesData(selectedOrganization?.id || '');
 
   // Calculate payment amounts for display, but use order.paid for status
   const calculatedTotalPaid =
@@ -158,11 +158,11 @@ export function OrderSummaryCard({
         </div>
 
         {/* Print Button */}
-        {currentOrganization && (
+        {selectedOrganization && (
           <div className="flex justify-center mt-2">
             <ReceiptPrintDialog
               order={order}
-              organization={currentOrganization}
+              organization={selectedOrganization}
               receiptTemplates={receiptTemplates}
             >
               <Button

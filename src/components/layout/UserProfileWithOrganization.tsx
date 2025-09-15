@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthState } from '@/hooks/useAuthState';
 import { Button } from '@/components/ui/button';
 import { Building2, LogOut, ChevronDown, ChevronUp, User } from 'lucide-react';
 
@@ -14,7 +14,7 @@ export function UserProfileWithOrganization({
   isCollapsed = false 
 }: UserProfileWithOrganizationProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const { user, currentOrganization, logout } = useAuth();
+  const { user, selectedOrganization, logout } = useAuthState();
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -103,25 +103,25 @@ export function UserProfileWithOrganization({
                   <span className="font-medium">Organization</span>
                 </div>
                 
-                {currentOrganization ? (
-                  <div className="px-2">
-                    <p className="text-sm font-medium truncate">{currentOrganization.name}</p>
-                    <p className="text-xs text-muted-foreground truncate">{currentOrganization.email}</p>
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground px-2">No organization selected</p>
-                )}
-                
-                <div className="px-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="w-full h-8 text-sm"
-                    onClick={handleSwitchOrganization}
-                  >
-                    {currentOrganization ? 'Switch Organization' : 'Select Organization'}
-                  </Button>
-                </div>
+                 {selectedOrganization ? (
+                   <div className="px-2">
+                     <p className="text-sm font-medium truncate">{selectedOrganization.name}</p>
+                     <p className="text-xs text-muted-foreground truncate">{selectedOrganization.email}</p>
+                   </div>
+                 ) : (
+                   <p className="text-sm text-muted-foreground px-2">No organization selected</p>
+                 )}
+
+                 <div className="px-2">
+                   <Button
+                     variant="outline"
+                     size="sm"
+                     className="w-full h-8 text-sm"
+                     onClick={handleSwitchOrganization}
+                   >
+                     {selectedOrganization ? 'Switch Organization' : 'Select Organization'}
+                   </Button>
+                 </div>
               </div>
 
               {/* Divider */}

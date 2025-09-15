@@ -5,7 +5,7 @@ import { Table, Order, TableStatus } from '@/types';
 import { useTablesData } from '@/hooks/tables/use-tables-data';
 import { useOrdersData } from '@/hooks/orders/use-order-data';
 import { useTableManagement } from '@/hooks/tables/use-table-management';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthState } from '@/hooks/useAuthState';
 import {
   Dialog,
   DialogContent,
@@ -25,7 +25,7 @@ interface TableActionsDialogProps {
 }
 
 export function TableActionsDialog({ table, children }: TableActionsDialogProps) {
-  const { organizationId } = useAuth();
+  const { organizationId } = useAuthState();
   const { tables } = useTablesData(organizationId || undefined);
   const { orders } = useOrdersData(organizationId || undefined);
   const { releaseTable, moveOrderToTable, updating } = useTableManagement(organizationId || undefined);
