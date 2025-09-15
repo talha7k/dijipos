@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { doc, getDoc, updateDoc, addDoc, deleteDoc, collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { useAuthState } from '@/hooks/useAuthState';
+import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
 import { useOrganizationData } from '@/hooks/organization/use-organization-data';
 import { useOrganizationUsersData } from '@/hooks/organization/use-organization-users-data';
 import { useInvitationCodesData } from '@/hooks/organization/use-invitation-codes-data';
@@ -26,7 +26,8 @@ import { toast } from 'sonner';
 
 
 function CompanyContent() {
-  const { user, organizationId } = useAuthState();
+  const user = useUser();
+  const organizationId = useOrganizationId();
   const { organization, loading: orgLoading, error: orgError } = useOrganizationData(organizationId || undefined);
   const { organizationUsers, loading: usersLoading, error: usersError } = useOrganizationUsersData(organizationId || undefined);
   const { invitationCodes, loading: codesLoading, error: codesError } = useInvitationCodesData(organizationId || undefined);

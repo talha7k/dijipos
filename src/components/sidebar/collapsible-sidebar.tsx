@@ -22,7 +22,8 @@ export function CollapsibleSidebar({ className }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { theme, toggleTheme } = useThemeState();
-  const { user, organizationId } = useAuthState();
+  const user = useUser();
+  const organizationId = useOrganizationId();
 
   const toggleSection = (title: string) => {
     setOpenSections((prev) => ({

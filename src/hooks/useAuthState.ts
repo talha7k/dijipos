@@ -49,7 +49,7 @@ export function useAuthState() {
       const startTime = Date.now();
       setAuthLoading(true);
       setAuthError(null);
-      
+
       // Mark auth as initialized on first call
       if (!authInitialized) {
         setAuthInitialized(true);
@@ -72,7 +72,7 @@ export function useAuthState() {
             try {
               console.log('useAuthState: Starting organization fetch');
               const orgStartTime = Date.now();
-              
+
               const organizationUsersQuery = query(
                 collection(db, 'organizationUsers'),
                 where('userId', '==', user.uid),
@@ -90,12 +90,31 @@ export function useAuthState() {
               setUserOrganizations(organizationAssociations);
 
               // Handle organization selection logic
-              const currentOrganizationId = await organizationId;
+              const currentOrganizationId = organizationId; // Remove await, it's not a promise
 
               if (currentOrganizationId && organizationAssociations.some(ou => ou.organizationId === currentOrganizationId)) {
                 console.log('useAuthState: Auto-selecting organization');
                 try {
-await selectOrganization(currentOrganizationId);
+                  // Move organization selection logic here instead of calling selectOrganization
+                  const organizationAssociation = organizationAssociations.find(ou => ou.organizationId === currentOrganizationId);
+                  if (organizationAssociation) {
+                    setOrganizationUser(organizationAssociation);
+
+                    // Fetch organization details from Firebase
+                    const organizationDoc = await getDoc(doc(db, 'organizations', currentOrganizationId));
+                    if (organizationDoc.exists()) {
+                      const organizationData = {
+                        id: organizationDoc.id,
+                        ...organizationDoc.data(),
+                        createdAt: organizationDoc.data()?.createdAt?.toDate(),
+                        updatedAt: organizationDoc.data()?.updatedAt?.toDate(),
+                      } as Organization;
+                      setSelectedOrganization(organizationData);
+                    } else {
+                      // Organization doesn't exist, clear stored ID
+                      setOrganizationId(null);
+                    }
+                  }
                 } catch (selectError) {
                   console.error('Organization auto-selection error:', selectError);
                   // Don't fail the entire process if auto-selection fails
@@ -132,7 +151,7 @@ await selectOrganization(currentOrganizationId);
       console.log('useAuthState: Cleaning up auth state listener');
       unsubscribe();
     };
-  }, [authInitialized, resetAuthState, setOrganizationId]);
+  }, []); // Remove dependencies to prevent re-running the effect
 
   // Add timeouts to prevent infinite loading
   useEffect(() => {
@@ -325,4 +344,8 @@ export function useAuthLoading() {
 
 export function useOrganizationLoading() {
   return useAtomValue(organizationLoadingAtom);
+}
+
+export function useOrganizationId() {
+  return useAtomValue(organizationIdAtom);
 }

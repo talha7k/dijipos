@@ -25,7 +25,7 @@ import {
 export function useOrderState() {
   // Order management state
   const [orders, setOrders] = useAtom(ordersAtom);
-  const [currentOrder, setCurrentOrder] = useAtom(currentOrderAtom);
+  const [selectedOrder, setCurrentOrder] = useAtom(currentOrderAtom);
   const [ordersLoading, setOrdersLoading] = useAtom(ordersLoadingAtom);
   const [ordersError, setOrdersError] = useAtom(ordersErrorAtom);
   const [payments, setPayments] = useAtom(paymentsAtom);
@@ -64,19 +64,19 @@ export function useOrderState() {
     );
     
     // Update current order if it's the one being modified
-    if (currentOrder && currentOrder.id === orderId) {
+    if (selectedOrder && selectedOrder.id === orderId) {
       setCurrentOrder(prev => prev ? { ...prev, ...updates } : null);
     }
-  }, [setOrders, setCurrentOrder, currentOrder]);
+  }, [setOrders, setCurrentOrder, selectedOrder]);
 
   const removeOrder = useCallback((orderId: string) => {
     setOrders(prev => prev.filter(order => order.id !== orderId));
     
     // Clear current order if it's the one being removed
-    if (currentOrder && currentOrder.id === orderId) {
+    if (selectedOrder && selectedOrder.id === orderId) {
       setCurrentOrder(null);
     }
-  }, [setOrders, setCurrentOrder, currentOrder]);
+  }, [setOrders, setCurrentOrder, selectedOrder]);
 
   const setCurrentOrderById = useCallback((orderId: string) => {
     const order = orders.find(o => o.id === orderId);
@@ -202,7 +202,7 @@ export function useOrderState() {
   return {
     // Order state
     orders,
-    currentOrder,
+    selectedOrder,
     ordersLoading,
     ordersError,
     payments,

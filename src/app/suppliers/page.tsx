@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { collection, query, onSnapshot, addDoc, doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { useAuthState } from '@/hooks/useAuthState';
+import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
 import { Supplier } from '@/types';
 import { useSuppliersData } from '@/hooks/suppliers/use-suppliers-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

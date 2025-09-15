@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuthState } from '@/hooks/useAuthState';
+import { useAuthLoading } from '@/hooks/useAuthState';
 import { OrganizationManager } from '@/components/organization/OrganizationManager';
 
 export default function SelectOrganizationPage() {

@@ -1,12 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuthState } from '@/hooks/useAuthState';
+import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
 
 import { usePaymentTypesData } from '@/hooks/use-payment-types-data';
 import { useReceiptTemplatesData } from '@/hooks/use-receipt-templates-data';
 import { useOrderTypesData } from '@/hooks/orders/use-order-types-data';
-import { useTablesData } from '@/hooks/tables/use-tables-data';
+import { useTablesData } from '@/hooks/tables/useTables';
 import { useSettingsData } from '@/hooks/organization/use-settings-data';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -19,7 +19,7 @@ import { ReceiptTemplatesTab } from '@/components/settings/ReceiptTemplatesTab';
 import { TablesTab } from '@/components/settings/TablesTab';
 
 function SettingsContent() {
-  const { organizationId } = useAuthState();
+  const organizationId = useOrganizationId();
   const { paymentTypes, loading: paymentTypesLoading } = usePaymentTypesData(organizationId || undefined);
   const { receiptTemplates, loading: receiptTemplatesLoading } = useReceiptTemplatesData(organizationId || undefined);
   const { orderTypes, loading: orderTypesLoading } = useOrderTypesData(organizationId || undefined);

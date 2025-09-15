@@ -1,19 +1,32 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useAtom } from 'jotai';
 import { collection, query, onSnapshot, updateDoc, doc, getDoc, addDoc, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Invoice, Organization, Customer, Supplier, Payment } from '@/types';
+import {
+  invoicesAtom,
+  invoicesLoadingAtom,
+  invoicesErrorAtom,
+  suppliersAtom,
+  suppliersLoadingAtom,
+  suppliersErrorAtom,
+  invoicePaymentsAtom,
+  invoicePaymentsLoadingAtom,
+  invoicePaymentsErrorAtom
+} from '@/store/atoms';
 
 export function useInvoicesData(organizationId: string | undefined) {
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [invoices, setInvoices] = useAtom(invoicesAtom);
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [suppliers, setSuppliers] = useAtom(suppliersAtom);
   const [payments, setPayments] = useState<{ [invoiceId: string]: Payment[] }>({});
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useAtom(invoicesLoadingAtom);
 
   useEffect(() => {
     if (!organizationId) {
       setLoading(false);
+      setInvoices([]);
       return;
     }
 
@@ -115,7 +128,7 @@ export function useInvoicesData(organizationId: string | undefined) {
       invoicesUnsubscribe();
       paymentsUnsubscribe();
     };
-  }, [organizationId]);
+  }, [organizationId, setInvoices, setLoading, setSuppliers]);
 
   return {
     invoices,
@@ -128,7 +141,7 @@ export function useInvoicesData(organizationId: string | undefined) {
 }
 
 export function useInvoiceActions(organizationId: string | undefined) {
-  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
+  const [updatingStatus, setUpdatingStatus] = useAtom(invoicesErrorAtom);
 
   const updateInvoiceStatus = async (invoiceId: string, status: Invoice['status']) => {
     if (!organizationId) return;

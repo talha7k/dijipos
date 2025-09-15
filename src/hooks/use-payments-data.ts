@@ -1,13 +1,19 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
+import { useAtom } from 'jotai';
 import { collection, query, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Payment } from '@/types';
+import {
+  invoicePaymentsAtom,
+  invoicePaymentsLoadingAtom,
+  invoicePaymentsErrorAtom
+} from '@/store/atoms';
 
 export function usePaymentsData(organizationId: string | undefined) {
-  const [payments, setPayments] = useState<Payment[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [payments, setPayments] = useAtom(invoicePaymentsAtom);
+  const [loading, setLoading] = useAtom(invoicePaymentsLoadingAtom);
 
   useEffect(() => {
     if (!organizationId) {

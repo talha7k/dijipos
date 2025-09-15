@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { useAtomValue } from 'jotai';
+import { cartTotalAtom } from '@/store/atoms';
 import { Order, OrderStatus, ItemType, OrderPayment, Table, Customer, OrderType, Product, Service, TableStatus, OrderItem } from '@/types';
 import { useAuthState } from '@/hooks/useAuthState';
 import { useOrderState } from '@/hooks/useOrderState';
@@ -15,7 +17,7 @@ export function usePOSLogic() {
     selectedTable,
     selectedCustomer,
     selectedOrderType,
-    currentOrder,
+    selectedOrder,
     categoryPath,
     setCartItems,
     setSelectedTable,
@@ -40,7 +42,7 @@ export function usePOSLogic() {
   const [showCartItemModal, setShowCartItemModal] = useState(false);
   const [editingCartItem, setEditingCartItem] = useState<OrderItem | null>(null);
 
-  const cartTotal = getCartTotal();
+  const cartTotal = useAtomValue(cartTotalAtom);
 
   const handleAddToCart = useCallback((item: Product | Service, type: 'product' | 'service') => {
     if (!item) return;
@@ -88,7 +90,7 @@ export function usePOSLogic() {
     // Clear existing cart and load order items
     clearCart();
 
-    const newCartItems = pendingOrderToReopen.items.map((item: any) => ({
+    const newCartItems = pendingOrderToReopen.items.map((item: OrderItem) => ({
       id: item.productId || item.serviceId || item.id,
       type: item.type === 'product' ? ItemType.PRODUCT : ItemType.SERVICE,
       name: item.name,
@@ -274,12 +276,12 @@ export function usePOSLogic() {
 
     // If we already have a selected order (from reopening), use it
     // Otherwise, create a temporary order for new cart items
-    const orderToPay = currentOrder || createTempOrderForPayment();
+    const orderToPay = selectedOrder || createTempOrderForPayment();
     if (orderToPay) {
       setCurrentOrder(orderToPay);
       setPosView('payment');
     }
-  }, [cartItems, currentOrder, createTempOrderForPayment, setCurrentOrder, setPosView]);
+  }, [cartItems, selectedOrder, createTempOrderForPayment, setCurrentOrder, setPosView]);
 
   return {
     // State
@@ -288,7 +290,7 @@ export function usePOSLogic() {
     selectedTable,
     selectedCustomer,
     selectedOrderType,
-    currentOrder,
+    selectedOrder,
     categoryPath,
     posView,
     pendingOrderToReopen,

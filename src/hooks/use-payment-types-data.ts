@@ -1,17 +1,24 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
+import { useAtom } from 'jotai';
 import { collection, query, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { PaymentType } from '@/types';
+import {
+  paymentTypesAtom,
+  paymentTypesLoadingAtom,
+  paymentTypesErrorAtom
+} from '@/store/atoms';
 
 export function usePaymentTypesData(organizationId: string | undefined) {
-  const [paymentTypes, setPaymentTypes] = useState<PaymentType[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [paymentTypes, setPaymentTypes] = useAtom(paymentTypesAtom);
+  const [loading, setLoading] = useAtom(paymentTypesLoadingAtom);
 
   useEffect(() => {
     if (!organizationId) {
       setLoading(false);
+      setPaymentTypes([]);
       return;
     }
 
@@ -33,7 +40,7 @@ export function usePaymentTypesData(organizationId: string | undefined) {
 
     // Return cleanup function
     return () => unsubscribe();
-  }, [organizationId]);
+  }, [organizationId, setPaymentTypes, setLoading]);
 
   return {
     paymentTypes,

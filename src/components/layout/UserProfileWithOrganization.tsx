@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthState } from '@/hooks/useAuthState';
+import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
 import { Button } from '@/components/ui/button';
 import { Building2, LogOut, ChevronDown, ChevronUp, User } from 'lucide-react';
 

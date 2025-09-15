@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react';
 import { collection, query, onSnapshot, addDoc, doc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { useAuthState } from '@/hooks/useAuthState';
+import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
 import { Table as TableType } from '@/types';
-import { useTablesData } from '@/hooks/tables/use-tables-data';
+import { useTablesData } from '@/hooks/tables/useTables';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,7 +23,7 @@ import { AddTableDialog } from '@/components/AddTableDialog';
 import { TableActionsDialog } from '@/components/tables/TableActionsDialog';
 
 export default function TablesPage() {
-  const { organizationId } = useAuthState();
+  const organizationId = useOrganizationId();
   const { tables, loading: tablesLoading } = useTablesData(organizationId || undefined);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);

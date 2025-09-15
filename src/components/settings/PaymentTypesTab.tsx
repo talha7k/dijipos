@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { collection, addDoc, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { useAuthState } from '@/hooks/useAuthState';
+import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
 import { PaymentType } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,7 +20,7 @@ interface PaymentTypesTabProps {
 }
 
 export function PaymentTypesTab({ paymentTypes, onRefresh }: PaymentTypesTabProps) {
-  const { organizationId } = useAuthState();
+  const organizationId = useOrganizationId();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deletePaymentTypeId, setDeletePaymentTypeId] = useState<string | null>(null);
   const [newPaymentType, setNewPaymentType] = useState({ name: '', description: '' });

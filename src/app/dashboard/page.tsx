@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAuthState } from '@/hooks/useAuthState';
+import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -11,13 +11,14 @@ import { useRouter } from 'next/navigation';
 import { useQuotesData } from '@/hooks/invoices_quotes/use-quotes-data';
 import { useInvoicesData } from '@/hooks/invoices_quotes/use-invoices-data';
 import { usePaymentsData } from '@/hooks/use-payments-data';
-import { useProductsData } from '@/hooks/products_services/use-products-data';
+import { useProductsData } from '@/hooks/products_services/useProducts';
 import { useServicesData } from '@/hooks/products_services/use-services-data';
-import { useTablesData } from '@/hooks/tables/use-tables-data';
+import { useTablesData } from '@/hooks/tables/useTables';
 import { TableStatus } from '@/types';
 
 function DashboardContent() {
-  const { user, organizationId } = useAuthState();
+  const user = useUser();
+  const organizationId = useOrganizationId();
   const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 

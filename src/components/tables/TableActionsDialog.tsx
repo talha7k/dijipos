@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import { Table, Order, TableStatus } from '@/types';
-import { useTablesData } from '@/hooks/tables/use-tables-data';
+import { useTablesData } from '@/hooks/tables/useTables';
 import { useOrdersData } from '@/hooks/orders/use-order-data';
 import { useTableManagement } from '@/hooks/tables/use-table-management';
-import { useAuthState } from '@/hooks/useAuthState';
+import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
 import {
   Dialog,
   DialogContent,
@@ -25,7 +25,7 @@ interface TableActionsDialogProps {
 }
 
 export function TableActionsDialog({ table, children }: TableActionsDialogProps) {
-  const { organizationId } = useAuthState();
+  const organizationId = useOrganizationId();
   const { tables } = useTablesData(organizationId || undefined);
   const { orders } = useOrdersData(organizationId || undefined);
   const { releaseTable, moveOrderToTable, updating } = useTableManagement(organizationId || undefined);

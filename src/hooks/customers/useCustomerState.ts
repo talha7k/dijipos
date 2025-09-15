@@ -1,9 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
+import { useAtom, useSetAtom } from 'jotai';
 import { collection, query, onSnapshot, updateDoc, doc, getDoc, addDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Customer } from '@/types';
+import {
+  customersAtom,
+  customersLoadingAtom,
+  customersErrorAtom
+} from '@/store/atoms';
 
 export interface UseCustomersDataResult {
   customers: Customer[];
@@ -15,13 +21,14 @@ export interface UseCustomersDataResult {
 }
 
 export function useCustomersData(organizationId: string | undefined): UseCustomersDataResult {
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [customers, setCustomers] = useAtom(customersAtom);
+  const [loading, setLoading] = useAtom(customersLoadingAtom);
+  const [error, setError] = useAtom(customersErrorAtom);
 
   useEffect(() => {
     if (!organizationId) {
       setLoading(false);
+      setCustomers([]);
       return;
     }
 
@@ -35,7 +42,9 @@ export function useCustomersData(organizationId: string | undefined): UseCustome
       (snapshot) => {
         const customersData = snapshot.docs.map(doc => ({
           id: doc.id,
-          ...doc.data()
+          ...doc.data(),
+          createdAt: doc.data().createdAt?.toDate(),
+          updatedAt: doc.data().updatedAt?.toDate(),
         })) as Customer[];
         setCustomers(customersData);
         setLoading(false);
@@ -48,7 +57,7 @@ export function useCustomersData(organizationId: string | undefined): UseCustome
     );
 
     return () => unsubscribe();
-  }, [organizationId]);
+  }, [organizationId, setCustomers, setLoading, setError]);
 
   const createCustomer = async (customerData: Omit<Customer, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => {
     if (!organizationId) return;

@@ -1,17 +1,24 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
+import { useAtom } from 'jotai';
 import { collection, query, onSnapshot, updateDoc, doc, addDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Table } from '@/types';
+import {
+  tablesAtom,
+  tablesLoadingAtom,
+  tablesErrorAtom
+} from '@/store/atoms';
 
 export function useTablesData(organizationId: string | undefined) {
-  const [tables, setTables] = useState<Table[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [tables, setTables] = useAtom(tablesAtom);
+  const [loading, setLoading] = useAtom(tablesLoadingAtom);
 
   useEffect(() => {
     if (!organizationId) {
       setLoading(false);
+      setTables([]);
       return;
     }
 
@@ -33,7 +40,7 @@ export function useTablesData(organizationId: string | undefined) {
 
     // Return cleanup function
     return () => unsubscribe();
-  }, [organizationId]);
+  }, [organizationId, setTables, setLoading]);
 
   return {
     tables,
@@ -42,7 +49,7 @@ export function useTablesData(organizationId: string | undefined) {
 }
 
 export function useTableActions(organizationId: string | undefined) {
-  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
+  const [updatingStatus, setUpdatingStatus] = useAtom(tablesErrorAtom);
 
   const updateTable = async (tableId: string, tableData: Partial<Table>) => {
     if (!organizationId) return;

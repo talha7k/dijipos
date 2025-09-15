@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { useAuthState } from '@/hooks/useAuthState';
+import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
 import { useSidebarState } from '@/hooks/useSidebarState';
 import { CollapsibleSidebar } from '@/components/sidebar/collapsible-sidebar';
 import { OrganizationManager } from '@/components/organization/OrganizationManager';

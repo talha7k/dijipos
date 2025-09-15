@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { useAuthState } from '@/hooks/useAuthState';
+import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
 import { PrinterSettings } from '@/types';
 import { useReceiptTemplatesData } from '@/hooks/use-receipt-templates-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,7 +20,7 @@ interface PrinterSettingsTabProps {
 }
 
 export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }: PrinterSettingsTabProps) {
-  const { organizationId } = useAuthState();
+  const organizationId = useOrganizationId();
   const { receiptTemplates, loading: templatesLoading } = useReceiptTemplatesData(organizationId || undefined);
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const [newSettings, setNewSettings] = useState({

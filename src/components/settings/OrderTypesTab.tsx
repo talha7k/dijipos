@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { collection, addDoc, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { useAuthState } from '@/hooks/useAuthState';
+import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
 import { OrderType } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,7 +20,7 @@ interface OrderTypesTabProps {
 }
 
 export function OrderTypesTab({ orderTypes, onRefresh }: OrderTypesTabProps) {
-  const { organizationId } = useAuthState();
+  const organizationId = useOrganizationId();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteOrderTypeId, setDeleteOrderTypeId] = useState<string | null>(null);
   const [newOrderType, setNewOrderType] = useState({ name: '', description: '' });

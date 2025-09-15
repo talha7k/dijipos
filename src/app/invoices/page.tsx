@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuthState } from '@/hooks/useAuthState';
+import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
 import { Invoice } from '@/types';
 import { InvoiceList } from '@/components/invoices_quotes/InvoiceList';
 import InvoiceForm from '@/components/invoices_quotes/InvoiceForm';
@@ -19,7 +19,9 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useInvoicesData, useInvoiceActions } from '@/hooks/invoices_quotes/use-invoices-data';
 
 export default function InvoicesPage() {
-  const { user, organizationId, selectedOrganization } = useAuthState();
+  const user = useUser();
+  const organizationId = useOrganizationId();
+  const selectedOrganization = useSelectedOrganization();
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [showDetails, setShowDetails] = useState(false);

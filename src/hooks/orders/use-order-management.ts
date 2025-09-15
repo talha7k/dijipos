@@ -1,14 +1,16 @@
 'use client';
 
-import { useState } from "react";
+import { useAtom } from "jotai";
 import { Order, OrderPayment, OrderStatus, TableStatus } from "@/types";
 import { serverTimestamp } from "firebase/firestore";
 import { toast } from "sonner";
 import { useOrderActions } from "@/hooks/orders/use-order-data";
-import { useTableActions } from "@/hooks/tables/use-tables-data";
+import { useTableActions } from "@/hooks/tables/useTables";
+import { orderManagementLoadingAtom, orderManagementErrorAtom } from "@/store/atoms";
 
 export function useOrderManagement(organizationId: string | undefined) {
-  const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [updatingStatus, setUpdatingStatus] = useAtom(orderManagementLoadingAtom);
+  const [, setError] = useAtom(orderManagementErrorAtom);
   const { updateOrder } = useOrderActions(organizationId);
   const { updateTable } = useTableActions(organizationId);
 
@@ -26,6 +28,7 @@ export function useOrderManagement(organizationId: string | undefined) {
       return true;
     } catch (error) {
       console.error("Error marking order as paid:", error);
+      setError("Failed to mark order as paid");
       toast.error("Failed to mark order as paid");
       return false;
     } finally {
@@ -73,6 +76,7 @@ export function useOrderManagement(organizationId: string | undefined) {
       return true;
     } catch (error) {
       console.error("Error completing order:", error);
+      setError("Failed to complete order");
       toast.error("Failed to complete order");
       return false;
     } finally {
@@ -130,6 +134,7 @@ export function useOrderManagement(organizationId: string | undefined) {
       return true;
     } catch (error) {
       console.error("Error updating order status:", error);
+      setError("Failed to update order status");
       toast.error("Failed to update order status");
       return false;
     } finally {

@@ -11,7 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { useAuthState } from '@/hooks/useAuthState';
+import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
 import { InvoiceTemplate, TemplateField, TemplateStyle, TemplateFieldType } from '@/types';
 import { InvoiceTemplateType } from '@/types/enums';
 import { Plus, Edit, Trash2, Copy, Eye } from 'lucide-react';
@@ -81,7 +81,7 @@ const defaultStyle: TemplateStyle = {
 };
 
 function TemplatesContent() {
-  const { organizationId } = useAuthState();
+  const organizationId = useOrganizationId();
   const [templates, setTemplates] = useState<InvoiceTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);

@@ -2,7 +2,9 @@ import { atom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
 import { Organization, User as AppUser, OrganizationUser } from '@/types';
 import { Order, OrderItem, OrderPayment, Table, OrderType } from '@/types/order';
-import { Customer } from '@/types/customer-supplier';
+import { Customer, Supplier } from '@/types/customer-supplier';
+import { Product, Service } from '@/types/product-service';
+import { Invoice, Quote, Payment, PaymentType } from '@/types';
 import { User } from 'firebase/auth';
 import { indexedDBStorage } from '@/lib/storage';
 
@@ -133,3 +135,61 @@ export const resetPOSStateAtom = atom(null, (get, set) => {
   set(categoryPathAtom, []);
   set(currentOrderAtom, null);
 });
+
+// =====================
+// DATA STATE ATOMS
+// =====================
+
+// Customers state
+export const customersAtom = atom<Customer[]>([]);
+export const customersLoadingAtom = atom<boolean>(false);
+export const customersErrorAtom = atom<string | null>(null);
+
+// Products state
+export const productsAtom = atom<Product[]>([]);
+export const productsLoadingAtom = atom<boolean>(false);
+export const productsErrorAtom = atom<string | null>(null);
+
+// Services state
+export const servicesAtom = atom<Service[]>([]);
+export const servicesLoadingAtom = atom<boolean>(false);
+export const servicesErrorAtom = atom<string | null>(null);
+
+// Tables state
+export const tablesAtom = atom<Table[]>([]);
+export const tablesLoadingAtom = atom<boolean>(false);
+export const tablesErrorAtom = atom<string | null>(null);
+
+// Invoices state
+export const invoicesAtom = atom<Invoice[]>([]);
+export const invoicesLoadingAtom = atom<boolean>(false);
+export const invoicesErrorAtom = atom<string | null>(null);
+
+// Quotes state
+export const quotesAtom = atom<Quote[]>([]);
+export const quotesLoadingAtom = atom<boolean>(false);
+export const quotesErrorAtom = atom<string | null>(null);
+
+// Invoice/Quote payments state (different from order payments)
+export const invoicePaymentsAtom = atom<Payment[]>([]);
+export const invoicePaymentsLoadingAtom = atom<boolean>(false);
+export const invoicePaymentsErrorAtom = atom<string | null>(null);
+
+// Payment types state
+export const paymentTypesAtom = atom<PaymentType[]>([]);
+export const paymentTypesLoadingAtom = atom<boolean>(false);
+export const paymentTypesErrorAtom = atom<string | null>(null);
+
+// Suppliers state
+export const suppliersAtom = atom<Supplier[]>([]);
+export const suppliersLoadingAtom = atom<boolean>(false);
+export const suppliersErrorAtom = atom<string | null>(null);
+
+// Categories state
+export const categoriesAtom = atom<any[]>([]);
+export const categoriesLoadingAtom = atom<boolean>(false);
+export const categoriesErrorAtom = atom<string | null>(null);
+
+// Order management state
+export const orderManagementLoadingAtom = atom<boolean>(false);
+export const orderManagementErrorAtom = atom<string | null>(null);

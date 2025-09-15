@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { collection, query, onSnapshot, addDoc, updateDoc, doc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { useAuthState } from '@/hooks/useAuthState';
+import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
 import { OrganizationUser, UserRole } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,7 +30,9 @@ interface InvitationCode {
 }
 
 function UsersContent() {
-  const { organizationId, user: currentUser, selectedOrganization } = useAuthState();
+  const organizationId = useOrganizationId();
+  const currentUser = useUser();
+  const selectedOrganization = useSelectedOrganization();
   const [organizationUsers, setOrganizationUsers] = useState<OrganizationUser[]>([]);
   const [invitationCodes, setInvitationCodes] = useState<InvitationCode[]>([]);
   const [loading, setLoading] = useState(true);

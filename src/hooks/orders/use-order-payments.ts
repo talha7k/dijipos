@@ -232,10 +232,10 @@ export function useOrderPayments({ organizationId }: UseOrderPaymentsProps): Use
         const orderDoc = await getDoc(orderRef);
         
         if (orderDoc.exists()) {
-          const currentOrder = orderDoc.data();
+          const selectedOrder = orderDoc.data();
           
           // Only update if the paid status needs to change
-          if (currentOrder.paid !== shouldBePaid) {
+          if (selectedOrder.paid !== shouldBePaid) {
             await updateDoc(orderRef, {
               paid: shouldBePaid,
               updatedAt: Timestamp.now(),

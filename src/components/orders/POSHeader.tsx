@@ -14,7 +14,7 @@ interface CartItem {
 }
 
 interface POSHeaderProps {
-  cart: CartItem[];
+  cartItems: CartItem[];
   cartTotal: number;
   selectedTable?: Table | null;
   selectedCustomer?: Customer | null;
@@ -32,7 +32,7 @@ interface POSHeaderProps {
 }
 
 export function POSHeader({
-  cart,
+  cartItems,
   cartTotal,
   selectedTable,
   selectedCustomer,
@@ -140,6 +140,8 @@ export function POSHeader({
               <span>Orders</span>
             </Button>
           </div>
+          <Badge className='w-12'>{cartItems.length}</Badge>
+          <Badge className='w-12'>{cartTotal}</Badge>
         </div>
       </div>
     </div>

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { collection, query, onSnapshot, updateDoc, doc, getDoc, addDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { useAuthState } from '@/hooks/useAuthState';
+import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
 import { Invoice, PurchaseInvoice, Organization, InvoiceStatus } from '@/types';
 import { InvoiceTemplateType } from '@/types/enums';
 
@@ -26,7 +26,8 @@ import InvoiceForm from '@/components/invoices_quotes/InvoiceForm';
 import { Receipt } from 'lucide-react';
 
 function InvoicesContent() {
-  const { user, organizationId } = useAuthState();
+  const user = useUser();
+  const organizationId = useOrganizationId();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [loading, setLoading] = useState(true);

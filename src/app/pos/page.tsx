@@ -1,45 +1,75 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useAuthState } from '@/hooks/useAuthState';
-import { useProductsData } from '@/hooks/products_services/use-products-data';
-import { useServicesData } from '@/hooks/products_services/use-services-data';
-import { useCategoriesData } from '@/hooks/products_services/use-categories-data';
-import { useTablesData } from '@/hooks/tables/use-tables-data';
-import { useCustomersData } from '@/hooks/customers/use-customers-data';
-import { useOrdersData } from '@/hooks/orders/use-order-data';
-import { useOrderTypesData } from '@/hooks/orders/use-order-types-data';
-import { usePaymentTypesData } from '@/hooks/use-payment-types-data';
-import { useOrderPayments } from '@/hooks/orders/use-order-payments';
+import React from "react";
+import { useOrganizationId } from "@/hooks/useAuthState";
+import { OrderItem, ItemType } from "@/types";
+import { useProductsData } from "@/hooks/products_services/useProducts";
+import { useServicesData } from "@/hooks/products_services/use-services-data";
+import { useCategoriesData } from "@/hooks/products_services/use-categories-data";
+import { useTablesData } from "@/hooks/tables/useTables";
+import { useCustomersData } from "@/hooks/customers/useCustomerState";
+import { useOrdersData } from "@/hooks/orders/use-order-data";
+import { useOrderTypesData } from "@/hooks/orders/use-order-types-data";
+import { usePaymentTypesData } from "@/hooks/use-payment-types-data";
+import { useOrderPayments } from "@/hooks/orders/use-order-payments";
 
+import {
+  POSLayout,
+  POSLeftColumn,
+  POSHeaderContainer,
+  POSMainContent,
+  POSRightColumn,
+} from "./components/POSLayout";
+import { POSHeader } from "@/components/orders/POSHeader";
+import { POSViewsManager } from "./components/POSViewsManager";
+import { POSCartSidebar } from "@/components/orders/POSCartSidebar";
+import { usePOSLogic } from "@/hooks/pos/usePOSState";
 
-import { POSLayout, POSLeftColumn, POSHeaderContainer, POSMainContent, POSRightColumn } from './components/POSLayout';
-import { POSHeader } from '@/components/orders/POSHeader';
-import { POSViewsManager } from './components/POSViewsManager';
-import { POSCartSidebar } from '@/components/orders/POSCartSidebar';
-import { usePOSLogic } from '@/hooks/pos/usePOSLogic';
-
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { PaymentSuccessDialog } from '@/components/PaymentSuccessDialog';
-import { CartItemModal } from '@/components/orders/CartItemModal';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { PaymentSuccessDialog } from "@/components/PaymentSuccessDialog";
+import { CartItemModal } from "@/components/orders/CartItemModal";
 
 export default function SimplifiedPOSPage() {
-  const { organizationId } = useAuthState();
+  const organizationId = useOrganizationId();
 
   // Data hooks
-  const { products = [], loading: productsLoading } = useProductsData(organizationId || '');
-  const { services = [], loading: servicesLoading } = useServicesData(organizationId || '');
-  const { categories = [], loading: categoriesLoading } = useCategoriesData(organizationId || '');
-  const { tables = [], loading: tablesLoading } = useTablesData(organizationId || '');
-  const { customers = [], loading: customersLoading } = useCustomersData(organizationId || '');
-  const { orders = [], loading: ordersLoading } = useOrdersData(organizationId || '');
-  const { paymentTypes = [], loading: paymentTypesLoading } = usePaymentTypesData(organizationId || '');
-  const { orderPayments, loading: orderPaymentsLoading } = useOrderPayments({ organizationId: organizationId || undefined });
-  const { orderTypes = [] } = useOrderTypesData(organizationId || '');
+  const { products = [], loading: productsLoading } = useProductsData(
+    organizationId || ""
+  );
+  const { services = [], loading: servicesLoading } = useServicesData(
+    organizationId || ""
+  );
+  const { categories = [], loading: categoriesLoading } = useCategoriesData(
+    organizationId || ""
+  );
+  const { tables = [], loading: tablesLoading } = useTablesData(
+    organizationId || ""
+  );
+  const { customers = [], loading: customersLoading } = useCustomersData(
+    organizationId || ""
+  );
+  const { orders = [], loading: ordersLoading } = useOrdersData(
+    organizationId || ""
+  );
+  const { paymentTypes = [], loading: paymentTypesLoading } =
+    usePaymentTypesData(organizationId || "");
+  const { orderPayments, loading: orderPaymentsLoading } = useOrderPayments({
+    organizationId: organizationId || undefined,
+  });
+  const { orderTypes = [] } = useOrderTypesData(organizationId || "");
 
   // Use the custom POS logic hook
   const {
-    cart,
+    cartItems,
     cartTotal,
     posView,
     selectedTable,
@@ -72,19 +102,25 @@ export default function SimplifiedPOSPage() {
     handleCategoryClick,
     handleNavigateToRoot,
     handleNavigateToPath,
-     handlePayOrder,
-     updateCartItem,
-     removeFromCart,
-     setShowOrderConfirmationDialog,
-     setShowCartItemModal,
-     setEditingCartItem,
-     setShowPaymentSuccessDialog,
+    handlePayOrder,
+    updateCartItem,
+    removeFromCart,
+    setShowOrderConfirmationDialog,
+    setShowCartItemModal,
+    setEditingCartItem,
+    setShowPaymentSuccessDialog,
   } = usePOSLogic();
 
   // Loading state
-  const loading = productsLoading || servicesLoading || categoriesLoading ||
-                  tablesLoading || customersLoading || ordersLoading ||
-                  paymentTypesLoading || orderPaymentsLoading;
+  const loading =
+    productsLoading ||
+    servicesLoading ||
+    categoriesLoading ||
+    tablesLoading ||
+    customersLoading ||
+    ordersLoading ||
+    paymentTypesLoading ||
+    orderPaymentsLoading;
 
   if (loading) {
     return (
@@ -94,27 +130,37 @@ export default function SimplifiedPOSPage() {
     );
   }
 
+  // Transform OrderItem[] to CartItem[] for component compatibility
+  const cartForComponents = cartItems.map((item) => ({
+    id: item.id,
+    type: item.type === "product" ? ("product" as const) : ("service" as const),
+    name: item.name,
+    price: item.unitPrice,
+    quantity: item.quantity,
+    total: item.total,
+  }));
+
   return (
     <POSLayout>
       <POSLeftColumn>
         <POSHeaderContainer>
-           <POSHeader
-              cart={cart}
-              cartTotal={cartTotal}
-              selectedTable={selectedTable}
-              selectedCustomer={selectedCustomer}
-              selectedOrder={selectedOrder}
-              orderTypes={orderTypes}
-               selectedOrderType={selectedOrderType}
-              onTableSelect={handleTableSelect}
-              onCustomerSelect={handleCustomerSelect}
-              onOrderTypeSelect={handleOrderTypeSelect}
-             onTableDeselect={handleTableDeselect}
-             onCustomerDeselect={handleCustomerDeselect}
-             onOrderTypeDeselect={handleOrderTypeDeselect}
-             onOrdersClick={handleOrdersClick}
-             onOrderToggle={handleBackToItems}
-           />
+          <POSHeader
+            cartItems={cartForComponents}
+            cartTotal={cartTotal}
+            selectedTable={selectedTable}
+            selectedCustomer={selectedCustomer}
+            selectedOrder={selectedOrder}
+            orderTypes={orderTypes}
+            selectedOrderType={selectedOrderType}
+            onTableSelect={handleTableSelect}
+            onCustomerSelect={handleCustomerSelect}
+            onOrderTypeSelect={handleOrderTypeSelect}
+            onTableDeselect={handleTableDeselect}
+            onCustomerDeselect={handleCustomerDeselect}
+            onOrderTypeDeselect={handleOrderTypeDeselect}
+            onOrdersClick={handleOrdersClick}
+            onOrderToggle={handleBackToItems}
+          />
         </POSHeaderContainer>
 
         <POSMainContent>
@@ -128,12 +174,12 @@ export default function SimplifiedPOSPage() {
             orders={orders}
             orderPayments={orderPayments}
             paymentTypes={paymentTypes}
-             selectedOrder={selectedOrder}
-             categoryPath={categoryPath}
-             organizationId={organizationId || undefined}
-             onCategoryClick={handleCategoryClick}
-             onNavigateToRoot={handleNavigateToRoot}
-             onNavigateToPath={handleNavigateToPath}
+            selectedOrder={selectedOrder}
+            categoryPath={categoryPath}
+            organizationId={organizationId || undefined}
+            onCategoryClick={handleCategoryClick}
+            onNavigateToRoot={handleNavigateToRoot}
+            onNavigateToPath={handleNavigateToPath}
             onItemClick={handleAddToCart}
             onTableSelect={handleTableSelected}
             onCustomerSelect={handleCustomerSelected}
@@ -147,13 +193,23 @@ export default function SimplifiedPOSPage() {
 
       <POSRightColumn>
         <POSCartSidebar
-          cart={cart}
+          cartItems={cartForComponents}
           cartTotal={cartTotal}
           onItemClick={(item) => {
-            setEditingCartItem(item);
+            // Transform CartItem back to OrderItem for state management
+            const orderItem: OrderItem = {
+              id: item.id,
+              type:
+                item.type === "product" ? ItemType.PRODUCT : ItemType.SERVICE,
+              name: item.name,
+              quantity: item.quantity,
+              unitPrice: item.price,
+              total: item.total,
+            };
+            setEditingCartItem(orderItem);
             setShowCartItemModal(true);
           }}
-           onPayOrder={handlePayOrder}
+          onPayOrder={handlePayOrder}
           onSaveOrder={handleSaveOrder}
           onPrintReceipt={() => {}}
           onClearCart={handleClearCart}
@@ -161,16 +217,22 @@ export default function SimplifiedPOSPage() {
       </POSRightColumn>
 
       {/* Order Confirmation Dialog */}
-      <AlertDialog open={showOrderConfirmationDialog} onOpenChange={setShowOrderConfirmationDialog}>
+      <AlertDialog
+        open={showOrderConfirmationDialog}
+        onOpenChange={setShowOrderConfirmationDialog}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Reopen Order?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will replace your current cart with order #{pendingOrderToReopen?.orderNumber}. Continue?
+              This will replace your current cartItems with order #
+              {pendingOrderToReopen?.orderNumber}. Continue?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setShowOrderConfirmationDialog(false)}>
+            <AlertDialogCancel
+              onClick={() => setShowOrderConfirmationDialog(false)}
+            >
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction onClick={proceedWithOrderReopen}>
@@ -191,7 +253,15 @@ export default function SimplifiedPOSPage() {
       {/* Cart Item Modal */}
       {editingCartItem && (
         <CartItemModal
-          item={editingCartItem}
+          item={{
+            id: editingCartItem.id,
+            type:
+              editingCartItem.type === ItemType.PRODUCT ? "product" : "service",
+            name: editingCartItem.name,
+            price: editingCartItem.unitPrice,
+            quantity: editingCartItem.quantity,
+            total: editingCartItem.total,
+          }}
           isOpen={showCartItemModal}
           onClose={() => setShowCartItemModal(false)}
           onUpdateQuantity={(itemId, newQuantity) => {
@@ -199,7 +269,7 @@ export default function SimplifiedPOSPage() {
             if (editingCartItem) {
               updateCartItem(itemId, editingCartItem.type, {
                 quantity: newQuantity,
-                total: newQuantity * editingCartItem.price
+                total: newQuantity * editingCartItem.unitPrice,
               });
             }
             setShowCartItemModal(false);

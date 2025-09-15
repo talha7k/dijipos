@@ -1,17 +1,24 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
+import { useAtom } from 'jotai';
 import { collection, query, onSnapshot, updateDoc, doc, addDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Product } from '@/types';
+import {
+  productsAtom,
+  productsLoadingAtom,
+  productsErrorAtom
+} from '@/store/atoms';
 
 export function useProductsData(organizationId: string | undefined) {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useAtom(productsAtom);
+  const [loading, setLoading] = useAtom(productsLoadingAtom);
 
   useEffect(() => {
     if (!organizationId) {
       setLoading(false);
+      setProducts([]);
       return;
     }
 
@@ -33,7 +40,7 @@ export function useProductsData(organizationId: string | undefined) {
 
     // Return cleanup function
     return () => unsubscribe();
-  }, [organizationId]);
+  }, [organizationId, setProducts, setLoading]);
 
   return {
     products,
@@ -42,7 +49,7 @@ export function useProductsData(organizationId: string | undefined) {
 }
 
 export function useProductActions(organizationId: string | undefined) {
-  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
+  const [updatingStatus, setUpdatingStatus] = useAtom(productsErrorAtom);
 
   const updateProduct = async (productId: string, productData: Partial<Product>) => {
     if (!organizationId) return;

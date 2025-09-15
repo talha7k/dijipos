@@ -3,7 +3,7 @@ import { ShoppingCart, Save, Printer, Trash2 } from 'lucide-react';
 import { POSCartItem } from './POSCartItem';
 import { ReceiptPrintDialog } from '@/components/ReceiptPrintDialog';
 import { Order, OrderStatus, ItemType } from '@/types';
-import { useAuthState } from '@/hooks/useAuthState';
+import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
 import { useOrderState } from '@/hooks/useOrderState';
 import { usePrinterSettingsData } from '@/hooks/organization/use-printer-settings-data';
 import { useReceiptTemplatesData } from '@/hooks/use-receipt-templates-data';
@@ -18,7 +18,7 @@ interface CartItem {
 }
 
 interface POSCartSidebarProps {
-  cart: CartItem[];
+  cartItems: CartItem[];
   cartTotal: number;
   onPayOrder?: () => void;
   onSaveOrder?: () => void;
@@ -28,7 +28,7 @@ interface POSCartSidebarProps {
 }
 
 export function POSCartSidebar({
-  cart,
+  cartItems,
   cartTotal,
   onPayOrder,
   onSaveOrder,
@@ -43,13 +43,13 @@ export function POSCartSidebar({
   const { receiptTemplates = [] } = useReceiptTemplatesData(selectedOrganization?.id || '');
 
   const createTempOrderForPayment = () => {
-    if (cart.length === 0) return null;
+    if (cartItems.length === 0) return null;
 
     return {
       id: 'temp-checkout',
       organizationId: organizationId || '',
       orderNumber: `TEMP-${Date.now()}`,
-      items: cart.map(item => ({
+      items: cartItems.map(item => ({
         id: `${item.type}-${item.id}`,
         type: item.type === 'product' ? ItemType.PRODUCT : ItemType.SERVICE,
         productId: item.type === 'product' ? item.id : undefined,
@@ -81,14 +81,14 @@ export function POSCartSidebar({
     <div className="w-full min-w-80 bg-card border-l flex flex-col h-full">
 
       <div className="flex-1 overflow-auto p-4">
-        {cart.length === 0 ? (
+        {cartItems.length === 0 ? (
           <div className="text-center text-muted-foreground py-8">
             <ShoppingCart className="h-12 w-12 mx-auto mb-4 text-muted-foreground/30" />
             <p>Your cart is empty</p>
           </div>
         ) : (
           <div className="space-y-3">
-            {cart.map((item) => (
+             {cartItems.map((item) => (
               <POSCartItem
                 key={`${item.type}-${item.id}`}
                 item={item}
@@ -102,7 +102,7 @@ export function POSCartSidebar({
       <div className="border-t p-4 bg-card">
         <div className="flex justify-between mb-2">
           <span className="font-medium text-sm text-muted-foreground">Items:</span>
-          <span className="font-medium text-sm text-muted-foreground">{cart.reduce((sum, item) => sum + item.quantity, 0)}</span>
+          <span className="font-medium text-sm text-muted-foreground">{cartItems.reduce((sum, item) => sum + item.quantity, 0)}</span>
         </div>
         <div className="flex justify-between mb-4">
           <span className="font-medium text-lg text-foreground">Total:</span>
@@ -113,13 +113,13 @@ export function POSCartSidebar({
             <Button
               variant="outline"
               className="flex-1 h-12 text-sm font-medium"
-              disabled={cart.length === 0}
+              disabled={cartItems.length === 0}
               onClick={onSaveOrder}
             >
               <Save className="h-5 w-5" />
             </Button>
           )}
-            {selectedOrganization && cart.length > 0 && (
+            {selectedOrganization && cartItems.length > 0 && (
               <ReceiptPrintDialog
                 order={createTempOrderForPayment()!}
                 organization={selectedOrganization}
@@ -128,7 +128,7 @@ export function POSCartSidebar({
                <Button
                  variant="outline"
                  className="flex-1 h-12 text-sm font-medium"
-                 disabled={cart.length === 0}
+                 disabled={cartItems.length === 0}
                >
                  <Printer className="h-5 w-5" />
                </Button>
@@ -138,7 +138,7 @@ export function POSCartSidebar({
             <Button
               variant="outline"
               className="flex-1 h-12 text-sm font-medium"
-              disabled={cart.length === 0}
+              disabled={cartItems.length === 0}
               onClick={onClearCart}
             >
               <Trash2 className="h-5 w-5" />
@@ -147,7 +147,7 @@ export function POSCartSidebar({
         </div>
         <Button
           className="w-full h-14 text-lg font-bold"
-          disabled={cart.length === 0}
+          disabled={cartItems.length === 0}
           onClick={onPayOrder}
         >
           Pay & Complete
