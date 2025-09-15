@@ -63,18 +63,19 @@ export function POSOrderGrid({
   };
 
   const wrapMarkAsPaid = (orderId: string) => {
-    handleMarkAsPaid(orderId);
+    return handleMarkAsPaid(orderId);
   };
 
   const wrapCompleteOrder = (orderId: string) => {
-    handleCompleteOrder();
+    return handleCompleteOrder();
   };
 
   const wrapUpdateStatus = (orderId: string, status: OrderStatus) => {
     const order = orders.find(o => o.id === orderId);
     if (order) {
-      handleUpdateOrderStatus(order, status);
+      return handleUpdateOrderStatus(order, status);
     }
+    return Promise.resolve();
   };
 
   const handleOrderSelect = (order: Order) => {

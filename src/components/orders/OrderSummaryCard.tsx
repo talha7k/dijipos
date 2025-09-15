@@ -31,9 +31,9 @@ interface OrderSummaryCardProps {
   remainingAmount?: number;
   changeDue?: number;
   onClick?: (order: Order) => void;
-  onStatusChange?: (orderId: string, status: OrderStatus) => void;
-  onMarkAsPaid?: (orderId: string) => void;
-  onCompleteOrder?: (orderId: string) => void;
+  onStatusChange?: (orderId: string, status: OrderStatus) => Promise<void>;
+  onMarkAsPaid?: (orderId: string) => Promise<void>;
+  onCompleteOrder?: (orderId: string) => Promise<void>;
   className?: string;
 }
 

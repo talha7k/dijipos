@@ -1,13 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { doc, getDoc, updateDoc, addDoc, deleteDoc, collection, query, where, onSnapshot } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
 import { useOrganizationData } from '@/hooks/organization/use-organization-data';
 import { useOrganizationUsersData } from '@/hooks/organization/use-organization-users-data';
 import { useInvitationCodesData } from '@/hooks/organization/use-invitation-codes-data';
+import { useOrganizationActions } from '@/hooks/organization/use-organization-actions';
+import { useInvitationCodesActions } from '@/hooks/organization/use-invitation-codes-actions';
+import { useOrganizationUsersActions } from '@/hooks/organization/use-organization-users-actions';
+import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
 import { Organization, OrganizationUser, InvitationCode } from '@/types';
+import { UserRole } from '@/types/enums';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -31,6 +33,9 @@ function CompanyContent() {
   const { organization, loading: orgLoading, error: orgError } = useOrganizationData(organizationId || undefined);
   const { organizationUsers, loading: usersLoading, error: usersError } = useOrganizationUsersData(organizationId || undefined);
   const { invitationCodes, loading: codesLoading, error: codesError } = useInvitationCodesData(organizationId || undefined);
+  const { updateOrganization, updateOrganizationBranding } = useOrganizationActions(organizationId || undefined);
+  const { createInvitationCode, deleteInvitationCode } = useInvitationCodesActions(organizationId || undefined);
+  const { updateOrganizationUser, updateUserStatus } = useOrganizationUsersActions(organizationId || undefined);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -79,11 +84,7 @@ function CompanyContent() {
     if (!organizationId) return;
     
     try {
-      await updateDoc(doc(db, 'organizations', organizationId), {
-        logoUrl: '',
-        updatedAt: new Date(),
-      });
-      
+      await updateOrganizationBranding('', stampUrl);
       setLogoUrl('');
     } catch (error) {
       console.error('Error removing logo:', error);
@@ -95,11 +96,7 @@ function CompanyContent() {
     if (!organizationId) return;
     
     try {
-      await updateDoc(doc(db, 'organizations', organizationId), {
-        stampUrl: '',
-        updatedAt: new Date(),
-      });
-      
+      await updateOrganizationBranding(logoUrl, '');
       setStampUrl('');
     } catch (error) {
       console.error('Error removing stamp:', error);
@@ -112,7 +109,7 @@ function CompanyContent() {
 
     setSaving(true);
     try {
-      await updateDoc(doc(db, 'organizations', organizationId), {
+      await updateOrganization({
         name: companyName,
         nameAr: companyNameAr,
         email: companyEmail,
@@ -121,10 +118,7 @@ function CompanyContent() {
         vatNumber: vatNumber,
         logoUrl: logoUrl,
         stampUrl: stampUrl,
-        updatedAt: new Date(),
       });
-
-      // Organization data will be updated via the hook automatically
 
       toast.success('Company information updated successfully!');
     } catch (error) {
@@ -149,15 +143,7 @@ function CompanyContent() {
     if (!organizationId) return;
 
     try {
-      const code = generateInvitationCode();
-      await addDoc(collection(db, 'invitationCodes'), {
-        code,
-        organizationId,
-        role: invitationFormData.role,
-        expiresAt: invitationFormData.expiresAt,
-        isUsed: false,
-        createdAt: new Date(),
-      });
+      await createInvitationCode(invitationFormData.role, invitationFormData.expiresAt);
 
       setInvitationDialogOpen(false);
       setInvitationFormData({
@@ -174,7 +160,7 @@ function CompanyContent() {
     if (!organizationId) return;
 
     try {
-      await deleteDoc(doc(db, 'invitationCodes', codeId));
+      await deleteInvitationCode(codeId);
     } catch (error) {
       console.error('Error deleting invitation code:', error);
       toast.error('Failed to delete invitation code. Please try again.');
@@ -195,10 +181,11 @@ function CompanyContent() {
     if (!editingUser || !organizationId) return;
 
     try {
-      const userRef = doc(db, 'organizationUsers', editingUser.id);
-      await updateDoc(userRef, {
-        ...formData,
-        updatedAt: new Date(),
+      await updateOrganizationUser(editingUser.id, {
+        role: formData.role === 'admin' ? UserRole.ADMIN : 
+               formData.role === 'manager' ? UserRole.MANAGER : 
+               formData.role === 'waiter' ? UserRole.WAITER : UserRole.CASHIER,
+        isActive: formData.isActive,
       });
 
       setDialogOpen(false);
@@ -215,8 +202,7 @@ function CompanyContent() {
 
   const handleToggleUserStatus = async (userId: string, isActive: boolean) => {
     try {
-      const userRef = doc(db, 'users', userId);
-      await updateDoc(userRef, { isActive });
+      await updateUserStatus(userId, isActive);
       toast.success('User status updated successfully');
     } catch (error) {
       console.error('Error updating user status:', error);

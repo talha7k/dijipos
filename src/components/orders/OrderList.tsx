@@ -7,9 +7,9 @@ interface OrderListProps {
   orders: Order[];
   onOrderSelect: (order: Order) => void;
   onBack: () => void;
-  onStatusChange?: (orderId: string, status: OrderStatus) => void;
-  onMarkAsPaid?: (orderId: string) => void;
-  onCompleteOrder?: (orderId: string) => void;
+  onStatusChange?: (orderId: string, status: OrderStatus) => Promise<void>;
+  onMarkAsPaid?: (orderId: string) => Promise<void>;
+  onCompleteOrder?: (orderId: string) => Promise<void>;
   getOrderPayments?: (orderId: string) => OrderPayment[];
 }
 
