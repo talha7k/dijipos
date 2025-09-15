@@ -2,11 +2,11 @@
 
 import { useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
-import { createReceiptQRData, generateZatcaQRString, testQRCodeGeneration } from '@/lib/zatca-qr';
+import { createReceiptQRData, generateZatcaQRString, testQRCodeGeneration, ZatcaQRData } from '@/lib/zatca-qr';
 
 export default function TestQRPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [qrData, setQrData] = useState<any>(null);
+  const [qrData, setQrData] = useState<ZatcaQRData | null>(null);
   const [tlvString, setTlvString] = useState<string>('');
 
   useEffect(() => {

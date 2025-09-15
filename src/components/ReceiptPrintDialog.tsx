@@ -7,7 +7,6 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Printer, Download } from 'lucide-react';
 import { Order, ReceiptTemplate, Organization } from '@/types';
-import thermalPrinter from '@/lib/thermal-printer';
 import { renderReceiptTemplate } from '@/lib/template-renderer';
 import { toast } from 'sonner';
 import html2pdf from 'html2pdf.js';
@@ -28,6 +27,7 @@ export function ReceiptPrintDialog({
   const [open, setOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   // Set default template on open
   const handleOpenChange = (newOpen: boolean) => {
@@ -43,49 +43,62 @@ export function ReceiptPrintDialog({
     if (!template) return;
 
     setIsGenerating(true);
-    
-    try {
-      if (template.type === 'thermal') {
-        try {
-          // Print the receipt using the service
-          await thermalPrinter.printReceipt({ order, organization });
-          setIsGenerating(false);
-          setOpen(false);
-          toast.success('Receipt printed successfully!');
-        } catch (error) {
-          console.error('Printing failed:', error);
-          setIsGenerating(false);
-          toast.error(error instanceof Error ? error.message : 'Failed to print receipt. Please check printer connection.');
-        }
-      } else {
-        // For A4 templates, render using template and print directly in current window
-        const renderedContent = await renderReceiptTemplate(template, order, organization);
-        const originalContent = document.body.innerHTML;
-        
-        // Replace body content with rendered receipt
-        document.body.innerHTML = renderedContent;
 
-        // Print directly
-        window.print();
-        
-        // Restore original content after printing
+    try {
+      // Render the receipt using template
+      const renderedContent = await renderReceiptTemplate(template, order, organization);
+
+      // Create a new window for printing (safer than manipulating current DOM)
+      const printWindow = window.open('', '_blank', 'width=800,height=600');
+      if (!printWindow) {
+        throw new Error('Unable to open print window. Please check your popup blocker.');
+      }
+
+      // Write the receipt content to the new window
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Receipt - ${order.orderNumber}</title>
+            <style>
+              body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+              @media print {
+                body { margin: 0; }
+              }
+            </style>
+          </head>
+          <body>
+            ${renderedContent}
+          </body>
+        </html>
+      `);
+
+      printWindow.document.close();
+
+      // Wait for content to load then print
+      printWindow.onload = () => {
+        printWindow.print();
+        // Close the window after printing (with a delay to allow print dialog)
         setTimeout(() => {
-          document.body.innerHTML = originalContent;
+          printWindow.close();
           setIsGenerating(false);
           setOpen(false);
           toast.success('Receipt sent to printer!');
-        }, 100);
-      }
+        }, 1000);
+      };
+
     } catch (error) {
       console.error('Error generating receipt:', error);
       setIsGenerating(false);
-      toast.error('Error generating receipt. Please try again.');
+      toast.error(error instanceof Error ? error.message : 'Error generating receipt. Please try again.');
     }
   };
 
   const downloadReceipt = async () => {
     const template = receiptTemplates.find(t => t.id === selectedTemplate);
     if (!template) return;
+
+    setIsDownloading(true);
 
     try {
       // Generate HTML using template renderer
@@ -94,7 +107,7 @@ export function ReceiptPrintDialog({
       // Convert HTML to PDF and download
       const element = document.createElement('div');
       element.innerHTML = htmlContent;
-      
+
       const opt = {
         margin: 10,
         filename: `receipt-${order.orderNumber}.pdf`,
@@ -104,10 +117,31 @@ export function ReceiptPrintDialog({
       };
 
       await html2pdf().set(opt).from(element).save();
+
+      // Clean up the temporary element
+      if (element.parentNode) {
+        element.parentNode.removeChild(element);
+      }
+
       toast.success('PDF downloaded successfully!');
     } catch (error) {
       console.error('Error downloading PDF:', error);
-      toast.error('Error downloading PDF. Please try again.');
+
+      // Provide more specific error messages
+      let errorMessage = 'Error downloading PDF. Please try again.';
+      if (error instanceof Error) {
+        if (error.message.includes('html2canvas')) {
+          errorMessage = 'Error rendering receipt content. Please try a different template.';
+        } else if (error.message.includes('jsPDF')) {
+          errorMessage = 'Error generating PDF. Please check your browser settings.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+
+      toast.error(errorMessage);
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -217,15 +251,15 @@ export function ReceiptPrintDialog({
 
             {/* Actions */}
             <div className="flex justify-between">
-              <Button
-                variant="outline"
-                onClick={downloadReceipt}
-                disabled={!selectedTemplate || receiptTemplates.length === 0}
-                className="flex items-center gap-2"
-              >
-                <Download className="h-4 w-4" />
-                Download PDF
-              </Button>
+               <Button
+                 variant="outline"
+                 onClick={downloadReceipt}
+                 disabled={!selectedTemplate || receiptTemplates.length === 0 || isDownloading}
+                 className="flex items-center gap-2"
+               >
+                 <Download className="h-4 w-4" />
+                 {isDownloading ? 'Downloading...' : 'Download PDF'}
+               </Button>
               <div className="flex gap-2">
                 <Button
                   variant="outline"

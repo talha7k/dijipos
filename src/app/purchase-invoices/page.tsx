@@ -13,8 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Printer } from 'lucide-react';
-import EnglishInvoice from '@/components/templates/EnglishInvoice';
-import ArabicInvoice from '@/components/templates/ArabicInvoice';
+
 import { defaultEnglishInvoiceTemplate } from '@/components/templates/default-invoice-english';
 import { defaultArabicInvoiceTemplate } from '@/components/templates/default-invoice-arabic';
 import InvoiceForm from '@/components/invoices_quotes/InvoiceForm';
@@ -404,11 +403,11 @@ function InvoicesContent() {
                                   />
                                 </div>
                               </div>
-                              {selectedInvoice.template === TemplateType.ARABIC ? (
-                                <ArabicInvoice invoice={selectedInvoice} organization={organization} />
-                              ) : (
-                                <EnglishInvoice invoice={selectedInvoice} organization={organization} />
-                              )}
+                              <div 
+                                dangerouslySetInnerHTML={{ 
+                                  __html: generatePurchaseInvoiceHTML(selectedInvoice, organization) 
+                                }} 
+                              />
                             </div>
                           )}
                         </DialogContent>

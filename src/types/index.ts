@@ -393,10 +393,10 @@ export interface PaymentType {
 
 export interface PrinterSettings {
   id: string;
-  paperWidth: number; // Width in mm (e.g., 48, 58, 80 for common thermal printer widths)
-  fontSize: FontSize;
-  characterPerLine: number; // Characters per line based on paper width
-  characterSet: CharacterSet; // Character set for thermal printer
+  defaultReceiptTemplateId?: string; // ID of the default receipt template to use
+  defaultInvoiceTemplateId?: string; // ID of the default invoice template to use
+  defaultQuoteTemplateId?: string; // ID of the default quote template to use
+  includeQRCode?: boolean; // Whether to include ZATCA QR code on receipt
   organizationId: string;
   createdAt: Date;
   updatedAt: Date;

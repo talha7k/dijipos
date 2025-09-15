@@ -4,19 +4,15 @@ import { useState } from 'react';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
-import { PrinterSettings, FontSize, CHARACTER_SETS } from '@/types';
-import thermalPrinter from '@/lib/thermal-printer';
+import { PrinterSettings } from '@/types';
+import { useReceiptTemplatesData } from '@/hooks/use-receipt-templates-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Printer, Settings } from 'lucide-react';
+import { Settings, FileText, File } from 'lucide-react';
 import { toast } from 'sonner';
-
-interface ThermalPrinterService {
-  printTest(): Promise<void>;
-  config: { connectionType?: string }; // Access to printer configuration
-}
 
 interface PrinterSettingsTabProps {
   printerSettings: PrinterSettings | null;
@@ -25,46 +21,33 @@ interface PrinterSettingsTabProps {
 
 export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }: PrinterSettingsTabProps) {
   const { organizationId } = useAuth();
-  const [printerDialogOpen, setPrinterDialogOpen] = useState(false);
-  const [newPrinterSettings, setNewPrinterSettings] = useState({
-    paperWidth: printerSettings?.paperWidth || 80,
-    fontSize: printerSettings?.fontSize || FontSize.MEDIUM,
-    characterSet: printerSettings?.characterSet || CHARACTER_SETS.MULTILINGUAL
+  const { receiptTemplates, loading: templatesLoading } = useReceiptTemplatesData(organizationId || undefined);
+  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
+  const [newSettings, setNewSettings] = useState({
+    defaultReceiptTemplateId: printerSettings?.defaultReceiptTemplateId || '',
+    defaultInvoiceTemplateId: printerSettings?.defaultInvoiceTemplateId || '',
+    defaultQuoteTemplateId: printerSettings?.defaultQuoteTemplateId || '',
+    includeQRCode: printerSettings?.includeQRCode ?? true,
   });
 
-  const handleUpdatePrinterSettings = async () => {
+  const handleUpdateSettings = async () => {
     if (!organizationId) return;
 
-    const calculateCharactersPerLine = (width: number) => {
-      if (width <= 48) return 24;
-      if (width <= 58) return 32;
-      if (width <= 80) return 48;
-      return 64;
-    };
-
-    const updatedPrinter: PrinterSettings = {
+    const updatedSettings: PrinterSettings = {
       id: 'printer',
-      ...newPrinterSettings,
-      characterPerLine: calculateCharactersPerLine(newPrinterSettings.paperWidth),
+      ...newSettings,
+      defaultReceiptTemplateId: newSettings.defaultReceiptTemplateId || undefined,
+      defaultInvoiceTemplateId: newSettings.defaultInvoiceTemplateId || undefined,
+      defaultQuoteTemplateId: newSettings.defaultQuoteTemplateId || undefined,
       organizationId,
       createdAt: printerSettings?.createdAt || new Date(),
       updatedAt: new Date(),
     };
 
-    await setDoc(doc(db, 'organizations', organizationId, 'settings', 'printer'), updatedPrinter);
-    onPrinterSettingsUpdate(updatedPrinter);
-    setPrinterDialogOpen(false);
-  };
-
-
-
-  const handleTestPrint = async () => {
-    try {
-      await (thermalPrinter as unknown as ThermalPrinterService).printTest();
-      toast.success('Test print sent!');
-    } catch (error) {
-      toast.error('Failed to print test');
-    }
+    await setDoc(doc(db, 'organizations', organizationId, 'settings', 'printer'), updatedSettings);
+    onPrinterSettingsUpdate(updatedSettings);
+    setSettingsDialogOpen(false);
+    toast.success('Settings updated successfully!');
   };
 
   return (
@@ -72,103 +55,138 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Printer className="h-5 w-5" />
-            Printer Settings
+            <Settings className="h-5 w-5" />
+            Template & Print Settings
           </div>
-          <div className="flex gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleTestPrint}
-            >
-              <Printer className="h-4 w-4 mr-2" />
-              Test Print
-            </Button>
-              <Dialog open={printerDialogOpen} onOpenChange={setPrinterDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button>
-                    <Settings className="h-4 w-4 mr-2" />
-                    Configure Printer
-                  </Button>
-                </DialogTrigger>
+          <Dialog open={settingsDialogOpen} onOpenChange={setSettingsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Settings className="h-4 w-4 mr-2" />
+                Configure Settings
+              </Button>
+            </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Printer Settings</DialogTitle>
+                <DialogTitle>Template & Print Settings</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
-                <div>
-                  <Label htmlFor="paper-width">Paper Width (mm)</Label>
-                  <select
-                    id="paper-width"
-                    className="w-full p-2 border rounded"
-                    value={newPrinterSettings.paperWidth}
-                    onChange={(e) => setNewPrinterSettings({ ...newPrinterSettings, paperWidth: parseInt(e.target.value) })}
-                  >
-                    <option value={48}>48mm</option>
-                    <option value={58}>58mm</option>
-                    <option value={80}>80mm</option>
-                  </select>
+                {!templatesLoading && receiptTemplates.length > 0 && (
+                  <>
+                    <div>
+                      <Label htmlFor="default-receipt-template">Default Receipt Template</Label>
+                      <select
+                        id="default-receipt-template"
+                        className="w-full p-2 border rounded"
+                        value={newSettings.defaultReceiptTemplateId}
+                        onChange={(e) => setNewSettings({ ...newSettings, defaultReceiptTemplateId: e.target.value })}
+                      >
+                        <option value="">Select a template</option>
+                        {receiptTemplates.filter(t => t.type === 'thermal').map((template) => (
+                          <option key={template.id} value={template.id}>
+                            {template.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <Label htmlFor="default-invoice-template">Default Invoice Template</Label>
+                      <select
+                        id="default-invoice-template"
+                        className="w-full p-2 border rounded"
+                        value={newSettings.defaultInvoiceTemplateId}
+                        onChange={(e) => setNewSettings({ ...newSettings, defaultInvoiceTemplateId: e.target.value })}
+                      >
+                        <option value="">Select a template</option>
+                        {receiptTemplates.filter(t => t.type === 'a4').map((template) => (
+                          <option key={template.id} value={template.id}>
+                            {template.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <Label htmlFor="default-quote-template">Default Quote Template</Label>
+                      <select
+                        id="default-quote-template"
+                        className="w-full p-2 border rounded"
+                        value={newSettings.defaultQuoteTemplateId}
+                        onChange={(e) => setNewSettings({ ...newSettings, defaultQuoteTemplateId: e.target.value })}
+                      >
+                        <option value="">Select a template</option>
+                        {receiptTemplates.filter(t => t.type === 'a4').map((template) => (
+                          <option key={template.id} value={template.id}>
+                            {template.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </>
+                )}
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="include-qr">Include ZATCA QR Code</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Add QR code to receipts for tax compliance
+                    </p>
+                  </div>
+                  <Switch
+                    id="include-qr"
+                    checked={newSettings.includeQRCode}
+                    onCheckedChange={(checked) => setNewSettings({ ...newSettings, includeQRCode: checked })}
+                  />
                 </div>
-                <div>
-                  <Label htmlFor="font-size">Font Size</Label>
-                  <select
-                    id="font-size"
-                    className="w-full p-2 border rounded"
-                    value={newPrinterSettings.fontSize}
-                    onChange={(e) => {
-                      const value = e.target.value as FontSize;
-                      setNewPrinterSettings({ ...newPrinterSettings, fontSize: value });
-                    }}
-                  >
-                    <option value={FontSize.SMALL}>Small</option>
-                    <option value={FontSize.MEDIUM}>Medium</option>
-                    <option value={FontSize.LARGE}>Large</option>
-                  </select>
-                </div>
-                <div>
-                  <Label htmlFor="character-set">Character Set</Label>
-                  <select
-                    id="character-set"
-                    className="w-full p-2 border rounded"
-                    value={newPrinterSettings.characterSet}
-                    onChange={(e) => setNewPrinterSettings({ ...newPrinterSettings, characterSet: e.target.value as typeof CHARACTER_SETS[keyof typeof CHARACTER_SETS] })}
-                  >
-                    <option value={CHARACTER_SETS.MULTILINGUAL}>Multilingual</option>
-                    <option value={CHARACTER_SETS.KOREA}>Korea</option>
-                    <option value={CHARACTER_SETS.JAPAN}>Japan</option>
-                    <option value={CHARACTER_SETS.USA}>USA</option>
-                  </select>
-                </div>
-                <Button onClick={handleUpdatePrinterSettings} className="w-full">
+                <Button onClick={handleUpdateSettings} className="w-full">
                   Update Settings
                 </Button>
               </div>
             </DialogContent>
-            </Dialog>
-          </div>
+          </Dialog>
         </CardTitle>
       </CardHeader>
       <CardContent>
         {printerSettings ? (
           <div className="space-y-4">
+            {printerSettings.defaultReceiptTemplateId && (
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Default Receipt Template:
+                </span>
+                <span className="font-medium">
+                  {receiptTemplates.find(t => t.id === printerSettings.defaultReceiptTemplateId)?.name || 'Unknown'}
+                </span>
+              </div>
+            )}
+            {printerSettings.defaultInvoiceTemplateId && (
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <File className="h-4 w-4" />
+                  Default Invoice Template:
+                </span>
+                <span className="font-medium">
+                  {receiptTemplates.find(t => t.id === printerSettings.defaultInvoiceTemplateId)?.name || 'Unknown'}
+                </span>
+              </div>
+            )}
+            {printerSettings.defaultQuoteTemplateId && (
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <File className="h-4 w-4" />
+                  Default Quote Template:
+                </span>
+                <span className="font-medium">
+                  {receiptTemplates.find(t => t.id === printerSettings.defaultQuoteTemplateId)?.name || 'Unknown'}
+                </span>
+              </div>
+            )}
             <div className="flex items-center justify-between">
-              <span>Paper Width:</span>
-              <span className="font-medium">{printerSettings.paperWidth}mm</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>Font Size:</span>
-              <span className="font-medium">{printerSettings.fontSize}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>Characters per Line:</span>
-              <span className="font-medium">{printerSettings.characterPerLine}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>Character Set:</span>
-              <span className="font-medium">{printerSettings.characterSet}</span>
+              <span>Include ZATCA QR Code:</span>
+              <span className="font-medium">
+                {printerSettings.includeQRCode ? 'Enabled' : 'Disabled'}
+              </span>
             </div>
 
-            {/* Print Method */}
+            {/* Print Method Info */}
             <div className="border-t pt-4 mb-4">
               <h4 className="text-sm font-medium mb-3">Print Method:</h4>
               <div className="bg-blue-50 border border-blue-200 rounded p-3">
@@ -176,24 +194,15 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
                   <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                   <span className="text-sm font-medium">Browser Print (Active)</span>
                 </div>
-                <p className="text-sm text-blue-600 mb-3">
+                <p className="text-sm text-blue-600">
                   Receipts will open in your browser&apos;s print dialog, optimized for thermal printers.
                   Includes QR codes containing order details for easy scanning.
                 </p>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleTestPrint}
-                  className="w-full"
-                >
-                  <Printer className="h-4 w-4 mr-2" />
-                  Test Print with QR Code
-                </Button>
               </div>
             </div>
           </div>
         ) : (
-          <p className="text-muted-foreground">Printer settings not configured.</p>
+          <p className="text-muted-foreground">Print settings not configured.</p>
         )}
       </CardContent>
     </Card>

@@ -6,7 +6,7 @@ import { Invoice } from '@/types';
 import { InvoiceList } from '@/components/invoices_quotes/InvoiceList';
 import InvoiceForm from '@/components/invoices_quotes/InvoiceForm';
 import { InvoiceDetails } from '@/components/invoices_quotes/InvoiceDetails';
-import { InvoicePrint } from '@/components/invoices_quotes/InvoicePrint';
+import { InvoicePrint } from '@/components/invoices_quotes/InvoicePrintDialog';
 import { Button } from '@/components/ui/button';
 import { Plus, Printer } from 'lucide-react';
 import {

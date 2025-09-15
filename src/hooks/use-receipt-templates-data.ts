@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { collection, query, onSnapshot } from 'firebase/firestore';
+import { collection, query, onSnapshot, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { ReceiptTemplate, PrinterFormat } from '@/types';
 import { defaultReceiptTemplate } from '@/components/templates/default-receipt-thermal';
+import { defaultArabicReceiptTemplate } from '@/components/templates/default-arabic-receipt-thermal';
 
 export function useReceiptTemplatesData(organizationId: string | undefined) {
   const [receiptTemplates, setReceiptTemplates] = useState<ReceiptTemplate[]>([]);
@@ -41,10 +42,21 @@ export function useReceiptTemplatesData(organizationId: string | undefined) {
             {
               id: 'default-thermal',
               name: 'Default Thermal Receipt',
-              description: 'Default thermal printer receipt template',
+              description: 'Default thermal printer receipt template in English',
               type: PrinterFormat.THERMAL,
               content: defaultReceiptTemplate,
               isDefault: true,
+              organizationId,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            },
+            {
+              id: 'arabic-thermal',
+              name: 'Arabic Thermal Receipt',
+              description: 'Arabic thermal printer receipt template',
+              type: PrinterFormat.THERMAL,
+              content: defaultArabicReceiptTemplate,
+              isDefault: false,
               organizationId,
               createdAt: new Date(),
               updatedAt: new Date(),
@@ -77,5 +89,58 @@ export function useReceiptTemplatesData(organizationId: string | undefined) {
     return () => unsubscribe();
   }, [organizationId]);
 
-  return { receiptTemplates, loading, error };
+  const addTemplate = async (template: Omit<ReceiptTemplate, 'id' | 'createdAt' | 'updatedAt'>) => {
+    if (!organizationId) throw new Error('No organization selected');
+
+    const templateRef = doc(collection(db, 'organizations', organizationId, 'receiptTemplates'));
+    const newTemplate: ReceiptTemplate = {
+      ...template,
+      id: templateRef.id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    await setDoc(templateRef, newTemplate);
+    return newTemplate;
+  };
+
+  const updateTemplate = async (id: string, updates: Partial<ReceiptTemplate>) => {
+    if (!organizationId) throw new Error('No organization selected');
+
+    const templateRef = doc(db, 'organizations', organizationId, 'receiptTemplates', id);
+    await setDoc(templateRef, {
+      ...updates,
+      updatedAt: new Date(),
+    }, { merge: true });
+  };
+
+  const deleteTemplate = async (id: string) => {
+    if (!organizationId) throw new Error('No organization selected');
+
+    const templateRef = doc(db, 'organizations', organizationId, 'receiptTemplates', id);
+    await deleteDoc(templateRef);
+  };
+
+  const setDefaultTemplate = async (id: string) => {
+    if (!organizationId) throw new Error('No organization selected');
+
+    // First, unset all default templates
+    const currentTemplates = receiptTemplates.filter(t => t.isDefault);
+    for (const template of currentTemplates) {
+      await updateTemplate(template.id, { isDefault: false });
+    }
+
+    // Then set the new default
+    await updateTemplate(id, { isDefault: true });
+  };
+
+  return { 
+    receiptTemplates, 
+    loading, 
+    error,
+    addTemplate,
+    updateTemplate,
+    deleteTemplate,
+    setDefaultTemplate,
+  };
 }

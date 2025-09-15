@@ -1,6 +1,7 @@
 import { Order, Organization, ReceiptTemplate } from '@/types';
 import { defaultReceiptTemplate } from '@/components/templates/default-receipt-thermal';
 import { defaultReceiptA4Template } from '@/components/templates/default-receipt-a4';
+import { defaultArabicReceiptTemplate } from '@/components/templates/default-arabic-receipt-thermal';
 import { createReceiptQRData, generateZatcaQRCode } from '@/lib/zatca-qr';
 
 interface TemplateData {
@@ -121,6 +122,9 @@ function renderTemplate(template: string, data: TemplateData): string {
 function getDefaultReceiptTemplate(templateType: string = 'thermal'): string {
   if (templateType === 'a4') {
     return defaultReceiptA4Template;
+  }
+  if (templateType === 'arabic') {
+    return defaultArabicReceiptTemplate;
   }
   return defaultReceiptTemplate;
 }
