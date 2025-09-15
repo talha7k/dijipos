@@ -6,6 +6,8 @@ import { db } from '@/lib/firebase';
 import { ReceiptTemplate, PrinterFormat, ReceiptTemplateType } from '@/types';
 import { defaultReceiptTemplate } from '@/components/templates/default-receipt-thermal';
 import { defaultArabicReceiptTemplate } from '@/components/templates/default-arabic-receipt-thermal';
+import { defaultReceiptA4Template } from '@/components/templates/default-receipt-a4';
+import { defaultArabicReceiptA4Template } from '@/components/templates/default-arabic-receipt-a4';
 
 export function useReceiptTemplatesData(organizationId: string | undefined) {
   const [receiptTemplates, setReceiptTemplates] = useState<ReceiptTemplate[]>([]);
@@ -66,7 +68,18 @@ export function useReceiptTemplatesData(organizationId: string | undefined) {
               name: 'Default A4 Receipt',
               description: 'Default A4 paper receipt template',
               type: ReceiptTemplateType.ENGLISH_A4,
-              content: defaultReceiptTemplate,
+              content: defaultReceiptA4Template,
+              isDefault: false,
+              organizationId,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            },
+            {
+              id: 'arabic-a4',
+              name: 'Arabic A4 Receipt',
+              description: 'Arabic A4 paper receipt template',
+              type: ReceiptTemplateType.ARABIC_A4,
+              content: defaultArabicReceiptA4Template,
               isDefault: false,
               organizationId,
               createdAt: new Date(),
