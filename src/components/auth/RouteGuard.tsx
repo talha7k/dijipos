@@ -13,6 +13,7 @@ export function RouteGuard({ children }: RouteGuardProps) {
   const { 
     user, 
     loading, 
+    organizationLoading,
     error, 
     emailVerified, 
     currentOrganization, 
@@ -45,7 +46,7 @@ export function RouteGuard({ children }: RouteGuardProps) {
   ) : false;
 
   useEffect(() => {
-    if (loading) return;
+    if (loading || organizationLoading) return;
 
     // Handle public routes
     if (isPublicRoute) {
@@ -110,14 +111,17 @@ export function RouteGuard({ children }: RouteGuardProps) {
       }
 
       if (!currentOrganization && !organizationId) {
-        // User needs to select an organization
-        if (userOrganizations.length > 0) {
-          router.push('/select-organization');
-        } else {
-          // User has no organizations, they need to create or be invited to one
-          router.push('/select-organization');
+        // Only redirect if we're not still loading organizations
+        if (!organizationLoading) {
+          // User needs to select an organization
+          if (userOrganizations.length > 0) {
+            router.push('/select-organization');
+          } else {
+            // User has no organizations, they need to create or be invited to one
+            router.push('/select-organization');
+          }
+          return;
         }
-        return;
       }
     }
   }, [
@@ -134,12 +138,12 @@ export function RouteGuard({ children }: RouteGuardProps) {
   ]);
 
   // Show loading state
-  if (loading) {
+  if (loading || organizationLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
-          <p className="mt-4">Loading...</p>
+          <p className="mt-4">{loading ? 'Authenticating...' : 'Loading organizations...'}</p>
         </div>
       </div>
     );

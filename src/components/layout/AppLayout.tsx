@@ -12,7 +12,7 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const pathname = usePathname();
-  const { loading, currentOrganization, user, userOrganizations } = useAuth();
+  const { loading, organizationLoading, currentOrganization, user, userOrganizations } = useAuth();
   const { isCollapsed } = useSidebar();
 
   const isPublicRoute = pathname ? (pathname === '/login' || pathname === '/register' || pathname === '/verify-email' || pathname === '/reset-password' || pathname.startsWith('/auth')) : false;
@@ -30,7 +30,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   // Check if we should show organization selector
   const storedOrganizationId = typeof window !== 'undefined' ? localStorage.getItem('selectedOrganizationId') : null;
   const hasStoredOrganization = storedOrganizationId && userOrganizations.some(ou => ou.organizationId === storedOrganizationId);
-  const shouldShowOrganizationSelector = !loading && user && userOrganizations.length > 0 && !currentOrganization && !hasStoredOrganization;
+  const shouldShowOrganizationSelector = !loading && !organizationLoading && user && userOrganizations.length > 0 && !currentOrganization && !hasStoredOrganization;
 
   // For protected pages, check if organization is selected
   if (shouldShowOrganizationSelector) {
