@@ -50,19 +50,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [organizationId, setOrganizationId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [emailVerified, setEmailVerified] = useState(false);
+  const [authInitialized, setAuthInitialized] = useState(false);
+  const [authStateReceived, setAuthStateReceived] = useState(false);
 
   // Add timeouts to prevent infinite loading
   useEffect(() => {
     const authTimeout = setTimeout(() => {
-      if (loading && !organizationLoading) {
+      if (loading && !organizationLoading && authStateReceived) {
         console.warn('AuthContext: Auth loading timeout reached, forcing loading to false');
         setLoading(false);
-        setError('Authentication timeout - please refresh the page');
+        setError('Authentication timeout - please check your internet connection and refresh the page');
       }
-    }, 12000); // 12 second timeout for auth (increased)
+    }, 30000); // 30 second timeout for auth (increased for very slow connections)
 
     return () => clearTimeout(authTimeout);
-  }, [loading, organizationLoading]);
+  }, [loading, organizationLoading, authStateReceived]);
 
   useEffect(() => {
     const orgTimeout = setTimeout(() => {
@@ -71,7 +73,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setOrganizationLoading(false);
         setError('Organization loading timeout - please check your connection and try again');
       }
-    }, 15000); // 15 second timeout for organization loading (increased)
+    }, 9000); // 5 second timeout for organization loading (increased)
 
     return () => clearTimeout(orgTimeout);
   }, [organizationLoading]);
@@ -198,6 +200,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const startTime = Date.now();
       setLoading(true);
       setError(null);
+      
+      // Mark auth as initialized on first call
+      if (!authInitialized) {
+        setAuthInitialized(true);
+      }
+      
+      // Mark that we've received an auth state
+      setAuthStateReceived(true);
 
       try {
         setUser(user);
@@ -205,11 +215,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setEmailVerified(user.emailVerified || false);
           console.log('AuthContext: Basic user state set in', Date.now() - startTime, 'ms');
 
-          // Set loading to false immediately after basic auth is complete
-          // But set organizationLoading to true while we fetch organization data
-          setLoading(false);
+          // Set organizationLoading to true while we fetch organization data
+          // Keep loading true until entire auth process is complete
           setOrganizationLoading(true);
-          console.log('AuthContext: Basic auth complete, loading set to false, organizationLoading set to true');
+          console.log('AuthContext: Basic auth complete, organizationLoading set to true, keeping loading true');
 
           // Start organization fetch in background
           const organizationFetchPromise = (async () => {
@@ -254,7 +263,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               // Instead, let the timeout handle it if needed
             } finally {
               setOrganizationLoading(false);
-              console.log('AuthContext: Organization loading complete');
+              setLoading(false);
+              console.log('AuthContext: Organization loading complete, auth process finished');
             }
           })();
 
