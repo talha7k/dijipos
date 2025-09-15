@@ -3,6 +3,7 @@ import { OrderStatus } from '@/types/enums';
 import { defaultReceiptTemplate } from '@/components/templates/default-receipt-thermal';
 import { defaultReceiptA4Template } from '@/components/templates/default-receipt-a4';
 import { defaultArabicReceiptTemplate } from '@/components/templates/default-arabic-receipt-thermal';
+import { defaultArabicReceiptA4Template } from '@/components/templates/default-arabic-receipt-a4';
 import { defaultEnglishInvoiceTemplate } from '@/components/templates/default-invoice-english';
 import { defaultArabicInvoiceTemplate } from '@/components/templates/default-invoice-arabic';
 import { defaultEnglishQuoteTemplate } from '@/components/templates/default-quote-english';
@@ -105,13 +106,17 @@ function renderTemplate(template: string, data: ReceiptTemplateData): string {
 }
 
 function getDefaultReceiptTemplate(templateType: string = 'english_thermal'): string {
-  if (templateType === 'english_a4') {
-    return defaultReceiptA4Template;
+  switch (templateType) {
+    case 'english_a4':
+      return defaultReceiptA4Template;
+    case 'arabic_a4':
+      return defaultArabicReceiptA4Template;
+    case 'arabic_thermal':
+      return defaultArabicReceiptTemplate;
+    case 'english_thermal':
+    default:
+      return defaultReceiptTemplate;
   }
-  if (templateType === 'arabic_thermal') {
-    return defaultArabicReceiptTemplate;
-  }
-  return defaultReceiptTemplate;
 }
 
 export async function renderInvoiceTemplate(
