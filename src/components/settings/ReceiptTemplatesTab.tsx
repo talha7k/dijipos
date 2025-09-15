@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { collection, addDoc, deleteDoc, setDoc, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthState } from '@/hooks/useAuthState';
 import { ReceiptTemplate } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,7 +22,7 @@ interface ReceiptTemplatesTabProps {
 }
 
 export function ReceiptTemplatesTab({ receiptTemplates, onRefresh }: ReceiptTemplatesTabProps) {
-  const { organizationId } = useAuth();
+  const { organizationId } = useAuthState();
   const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
   const [deleteTemplateId, setDeleteTemplateId] = useState<string | null>(null);
   const [newReceiptTemplate, setNewReceiptTemplate] = useState({

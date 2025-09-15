@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthState } from '@/hooks/useAuthState';
 import { Invoice } from '@/types';
 import { InvoiceList } from '@/components/invoices_quotes/InvoiceList';
 import InvoiceForm from '@/components/invoices_quotes/InvoiceForm';
@@ -19,7 +19,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useInvoicesData, useInvoiceActions } from '@/hooks/invoices_quotes/use-invoices-data';
 
 export default function InvoicesPage() {
-  const { user, organizationId, currentOrganization } = useAuth();
+  const { user, organizationId, selectedOrganization } = useAuthState();
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
@@ -161,7 +161,7 @@ export default function InvoicesPage() {
           {selectedInvoice && (
             <InvoiceDetails
               invoice={selectedInvoice}
-              organization={currentOrganization}
+              organization={selectedOrganization}
               customer={selectedInvoice.type === 'sales' && selectedInvoice.clientName ? customers.find(c => c.name === selectedInvoice.clientName) : undefined}
               supplier={selectedInvoice.type === 'purchase' && selectedInvoice.supplierId ? suppliers.find(s => s.id === selectedInvoice.supplierId) : undefined}
               payments={getPaymentsForInvoice(selectedInvoice.id)}
@@ -179,7 +179,7 @@ export default function InvoicesPage() {
           {selectedInvoice && (
             <InvoicePrintDialog
               invoice={selectedInvoice}
-              organization={currentOrganization}
+              organization={selectedOrganization}
               invoiceTemplates={[]} // TODO: pass actual templates
               customer={selectedInvoice.type === 'sales' && selectedInvoice.clientName ? customers.find(c => c.name === selectedInvoice.clientName) : undefined}
               supplier={selectedInvoice.type === 'purchase' && selectedInvoice.supplierId ? suppliers.find(s => s.id === selectedInvoice.supplierId) : undefined}

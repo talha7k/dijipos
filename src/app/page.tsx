@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthState } from '@/hooks/useAuthState';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,7 +11,7 @@ import { Suspense } from 'react';
 import { toast } from 'sonner';
 
 function HomeContent() {
-  const { user, loading, emailVerified, organizationId, userOrganizations } = useAuth();
+  const { user, authLoading, emailVerified, organizationId, userOrganizations } = useAuthState();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -207,7 +207,7 @@ function HomeContent() {
     );
   }
 
-  if (loading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

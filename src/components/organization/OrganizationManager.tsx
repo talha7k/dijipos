@@ -8,18 +8,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthState } from '@/hooks/useAuthState';
 import { Building2, Plus, Users, ArrowRight, Crown, Mail, LogOut } from 'lucide-react';
 import { collection, query, where, getDocs, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Organization, UserRole } from '@/types';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useThemeState } from '@/hooks/useThemeState';
 import { auth } from '@/lib/firebase';
 import { toast } from 'sonner';
 
 export function OrganizationManager() {
-  const { user, organizationId, userOrganizations, selectOrganization, refreshUserOrganizations } = useAuth();
-  const { theme } = useTheme();
+  const { user, organizationId, userOrganizations, selectOrganization, refreshUserOrganizations } = useAuthState();
+  const { theme } = useThemeState();
   const router = useRouter();
   const [showJoinForm, setShowJoinForm] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);

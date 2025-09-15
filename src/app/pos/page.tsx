@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthState } from '@/hooks/useAuthState';
 import { useProductsData } from '@/hooks/products_services/use-products-data';
 import { useServicesData } from '@/hooks/products_services/use-services-data';
 import { useCategoriesData } from '@/hooks/products_services/use-categories-data';
@@ -24,7 +24,7 @@ import { PaymentSuccessDialog } from '@/components/PaymentSuccessDialog';
 import { CartItemModal } from '@/components/orders/CartItemModal';
 
 export default function SimplifiedPOSPage() {
-  const { organizationId } = useAuth();
+  const { organizationId } = useAuthState();
 
   // Data hooks
   const { products = [], loading: productsLoading } = useProductsData(organizationId || '');

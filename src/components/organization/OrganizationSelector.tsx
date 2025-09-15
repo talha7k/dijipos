@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthState } from '@/hooks/useAuthState';
 import { Building2, Plus, Users, ArrowRight, Link } from 'lucide-react';
 import { collection, query, where, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -18,7 +18,7 @@ interface OrganizationSelectorProps {
 }
 
 export function OrganizationSelector({ children }: OrganizationSelectorProps) {
-  const { user, organizationId, userOrganizations, currentOrganization, selectOrganization, refreshUserOrganizations } = useAuth();
+  const { user, organizationId, userOrganizations, selectedOrganization, selectOrganization, refreshUserOrganizations } = useAuthState();
   const [isOpen, setIsOpen] = useState(false);
   const [showJoinForm, setShowJoinForm] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -166,7 +166,7 @@ export function OrganizationSelector({ children }: OrganizationSelectorProps) {
         
         <div className="space-y-6">
           {/* Current Organization */}
-          {currentOrganization && (
+          {selectedOrganization && (
             <Card className="border-green-200 bg-green-50">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-green-800">
@@ -177,8 +177,8 @@ export function OrganizationSelector({ children }: OrganizationSelectorProps) {
               <CardContent>
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-semibold text-lg">{currentOrganization.name}</h3>
-                    <p className="text-sm text-gray-600">{currentOrganization.email}</p>
+                    <h3 className="font-semibold text-lg">{selectedOrganization.name}</h3>
+                    <p className="text-sm text-gray-600">{selectedOrganization.email}</p>
                     <Badge variant="secondary" className="mt-2">
                       {userOrganizations.find(ou => ou.organizationId === organizationId)?.role || 'User'}
                     </Badge>

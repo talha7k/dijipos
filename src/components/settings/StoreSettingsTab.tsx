@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthState } from '@/hooks/useAuthState';
 import { VATSettings } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,7 +22,7 @@ interface StoreSettingsTabProps {
 }
 
 export function StoreSettingsTab({ vatSettings, onVatSettingsUpdate }: StoreSettingsTabProps) {
-  const { organizationId } = useAuth();
+  const { organizationId } = useAuthState();
   const [vatDialogOpen, setVatDialogOpen] = useState(false);
   const [showSampleDataConfirm, setShowSampleDataConfirm] = useState(false);
   const [newVatSettings, setNewVatSettings] = useState({

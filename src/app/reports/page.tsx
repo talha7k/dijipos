@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Download, TrendingUp, Calculator } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthState } from '@/hooks/useAuthState';
 import { collection, getDocs, query, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { InvoiceType } from '@/types';
@@ -48,7 +48,7 @@ interface ReportData {
 }
 
 export default function ReportsPage() {
-  const { organizationId } = useAuth();
+  const { organizationId } = useAuthState();
   const [loading, setLoading] = useState(true);
   const [reportData, setReportData] = useState<ReportData | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);

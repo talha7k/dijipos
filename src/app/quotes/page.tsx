@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { collection, query, onSnapshot, addDoc, updateDoc, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthState } from '@/hooks/useAuthState';
 import { Quote } from '@/types';
 import { QuoteTemplateType } from '@/types/enums';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,7 @@ import QuoteForm from '@/components/invoices_quotes/QuoteForm';
 import { FileText } from 'lucide-react';
 
 function QuotesContent() {
-  const { user, organizationId } = useAuth();
+  const { user, organizationId } = useAuthState();
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
