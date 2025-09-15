@@ -137,6 +137,11 @@ export const defaultReceiptA4Template = `<!DOCTYPE html>
   <div class="receipt-container">
     <!-- Header -->
     <div class="header">
+      {{#companyLogo}}
+      <div style="text-align: center; margin-bottom: 20px;">
+        <img src="{{companyLogo}}" alt="Company Logo" style="max-width: 150px; max-height: 75px;" />
+      </div>
+      {{/companyLogo}}
       <div class="company-info">
         <h2>{{companyName}}</h2>
         <p>{{companyAddress}}</p>
@@ -151,6 +156,7 @@ export const defaultReceiptA4Template = `<!DOCTYPE html>
         <p><strong>Order #:</strong> {{orderNumber}}</p>
         <p><strong>Date:</strong> {{orderDate}}</p>
         {{#tableName}}<p><strong>Table:</strong> {{tableName}}</p>{{/tableName}}
+        {{#createdByName}}<p><strong>Served by:</strong> {{createdByName}}</p>{{/createdByName}}
       </div>
       <div>
         {{#customerName}}<p><strong>Customer:</strong> {{customerName}}</p>{{/customerName}}

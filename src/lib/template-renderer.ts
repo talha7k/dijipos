@@ -21,13 +21,16 @@ export async function renderReceiptTemplate(
   // Prepare template data
   const data: ReceiptTemplateData = {
     companyName: organization?.name || '',
+    companyNameAr: organization?.nameAr || '',
     companyAddress: organization?.address || '',
     companyPhone: organization?.phone || '',
     companyVat: organization?.vatNumber || '',
+    companyLogo: organization?.logoUrl || '',
     orderNumber: order.orderNumber,
     orderDate: new Date(order.createdAt).toLocaleString(),
     tableName: order.tableName || '',
     customerName: order.customerName || '',
+    createdByName: order.createdByName || '',
     paymentMethod: 'Cash', // Default payment method
     subtotal: (order.subtotal || 0).toFixed(2),
     vatRate: (order.taxRate || 0).toString(),
@@ -59,13 +62,16 @@ function renderTemplate(template: string, data: ReceiptTemplateData): string {
 
   // Replace simple variables
   result = result.replace(/{{companyName}}/g, data.companyName);
+  result = result.replace(/{{companyNameAr}}/g, data.companyNameAr);
   result = result.replace(/{{companyAddress}}/g, data.companyAddress);
   result = result.replace(/{{companyPhone}}/g, data.companyPhone);
   result = result.replace(/{{companyVat}}/g, data.companyVat);
+  result = result.replace(/{{companyLogo}}/g, data.companyLogo);
   result = result.replace(/{{orderNumber}}/g, data.orderNumber);
   result = result.replace(/{{orderDate}}/g, data.orderDate);
   result = result.replace(/{{tableName}}/g, data.tableName);
   result = result.replace(/{{customerName}}/g, data.customerName);
+  result = result.replace(/{{createdByName}}/g, data.createdByName);
   result = result.replace(/{{paymentMethod}}/g, data.paymentMethod);
   result = result.replace(/{{subtotal}}/g, data.subtotal);
   result = result.replace(/{{vatRate}}/g, data.vatRate);

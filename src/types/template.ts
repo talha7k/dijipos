@@ -71,13 +71,16 @@ export interface ReceiptTemplate {
 
 export interface ReceiptTemplateData {
   companyName: string;
+  companyNameAr: string;
   companyAddress: string;
   companyPhone: string;
   companyVat: string;
+  companyLogo: string;
   orderNumber: string;
   orderDate: string;
   tableName: string;
   customerName: string;
+  createdByName: string;
   paymentMethod: string;
   subtotal: string;
   vatRate: string;

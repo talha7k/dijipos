@@ -13,18 +13,24 @@ export const defaultReceiptTemplate = `<!DOCTYPE html>
   </style>
 </head>
 <body>
-  <div className="header">
-    <h2>{{companyName}}</h2>
-    <p>{{companyAddress}}</p>
-    <p>Tel: {{companyPhone}}</p>
-    <p>VAT: {{companyVat}}</p>
-    <hr>
-    <p>Order #: {{orderNumber}}</p>
-    <p>Date: {{orderDate}}</p>
-    <p>Table: {{tableName}}</p>
-    <p>Customer: {{customerName}}</p>
-    <hr>
-  </div>
+   <div className="header">
+     {{#companyLogo}}
+     <div style="text-align: center; margin-bottom: 10px;">
+       <img src="{{companyLogo}}" alt="Company Logo" style="max-width: 100px; max-height: 50px;" />
+     </div>
+     {{/companyLogo}}
+     <h2>{{companyName}}</h2>
+     <p>{{companyAddress}}</p>
+     <p>Tel: {{companyPhone}}</p>
+     <p>VAT: {{companyVat}}</p>
+     <hr>
+     <p>Order #: {{orderNumber}}</p>
+     <p>Date: {{orderDate}}</p>
+     <p>Table: {{tableName}}</p>
+     <p>Customer: {{customerName}}</p>
+     <p>Served by: {{createdByName}}</p>
+     <hr>
+   </div>
 
   <div className="content">
     {{#each items}}

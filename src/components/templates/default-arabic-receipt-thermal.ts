@@ -13,21 +13,27 @@ export const defaultArabicReceiptTemplate = `<!DOCTYPE html>
   </style>
 </head>
 <body>
-  <div className="header">
-    <h2>{{companyNameAr}}</h2>
-    {{#companyName}}
-    <p>{{companyName}}</p>
-    {{/companyName}}
-    <p>{{companyAddress}}</p>
-    <p>هاتف: {{companyPhone}}</p>
-    {{#companyVat}}<p>الرقم الضريبي: {{companyVat}}</p>{{/companyVat}}
-    <hr>
-    <p>طلب #: {{orderNumber}}</p>
-    <p>التاريخ: {{orderDate}}</p>
-    {{#tableName}}<p>الطاولة: {{tableName}}</p>{{/tableName}}
-    {{#customerName}}<p>العميل: {{customerName}}</p>{{/customerName}}
-    <hr>
-  </div>
+   <div className="header">
+     {{#companyLogo}}
+     <div style="text-align: center; margin-bottom: 10px;">
+       <img src="{{companyLogo}}" alt="شعار الشركة" style="max-width: 100px; max-height: 50px;" />
+     </div>
+     {{/companyLogo}}
+     <h2>{{companyNameAr}}</h2>
+     {{#companyName}}
+     <p>{{companyName}}</p>
+     {{/companyName}}
+     <p>{{companyAddress}}</p>
+     <p>هاتف: {{companyPhone}}</p>
+     {{#companyVat}}<p>الرقم الضريبي: {{companyVat}}</p>{{/companyVat}}
+     <hr>
+     <p>طلب #: {{orderNumber}}</p>
+     <p>التاريخ: {{orderDate}}</p>
+     {{#tableName}}<p>الطاولة: {{tableName}}</p>{{/tableName}}
+     {{#customerName}}<p>العميل: {{customerName}}</p>{{/customerName}}
+     {{#createdByName}}<p>خدم من قبل: {{createdByName}}</p>{{/createdByName}}
+     <hr>
+   </div>
 
   <div className="content">
     {{#each items}}

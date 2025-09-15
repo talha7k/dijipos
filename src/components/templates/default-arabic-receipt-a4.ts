@@ -138,6 +138,11 @@ export const defaultArabicReceiptA4Template = `<!DOCTYPE html>
   <div class="receipt-container">
     <!-- Header -->
     <div class="header">
+      {{#companyLogo}}
+      <div style="text-align: center; margin-bottom: 20px;">
+        <img src="{{companyLogo}}" alt="شعار الشركة" style="max-width: 150px; max-height: 75px;" />
+      </div>
+      {{/companyLogo}}
       <div class="company-info">
         <h2>{{companyNameAr}}</h2>
         {{#companyName}}
@@ -155,6 +160,7 @@ export const defaultArabicReceiptA4Template = `<!DOCTYPE html>
         <p><strong>رقم الطلب:</strong> {{orderNumber}}</p>
         <p><strong>التاريخ:</strong> {{orderDate}}</p>
         {{#tableName}}<p><strong>الطاولة:</strong> {{tableName}}</p>{{/tableName}}
+        {{#createdByName}}<p><strong>خدم من قبل:</strong> {{createdByName}}</p>{{/createdByName}}
       </div>
       <div>
         {{#customerName}}<p><strong>العميل:</strong> {{customerName}}</p>{{/customerName}}

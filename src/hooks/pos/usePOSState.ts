@@ -125,19 +125,25 @@ export function usePOSLogic() {
       // Generate a simple order number (in production, this should be more sophisticated)
       const orderNumber = `ORD-${Date.now()}`;
 
-      const orderData = {
+      const orderData: any = {
         organizationId,
         orderNumber,
-        items: (cartItems || []).map((item: CartItem) => ({
-          id: `${item.type}-${item.id}`,
-          type: item.type,
-          productId: item.type === ItemType.PRODUCT ? item.id : undefined,
-          serviceId: item.type === ItemType.SERVICE ? item.id : undefined,
-          name: item.name,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          total: item.total,
-        })),
+        items: (cartItems || []).map((item: CartItem) => {
+          const itemObj: any = {
+            id: `${item.type}-${item.id}`,
+            type: item.type,
+            name: item.name,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            total: item.total,
+          };
+          if (item.type === ItemType.PRODUCT && item.id !== undefined) {
+            itemObj.productId = item.id;
+          } else if (item.id !== undefined) {
+            itemObj.serviceId = item.id;
+          }
+          return itemObj;
+        }),
         subtotal: cartTotal,
         taxRate: 0,
         taxAmount: 0,
@@ -145,17 +151,18 @@ export function usePOSLogic() {
         status: OrderStatus.OPEN,
         paid: false,
         orderType: selectedOrderType?.name || 'dine-in',
-        customerName: selectedCustomer?.name,
-        customerPhone: selectedCustomer?.phone,
-        customerEmail: selectedCustomer?.email,
-        tableId: selectedTable?.id,
-        tableName: selectedTable?.name,
         createdById: user?.uid || 'unknown',
         createdByName: user?.displayName || user?.email || 'Unknown User',
         includeQR: true, // Always include ZATCA QR code on receipts
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       };
+
+      if (selectedCustomer?.name !== undefined) orderData.customerName = selectedCustomer.name;
+      if (selectedCustomer?.phone !== undefined) orderData.customerPhone = selectedCustomer.phone;
+      if (selectedCustomer?.email !== undefined) orderData.customerEmail = selectedCustomer.email;
+      if (selectedTable?.id !== undefined) orderData.tableId = selectedTable.id;
+      if (selectedTable?.name !== undefined) orderData.tableName = selectedTable.name;
 
       await addDoc(collection(db, 'organizations', organizationId, 'orders'), orderData);
       
@@ -238,20 +245,26 @@ export function usePOSLogic() {
   const createTempOrderForPayment = useCallback(() => {
     if ((cartItems || []).length === 0) return null;
 
-    return {
+    const orderData: any = {
       id: 'temp-checkout',
       organizationId: organizationId || '',
       orderNumber: `TEMP-${Date.now()}`,
-      items: (cartItems || []).map((item: CartItem) => ({
-        id: `${item.type}-${item.id}`,
-        type: item.type === 'product' ? ItemType.PRODUCT : ItemType.SERVICE,
-        productId: item.type === 'product' ? item.id : undefined,
-        serviceId: item.type === 'service' ? item.id : undefined,
-        name: item.name,
-        quantity: item.quantity,
-        unitPrice: item.unitPrice,
-        total: item.total,
-      })),
+      items: (cartItems || []).map((item: CartItem) => {
+        const itemObj: any = {
+          id: `${item.type}-${item.id}`,
+          type: item.type === 'product' ? ItemType.PRODUCT : ItemType.SERVICE,
+          name: item.name,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          total: item.total,
+        };
+        if (item.type === 'product' && item.id !== undefined) {
+          itemObj.productId = item.id;
+        } else if (item.id !== undefined) {
+          itemObj.serviceId = item.id;
+        }
+        return itemObj;
+      }),
       subtotal: cartTotal,
       taxRate: 0,
       taxAmount: 0,
@@ -259,16 +272,19 @@ export function usePOSLogic() {
       status: OrderStatus.OPEN,
       paid: false,
       orderType: selectedOrderType?.name || 'dine-in',
-      customerName: selectedCustomer?.name,
-      customerPhone: selectedCustomer?.phone,
-      customerEmail: selectedCustomer?.email,
-      tableId: selectedTable?.id,
-      tableName: selectedTable?.name,
       createdById: user?.uid || 'unknown',
       createdByName: user?.displayName || user?.email || 'Unknown User',
       createdAt: new Date(),
       updatedAt: new Date(),
     };
+
+    if (selectedCustomer?.name !== undefined) orderData.customerName = selectedCustomer.name;
+    if (selectedCustomer?.phone !== undefined) orderData.customerPhone = selectedCustomer.phone;
+    if (selectedCustomer?.email !== undefined) orderData.customerEmail = selectedCustomer.email;
+    if (selectedTable?.id !== undefined) orderData.tableId = selectedTable.id;
+    if (selectedTable?.name !== undefined) orderData.tableName = selectedTable.name;
+
+    return orderData;
   }, [cartItems, cartTotal, selectedOrderType, selectedCustomer, selectedTable, organizationId, user]);
 
   const handlePayOrder = useCallback(() => {
