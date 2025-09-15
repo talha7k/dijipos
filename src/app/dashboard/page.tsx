@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthState } from '@/hooks/useAuthState';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -17,7 +17,7 @@ import { useTablesData } from '@/hooks/tables/use-tables-data';
 import { TableStatus } from '@/types';
 
 function DashboardContent() {
-  const { user, organizationId } = useAuth();
+  const { user, organizationId } = useAuthState();
   const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
