@@ -46,7 +46,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [error, setError] = useState<string | null>(null);
   const [emailVerified, setEmailVerified] = useState(false);
 
-  // Add a timeout to prevent infinite loading
+  // Add a timeout to prevent infinite loading (backup only)
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (loading) {
@@ -54,7 +54,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setLoading(false);
         setError('Authentication timeout - please refresh the page');
       }
-    }, 5000); // Reduced to 5 second timeout
+    }, 8000); // Increased to 8 second timeout as backup
 
     return () => clearTimeout(timeout);
   }, [loading]);
@@ -134,7 +134,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
+    console.log('AuthContext: Setting up auth state listener');
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      console.log('AuthContext: Auth state changed, user:', user?.email || 'null');
+      const startTime = Date.now();
       setLoading(true);
       setError(null);
 
@@ -142,10 +145,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(user);
         if (user) {
           setEmailVerified(user.emailVerified || false);
+          console.log('AuthContext: Basic user state set in', Date.now() - startTime, 'ms');
 
-          // Start organization fetch immediately but don't wait for it to set basic auth state
+          // Set loading to false immediately after basic auth is complete
+          // Organization data will load in the background
+          setLoading(false);
+          console.log('AuthContext: Basic auth complete, loading set to false');
+
+          // Start organization fetch in background
           const organizationFetchPromise = (async () => {
             try {
+              console.log('AuthContext: Starting organization fetch');
+              const orgStartTime = Date.now();
+              
               const organizationUsersQuery = query(
                 collection(db, 'organizationUsers'),
                 where('userId', '==', user.uid),
@@ -159,12 +171,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 updatedAt: doc.data().updatedAt?.toDate(),
               })) as OrganizationUser[];
 
+              console.log('AuthContext: Organization fetch completed in', Date.now() - orgStartTime, 'ms');
               setUserOrganizations(organizationAssociations);
 
               // Handle organization selection logic
               const storedOrganizationId = localStorage.getItem('selectedOrganizationId');
 
               if (storedOrganizationId && organizationAssociations.some(ou => ou.organizationId === storedOrganizationId)) {
+                console.log('AuthContext: Auto-selecting organization');
                 await selectOrganization(storedOrganizationId);
               }
             } catch (orgError) {
@@ -174,33 +188,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             }
           })();
 
-          // Set a timeout for organization fetch to prevent hanging
-          const orgFetchTimeout = new Promise((_, reject) => {
-            setTimeout(() => reject(new Error('Organization fetch timeout')), 5000);
-          });
-
-          try {
-            await Promise.race([organizationFetchPromise, orgFetchTimeout]);
-          } catch (timeoutError) {
-            console.warn('Organization fetch timed out, continuing with basic auth');
-          }
+          // Fire and forget - don't await this
+          organizationFetchPromise.catch(console.error);
         } else {
+          console.log('AuthContext: No user, clearing state');
           setOrganizationId(null);
           setOrganizationUser(null);
           setCurrentOrganization(null);
           setUserOrganizations([]);
           setEmailVerified(false);
           localStorage.removeItem('selectedOrganizationId');
+          setLoading(false);
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An unknown error occurred');
         console.error('Auth state change error:', err);
-      } finally {
+        setError(err instanceof Error ? err.message : 'An unknown error occurred');
         setLoading(false);
       }
     });
 
-    return () => unsubscribe();
+    return () => {
+      console.log('AuthContext: Cleaning up auth state listener');
+      unsubscribe();
+    };
   }, []);
 
   return (
