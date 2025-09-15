@@ -40,11 +40,11 @@ export async function renderReceiptTemplate(
   console.log('Organization logo URL:', organization?.logoUrl);
   console.log('Organization stamp URL:', organization?.stampUrl);
 
-  // Convert images to base64 for PDF compatibility
-  const companyLogoBase64 = await convertImageToBase64(organization?.logoUrl || '');
+  // For PDF generation, use original URLs and let html2canvas handle them
+  const companyLogoUrl = organization?.logoUrl || '';
   const qrCodeBase64 = await generateZatcaQR(order, organization);
 
-  console.log('Company logo base64 length:', companyLogoBase64.length);
+  console.log('Company logo URL:', companyLogoUrl);
   console.log('QR code base64 length:', qrCodeBase64.length);
 
   // Prepare template data
@@ -54,7 +54,7 @@ export async function renderReceiptTemplate(
     companyAddress: organization?.address || '',
     companyPhone: organization?.phone || '',
     companyVat: organization?.vatNumber || '',
-    companyLogo: companyLogoBase64,
+    companyLogo: companyLogoUrl,
     orderNumber: order.orderNumber,
     orderDate: new Date(order.createdAt).toLocaleString(),
     tableName: order.tableName || '',
@@ -161,11 +161,11 @@ export async function renderInvoiceTemplate(
   customer?: Customer,
   supplier?: Supplier
 ): Promise<string> {
-  // Convert images to base64 for PDF compatibility
-  const companyLogoBase64 = await convertImageToBase64(organization?.logoUrl || '');
-  const companyStampBase64 = await convertImageToBase64(organization?.stampUrl || '');
-  const customerLogoBase64 = await convertImageToBase64(customer?.logoUrl || supplier?.logoUrl || '');
-  const supplierLogoBase64 = await convertImageToBase64(supplier?.logoUrl || '');
+  // For PDF generation, use original URLs and let html2canvas handle them
+  const companyLogoUrl = organization?.logoUrl || '';
+  const companyStampUrl = organization?.stampUrl || '';
+  const customerLogoUrl = customer?.logoUrl || supplier?.logoUrl || '';
+  const supplierLogoUrl = supplier?.logoUrl || '';
   const qrCodeBase64 = await generateInvoiceQR(invoice, organization);
 
   // Prepare template data
@@ -180,20 +180,20 @@ export async function renderInvoiceTemplate(
     companyEmail: organization?.email || '',
     companyPhone: organization?.phone || '',
     companyVat: organization?.vatNumber || '',
-    companyLogo: companyLogoBase64,
-    companyStamp: companyStampBase64,
+    companyLogo: companyLogoUrl,
+    companyStamp: companyStampUrl,
     clientName: customer?.name || supplier?.name || '',
     customerNameAr: customer?.nameAr || supplier?.nameAr || '',
     clientAddress: customer?.address || supplier?.address || '',
     clientEmail: customer?.email || supplier?.email || '',
     clientVat: customer?.vatNumber || supplier?.vatNumber || '',
-    customerLogo: customerLogoBase64,
+    customerLogo: customerLogoUrl,
     supplierName: supplier?.name || '',
     supplierNameAr: supplier?.nameAr || '',
     supplierAddress: supplier?.address || '',
     supplierEmail: supplier?.email || '',
     supplierVat: supplier?.vatNumber || '',
-    supplierLogo: supplierLogoBase64,
+    supplierLogo: supplierLogoUrl,
     subtotal: (invoice.subtotal || 0).toFixed(2),
     taxRate: (invoice.taxRate || 0).toString(),
     taxAmount: (invoice.taxAmount || 0).toFixed(2),
@@ -312,9 +312,9 @@ export async function renderQuoteTemplate(
   organization: Organization | null,
   customer?: Customer
 ): Promise<string> {
-  // Convert images to base64 for PDF compatibility
-  const companyLogoBase64 = await convertImageToBase64(organization?.logoUrl || '');
-  const customerLogoBase64 = await convertImageToBase64(customer?.logoUrl || '');
+  // For PDF generation, use original URLs and let html2canvas handle them
+  const companyLogoUrl = organization?.logoUrl || '';
+  const customerLogoUrl = customer?.logoUrl || '';
 
   // Prepare template data
   const data: QuoteTemplateData = {
@@ -328,13 +328,13 @@ export async function renderQuoteTemplate(
     companyEmail: organization?.email || '',
     companyPhone: organization?.phone || '',
     companyVat: organization?.vatNumber || '',
-    companyLogo: companyLogoBase64,
+    companyLogo: companyLogoUrl,
     clientName: customer?.name || quote.clientName || '',
     customerNameAr: customer?.nameAr || '',
     clientAddress: customer?.address || quote.clientAddress || '',
     clientEmail: customer?.email || quote.clientEmail || '',
     clientVat: customer?.vatNumber || '',
-    customerLogo: customerLogoBase64,
+    customerLogo: customerLogoUrl,
     subtotal: (quote.subtotal || 0).toFixed(2),
     taxRate: (quote.taxRate || 0).toString(),
     taxAmount: (quote.taxAmount || 0).toFixed(2),
