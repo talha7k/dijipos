@@ -22,6 +22,7 @@ import {
   
 } from '@/store/atoms';
 import { ReactNode } from 'react';
+import { autoRepairIndexedDB } from '@/lib/debug-indexeddb';
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -40,6 +41,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [organizationError, setOrganizationError] = useAtom(organizationErrorAtom);
   const [organizationId, setOrganizationId] = useAtom(organizationIdAtom);
   const resetAuthState = useSetAtom(resetAuthStateAtom);
+
+  // Initialize IndexedDB auto-repair on component mount
+  useEffect(() => {
+    const initializeIndexedDB = async () => {
+      try {
+        await autoRepairIndexedDB();
+      } catch (error) {
+        console.error('IndexedDB auto-repair failed:', error);
+      }
+    };
+
+    initializeIndexedDB();
+  }, []);
 
   // Initialize auth state listener - only once
   useEffect(() => {
