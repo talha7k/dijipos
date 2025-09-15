@@ -1,6 +1,7 @@
 import { db } from '@/lib/firebase';
 import { collection, doc, writeBatch } from 'firebase/firestore';
-import { Product, Service, Quote, Customer, Supplier, Item, Payment, PurchaseInvoice, Invoice, Category, Order, OrderPayment, OrderItem, OrderType, PaymentType, Table, TableStatus, OrderStatus, TemplateType, CategoryType, ItemType, InvoiceType, QuoteStatus, InvoiceStatus } from '@/types';
+import { Product, Service, Quote, Customer, Supplier, Item, Payment, PurchaseInvoice, Invoice, Category, Order, OrderPayment, OrderItem, OrderType, PaymentType, Table, TableStatus, OrderStatus, CategoryType, ItemType, InvoiceType, QuoteStatus, InvoiceStatus } from '@/types';
+import { InvoiceTemplateType } from '@/types/enums';
  
 // --- HELPER FUNCTIONS ---
 
@@ -427,7 +428,7 @@ const generateInvoices = (count: number, customers: Omit<Customer, 'organization
                 clientName: customer.name,
                 clientEmail: customer.email,
                 clientAddress: customer.address,
-                template: TemplateType.ENGLISH,
+                template: InvoiceTemplateType.ENGLISH,
                 includeQR: true,
             };
             allInvoices.push(invoice);
@@ -440,7 +441,7 @@ const generateInvoices = (count: number, customers: Omit<Customer, 'organization
                 supplierName: supplier.name,
                 supplierEmail: supplier.email,
                 supplierAddress: supplier.address,
-                template: TemplateType.ENGLISH,
+                template: InvoiceTemplateType.ENGLISH,
                 includeQR: true,
             };
             allInvoices.push(invoice);

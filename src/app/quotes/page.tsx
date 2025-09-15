@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { collection, query, onSnapshot, addDoc, updateDoc, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
-import { Quote, TemplateType } from '@/types';
+import { Quote } from '@/types';
+import { QuoteTemplateType } from '@/types/enums';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -88,7 +89,7 @@ function QuotesContent() {
         status: 'draft',
         dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
         notes: quote.notes || null,
-        template: TemplateType.ENGLISH, // default template
+        template: QuoteTemplateType.ENGLISH, // default template
         includeQR: false, // default no QR
         quoteId,
         organizationId,

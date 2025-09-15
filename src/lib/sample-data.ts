@@ -1,7 +1,8 @@
 // Sample data for customers, products, and services
 // This would typically come from a database
 
-import { Invoice, Category, Product, Service, Table, Order, Customer, Supplier, OrderType, PaymentType, TemplateType, ItemType, CategoryType, TableStatus, OrderStatus, InvoiceStatus, InvoiceType } from '@/types';
+import { Invoice, Category, Product, Service, Table, Order, Customer, Supplier, OrderType, PaymentType, ItemType, CategoryType, TableStatus, OrderStatus, InvoiceStatus, InvoiceType } from '@/types';
+import { InvoiceTemplateType } from '@/types/enums';
 
 // Sample categories
 export const sampleCategories: Omit<Category, 'organizationId'>[] = [
@@ -572,7 +573,7 @@ export const samplePurchaseInvoices: Omit<Invoice, 'organizationId'>[] = [
     status: InvoiceStatus.PAID,
     dueDate: new Date('2024-02-14'),
     notes: 'Weekly food supplies',
-    template: TemplateType.ENGLISH,
+    template: InvoiceTemplateType.ENGLISH,
     includeQR: false,
     createdAt: new Date('2024-01-15'),
     updatedAt: new Date('2024-01-20'),
@@ -616,7 +617,7 @@ export const samplePurchaseInvoices: Omit<Invoice, 'organizationId'>[] = [
     status: InvoiceStatus.PAID,
     dueDate: new Date('2024-03-01'),
     notes: 'Monthly beverage supplies',
-    template: TemplateType.ENGLISH,
+    template: InvoiceTemplateType.ENGLISH,
     includeQR: false,
     createdAt: new Date('2024-02-01'),
     updatedAt: new Date('2024-02-10'),
@@ -661,7 +662,7 @@ export const sampleSalesInvoices: Omit<Invoice, 'organizationId'>[] = [
     status: InvoiceStatus.PAID,
     dueDate: new Date('2024-01-25'),
     notes: 'Dinner order',
-    template: TemplateType.ENGLISH,
+    template: InvoiceTemplateType.ENGLISH,
     includeQR: true,
     createdAt: new Date('2024-01-20'),
     updatedAt: new Date('2024-01-20'),
@@ -712,7 +713,7 @@ export const sampleSalesInvoices: Omit<Invoice, 'organizationId'>[] = [
     status: InvoiceStatus.PAID,
     dueDate: new Date('2024-02-05'),
     notes: 'Take away order',
-    template: TemplateType.ENGLISH,
+    template: InvoiceTemplateType.ENGLISH,
     includeQR: true,
     createdAt: new Date('2024-02-01'),
     updatedAt: new Date('2024-02-01'),

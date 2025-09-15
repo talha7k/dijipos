@@ -10,7 +10,8 @@ import ItemList from '@/components/orders/ItemList';
 import ClientInfo from '@/components/invoices_quotes/ClientInfo';
 import SupplierInfo from '@/components/invoices_quotes/SupplierInfo';
 import FormSummary from '@/components/invoices_quotes/FormSummary';
-import { Invoice, Item, TemplateType, ItemType, InvoiceType } from '@/types';
+import { Invoice, Item, ItemType, InvoiceType } from '@/types';
+import { InvoiceTemplateType } from '@/types/enums';
 import {
   sampleProductsServices,
   getProductOptionsFromMixed,
@@ -115,7 +116,7 @@ export default function InvoiceForm({ onSubmit, defaultType = 'sales' }: Invoice
       status: 'draft' as const,
       dueDate: new Date(dueDate),
       notes,
-      template: TemplateType.ENGLISH,
+      template: InvoiceTemplateType.ENGLISH,
       includeQR: false,
     };
 

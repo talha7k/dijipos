@@ -8,30 +8,26 @@ import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Printer, Download } from 'lucide-react';
-import { Invoice, Payment, Organization, Customer, Supplier, InvoiceTemplate, InvoiceTemplateType, ItemType, OrderStatus } from '@/types';
-import { renderInvoiceTemplate } from '@/lib/template-renderer';
+import { Quote, Organization, Customer, QuoteTemplate } from '@/types';
+import { renderQuoteTemplate } from '@/lib/template-renderer';
 import { toast } from 'sonner';
 import html2pdf from 'html2pdf.js';
 
-interface InvoicePrintDialogProps {
-  invoice: Invoice;
+interface QuotePrintDialogProps {
+  quote: Quote;
   organization: Organization | null;
-  invoiceTemplates: InvoiceTemplate[];
+  quoteTemplates: QuoteTemplate[];
   customer?: Customer;
-  supplier?: Supplier;
-  payments?: Payment[];
   children: React.ReactNode;
 }
 
-export function InvoicePrintDialog({
-  invoice,
+export function QuotePrintDialog({
+  quote,
   organization,
-  invoiceTemplates,
+  quoteTemplates,
   customer,
-  supplier,
-  payments = [],
   children
-}: InvoicePrintDialogProps) {
+}: QuotePrintDialogProps) {
   const [open, setOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -40,21 +36,21 @@ export function InvoicePrintDialog({
   // Set default template on open
   const handleOpenChange = (newOpen: boolean) => {
     if (newOpen) {
-      const defaultTemplate = invoiceTemplates.find(t => t.isDefault);
-      setSelectedTemplate(defaultTemplate?.id || invoiceTemplates[0]?.id || '');
+      const defaultTemplate = quoteTemplates.find(t => t.isDefault);
+      setSelectedTemplate(defaultTemplate?.id || quoteTemplates[0]?.id || '');
     }
     setOpen(newOpen);
   };
 
-  const generateInvoice = async () => {
-    const template = invoiceTemplates.find(t => t.id === selectedTemplate);
+  const generateQuote = async () => {
+    const template = quoteTemplates.find(t => t.id === selectedTemplate);
     if (!template) return;
 
     setIsGenerating(true);
 
     try {
-      // Render the invoice using template
-      const renderedContent = await renderInvoiceTemplate(template, invoice, organization, customer, supplier);
+      // Render the quote using template
+      const renderedContent = await renderQuoteTemplate(template, quote, organization, customer);
 
       // Create a new window for printing (safer than manipulating current DOM)
       const printWindow = window.open('', '_blank', 'width=800,height=600');
@@ -62,12 +58,12 @@ export function InvoicePrintDialog({
         throw new Error('Unable to open print window. Please check your popup blocker.');
       }
 
-      // Write the invoice content to the new window
+      // Write the quote content to the new window
       printWindow.document.write(`
         <!DOCTYPE html>
         <html>
           <head>
-            <title>Invoice - ${invoice.id}</title>
+            <title>Quote - ${quote.id}</title>
             <style>
               body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
               @media print {
@@ -91,26 +87,26 @@ export function InvoicePrintDialog({
           printWindow.close();
           setIsGenerating(false);
           setOpen(false);
-          toast.success('Invoice sent to printer!');
+          toast.success('Quote sent to printer!');
         }, 1000);
       };
 
     } catch (error) {
-      console.error('Error generating invoice:', error);
+      console.error('Error generating quote:', error);
       setIsGenerating(false);
-      toast.error(error instanceof Error ? error.message : 'Error generating invoice. Please try again.');
+      toast.error(error instanceof Error ? error.message : 'Error generating quote. Please try again.');
     }
   };
 
-  const downloadInvoice = async () => {
-    const template = invoiceTemplates.find(t => t.id === selectedTemplate);
+  const downloadQuote = async () => {
+    const template = quoteTemplates.find(t => t.id === selectedTemplate);
     if (!template) return;
 
     setIsDownloading(true);
 
     try {
       // Generate HTML using template renderer
-      const htmlContent = await renderInvoiceTemplate(template, invoice, organization, customer, supplier);
+      const htmlContent = await renderQuoteTemplate(template, quote, organization, customer);
 
       // Convert HTML to PDF and download
       const element = document.createElement('div');
@@ -118,7 +114,7 @@ export function InvoicePrintDialog({
 
       const opt = {
         margin: 10,
-        filename: `invoice-${invoice.id}.pdf`,
+        filename: `quote-${quote.id}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2 },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
@@ -139,7 +135,7 @@ export function InvoicePrintDialog({
       let errorMessage = 'Error downloading PDF. Please try again.';
       if (error instanceof Error) {
         if (error.message.includes('html2canvas')) {
-          errorMessage = 'Error rendering invoice content. Please try a different template.';
+          errorMessage = 'Error rendering quote content. Please try a different template.';
         } else if (error.message.includes('jsPDF')) {
           errorMessage = 'Error generating PDF. Please check your browser settings.';
         } else {
@@ -162,61 +158,57 @@ export function InvoicePrintDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Printer className="h-5 w-5" />
-            Print Invoice
+            Print Quote
           </DialogTitle>
         </DialogHeader>
         
         <div className="grid grid-cols-2 gap-6">
-          {/* Left Column - Invoice & Settings */}
+          {/* Left Column - Quote & Settings */}
           <div className="space-y-6">
-            {/* Invoice Summary */}
+            {/* Quote Summary */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Invoice Summary</CardTitle>
+                <CardTitle className="text-lg">Quote Summary</CardTitle>
               </CardHeader>
               <CardContent>
                 <table className="w-full text-sm">
                   <tbody>
                     <tr>
-                      <td className="font-medium py-1">Invoice #:</td>
-                      <td className="py-1">{invoice.id}</td>
+                      <td className="font-medium py-1">Quote #:</td>
+                      <td className="py-1">{quote.id}</td>
                     </tr>
                     <tr>
                       <td className="font-medium py-1">Date:</td>
-                      <td className="py-1">{new Date(invoice.createdAt).toLocaleString()}</td>
+                      <td className="py-1">{new Date(quote.createdAt).toLocaleString()}</td>
                     </tr>
-                    {invoice.invoiceDate && (
+                    {quote.validUntil && (
                       <tr>
-                        <td className="font-medium py-1">Invoice Date:</td>
-                        <td className="py-1">{new Date(invoice.invoiceDate).toLocaleDateString()}</td>
+                        <td className="font-medium py-1">Valid Until:</td>
+                        <td className="py-1">{new Date(quote.validUntil).toLocaleDateString()}</td>
                       </tr>
                     )}
-                    {invoice.dueDate && (
-                      <tr>
-                        <td className="font-medium py-1">Due Date:</td>
-                        <td className="py-1">{new Date(invoice.dueDate).toLocaleDateString()}</td>
-                      </tr>
-                    )}
-                    {(customer || supplier) && (
-                      <tr>
-                        <td className="font-medium py-1">{customer ? 'Customer:' : 'Supplier:'}</td>
-                        <td className="py-1">{customer?.name || supplier?.name}</td>
-                      </tr>
-                    )}
-                    {(customer?.email || supplier?.email) && (
-                      <tr>
-                        <td className="font-medium py-1">Email:</td>
-                        <td className="py-1">{customer?.email || supplier?.email}</td>
-                      </tr>
+                    {customer && (
+                      <>
+                        <tr>
+                          <td className="font-medium py-1">Customer:</td>
+                          <td className="py-1">{customer.name}</td>
+                        </tr>
+                        {customer.email && (
+                          <tr>
+                            <td className="font-medium py-1">Email:</td>
+                            <td className="py-1">{customer.email}</td>
+                          </tr>
+                        )}
+                      </>
                     )}
                     <tr>
                       <td className="font-medium py-1">Total:</td>
-                      <td className="py-1 font-bold">${(invoice.total || 0).toFixed(2)}</td>
+                      <td className="py-1 font-bold">${(quote.total || 0).toFixed(2)}</td>
                     </tr>
                     <tr>
                       <td className="font-medium py-1">Status:</td>
                       <td className="py-1">
-                        <Badge variant="outline" className="ml-0">{invoice.status}</Badge>
+                        <Badge variant="outline" className="ml-0">{quote.status}</Badge>
                       </td>
                     </tr>
                   </tbody>
@@ -232,15 +224,15 @@ export function InvoicePrintDialog({
             {/* Template Selection */}
             <Card className="h-full">
               <CardHeader>
-                <CardTitle className="text-lg">Select Invoice Template</CardTitle>
+                <CardTitle className="text-lg">Select Quote Template</CardTitle>
               </CardHeader>
               <CardContent>
-                {invoiceTemplates.length === 0 ? (
-                  <p className="text-muted-foreground">No invoice templates available. Please create templates in Settings.</p>
+                {quoteTemplates.length === 0 ? (
+                  <p className="text-muted-foreground">No quote templates available. Please create templates in Settings.</p>
                 ) : (
                   <RadioGroup value={selectedTemplate} onValueChange={setSelectedTemplate}>
                     <div className="grid gap-3">
-                      {invoiceTemplates.map((template) => (
+                      {quoteTemplates.map((template) => (
                         <div key={template.id} className="flex items-center space-x-3 p-3 border rounded hover:bg-accent/50">
                           <RadioGroupItem value={template.id} id={template.id} />
                           <div className="flex-1">
@@ -267,8 +259,8 @@ export function InvoicePrintDialog({
             <div className="flex justify-between">
                <Button
                  variant="outline"
-                 onClick={downloadInvoice}
-                 disabled={!selectedTemplate || invoiceTemplates.length === 0 || isDownloading}
+                 onClick={downloadQuote}
+                 disabled={!selectedTemplate || quoteTemplates.length === 0 || isDownloading}
                  className="flex items-center gap-2"
                >
                  <Download className="h-4 w-4" />
@@ -282,12 +274,12 @@ export function InvoicePrintDialog({
                   Cancel
                 </Button>
                 <Button
-                  onClick={generateInvoice}
-                  disabled={!selectedTemplate || invoiceTemplates.length === 0 || isGenerating}
+                  onClick={generateQuote}
+                  disabled={!selectedTemplate || quoteTemplates.length === 0 || isGenerating}
                   className="flex items-center gap-2"
                 >
                   <Printer className="h-4 w-4" />
-                  {isGenerating ? 'Generating...' : 'Print Invoice'}
+                  {isGenerating ? 'Generating...' : 'Print Quote'}
                 </Button>
               </div>
             </div>

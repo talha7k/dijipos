@@ -12,7 +12,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useAuth } from '@/contexts/AuthContext';
-import { InvoiceTemplate, TemplateField, TemplateStyle, TemplateFieldType, TemplateType } from '@/types';
+import { InvoiceTemplate, TemplateField, TemplateStyle, TemplateFieldType } from '@/types';
+import { InvoiceTemplateType } from '@/types/enums';
 import { Plus, Edit, Trash2, Copy, Eye } from 'lucide-react';
 
 const defaultFields: TemplateField[] = [
@@ -89,7 +90,7 @@ function TemplatesContent() {
   const [newTemplate, setNewTemplate] = useState({
     name: '',
     description: '',
-    type: TemplateType.ENGLISH,
+    type: InvoiceTemplateType.ENGLISH,
     isDefault: false,
     fields: defaultFields,
     style: defaultStyle,
@@ -105,7 +106,7 @@ function TemplatesContent() {
           organizationId: organizationId!,
           name: 'English Standard',
           description: 'Standard English invoice template',
-          type: TemplateType.ENGLISH,
+          type: InvoiceTemplateType.ENGLISH,
           isDefault: true,
           fields: defaultFields,
           style: defaultStyle,
@@ -117,7 +118,7 @@ function TemplatesContent() {
           organizationId: organizationId!,
           name: 'Arabic Standard',
           description: 'Standard Arabic invoice template',
-          type: TemplateType.ARABIC,
+          type: InvoiceTemplateType.ARABIC,
           isDefault: false,
           fields: defaultFields,
           style: { ...defaultStyle, fontFamily: 'Amiri, serif' },
@@ -203,7 +204,7 @@ function TemplatesContent() {
     setNewTemplate({
       name: '',
       description: '',
-      type: TemplateType.ENGLISH,
+      type: InvoiceTemplateType.ENGLISH,
       isDefault: false,
       fields: defaultFields,
       style: defaultStyle,
@@ -249,16 +250,16 @@ function TemplatesContent() {
                   <Select
                     value={newTemplate.type}
                      onValueChange={(value: string) =>
-                       setNewTemplate({ ...newTemplate, type: value as TemplateType })
+                       setNewTemplate({ ...newTemplate, type: value as InvoiceTemplateType })
                      }
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value={TemplateType.ENGLISH}>English</SelectItem>
-                      <SelectItem value={TemplateType.ARABIC}>Arabic</SelectItem>
-                      <SelectItem value={TemplateType.CUSTOM}>Custom</SelectItem>
+                      <SelectItem value={InvoiceTemplateType.ENGLISH}>English</SelectItem>
+                      <SelectItem value={InvoiceTemplateType.ARABIC}>Arabic</SelectItem>
+                      <SelectItem value={InvoiceTemplateType.CUSTOM}>Custom</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -390,20 +391,20 @@ function TemplatesContent() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="editTemplateType">Template Type</Label>
+                  <Label htmlFor="editInvoiceTemplateType">Template Type</Label>
                   <Select
                     value={editingTemplate.type}
                      onValueChange={(value: string) =>
-                       setEditingTemplate({ ...editingTemplate!, type: value as TemplateType })
+                       setEditingTemplate({ ...editingTemplate!, type: value as InvoiceTemplateType })
                      }
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value={TemplateType.ENGLISH}>English</SelectItem>
-                      <SelectItem value={TemplateType.ARABIC}>Arabic</SelectItem>
-                      <SelectItem value={TemplateType.CUSTOM}>Custom</SelectItem>
+                      <SelectItem value={InvoiceTemplateType.ENGLISH}>English</SelectItem>
+                      <SelectItem value={InvoiceTemplateType.ARABIC}>Arabic</SelectItem>
+                      <SelectItem value={InvoiceTemplateType.CUSTOM}>Custom</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

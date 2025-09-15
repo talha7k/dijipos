@@ -6,7 +6,7 @@ import { Invoice } from '@/types';
 import { InvoiceList } from '@/components/invoices_quotes/InvoiceList';
 import InvoiceForm from '@/components/invoices_quotes/InvoiceForm';
 import { InvoiceDetails } from '@/components/invoices_quotes/InvoiceDetails';
-import { InvoicePrint } from '@/components/invoices_quotes/InvoicePrintDialog';
+import { InvoicePrintDialog } from '@/components/invoices_quotes/InvoicePrintDialog';
 import { Button } from '@/components/ui/button';
 import { Plus, Printer } from 'lucide-react';
 import {
@@ -162,8 +162,8 @@ export default function InvoicesPage() {
             <InvoiceDetails
               invoice={selectedInvoice}
               organization={currentOrganization}
-              customer={selectedInvoice.clientName ? customers.find(c => c.name === selectedInvoice.clientName) : undefined}
-              supplier={selectedInvoice.supplierId ? suppliers.find(s => s.id === selectedInvoice.supplierId) : undefined}
+              customer={selectedInvoice.type === 'sales' && selectedInvoice.clientName ? customers.find(c => c.name === selectedInvoice.clientName) : undefined}
+              supplier={selectedInvoice.type === 'purchase' && selectedInvoice.supplierId ? suppliers.find(s => s.id === selectedInvoice.supplierId) : undefined}
               payments={getPaymentsForInvoice(selectedInvoice.id)}
             />
           )}
@@ -177,13 +177,16 @@ export default function InvoicesPage() {
             <DialogTitle>Print Preview</DialogTitle>
           </DialogHeader>
           {selectedInvoice && (
-            <InvoicePrint
+            <InvoicePrintDialog
               invoice={selectedInvoice}
               organization={currentOrganization}
-              customer={selectedInvoice.clientName ? customers.find(c => c.name === selectedInvoice.clientName) : undefined}
-              supplier={selectedInvoice.supplierId ? suppliers.find(s => s.id === selectedInvoice.supplierId) : undefined}
+              invoiceTemplates={[]} // TODO: pass actual templates
+              customer={selectedInvoice.type === 'sales' && selectedInvoice.clientName ? customers.find(c => c.name === selectedInvoice.clientName) : undefined}
+              supplier={selectedInvoice.type === 'purchase' && selectedInvoice.supplierId ? suppliers.find(s => s.id === selectedInvoice.supplierId) : undefined}
               payments={getPaymentsForInvoice(selectedInvoice.id)}
-            />
+            >
+              <div>Print Preview</div>
+            </InvoicePrintDialog>
           )}
         </DialogContent>
       </Dialog>

@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { collection, query, onSnapshot, updateDoc, doc, getDoc, addDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
-import { Invoice, Organization, TemplateType, InvoiceStatus } from '@/types';
+import { Invoice, Organization, InvoiceStatus } from '@/types';
+import { InvoiceTemplateType } from '@/types/enums';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -114,13 +115,13 @@ function InvoicesContent() {
       supplierEmail: '',
       supplierVat: '',
       supplierLogo: '',
-      invoiceDate: invoice.template === TemplateType.ARABIC
+      invoiceDate: invoice.template === InvoiceTemplateType.ARABIC
         ? invoice.createdAt.toLocaleDateString('ar-SA')
         : invoice.createdAt.toLocaleDateString(),
-      dueDate: invoice.template === TemplateType.ARABIC
+      dueDate: invoice.template === InvoiceTemplateType.ARABIC
         ? invoice.dueDate.toLocaleDateString('ar-SA')
         : invoice.dueDate.toLocaleDateString(),
-      status: invoice.template === TemplateType.ARABIC
+      status: invoice.template === InvoiceTemplateType.ARABIC
         ? (invoice.status === 'paid' ? 'مدفوع' : invoice.status === 'sent' ? 'مرسل' : invoice.status === 'draft' ? 'مسودة' : invoice.status)
         : invoice.status,
       items: invoice.items.map(item => ({
@@ -139,7 +140,7 @@ function InvoicesContent() {
     };
 
     // Choose template based on invoice template type
-    const template = invoice.template === TemplateType.ARABIC
+    const template = invoice.template === InvoiceTemplateType.ARABIC
       ? defaultArabicInvoiceTemplate
       : defaultEnglishInvoiceTemplate;
 
@@ -361,24 +362,24 @@ function InvoicesContent() {
                             <div>
                               <div className="flex gap-4 mb-4 items-center">
                                 <Button
-                                  variant={selectedInvoice.template === TemplateType.ENGLISH ? 'default' : 'outline'}
+                                  variant={selectedInvoice.template === InvoiceTemplateType.ENGLISH ? 'default' : 'outline'}
                                   onClick={() => {
-                                    const updatedInvoice = { ...selectedInvoice, template: TemplateType.ENGLISH };
+                                    const updatedInvoice = { ...selectedInvoice, template: InvoiceTemplateType.ENGLISH };
                                     setSelectedInvoice(updatedInvoice);
                                      updateDoc(doc(db, 'organizations', organizationId!, 'purchase-invoices', selectedInvoice.id), {
-                                       template: TemplateType.ENGLISH
+                                       template: InvoiceTemplateType.ENGLISH
                                      });
                                   }}
                                 >
                                   English Template
                                 </Button>
                                 <Button
-                                  variant={selectedInvoice.template === TemplateType.ARABIC ? 'default' : 'outline'}
+                                  variant={selectedInvoice.template === InvoiceTemplateType.ARABIC ? 'default' : 'outline'}
                                   onClick={() => {
-                                    const updatedInvoice = { ...selectedInvoice, template: TemplateType.ARABIC };
+                                    const updatedInvoice = { ...selectedInvoice, template: InvoiceTemplateType.ARABIC };
                                     setSelectedInvoice(updatedInvoice);
                                     updateDoc(doc(db, 'organizations', organizationId!, 'purchase-invoices', selectedInvoice.id), {
-                                      template: TemplateType.ARABIC
+                                      template: InvoiceTemplateType.ARABIC
                                     });
                                   }}
                                 >
