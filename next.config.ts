@@ -10,6 +10,19 @@ const nextConfig = (phase: string) => {
     reactStrictMode: true,
     poweredByHeader: false,
     typedRoutes: true,
+    async headers() {
+      return [
+        {
+          source: '/login',
+          headers: [
+            {
+              key: 'Cross-Origin-Opener-Policy',
+              value: 'same-origin-allow-popups',
+            },
+          ],
+        },
+      ];
+    },
   };
 
   return nextConfigOptions;
