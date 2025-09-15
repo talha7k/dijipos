@@ -8,12 +8,14 @@ import {
 export function useThemeState() {
   const [theme, setTheme] = useAtom(themeAtom);
 
-  // Initialize theme from system preference on mount (IndexedDB will handle persistence)
+  // Initialize theme from system preference only if no theme is set
   useEffect(() => {
-    // Default to system preference if no theme is set
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    setTheme(prefersDark ? 'dark' : 'light');
-  }, [setTheme]);
+    // Only set theme if it hasn't been set before (check if it's the default value)
+    if (theme === 'light') {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setTheme(prefersDark ? 'dark' : 'light');
+    }
+  }, [setTheme, theme]);
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
