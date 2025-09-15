@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { Order, OrderStatus, ItemType, OrderPayment, Table, Customer, OrderType, Product, Service } from '@/types';
+import { Order, OrderStatus, ItemType, OrderPayment, Table, Customer, OrderType, Product, Service, TableStatus } from '@/types';
 import { CartItem } from '@/contexts/OrderContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOrderContext } from '@/contexts/OrderContext';
@@ -121,8 +121,12 @@ export function usePOSLogic() {
     if (!organizationId || cart.length === 0) return;
 
     try {
+      // Generate a simple order number (in production, this should be more sophisticated)
+      const orderNumber = `ORD-${Date.now()}`;
+      
       const orderData = {
         organizationId,
+        orderNumber,
         items: cart.map(item => ({
           id: `${item.type}-${item.id}`,
           type: item.type,
@@ -157,7 +161,7 @@ export function usePOSLogic() {
       // Update table status if table is selected
       if (selectedTable?.id) {
         await updateDoc(doc(db, 'organizations', organizationId, 'tables', selectedTable.id), {
-          status: 'occupied',
+          status: TableStatus.OCCUPIED,
           updatedAt: serverTimestamp()
         });
       }
@@ -168,7 +172,8 @@ export function usePOSLogic() {
       
     } catch (error) {
       console.error('Error saving order:', error);
-      toast.error('Error saving order');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      toast.error(`Failed to save order: ${errorMessage}`);
     }
   }, [organizationId, cart, cartTotal, selectedOrderType, selectedCustomer, selectedTable, user, clearCart, clearPOSData]);
 

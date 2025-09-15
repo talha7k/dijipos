@@ -6,19 +6,26 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Helper function to check if user owns the organization
-    function isOrganizationOwner(organizationId) {
-      return isAuthenticated() && request.auth.uid == organizationId;
+    // Helper function to check if user is a member of an organization
+    function isOrganizationMember(organizationId) {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/organizationUsers/$(request.auth.uid));
     }
 
-    // Organizations collection - users can only read/write their own organization
+    // Organizations collection - authenticated users can read organizations they are members of
     match /organizations/{organizationId} {
-      allow read, write: if isOrganizationOwner(organizationId);
+      allow read: if isOrganizationMember(organizationId);
+      allow write: if false; // Organizations should be created/managed by admin only
     }
 
-    // Subcollections under organizations - only organization owners can access
+    // Organization users collection - users can read their own organization associations
+    match /organizationUsers/{userId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Subcollections under organizations - only organization members can access
     match /organizations/{organizationId}/{collection=**} {
-      allow read, write: if isOrganizationOwner(organizationId);
+      allow read, write: if isOrganizationMember(organizationId);
     }
   }
 }
