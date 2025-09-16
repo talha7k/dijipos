@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useTheme } from "@/hooks/useThemeState";
+import { useTheme } from "@/legacy_hooks/useThemeState";
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const theme = useTheme();

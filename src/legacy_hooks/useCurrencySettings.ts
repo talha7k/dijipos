@@ -6,7 +6,7 @@ import { useCollectionQuery, useSetDocumentMutation } from '@tanstack-query-fire
 import { db } from '@/lib/firebase';
 import { CurrencySettings } from '@/types';
 import { Currency, CurrencyLocale } from '@/types/enums';
-import { useOrganizationId } from '@/hooks/useAuthState';
+import { useOrganizationId } from '@/legacy_hooks/useAuthState';
 
 export function useCurrencySettings() {
   const organizationId = useOrganizationId();

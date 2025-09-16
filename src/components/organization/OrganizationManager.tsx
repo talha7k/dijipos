@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useAuthState } from "@/hooks/useAuthState";
+import { useAuthState } from "@/legacy_hooks/useAuthState";
 import {
   Building2,
   Plus,
@@ -34,7 +34,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Organization, UserRole } from "@/types";
-import { useThemeState } from "@/hooks/useThemeState";
+import { useThemeState } from "@/legacy_hooks/useThemeState";
 import { auth } from "@/lib/firebase";
 import { toast } from "sonner";
 

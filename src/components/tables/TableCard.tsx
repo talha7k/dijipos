@@ -2,7 +2,7 @@ import { Table, Order } from '@/types';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Users, User, Armchair as TableIcon } from 'lucide-react';
-import { useTableManagement } from '@/hooks/tables/use-table-management';
+import { useTableManagement } from '@/legacy_hooks/tables/use-table-management';
 
 interface TableCardProps {
   table: Table;

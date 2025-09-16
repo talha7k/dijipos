@@ -7,7 +7,7 @@ import { useCollectionQuery } from '@tanstack-query-firebase/react/firestore';
 import { addDoc, updateDoc, deleteDoc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Order, OrderPayment, OrderStatus, TableStatus } from '@/types';
-import { useAuthState } from '@/hooks/useAuthState';
+import { useAuthState } from '@/legacy_hooks/useAuthState';
 import {
   currentOrderAtom
 } from '@/store/atoms';

@@ -1,19 +1,19 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
+import { useOrganizationId, useUser, useSelectedOrganization } from '@/legacy_hooks/useAuthState';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
-import { useQuotesData } from '@/hooks/useQuotes';
-import { useInvoicesData } from '@/hooks/useInvoices';
-import { usePaymentsData } from '@/hooks/usePayments';
-import { useProductsData } from '@/hooks/products_services/useProducts';
-import { useServicesData } from '@/hooks/products_services/useServices';
-import { useTablesData } from '@/hooks/tables/useTables';
+import { useQuotesData } from '@/legacy_hooks/useQuotes';
+import { useInvoicesData } from '@/legacy_hooks/useInvoices';
+import { usePaymentsData } from '@/legacy_hooks/usePayments';
+import { useProductsData } from '@/legacy_hooks/products_services/useProducts';
+import { useServicesData } from '@/legacy_hooks/products_services/useServices';
+import { useTablesData } from '@/legacy_hooks/tables/useTables';
 import { TableStatus } from '@/types';
 
 function DashboardContent() {

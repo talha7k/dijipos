@@ -1,13 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { useOrganizationId, useSelectedOrganization } from '@/hooks/useAuthState';
+import { useOrganizationId, useSelectedOrganization } from '@/legacy_hooks/useAuthState';
 import { Quote } from '@/types';
 import { QuoteTemplateType, QuoteStatus, InvoiceStatus } from '@/types/enums';
-import { useQuotesData, useQuoteActions } from '@/hooks/useQuotes';
-import { useInvoiceActions } from '@/hooks/useInvoices';
-import { useQuoteTemplatesData } from '@/hooks/use-quote-templates-data';
-import { useCustomersData } from '@/hooks/useCustomerState';
+import { useQuotesData, useQuoteActions } from '@/legacy_hooks/useQuotes';
+import { useInvoiceActions } from '@/legacy_hooks/useInvoices';
+import { useQuoteTemplatesData } from '@/legacy_hooks/use-quote-templates-data';
+import { useCustomersData } from '@/legacy_hooks/useCustomerState';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import QuoteForm from '@/components/invoices_quotes/QuoteForm';

@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { useOrganizationId } from '@/hooks/useAuthState';
-import { useSettingsData } from '@/hooks/organization/use-settings-data';
+import { useOrganizationId } from '@/legacy_hooks/useAuthState';
+import { useSettingsData } from '@/legacy_hooks/organization/use-settings-data';
 import { VATSettings } from '@/types';
-import { useCurrencySettings } from '@/hooks/useCurrencySettings';
+import { useCurrencySettings } from '@/legacy_hooks/useCurrencySettings';
 import { Currency, CurrencyLocale } from '@/types/enums';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';

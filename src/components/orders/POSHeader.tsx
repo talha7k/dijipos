@@ -15,7 +15,7 @@ import { Table, Customer, OrderType, Order } from '@/types';
 import { Currency, CurrencyLocale } from '@/types/enums';
 import { Users, LayoutGrid, FileText, ShoppingBag, Plus, RotateCcw, PlusCircle } from 'lucide-react';
 import { OrderTypeSelectionDialog } from './OrderTypeSelectionDialog';
-import { useCurrencySettings } from '@/hooks/useCurrencySettings';
+import { useCurrencySettings } from '@/legacy_hooks/useCurrencySettings';
 
 interface CartItem {
   id: string;

@@ -1,7 +1,7 @@
 import { Order, OrderPayment, OrderStatus } from "@/types";
 import { OrderList } from "@/components/orders/OrderList";
 import { OrderDetailView } from "@/components/orders/OrderDetailView";
-import { useOrders } from "@/hooks/orders/useOrders";
+import { useOrders } from "@/legacy_hooks/orders/useOrders";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";

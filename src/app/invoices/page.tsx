@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useOrganizationId, useSelectedOrganization } from '@/hooks/useAuthState';
+import { useOrganizationId, useSelectedOrganization } from '@/legacy_hooks/useAuthState';
 import { Invoice } from '@/types';
 import { InvoiceList } from '@/components/invoices_quotes/InvoiceList';
 import InvoiceForm from '@/components/invoices_quotes/InvoiceForm';
@@ -9,7 +9,7 @@ import { InvoiceDetails } from '@/components/invoices_quotes/InvoiceDetails';
 import { InvoicePrintDialog } from '@/components/invoices_quotes/InvoicePrintDialog';
 import { Button } from '@/components/ui/button';
 import { Plus, Printer } from 'lucide-react';
-import { useInvoiceTemplatesData } from '@/hooks/use-invoice-templates-data';
+import { useInvoiceTemplatesData } from '@/legacy_hooks/use-invoice-templates-data';
 import {
   Dialog,
   DialogContent,
@@ -17,7 +17,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useInvoicesData, useInvoiceActions } from '@/hooks/useInvoices';
+import { useInvoicesData, useInvoiceActions } from '@/legacy_hooks/useInvoices';
 
 export default function InvoicesPage() {
   const organizationId = useOrganizationId();

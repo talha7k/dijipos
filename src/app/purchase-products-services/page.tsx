@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useOrganizationId } from '@/hooks/useAuthState';
-import { usePurchaseProductsData, usePurchaseServicesData, usePurchaseProductsActions, usePurchaseServicesActions } from '@/hooks/usePurchaseProductsServices';
-import { useCategoriesData } from '@/hooks/products_services/useCategories';
+import { useOrganizationId } from '@/legacy_hooks/useAuthState';
+import { usePurchaseProductsData, usePurchaseServicesData, usePurchaseProductsActions, usePurchaseServicesActions } from '@/legacy_hooks/usePurchaseProductsServices';
+import { useCategoriesData } from '@/legacy_hooks/products_services/useCategories';
 import { Product, Service, Category } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

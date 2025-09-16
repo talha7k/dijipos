@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Download, Upload, FileText, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
-import { useExportImport } from '@/hooks/useExportImport';
-import { useAuthState } from '@/hooks/useAuthState';
+import { useExportImport } from '@/legacy_hooks/useExportImport';
+import { useAuthState } from '@/legacy_hooks/useAuthState';
 
 interface ExportImportProductsProps {
   organizationId?: string;

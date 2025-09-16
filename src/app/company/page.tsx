@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useOrganizationData } from '@/hooks/organization/use-organization-data';
-import { useOrganizationUsersData } from '@/hooks/organization/use-organization-users-data';
-import { useInvitationCodesData } from '@/hooks/organization/use-invitation-codes-data';
-import { useOrganizationActions } from '@/hooks/organization/use-organization-actions';
-import { useInvitationCodesActions } from '@/hooks/organization/use-invitation-codes-actions';
-import { useOrganizationUsersActions } from '@/hooks/organization/use-organization-users-actions';
-import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
+import { useOrganizationData } from '@/legacy_hooks/organization/use-organization-data';
+import { useOrganizationUsersData } from '@/legacy_hooks/organization/use-organization-users-data';
+import { useInvitationCodesData } from '@/legacy_hooks/organization/use-invitation-codes-data';
+import { useOrganizationActions } from '@/legacy_hooks/organization/use-organization-actions';
+import { useInvitationCodesActions } from '@/legacy_hooks/organization/use-invitation-codes-actions';
+import { useOrganizationUsersActions } from '@/legacy_hooks/organization/use-organization-users-actions';
+import { useOrganizationId, useUser, useSelectedOrganization } from '@/legacy_hooks/useAuthState';
 import { Organization, OrganizationUser, InvitationCode } from '@/types';
 import { UserRole } from '@/types/enums';
 import { Button } from '@/components/ui/button';

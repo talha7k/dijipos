@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useOrganizationId } from '@/hooks/useAuthState';
-import { useTablesData, useTableActions } from '@/hooks/tables/useTables';
+import { useOrganizationId } from '@/legacy_hooks/useAuthState';
+import { useTablesData, useTableActions } from '@/legacy_hooks/tables/useTables';
 import { TableStatus } from '@/types/enums';
 import { Table as TableType } from '@/types';
 

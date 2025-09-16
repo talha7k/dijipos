@@ -15,9 +15,9 @@ import {
 import { Order, OrderStatus, OrderPayment } from "@/types";
 import { OrderActionsDialog } from "./OrderStatusActionsDialog";
 import { ReceiptPrintDialog } from "@/components/ReceiptPrintDialog";
-import { useAuthState } from "@/hooks/useAuthState";
-import { usePrinterSettingsData } from "@/hooks/organization/use-printer-settings-data";
-import { useReceiptTemplatesData } from "@/hooks/use-receipt-templates-data";
+import { useAuthState } from "@/legacy_hooks/useAuthState";
+import { usePrinterSettingsData } from "@/legacy_hooks/organization/use-printer-settings-data";
+import { useReceiptTemplatesData } from "@/legacy_hooks/use-receipt-templates-data";
 
 interface OrderSummaryCardProps {
   order: Order;

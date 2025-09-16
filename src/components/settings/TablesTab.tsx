@@ -1,7 +1,7 @@
 'use client';
 
 import { Table } from '@/types';
-import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
+import { useOrganizationId, useUser, useSelectedOrganization } from '@/legacy_hooks/useAuthState';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,7 +12,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Table as TableIcon, Plus, Trash2, Users, MoreHorizontal } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { TableActionsDialog } from '@/components/tables/TableActionsDialog';
-import { useTableManagement } from '@/hooks/tables/use-table-management';
+import { useTableManagement } from '@/legacy_hooks/tables/use-table-management';
 
 interface TablesTabProps {
   tables: Table[];

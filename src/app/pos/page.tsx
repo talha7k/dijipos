@@ -1,16 +1,16 @@
 "use client";
 
 import React from "react";
-import { useOrganizationId } from "@/hooks/useAuthState";
+import { useOrganizationId } from "@/legacy_hooks/useAuthState";
 import { CartItem, ItemType } from "@/types";
-import { useProductsData } from "@/hooks/products_services/useProducts";
-import { useServicesData } from "@/hooks/products_services/useServices";
-import { useCategoriesData } from "@/hooks/products_services/useCategories";
-import { useTablesData } from "@/hooks/tables/useTables";
-import { useCustomersData } from "@/hooks/useCustomerState";
-import { useOrders } from "@/hooks/orders/useOrders";
-import { useOrderTypes } from "@/hooks/useOrderTypes";
-import { usePaymentTypesData } from "@/hooks/uePaymentTypes";
+import { useProductsData } from "@/legacy_hooks/products_services/useProducts";
+import { useServicesData } from "@/legacy_hooks/products_services/useServices";
+import { useCategoriesData } from "@/legacy_hooks/products_services/useCategories";
+import { useTablesData } from "@/legacy_hooks/tables/useTables";
+import { useCustomersData } from "@/legacy_hooks/useCustomerState";
+import { useOrders } from "@/legacy_hooks/orders/useOrders";
+import { useOrderTypes } from "@/legacy_hooks/useOrderTypes";
+import { usePaymentTypesData } from "@/legacy_hooks/uePaymentTypes";
 
 import {
   POSLayout,
@@ -22,7 +22,7 @@ import {
 import { POSHeader } from "@/components/orders/POSHeader";
 import { POSViewsManager } from "./components/POSViewsManager";
 import { POSCartSidebar } from "@/components/orders/POSCartSidebar";
-import { usePOSLogic } from "@/hooks/pos/usePOSState";
+import { usePOSLogic } from "@/legacy_hooks/pos/usePOSState";
 
 import {
   AlertDialog,

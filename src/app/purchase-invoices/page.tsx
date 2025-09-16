@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useOrganizationId } from '@/hooks/useAuthState';
-import { usePurchaseInvoicesData, usePurchaseInvoiceActions } from '@/hooks/usePurchaseInvoices';
+import { useOrganizationId } from '@/legacy_hooks/useAuthState';
+import { usePurchaseInvoicesData, usePurchaseInvoiceActions } from '@/legacy_hooks/usePurchaseInvoices';
 import { Invoice, PurchaseInvoice, Organization, InvoiceStatus } from '@/types';
 import { InvoiceTemplateType } from '@/types/enums';
 

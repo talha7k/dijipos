@@ -1,6 +1,6 @@
 'use client';
 
-import { useOrganizationId, useUser, useSelectedOrganization, useAuthLoading, useEmailVerified, useUserOrganizations } from '@/hooks/useAuthState';
+import { useOrganizationId, useUser, useSelectedOrganization, useAuthLoading, useEmailVerified, useUserOrganizations } from '@/legacy_hooks/useAuthState';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

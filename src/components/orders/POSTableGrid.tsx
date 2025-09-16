@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Users, ArrowLeft } from 'lucide-react';
-import { useTableManagement } from '@/hooks/tables/use-table-management';
+import { useTableManagement } from '@/legacy_hooks/tables/use-table-management';
 import { TableCard } from '@/components/tables/TableCard';
 
 interface POSTableGridProps {

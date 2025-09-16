@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import { Table, Order, TableStatus } from '@/types';
-import { useTablesData } from '@/hooks/tables/useTables';
-import { useOrders } from '@/hooks/orders/useOrders';
-import { useTableManagement } from '@/hooks/tables/use-table-management';
-import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
+import { useTablesData } from '@/legacy_hooks/tables/useTables';
+import { useOrders } from '@/legacy_hooks/orders/useOrders';
+import { useTableManagement } from '@/legacy_hooks/tables/use-table-management';
+import { useOrganizationId, useUser, useSelectedOrganization } from '@/legacy_hooks/useAuthState';
 import {
   Dialog,
   DialogContent,

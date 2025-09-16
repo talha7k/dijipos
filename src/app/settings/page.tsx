@@ -1,14 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
+import { useOrganizationId, useUser, useSelectedOrganization } from '@/legacy_hooks/useAuthState';
 
-import { usePaymentTypesData } from '@/hooks/uePaymentTypes';
-import { useTemplatesData } from '@/hooks/use-templates-data';
+import { usePaymentTypesData } from '@/legacy_hooks/uePaymentTypes';
+import { useTemplatesData } from '@/legacy_hooks/use-templates-data';
 import { TemplateCategory } from '@/types/template';
-import { useOrderTypes } from '@/hooks/useOrderTypes';
-import { useTablesData } from '@/hooks/tables/useTables';
-import { useSettingsData } from '@/hooks/organization/use-settings-data';
+import { useOrderTypes } from '@/legacy_hooks/useOrderTypes';
+import { useTablesData } from '@/legacy_hooks/tables/useTables';
+import { useSettingsData } from '@/legacy_hooks/organization/use-settings-data';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SettingsHeader } from '@/components/settings/SettingsHeader';

@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { useOrganizationId } from '@/hooks/useAuthState';
-import { useProductsData, useProductActions } from '@/hooks/products_services/useProducts';
-import { useServicesData, useServiceActions } from '@/hooks/products_services/useServices';
-import { useCategoriesData } from '@/hooks/products_services/useCategories';
+import { useOrganizationId } from '@/legacy_hooks/useAuthState';
+import { useProductsData, useProductActions } from '@/legacy_hooks/products_services/useProducts';
+import { useServicesData, useServiceActions } from '@/legacy_hooks/products_services/useServices';
+import { useCategoriesData } from '@/legacy_hooks/products_services/useCategories';
 import { Product, Service, CategoryType } from '@/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

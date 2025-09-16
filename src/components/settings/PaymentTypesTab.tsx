@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useOrganizationId } from '@/hooks/useAuthState';
-import { usePaymentTypes } from '@/hooks/uePaymentTypes';
+import { useOrganizationId } from '@/legacy_hooks/useAuthState';
+import { usePaymentTypes } from '@/legacy_hooks/uePaymentTypes';
 import { PaymentType } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';

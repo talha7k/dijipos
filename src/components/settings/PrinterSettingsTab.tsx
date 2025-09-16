@@ -1,9 +1,9 @@
 'use client';
 
-import { useOrganizationId } from '@/hooks/useAuthState';
-import { useSettingsData } from '@/hooks/organization/use-settings-data';
+import { useOrganizationId } from '@/legacy_hooks/useAuthState';
+import { useSettingsData } from '@/legacy_hooks/organization/use-settings-data';
 import { PrinterSettings } from '@/types';
-import { useReceiptTemplatesData } from '@/hooks/use-receipt-templates-data';
+import { useReceiptTemplatesData } from '@/legacy_hooks/use-receipt-templates-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EditableSetting } from '@/components/ui/editable-setting';
 import { Settings, FileText, File } from 'lucide-react';

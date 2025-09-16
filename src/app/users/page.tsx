@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
-import { useOrganizationUsersData } from '@/hooks/organization/use-organization-users-data';
-import { useInvitationCodesData } from '@/hooks/organization/use-invitation-codes-data';
-import { useOrganizationUsersActions } from '@/hooks/organization/use-organization-users-actions';
-import { useInvitationCodesActions } from '@/hooks/organization/use-invitation-codes-actions';
+import { useOrganizationId, useUser, useSelectedOrganization } from '@/legacy_hooks/useAuthState';
+import { useOrganizationUsersData } from '@/legacy_hooks/organization/use-organization-users-data';
+import { useInvitationCodesData } from '@/legacy_hooks/organization/use-invitation-codes-data';
+import { useOrganizationUsersActions } from '@/legacy_hooks/organization/use-organization-users-actions';
+import { useInvitationCodesActions } from '@/legacy_hooks/organization/use-invitation-codes-actions';
 import { OrganizationUser, UserRole } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

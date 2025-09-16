@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { useOrganizationId } from '@/hooks/useAuthState';
+import { useOrganizationId } from '@/legacy_hooks/useAuthState';
 import { Supplier } from '@/types';
-import { useSuppliersData, useSupplierActions } from '@/hooks/suppliers/useSuppliers';
+import { useSuppliersData, useSupplierActions } from '@/legacy_hooks/suppliers/useSuppliers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

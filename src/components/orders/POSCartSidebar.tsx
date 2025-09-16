@@ -4,10 +4,10 @@ import { ClearOrderDialog } from '@/components/ui/clear-order-dialog';
 import { POSCartItem } from './POSCartItem';
 import { ReceiptPrintDialog } from '@/components/ReceiptPrintDialog';
 import { Order, OrderStatus, ItemType, OrderPayment } from '@/types';
-import { useAuthState } from '@/hooks/useAuthState';
-import { useOrderState } from '@/hooks/useOrderState';
-import { usePrinterSettingsData } from '@/hooks/organization/use-printer-settings-data';
-import { useReceiptTemplatesData } from '@/hooks/use-receipt-templates-data';
+import { useAuthState } from '@/legacy_hooks/useAuthState';
+import { useOrderState } from '@/legacy_hooks/useOrderState';
+import { usePrinterSettingsData } from '@/legacy_hooks/organization/use-printer-settings-data';
+import { useReceiptTemplatesData } from '@/legacy_hooks/use-receipt-templates-data';
 
 interface CartItem {
   id: string;

@@ -5,7 +5,7 @@ import { collection, doc } from 'firebase/firestore';
 import { useCollectionQuery, useUpdateDocumentMutation, useAddDocumentMutation, useDeleteDocumentMutation } from '@tanstack-query-firebase/react/firestore';
 import { db } from '@/lib/firebase';
 import { OrderType } from '@/types';
-import { useAuthState } from '@/hooks/useAuthState';
+import { useAuthState } from '@/legacy_hooks/useAuthState';
 
 export interface UseOrderTypesResult {
   orderTypes: OrderType[];
