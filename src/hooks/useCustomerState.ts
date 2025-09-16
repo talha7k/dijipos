@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useCallback, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useAtom, useSetAtom } from 'jotai';
-import { collection, query, onSnapshot, updateDoc, doc, getDoc, addDoc, deleteDoc } from 'firebase/firestore';
+import { collection, doc } from 'firebase/firestore';
+import { useCollectionQuery, useUpdateDocumentMutation, useAddDocumentMutation, useDeleteDocumentMutation } from '@tanstack-query-firebase/react/firestore';
 import { db } from '@/lib/firebase';
 import { Customer } from '@/types';
 import {
@@ -10,12 +11,6 @@ import {
   customersLoadingAtom,
   customersErrorAtom
 } from '@/store/atoms';
-
-// Global singleton to prevent duplicate listeners
-const globalCustomerListeners = new Map<string, {
-  unsubscribe: () => void;
-  refCount: number;
-}>();
 
 export interface UseCustomersDataResult {
   customers: Customer[];
@@ -31,77 +26,49 @@ export function useCustomersData(organizationId: string | undefined): UseCustome
   const [loading, setLoading] = useAtom(customersLoadingAtom);
   const [error, setError] = useAtom(customersErrorAtom);
 
-  useEffect(() => {
-    if (!organizationId) {
-      setLoading(false);
-      setCustomers([]);
-      return;
+  // Always call the hook, but conditionally enable it
+  const customersQuery = useCollectionQuery(
+    collection(db, 'organizations', organizationId || 'dummy', 'customers'),
+    {
+      queryKey: ['customers', organizationId],
+      enabled: !!organizationId,
     }
+  );
 
-    const listenerKey = `customers-${organizationId}`;
-    
-    // Check if listener already exists
-    if (globalCustomerListeners.has(listenerKey)) {
-      const existing = globalCustomerListeners.get(listenerKey)!;
-      existing.refCount++;
-      setLoading(false);
-      return () => {
-        existing.refCount--;
-        if (existing.refCount <= 0) {
-          existing.unsubscribe();
-          globalCustomerListeners.delete(listenerKey);
-        }
-      };
-    }
+  const customersData = useMemo(() => {
+    if (!customersQuery.data) return [];
+    return customersQuery.data.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: doc.data().createdAt?.toDate(),
+      updatedAt: doc.data().updatedAt?.toDate(),
+    })) as Customer[];
+  }, [customersQuery.data]);
 
-    // Create new listener
-    setLoading(true);
-    setError(null);
+  // Update atoms
+  useMemo(() => {
+    setCustomers(customersData);
+    setLoading(customersQuery.isLoading);
+    setError(customersQuery.error?.message || null);
+  }, [customersData, customersQuery.isLoading, customersQuery.error, setCustomers, setLoading, setError]);
 
-    const customersQuery = query(collection(db, 'organizations', organizationId, 'customers'));
-
-    const unsubscribe = onSnapshot(
-      customersQuery,
-      (snapshot) => {
-        const customersData = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          createdAt: doc.data().createdAt?.toDate(),
-          updatedAt: doc.data().updatedAt?.toDate(),
-        })) as Customer[];
-        setCustomers(customersData);
-        setLoading(false);
-      },
-      (err) => {
-        console.error('Error fetching customers:', err);
-        setError('Failed to load customers');
-        setLoading(false);
-      }
-    );
-
-    // Store in global singleton
-    globalCustomerListeners.set(listenerKey, {
-      unsubscribe,
-      refCount: 1
-    });
-
-    return () => {
-      const listener = globalCustomerListeners.get(listenerKey);
-      if (listener) {
-        listener.refCount--;
-        if (listener.refCount <= 0) {
-          listener.unsubscribe();
-          globalCustomerListeners.delete(listenerKey);
-        }
-      }
-    };
-  }, [organizationId, setCustomers, setLoading, setError]);
+  const addCustomerMutation = useAddDocumentMutation(
+    collection(db, 'organizations', organizationId || 'dummy', 'customers')
+  );
+  
+  const updateCustomerMutation = useUpdateDocumentMutation(
+    doc(db, 'organizations', organizationId || 'dummy', 'customers', 'dummy')
+  );
+  
+  const deleteCustomerMutation = useDeleteDocumentMutation(
+    doc(db, 'organizations', organizationId || 'dummy', 'customers', 'dummy')
+  );
 
   const createCustomer = async (customerData: Omit<Customer, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => {
     if (!organizationId) return;
 
     try {
-      await addDoc(collection(db, 'organizations', organizationId, 'customers'), {
+      await addCustomerMutation.mutateAsync({
         ...customerData,
         organizationId,
         createdAt: new Date(),
@@ -117,7 +84,8 @@ export function useCustomersData(organizationId: string | undefined): UseCustome
     if (!organizationId) return;
 
     try {
-      await updateDoc(doc(db, 'organizations', organizationId, 'customers', id), {
+      const customerRef = doc(db, 'organizations', organizationId, 'customers', id);
+      await updateCustomerMutation.mutateAsync({
         ...updates,
         updatedAt: new Date()
       });
@@ -131,7 +99,8 @@ export function useCustomersData(organizationId: string | undefined): UseCustome
     if (!organizationId) return;
 
     try {
-      await deleteDoc(doc(db, 'organizations', organizationId, 'customers', id));
+      const customerRef = doc(db, 'organizations', organizationId, 'customers', id);
+      await deleteCustomerMutation.mutateAsync();
     } catch (err) {
       console.error('Error deleting customer:', err);
       throw err;
@@ -139,6 +108,18 @@ export function useCustomersData(organizationId: string | undefined): UseCustome
   };
 
   const customersMemo = useMemo(() => customers, [customers]);
+
+  // Return empty data when no organizationId
+  if (!organizationId) {
+    return {
+      customers: [],
+      loading: false,
+      error: null,
+      createCustomer: async () => {},
+      updateCustomer: async () => {},
+      deleteCustomer: async () => {},
+    };
+  }
 
   return {
     customers: customersMemo,

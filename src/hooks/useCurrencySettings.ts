@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { collection, query, onSnapshot, doc, setDoc } from 'firebase/firestore';
+import { useState, useMemo } from 'react';
+import { collection, doc } from 'firebase/firestore';
+import { useCollectionQuery, useSetDocumentMutation } from '@tanstack-query-firebase/react/firestore';
 import { db } from '@/lib/firebase';
 import { CurrencySettings } from '@/types';
 import { Currency, CurrencyLocale } from '@/types/enums';
@@ -13,52 +14,48 @@ export function useCurrencySettings() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!organizationId) {
-      setCurrencySettings(null);
-      setLoading(false);
-      return;
+  // Always call the hook, but conditionally enable it
+  const currencySettingsQuery = useCollectionQuery(
+    collection(db, 'organizations', organizationId || 'dummy', 'settings'),
+    {
+      queryKey: ['currencySettings', organizationId],
+      enabled: !!organizationId,
     }
+  );
 
-    setLoading(true);
-    setError(null);
+  const processedSettings = useMemo(() => {
+    if (!currencySettingsQuery.data) return null;
+    
+    const settings = currencySettingsQuery.data.docs
+      .map(doc => ({ id: doc.id, ...doc.data() }) as CurrencySettings)
+      .find(setting => setting.id === 'currency');
 
-    const currencySettingsQuery = query(
-      collection(db, 'organizations', organizationId, 'settings')
-    );
+    if (!settings) {
+      // Create default currency settings
+      const defaultSettings: CurrencySettings = {
+        id: 'currency',
+        locale: CurrencyLocale.AR_SA,
+        currency: Currency.SAR,
+        organizationId: organizationId || '',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      return defaultSettings;
+    }
+    
+    return settings;
+  }, [currencySettingsQuery.data, organizationId]);
 
-    const unsubscribe = onSnapshot(
-      currencySettingsQuery,
-      (querySnapshot) => {
-        const settings = querySnapshot.docs
-          .map(doc => ({ id: doc.id, ...doc.data() }) as CurrencySettings)
-          .find(setting => setting.id === 'currency');
+  // Update state
+  useMemo(() => {
+    setCurrencySettings(processedSettings);
+    setLoading(currencySettingsQuery.isLoading);
+    setError(currencySettingsQuery.error?.message || null);
+  }, [processedSettings, currencySettingsQuery.isLoading, currencySettingsQuery.error]);
 
-        if (!settings) {
-          // Create default currency settings
-          const defaultSettings: CurrencySettings = {
-            id: 'currency',
-            locale: CurrencyLocale.AR_SA,
-            currency: Currency.SAR,
-            organizationId,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          };
-          setCurrencySettings(defaultSettings);
-        } else {
-          setCurrencySettings(settings);
-        }
-        setLoading(false);
-      },
-      (error) => {
-        console.error('Error fetching currency settings:', error);
-        setError(error.message);
-        setLoading(false);
-      }
-    );
-
-    return () => unsubscribe();
-  }, [organizationId]);
+  const setCurrencySettingsMutation = useSetDocumentMutation(
+    doc(db, 'organizations', organizationId || 'dummy', 'settings', 'currency')
+  );
 
   const updateCurrencySettings = async (updates: Partial<CurrencySettings>) => {
     if (!organizationId || !currencySettings) {
@@ -71,9 +68,19 @@ export function useCurrencySettings() {
       updatedAt: new Date(),
     };
 
-    await setDoc(doc(db, 'organizations', organizationId, 'settings', 'currency'), updatedSettings);
+    await setCurrencySettingsMutation.mutateAsync(updatedSettings);
     setCurrencySettings(updatedSettings);
   };
+
+  // Return empty data when no organizationId
+  if (!organizationId) {
+    return {
+      currencySettings: null,
+      loading: false,
+      error: null,
+      updateCurrencySettings: async () => { throw new Error('Organization not found or settings not loaded'); },
+    };
+  }
 
   return {
     currencySettings,

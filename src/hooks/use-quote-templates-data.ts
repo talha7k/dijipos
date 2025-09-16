@@ -1,200 +1,134 @@
 "use client";
 
-import { useEffect, useState, useMemo } from 'react';
-import { collection, query, onSnapshot, doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { useState, useMemo } from 'react';
+import { collection, doc } from 'firebase/firestore';
+import { useCollectionQuery, useSetDocumentMutation, useDeleteDocumentMutation, useAddDocumentMutation } from '@tanstack-query-firebase/react/firestore';
 import { db } from '@/lib/firebase';
 import { QuoteTemplate, QuoteTemplateType } from '@/types';
 import { defaultEnglishQuoteTemplate } from '@/components/templates/default-quote-english';
 import { defaultArabicQuoteTemplate } from '@/components/templates/default-quote-arabic';
 
-// Global singleton state for quote templates
-const globalQuoteTemplatesState = {
-  listeners: new Map<string, {
-    unsubscribe: () => void;
-    refCount: number;
-    data: QuoteTemplate[];
-    loading: boolean;
-    error: string | null;
-  }>()
-};
-
-function getCacheKey(organizationId: string | undefined): string {
-  return `quote-templates-${organizationId || 'none'}`;
-}
-
 export function useQuoteTemplatesData(organizationId: string | undefined) {
   const [quoteTemplates, setQuoteTemplates] = useState<QuoteTemplate[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  const cacheKey = useMemo(() => getCacheKey(organizationId), [organizationId]);
-
-  useEffect(() => {
-    if (!organizationId) {
-      setQuoteTemplates([]);
-      setLoading(false);
-      return;
+  // Always call the hook, but conditionally enable it
+  const quoteTemplatesQuery = useCollectionQuery(
+    collection(db, 'organizations', organizationId || 'dummy', 'quoteTemplates'),
+    {
+      queryKey: ['quoteTemplates', organizationId],
+      enabled: !!organizationId,
     }
+  );
 
-    const existingListener = globalQuoteTemplatesState.listeners.get(cacheKey);
+  const processedTemplates = useMemo(() => {
+    if (!quoteTemplatesQuery.data) return [];
+    
+    const templates = quoteTemplatesQuery.data.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: doc.data().createdAt?.toDate(),
+      updatedAt: doc.data().updatedAt?.toDate(),
+    })) as QuoteTemplate[];
 
-    if (existingListener) {
-      // Reuse existing listener
-      existingListener.refCount++;
-      setQuoteTemplates(existingListener.data);
-      setLoading(existingListener.loading);
-      setError(existingListener.error);
-
-      return () => {
-        existingListener.refCount--;
-        if (existingListener.refCount === 0) {
-          existingListener.unsubscribe();
-          globalQuoteTemplatesState.listeners.delete(cacheKey);
+    // If no templates exist in Firestore, provide default templates
+    if (templates.length === 0 && organizationId) {
+      return [
+        {
+          id: 'default-english',
+          name: 'Default English Quote',
+          description: 'Default English quote template',
+          type: QuoteTemplateType.ENGLISH,
+          isDefault: true,
+          organizationId,
+          fields: [], // Default fields would be defined
+          style: {
+            primaryColor: '#000000',
+            secondaryColor: '#666666',
+            backgroundColor: '#ffffff',
+            textColor: '#000000',
+            fontFamily: 'Arial, sans-serif',
+            fontSize: 14,
+            showLogo: false,
+            showWatermark: false,
+          },
+          content: defaultEnglishQuoteTemplate,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: 'default-arabic',
+          name: 'Default Arabic Quote',
+          description: 'Default Arabic quote template',
+          type: QuoteTemplateType.ARABIC,
+          isDefault: false,
+          organizationId,
+          fields: [], // Default fields would be defined
+          style: {
+            primaryColor: '#000000',
+            secondaryColor: '#666666',
+            backgroundColor: '#ffffff',
+            textColor: '#000000',
+            fontFamily: 'Arial, sans-serif',
+            fontSize: 14,
+            showLogo: false,
+            showWatermark: false,
+          },
+          content: defaultArabicQuoteTemplate,
+          createdAt: new Date(),
+          updatedAt: new Date(),
         }
-      };
+      ];
     }
+    
+    return templates;
+  }, [quoteTemplatesQuery.data, organizationId]);
 
-    // Create new listener
-    setLoading(true);
-    setError(null);
+  // Update state
+  useMemo(() => {
+    setQuoteTemplates(processedTemplates);
+  }, [processedTemplates]);
 
-    const quoteTemplatesQuery = query(
-      collection(db, 'organizations', organizationId, 'quoteTemplates')
-    );
-
-    const unsubscribe = onSnapshot(
-      quoteTemplatesQuery,
-      (querySnapshot) => {
-        const templates = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          createdAt: doc.data().createdAt?.toDate(),
-          updatedAt: doc.data().updatedAt?.toDate(),
-        })) as QuoteTemplate[];
-
-        // If no templates exist in Firestore, provide default templates
-        let finalTemplates = templates;
-        if (templates.length === 0) {
-          finalTemplates = [
-            {
-              id: 'default-english',
-              name: 'Default English Quote',
-              description: 'Default English quote template',
-              type: QuoteTemplateType.ENGLISH,
-              isDefault: true,
-              organizationId,
-              fields: [], // Default fields would be defined
-              style: {
-                primaryColor: '#000000',
-                secondaryColor: '#666666',
-                backgroundColor: '#ffffff',
-                textColor: '#000000',
-                fontFamily: 'Arial, sans-serif',
-                fontSize: 14,
-                showLogo: false,
-                showWatermark: false,
-              },
-              content: defaultEnglishQuoteTemplate,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            },
-            {
-              id: 'default-arabic',
-              name: 'Default Arabic Quote',
-              description: 'Default Arabic quote template',
-              type: QuoteTemplateType.ARABIC,
-              isDefault: false,
-              organizationId,
-              fields: [], // Default fields would be defined
-              style: {
-                primaryColor: '#000000',
-                secondaryColor: '#666666',
-                backgroundColor: '#ffffff',
-                textColor: '#000000',
-                fontFamily: 'Arial, sans-serif',
-                fontSize: 14,
-                showLogo: false,
-                showWatermark: false,
-              },
-              content: defaultArabicQuoteTemplate,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            }
-          ];
-        }
-
-        const listener = globalQuoteTemplatesState.listeners.get(cacheKey);
-        if (listener) {
-          listener.data = finalTemplates;
-          listener.loading = false;
-          listener.error = null;
-        }
-        setQuoteTemplates(finalTemplates);
-        setLoading(false);
-      },
-      (error) => {
-        console.error('Error fetching quote templates:', error);
-        const listener = globalQuoteTemplatesState.listeners.get(cacheKey);
-        if (listener) {
-          listener.loading = false;
-          listener.error = error.message;
-        }
-        setError(error.message);
-        setLoading(false);
-      }
-    );
-
-    // Store the listener
-    globalQuoteTemplatesState.listeners.set(cacheKey, {
-      unsubscribe,
-      refCount: 1,
-      data: [],
-      loading: true,
-      error: null,
-    });
-
-    return () => {
-      const listener = globalQuoteTemplatesState.listeners.get(cacheKey);
-      if (listener) {
-        listener.refCount--;
-        if (listener.refCount === 0) {
-          listener.unsubscribe();
-          globalQuoteTemplatesState.listeners.delete(cacheKey);
-        }
-      }
-    };
-  }, [organizationId, cacheKey]);
+  const addTemplateMutation = useAddDocumentMutation(
+    collection(db, 'organizations', organizationId || 'dummy', 'quoteTemplates')
+  );
+  
+  const setTemplateMutation = useSetDocumentMutation(
+    doc(db, 'organizations', organizationId || 'dummy', 'quoteTemplates', 'dummy')
+  );
+  
+  const deleteTemplateMutation = useDeleteDocumentMutation(
+    doc(db, 'organizations', organizationId || 'dummy', 'quoteTemplates', 'dummy')
+  );
 
   const addTemplate = async (template: Omit<QuoteTemplate, 'id' | 'createdAt' | 'updatedAt'>) => {
     if (!organizationId) throw new Error('No organization selected');
 
-    const templateRef = doc(collection(db, 'organizations', organizationId, 'quoteTemplates'));
     const newTemplate: QuoteTemplate = {
       ...template,
-      id: templateRef.id,
+      id: '', // Will be set by Firebase
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
-    await setDoc(templateRef, newTemplate);
-    return newTemplate;
+    const docRef = await addTemplateMutation.mutateAsync(newTemplate);
+    return { ...newTemplate, id: docRef.id };
   };
 
   const updateTemplate = async (id: string, updates: Partial<QuoteTemplate>) => {
     if (!organizationId) throw new Error('No organization selected');
 
     const templateRef = doc(db, 'organizations', organizationId, 'quoteTemplates', id);
-    await setDoc(templateRef, {
+    await setTemplateMutation.mutateAsync({
       ...updates,
       updatedAt: new Date(),
-    }, { merge: true });
+    });
   };
 
   const deleteTemplate = async (id: string) => {
     if (!organizationId) throw new Error('No organization selected');
 
     const templateRef = doc(db, 'organizations', organizationId, 'quoteTemplates', id);
-    await deleteDoc(templateRef);
+    await deleteTemplateMutation.mutateAsync();
   };
 
   const setDefaultTemplate = async (id: string) => {
@@ -210,10 +144,23 @@ export function useQuoteTemplatesData(organizationId: string | undefined) {
     await updateTemplate(id, { isDefault: true });
   };
 
+  // Return empty data when no organizationId
+  if (!organizationId) {
+    return {
+      quoteTemplates: [],
+      loading: false,
+      error: null,
+      addTemplate: async () => { throw new Error('No organization selected'); },
+      updateTemplate: async () => { throw new Error('No organization selected'); },
+      deleteTemplate: async () => { throw new Error('No organization selected'); },
+      setDefaultTemplate: async () => { throw new Error('No organization selected'); },
+    };
+  }
+
   return {
     quoteTemplates,
-    loading,
-    error,
+    loading: quoteTemplatesQuery.isLoading,
+    error: quoteTemplatesQuery.error?.message || null,
     addTemplate,
     updateTemplate,
     deleteTemplate,

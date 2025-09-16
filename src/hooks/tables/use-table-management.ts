@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { collection, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, deleteDoc, doc, runTransaction, Transaction } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Table, Order } from '@/types';
 import { toast } from 'sonner';
@@ -84,19 +84,22 @@ export function useTableManagement(organizationId: string | undefined) {
 
     setUpdating(true);
     try {
-      // Update table status to available
-      const tableRef = doc(db, 'organizations', organizationId, 'tables', tableId);
-      await updateDoc(tableRef, {
-        status: 'available',
-        updatedAt: new Date(),
-      });
+      // Use Firestore transaction for atomic updates
+      await runTransaction(db, async (transaction: Transaction) => {
+        // Update table status to available
+        const tableRef = doc(db, 'organizations', organizationId, 'tables', tableId);
+        transaction.update(tableRef, {
+          status: 'available',
+          updatedAt: new Date(),
+        });
 
-      // Update order to remove table assignment
-      const orderRef = doc(db, 'organizations', organizationId, 'orders', order.id);
-      await updateDoc(orderRef, {
-        tableId: null,
-        tableName: null,
-        updatedAt: new Date(),
+        // Update order to remove table assignment
+        const orderRef = doc(db, 'organizations', organizationId, 'orders', order.id);
+        transaction.update(orderRef, {
+          tableId: null,
+          tableName: null,
+          updatedAt: new Date(),
+        });
       });
 
       toast.success('Table released successfully');
@@ -115,26 +118,29 @@ export function useTableManagement(organizationId: string | undefined) {
 
     setUpdating(true);
     try {
-      // Update order with new table
-      const orderRef = doc(db, 'organizations', organizationId, 'orders', order.id);
-      await updateDoc(orderRef, {
-        tableId: toTableId,
-        tableName: targetTableName,
-        updatedAt: new Date(),
-      });
+      // Use Firestore transaction for atomic updates
+      await runTransaction(db, async (transaction: Transaction) => {
+        // Update order with new table
+        const orderRef = doc(db, 'organizations', organizationId, 'orders', order.id);
+        transaction.update(orderRef, {
+          tableId: toTableId,
+          tableName: targetTableName,
+          updatedAt: new Date(),
+        });
 
-      // Update source table to available
-      const fromTableRef = doc(db, 'organizations', organizationId, 'tables', fromTableId);
-      await updateDoc(fromTableRef, {
-        status: 'available',
-        updatedAt: new Date(),
-      });
+        // Update source table to available
+        const fromTableRef = doc(db, 'organizations', organizationId, 'tables', fromTableId);
+        transaction.update(fromTableRef, {
+          status: 'available',
+          updatedAt: new Date(),
+        });
 
-      // Update target table to occupied
-      const toTableRef = doc(db, 'organizations', organizationId, 'tables', toTableId);
-      await updateDoc(toTableRef, {
-        status: 'occupied',
-        updatedAt: new Date(),
+        // Update target table to occupied
+        const toTableRef = doc(db, 'organizations', organizationId, 'tables', toTableId);
+        transaction.update(toTableRef, {
+          status: 'occupied',
+          updatedAt: new Date(),
+        });
       });
 
       toast.success('Order moved successfully');

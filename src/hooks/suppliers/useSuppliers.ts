@@ -1,86 +1,64 @@
-import { useState, useEffect, useMemo } from 'react';
-import { collection, query, onSnapshot, updateDoc, doc, addDoc, deleteDoc } from 'firebase/firestore';
+import { useState, useMemo } from 'react';
+import { collection, doc } from 'firebase/firestore';
+import { useCollectionQuery, useUpdateDocumentMutation, useAddDocumentMutation, useDeleteDocumentMutation } from '@tanstack-query-firebase/react/firestore';
 import { db } from '@/lib/firebase';
 import { Supplier } from '@/types';
 
-// Global singleton to prevent duplicate listeners
-const globalSupplierListeners = new Map<string, {
-  unsubscribe: () => void;
-  refCount: number;
-}>();
-
 export function useSuppliersData(organizationId: string | undefined) {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!organizationId) {
-      setLoading(false);
-      return;
+  // Always call the hook, but conditionally enable it
+  const suppliersQuery = useCollectionQuery(
+    collection(db, 'organizations', organizationId || 'dummy', 'suppliers'),
+    {
+      queryKey: ['suppliers', organizationId],
+      enabled: !!organizationId,
     }
+  );
 
-    const listenerKey = `suppliers-${organizationId}`;
-    
-    // Check if listener already exists
-    if (globalSupplierListeners.has(listenerKey)) {
-      const existing = globalSupplierListeners.get(listenerKey)!;
-      existing.refCount++;
-      setLoading(false);
-      return () => {
-        existing.refCount--;
-        if (existing.refCount <= 0) {
-          existing.unsubscribe();
-          globalSupplierListeners.delete(listenerKey);
-        }
-      };
-    }
+  const suppliersData = useMemo(() => {
+    if (!suppliersQuery.data) return [];
+    return suppliersQuery.data.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: doc.data().createdAt?.toDate(),
+      updatedAt: doc.data().updatedAt?.toDate(),
+    })) as Supplier[];
+  }, [suppliersQuery.data]);
 
-    // Create new listener
-    setLoading(true);
-    const suppliersQ = query(collection(db, 'organizations', organizationId, 'suppliers'));
-    const unsubscribe = onSnapshot(suppliersQ, (querySnapshot) => {
-      const suppliersData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-      })) as Supplier[];
-      setSuppliers(suppliersData);
-      setLoading(false);
-    }, (error) => {
-      console.error('Error fetching suppliers:', error);
-      setLoading(false);
-    });
+  // Update state
+  useMemo(() => {
+    setSuppliers(suppliersData);
+  }, [suppliersData]);
 
-    // Store in global singleton
-    globalSupplierListeners.set(listenerKey, {
-      unsubscribe,
-      refCount: 1
-    });
-
-    // Return cleanup function
-    return () => {
-      const listener = globalSupplierListeners.get(listenerKey);
-      if (listener) {
-        listener.refCount--;
-        if (listener.refCount <= 0) {
-          listener.unsubscribe();
-          globalSupplierListeners.delete(listenerKey);
-        }
-      }
+  // Return empty data when no organizationId
+  if (!organizationId) {
+    return {
+      suppliers: [],
+      loading: false,
     };
-  }, [organizationId]);
-
-  const suppliersMemo = useMemo(() => suppliers, [suppliers]);
+  }
 
   return {
-    suppliers: suppliersMemo,
-    loading,
+    suppliers: suppliersData,
+    loading: suppliersQuery.isLoading,
   };
 }
 
 export function useSupplierActions(organizationId: string | undefined) {
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
+  
+  const updateSupplierMutation = useUpdateDocumentMutation(
+    doc(db, 'organizations', organizationId || 'dummy', 'suppliers', 'dummy')
+  );
+  
+  const addSupplierMutation = useAddDocumentMutation(
+    collection(db, 'organizations', organizationId || 'dummy', 'suppliers')
+  );
+  
+  const deleteSupplierMutation = useDeleteDocumentMutation(
+    doc(db, 'organizations', organizationId || 'dummy', 'suppliers', 'dummy')
+  );
 
   const updateSupplier = async (supplierId: string, supplierData: Partial<Supplier>) => {
     if (!organizationId) return;
@@ -88,7 +66,7 @@ export function useSupplierActions(organizationId: string | undefined) {
     setUpdatingStatus(supplierId);
     try {
       const supplierRef = doc(db, 'organizations', organizationId, 'suppliers', supplierId);
-      await updateDoc(supplierRef, {
+      await updateSupplierMutation.mutateAsync({
         ...supplierData,
         updatedAt: new Date(),
       });
@@ -114,7 +92,7 @@ export function useSupplierActions(organizationId: string | undefined) {
         updatedAt: new Date(),
       };
 
-      const docRef = await addDoc(collection(db, 'organizations', organizationId, 'suppliers'), cleanedData);
+      const docRef = await addSupplierMutation.mutateAsync(cleanedData);
       return docRef.id;
     } catch (error) {
       console.error('Error creating supplier:', error);
@@ -126,12 +104,23 @@ export function useSupplierActions(organizationId: string | undefined) {
     if (!organizationId) return;
 
     try {
-      await deleteDoc(doc(db, 'organizations', organizationId, 'suppliers', supplierId));
+      const supplierRef = doc(db, 'organizations', organizationId, 'suppliers', supplierId);
+      await deleteSupplierMutation.mutateAsync();
     } catch (error) {
       console.error('Error deleting supplier:', error);
       throw error;
     }
   };
+
+  // Return empty functions when no organizationId
+  if (!organizationId) {
+    return {
+      updateSupplier: async () => {},
+      createSupplier: async () => {},
+      deleteSupplier: async () => {},
+      updatingStatus: null,
+    };
+  }
 
   return {
     updateSupplier,

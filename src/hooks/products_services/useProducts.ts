@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useAtom } from 'jotai';
-import { collection, query, onSnapshot, updateDoc, doc, addDoc, deleteDoc } from 'firebase/firestore';
+import { collection, doc } from 'firebase/firestore';
+import { useCollectionQuery, useUpdateDocumentMutation, useAddDocumentMutation, useDeleteDocumentMutation } from '@tanstack-query-firebase/react/firestore';
 import { db } from '@/lib/firebase';
 import { Product } from '@/types';
 import {
@@ -11,76 +12,44 @@ import {
   productsErrorAtom
 } from '@/store/atoms';
 
-// Global singleton to prevent duplicate listeners
-const globalProductListeners = new Map<string, {
-  unsubscribe: () => void;
-  refCount: number;
-}>();
-
 export function useProductsData(organizationId: string | undefined) {
   const [products, setProducts] = useAtom(productsAtom);
   const [loading, setLoading] = useAtom(productsLoadingAtom);
 
-  useEffect(() => {
-    if (!organizationId) {
-      setLoading(false);
-      setProducts([]);
-      return;
+  // Always call the hook, but conditionally enable it
+  const productsQuery = useCollectionQuery(
+    collection(db, 'organizations', organizationId || 'dummy', 'products'),
+    {
+      queryKey: ['products', organizationId],
+      enabled: !!organizationId,
     }
+  );
 
-    const listenerKey = `products-${organizationId}`;
-    
-    // Check if listener already exists
-    if (globalProductListeners.has(listenerKey)) {
-      const existing = globalProductListeners.get(listenerKey)!;
-      existing.refCount++;
-      setLoading(false);
-      return () => {
-        existing.refCount--;
-        if (existing.refCount <= 0) {
-          existing.unsubscribe();
-          globalProductListeners.delete(listenerKey);
-        }
-      };
-    }
+  const productsData = useMemo(() => {
+    if (!productsQuery.data) return [];
+    return productsQuery.data.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: doc.data().createdAt?.toDate(),
+      updatedAt: doc.data().updatedAt?.toDate(),
+    })) as Product[];
+  }, [productsQuery.data]);
 
-    // Create new listener
-    setLoading(true);
-    const productsQ = query(collection(db, 'organizations', organizationId, 'products'));
-    const unsubscribe = onSnapshot(productsQ, (querySnapshot) => {
-      const productsData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-      })) as Product[];
-      setProducts(productsData);
-      setLoading(false);
-    }, (error) => {
-      console.error('Error fetching products:', error);
-      setLoading(false);
-    });
-
-    // Store in global singleton
-    globalProductListeners.set(listenerKey, {
-      unsubscribe,
-      refCount: 1
-    });
-
-    // Return cleanup function
-    return () => {
-      const listener = globalProductListeners.get(listenerKey);
-      if (listener) {
-        listener.refCount--;
-        if (listener.refCount <= 0) {
-          listener.unsubscribe();
-          globalProductListeners.delete(listenerKey);
-        }
-      }
-    };
-  }, [organizationId, setProducts, setLoading]);
+  // Update atoms
+  useMemo(() => {
+    setProducts(productsData);
+    setLoading(productsQuery.isLoading);
+  }, [productsData, productsQuery.isLoading, setProducts, setLoading]);
 
   const productsMemo = useMemo(() => products, [products]);
+
+  // Return empty data when no organizationId
+  if (!organizationId) {
+    return {
+      products: [],
+      loading: false,
+    };
+  }
 
   return {
     products: productsMemo,
@@ -90,6 +59,18 @@ export function useProductsData(organizationId: string | undefined) {
 
 export function useProductActions(organizationId: string | undefined) {
   const [updatingStatus, setUpdatingStatus] = useAtom(productsErrorAtom);
+  
+  const updateProductMutation = useUpdateDocumentMutation(
+    doc(db, 'organizations', organizationId || 'dummy', 'products', 'dummy')
+  );
+  
+  const addProductMutation = useAddDocumentMutation(
+    collection(db, 'organizations', organizationId || 'dummy', 'products')
+  );
+  
+  const deleteProductMutation = useDeleteDocumentMutation(
+    doc(db, 'organizations', organizationId || 'dummy', 'products', 'dummy')
+  );
 
   const updateProduct = async (productId: string, productData: Partial<Product>) => {
     if (!organizationId) return;
@@ -97,7 +78,7 @@ export function useProductActions(organizationId: string | undefined) {
     setUpdatingStatus(productId);
     try {
       const productRef = doc(db, 'organizations', organizationId, 'products', productId);
-      await updateDoc(productRef, {
+      await updateProductMutation.mutateAsync({
         ...productData,
         updatedAt: new Date(),
       });
@@ -122,7 +103,7 @@ export function useProductActions(organizationId: string | undefined) {
         updatedAt: new Date(),
       };
 
-      const docRef = await addDoc(collection(db, 'organizations', organizationId, 'products'), cleanedData);
+      const docRef = await addProductMutation.mutateAsync(cleanedData);
       return docRef.id;
     } catch (error) {
       console.error('Error creating product:', error);
@@ -134,12 +115,23 @@ export function useProductActions(organizationId: string | undefined) {
     if (!organizationId) return;
 
     try {
-      await deleteDoc(doc(db, 'organizations', organizationId, 'products', productId));
+      const productRef = doc(db, 'organizations', organizationId, 'products', productId);
+      await deleteProductMutation.mutateAsync();
     } catch (error) {
       console.error('Error deleting product:', error);
       throw error;
     }
   };
+
+  // Return empty functions when no organizationId
+  if (!organizationId) {
+    return {
+      updateProduct: async () => {},
+      createProduct: async () => {},
+      deleteProduct: async () => {},
+      updatingStatus: null,
+    };
+  }
 
   return {
     updateProduct,

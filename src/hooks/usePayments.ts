@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useAtom } from 'jotai';
-import { collection, query, onSnapshot } from 'firebase/firestore';
+import { collection } from 'firebase/firestore';
+import { useCollectionQuery, useAddDocumentMutation } from '@tanstack-query-firebase/react/firestore';
 import { db } from '@/lib/firebase';
 import { Payment } from '@/types';
 import {
@@ -11,84 +12,53 @@ import {
   invoicePaymentsErrorAtom
 } from '@/store/atoms';
 
-// Global singleton to prevent duplicate listeners
-const globalPaymentListeners = new Map<string, {
-  unsubscribe: () => void;
-  refCount: number;
-}>();
-
 export function usePaymentsData(organizationId: string | undefined) {
   const [payments, setPayments] = useAtom(invoicePaymentsAtom);
   const [loading, setLoading] = useAtom(invoicePaymentsLoadingAtom);
 
-  useEffect(() => {
-    if (!organizationId) {
-      setLoading(false);
-      return;
+  // Always call the hook, but conditionally enable it
+  const paymentsQuery = useCollectionQuery(
+    collection(db, 'organizations', organizationId || 'dummy', 'payments'),
+    {
+      queryKey: ['payments', organizationId],
+      enabled: !!organizationId,
     }
+  );
 
-    const listenerKey = `payments-${organizationId}`;
-    
-    // Check if listener already exists
-    if (globalPaymentListeners.has(listenerKey)) {
-      const existing = globalPaymentListeners.get(listenerKey)!;
-      existing.refCount++;
-      setLoading(false);
-      return () => {
-        existing.refCount--;
-        if (existing.refCount <= 0) {
-          existing.unsubscribe();
-          globalPaymentListeners.delete(listenerKey);
-        }
-      };
-    }
-
-    // Create new listener
-    setLoading(true);
-    const paymentsQ = query(collection(db, 'organizations', organizationId, 'payments'));
-    const unsubscribe = onSnapshot(paymentsQ, (querySnapshot) => {
-      const paymentsData = querySnapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          organizationId: data.organizationId || '',
-          invoiceId: data.invoiceId || '',
-          amount: data.amount || 0,
-          paymentDate: data.paymentDate?.toDate() || new Date(),
-          paymentMethod: data.paymentMethod || '',
-          reference: data.reference,
-          notes: data.notes,
-          createdAt: data.createdAt?.toDate() || new Date(),
-          updatedAt: data.updatedAt?.toDate() || new Date(),
-        } as Payment;
-      });
-      setPayments(paymentsData);
-      setLoading(false);
-    }, (error) => {
-      console.error('Error fetching payments:', error);
-      setLoading(false);
+  const paymentsData = useMemo(() => {
+    if (!paymentsQuery.data) return [];
+    return paymentsQuery.data.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        organizationId: data.organizationId || '',
+        invoiceId: data.invoiceId || '',
+        amount: data.amount || 0,
+        paymentDate: data.paymentDate?.toDate() || new Date(),
+        paymentMethod: data.paymentMethod || '',
+        reference: data.reference,
+        notes: data.notes,
+        createdAt: data.createdAt?.toDate() || new Date(),
+        updatedAt: data.updatedAt?.toDate() || new Date(),
+      } as Payment;
     });
+  }, [paymentsQuery.data]);
 
-    // Store in global singleton
-    globalPaymentListeners.set(listenerKey, {
-      unsubscribe,
-      refCount: 1
-    });
-
-    // Return cleanup function
-    return () => {
-      const listener = globalPaymentListeners.get(listenerKey);
-      if (listener) {
-        listener.refCount--;
-        if (listener.refCount <= 0) {
-          listener.unsubscribe();
-          globalPaymentListeners.delete(listenerKey);
-        }
-      }
-    };
-  }, [organizationId]);
+  // Update atoms
+  useMemo(() => {
+    setPayments(paymentsData);
+    setLoading(paymentsQuery.isLoading);
+  }, [paymentsData, paymentsQuery.isLoading, setPayments, setLoading]);
 
   const paymentsMemo = useMemo(() => payments, [payments]);
+
+  // Return empty data when no organizationId
+  if (!organizationId) {
+    return {
+      payments: [],
+      loading: false,
+    };
+  }
 
   return {
     payments: paymentsMemo,
@@ -97,6 +67,10 @@ export function usePaymentsData(organizationId: string | undefined) {
 }
 
 export function usePaymentsActions(organizationId: string | undefined) {
+  const addPaymentMutation = useAddDocumentMutation(
+    collection(db, 'organizations', organizationId || 'dummy', 'payments')
+  );
+
   const createPayment = async (paymentData: {
     invoiceId: string;
     amount: number;
@@ -109,9 +83,6 @@ export function usePaymentsActions(organizationId: string | undefined) {
       throw new Error('Organization ID is required');
     }
 
-    const { addDoc, collection } = await import('firebase/firestore');
-    const { db } = await import('@/lib/firebase');
-
     const payment = {
       organizationId,
       ...paymentData,
@@ -119,9 +90,16 @@ export function usePaymentsActions(organizationId: string | undefined) {
       updatedAt: new Date(),
     };
 
-    const docRef = await addDoc(collection(db, 'organizations', organizationId, 'payments'), payment);
+    const docRef = await addPaymentMutation.mutateAsync(payment);
     return docRef.id;
   };
+
+  // Return empty function when no organizationId
+  if (!organizationId) {
+    return {
+      createPayment: async () => { throw new Error('Organization ID is required'); },
+    };
+  }
 
   return {
     createPayment,

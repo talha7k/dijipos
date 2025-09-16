@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -53,8 +52,12 @@ export function OrderSummaryCard({
   className = "",
 }: OrderSummaryCardProps) {
   const { selectedOrganization } = useAuthState();
-  const { printerSettings } = usePrinterSettingsData(selectedOrganization?.id || undefined);
-  const { receiptTemplates = [] } = useReceiptTemplatesData(selectedOrganization?.id || '');
+  const { printerSettings } = usePrinterSettingsData(
+    selectedOrganization?.id || undefined
+  );
+  const { receiptTemplates = [] } = useReceiptTemplatesData(
+    selectedOrganization?.id || ""
+  );
 
   // Calculate payment amounts for display, but use order.paid for status
   const calculatedTotalPaid =
@@ -105,9 +108,7 @@ export function OrderSummaryCard({
   return (
     <Card
       className={`${
-        onClick
-          ? " hover:shadow-lg transition-all duration-200"
-          : ""
+        onClick ? " hover:shadow-lg transition-all duration-200" : ""
       } ${className}`}
     >
       <CardContent className="space-y-4">
@@ -166,11 +167,7 @@ export function OrderSummaryCard({
               receiptTemplates={receiptTemplates}
               payments={payments}
             >
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full"
-              >
+              <Button variant="outline" size="sm" className="w-full">
                 <Printer className="h-4 w-4 mr-2" />
                 Print Receipt
               </Button>
@@ -178,46 +175,57 @@ export function OrderSummaryCard({
           </div>
         )}
 
-        <div onClick={onClick ? () => onClick(order) : undefined}className="space-y-2 cursor-pointer">
+        <div
+          onClick={onClick ? () => onClick(order) : undefined}
+          className="space-y-2 cursor-pointer"
+        >
           <div className="flex-row justify-center text-center items-center bg-muted/70 rounded-lg py-2 my-4">
-            <span className="text-center">Order Number:</span>
-            <br />
             <span className="font-bold">{order.orderNumber}</span>
+            <br/>
+            {showCreatedDate && (
+                    <span className="text-xs text-muted-foreground">
+                      {order.createdAt.toLocaleString()}
+                    </span>
+               )}
           </div>
 
-           <div className="flex justify-between">
-             <span>Order Total:</span>
-             <span className="font-bold">${(order.total || 0).toFixed(2)}</span>
-           </div>
+          <div className="flex justify-between">
+            <span>Order Total:</span>
+            <span className="font-bold">${(order.total || 0).toFixed(2)}</span>
+          </div>
 
           {totalPaid !== undefined && (
             <div className="flex justify-between">
               <span>Total Paid:</span>
-               <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                 ${(totalPaid || 0).toFixed(2)}
-               </span>
+              <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                ${(totalPaid || 0).toFixed(2)}
+              </span>
             </div>
           )}
 
           {remainingAmount !== undefined && (
             <div className="flex justify-between border-t pt-2">
               <span className="font-bold">Remaining:</span>
-               <span
-                 className={`font-bold ${
-                   remainingAmount > 0 ? "text-destructive" : "text-emerald-600 dark:text-emerald-400"
-                 }`}
-               >
-                 ${(remainingAmount || 0).toFixed(2)}
-               </span>
+              <span
+                className={`font-bold ${
+                  remainingAmount > 0
+                    ? "text-destructive"
+                    : "text-emerald-600 dark:text-emerald-400"
+                }`}
+              >
+                ${(remainingAmount || 0).toFixed(2)}
+              </span>
             </div>
           )}
 
           {changeDue !== undefined && changeDue > 0 && (
             <div className="flex justify-between">
-              <span className="font-bold text-emerald-600 dark:text-emerald-400">Change Due:</span>
-               <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                 ${(changeDue || 0).toFixed(2)}
-               </span>
+              <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                Change Due:
+              </span>
+              <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                ${(changeDue || 0).toFixed(2)}
+              </span>
             </div>
           )}
 
@@ -238,12 +246,7 @@ export function OrderSummaryCard({
                 <span className="capitalize">{order.orderType}</span>
               </div>
 
-              {showCreatedDate && (
-                <div className="flex justify-between">
-                  <span>Created:</span>
-                  <span>{order.createdAt.toLocaleString()}</span>
-                </div>
-              )}
+              
 
               {showItemCount && (
                 <div className="flex justify-between">

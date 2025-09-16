@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useAtom } from 'jotai';
-import { collection, query, onSnapshot, updateDoc, doc, addDoc, deleteDoc } from 'firebase/firestore';
+import { collection, doc } from 'firebase/firestore';
+import { useCollectionQuery, useUpdateDocumentMutation, useAddDocumentMutation, useDeleteDocumentMutation } from '@tanstack-query-firebase/react/firestore';
 import { db } from '@/lib/firebase';
 import { Table } from '@/types';
 import {
@@ -11,83 +12,45 @@ import {
   tablesErrorAtom
 } from '@/store/atoms';
 
-// Global singleton to prevent duplicate listeners
-const globalTableListeners = new Map<string, {
-  unsubscribe: () => void;
-  refCount: number;
-}>();
-
 export function useTablesData(organizationId: string | undefined) {
   const [tables, setTables] = useAtom(tablesAtom);
   const [loading, setLoading] = useAtom(tablesLoadingAtom);
 
-  useEffect(() => {
-    if (!organizationId) {
-      setLoading(false);
-      setTables([]);
-      return;
+  // Always call the hook, but conditionally enable it
+  const tablesQuery = useCollectionQuery(
+    collection(db, 'organizations', organizationId || 'dummy', 'tables'),
+    {
+      queryKey: ['tables', organizationId],
+      enabled: !!organizationId,
     }
+  );
 
-    const listenerKey = `tables-${organizationId}`;
-    
-    // Check if listener already exists
-    if (globalTableListeners.has(listenerKey)) {
-      const existing = globalTableListeners.get(listenerKey)!;
-      existing.refCount++;
-      console.log('useTablesData: Global listener already exists for organization:', organizationId);
-      setLoading(false);
-      return () => {
-        existing.refCount--;
-        if (existing.refCount <= 0) {
-          existing.unsubscribe();
-          globalTableListeners.delete(listenerKey);
-        }
-      };
-    }
+  const tablesData = useMemo(() => {
+    if (!tablesQuery.data) return [];
+    return tablesQuery.data.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: doc.data().createdAt?.toDate(),
+      updatedAt: doc.data().updatedAt?.toDate(),
+    })) as Table[];
+  }, [tablesQuery.data]);
 
-    // Set loading to true when starting to fetch
-    setLoading(true);
-
-    // Fetch tables with real-time updates
-    const tablesQ = query(collection(db, 'organizations', organizationId, 'tables'));
-    console.log('useTablesData: Setting up global listener for organization:', organizationId);
-    
-    const unsubscribe = onSnapshot(tablesQ, (querySnapshot) => {
-      console.log('useTablesData: Received snapshot with', querySnapshot.size, 'documents');
-      const tablesData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-      })) as Table[];
-      setTables(tablesData);
-      setLoading(false);
-    }, (error) => {
-      console.error('useTablesData: Error fetching tables:', error);
-      setLoading(false);
-    });
-
-    // Store in global singleton
-    globalTableListeners.set(listenerKey, {
-      unsubscribe,
-      refCount: 1
-    });
-
-    // Return cleanup function
-    return () => {
-      const listener = globalTableListeners.get(listenerKey);
-      if (listener) {
-        listener.refCount--;
-        if (listener.refCount <= 0) {
-          listener.unsubscribe();
-          globalTableListeners.delete(listenerKey);
-        }
-      }
-    };
-  }, [organizationId, setTables, setLoading]);
+  // Update atoms
+  useMemo(() => {
+    setTables(tablesData);
+    setLoading(tablesQuery.isLoading);
+  }, [tablesData, tablesQuery.isLoading, setTables, setLoading]);
 
   // Memoize the tables array to prevent unnecessary re-renders
   const memoizedTables = useMemo(() => tables, [tables]);
+
+  // Return empty data when no organizationId
+  if (!organizationId) {
+    return {
+      tables: [],
+      loading: false,
+    };
+  }
 
   return {
     tables: memoizedTables,
@@ -97,6 +60,18 @@ export function useTablesData(organizationId: string | undefined) {
 
 export function useTableActions(organizationId: string | undefined) {
   const [updatingStatus, setUpdatingStatus] = useAtom(tablesErrorAtom);
+  
+  const updateTableMutation = useUpdateDocumentMutation(
+    doc(db, 'organizations', organizationId || 'dummy', 'tables', 'dummy')
+  );
+  
+  const addTableMutation = useAddDocumentMutation(
+    collection(db, 'organizations', organizationId || 'dummy', 'tables')
+  );
+  
+  const deleteTableMutation = useDeleteDocumentMutation(
+    doc(db, 'organizations', organizationId || 'dummy', 'tables', 'dummy')
+  );
 
   const updateTable = async (tableId: string, tableData: Partial<Table>) => {
     if (!organizationId) return;
@@ -104,7 +79,7 @@ export function useTableActions(organizationId: string | undefined) {
     setUpdatingStatus(tableId);
     try {
       const tableRef = doc(db, 'organizations', organizationId, 'tables', tableId);
-      await updateDoc(tableRef, {
+      await updateTableMutation.mutateAsync({
         ...tableData,
         updatedAt: new Date(),
       });
@@ -127,7 +102,7 @@ export function useTableActions(organizationId: string | undefined) {
         updatedAt: new Date(),
       };
 
-      const docRef = await addDoc(collection(db, 'organizations', organizationId, 'tables'), cleanedData);
+      const docRef = await addTableMutation.mutateAsync(cleanedData);
       return docRef.id;
     } catch (error) {
       console.error('Error creating table:', error);
@@ -139,12 +114,23 @@ export function useTableActions(organizationId: string | undefined) {
     if (!organizationId) return;
 
     try {
-      await deleteDoc(doc(db, 'organizations', organizationId, 'tables', tableId));
+      const tableRef = doc(db, 'organizations', organizationId, 'tables', tableId);
+      await deleteTableMutation.mutateAsync();
     } catch (error) {
       console.error('Error deleting table:', error);
       throw error;
     }
   };
+
+  // Return empty functions when no organizationId
+  if (!organizationId) {
+    return {
+      updateTable: async () => {},
+      createTable: async () => {},
+      deleteTable: async () => {},
+      updatingStatus: null,
+    };
+  }
 
   return {
     updateTable,

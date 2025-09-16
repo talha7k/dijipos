@@ -1,15 +1,10 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
-import { collection, query, onSnapshot, updateDoc, doc, addDoc, deleteDoc } from 'firebase/firestore';
+import { useState, useMemo } from 'react';
+import { collection, doc } from 'firebase/firestore';
+import { useCollectionQuery, useAddDocumentMutation, useUpdateDocumentMutation, useDeleteDocumentMutation } from '@tanstack-query-firebase/react/firestore';
 import { db } from '@/lib/firebase';
 import { Category } from '@/types';
-
-// Global singleton to prevent duplicate listeners
-const globalCategoryListeners = new Map<string, {
-  unsubscribe: () => void;
-  refCount: number;
-}>();
 
 export interface UseCategoriesDataResult {
   categories: Category[];
@@ -25,74 +20,47 @@ export function useCategoriesData(organizationId: string | undefined): UseCatego
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!organizationId) {
-      setLoading(false);
-      return;
+  // Always call the hook, but conditionally enable it
+  const categoriesQuery = useCollectionQuery(
+    collection(db, 'organizations', organizationId || 'dummy', 'categories'),
+    {
+      queryKey: ['categories', organizationId],
+      enabled: !!organizationId,
     }
+  );
 
-    const listenerKey = `categories-${organizationId}`;
-    
-    // Check if listener already exists
-    if (globalCategoryListeners.has(listenerKey)) {
-      const existing = globalCategoryListeners.get(listenerKey)!;
-      existing.refCount++;
-      setLoading(false);
-      return () => {
-        existing.refCount--;
-        if (existing.refCount <= 0) {
-          existing.unsubscribe();
-          globalCategoryListeners.delete(listenerKey);
-        }
-      };
-    }
+  const categoriesData = useMemo(() => {
+    if (!categoriesQuery.data) return [];
+    return categoriesQuery.data.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as Category[];
+  }, [categoriesQuery.data]);
 
-    // Create new listener
-    setLoading(true);
-    setError(null);
+  // Update state
+  useMemo(() => {
+    setCategories(categoriesData);
+    setLoading(categoriesQuery.isLoading);
+    setError(categoriesQuery.error?.message || null);
+  }, [categoriesData, categoriesQuery.isLoading, categoriesQuery.error]);
 
-    const categoriesQuery = query(collection(db, 'organizations', organizationId, 'categories'));
-
-    const unsubscribe = onSnapshot(
-      categoriesQuery,
-      (snapshot) => {
-        const categoriesData = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        })) as Category[];
-        setCategories(categoriesData);
-        setLoading(false);
-      },
-      (err) => {
-        console.error('Error fetching categories:', err);
-        setError('Failed to load categories');
-        setLoading(false);
-      }
-    );
-
-    // Store in global singleton
-    globalCategoryListeners.set(listenerKey, {
-      unsubscribe,
-      refCount: 1
-    });
-
-    return () => {
-      const listener = globalCategoryListeners.get(listenerKey);
-      if (listener) {
-        listener.refCount--;
-        if (listener.refCount <= 0) {
-          listener.unsubscribe();
-          globalCategoryListeners.delete(listenerKey);
-        }
-      }
-    };
-  }, [organizationId]);
+  const addCategoryMutation = useAddDocumentMutation(
+    collection(db, 'organizations', organizationId || 'dummy', 'categories')
+  );
+  
+  const updateCategoryMutation = useUpdateDocumentMutation(
+    doc(db, 'organizations', organizationId || 'dummy', 'categories', 'dummy')
+  );
+  
+  const deleteCategoryMutation = useDeleteDocumentMutation(
+    doc(db, 'organizations', organizationId || 'dummy', 'categories', 'dummy')
+  );
 
   const createCategory = async (categoryData: Omit<Category, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => {
     if (!organizationId) return;
 
     try {
-      await addDoc(collection(db, 'organizations', organizationId, 'categories'), {
+      await addCategoryMutation.mutateAsync({
         ...categoryData,
         organizationId,
         createdAt: new Date(),
@@ -108,7 +76,8 @@ export function useCategoriesData(organizationId: string | undefined): UseCatego
     if (!organizationId) return;
 
     try {
-      await updateDoc(doc(db, 'organizations', organizationId, 'categories', id), {
+      const categoryRef = doc(db, 'organizations', organizationId, 'categories', id);
+      await updateCategoryMutation.mutateAsync({
         ...updates,
         updatedAt: new Date()
       });
@@ -122,7 +91,8 @@ export function useCategoriesData(organizationId: string | undefined): UseCatego
     if (!organizationId) return;
 
     try {
-      await deleteDoc(doc(db, 'organizations', organizationId, 'categories', id));
+      const categoryRef = doc(db, 'organizations', organizationId, 'categories', id);
+      await deleteCategoryMutation.mutateAsync();
     } catch (err) {
       console.error('Error deleting category:', err);
       throw err;
@@ -130,6 +100,18 @@ export function useCategoriesData(organizationId: string | undefined): UseCatego
   };
 
   const categoriesMemo = useMemo(() => categories, [categories]);
+
+  // Return empty data when no organizationId
+  if (!organizationId) {
+    return {
+      categories: [],
+      loading: false,
+      error: null,
+      createCategory: async () => {},
+      updateCategory: async () => {},
+      deleteCategory: async () => {},
+    };
+  }
 
   return {
     categories: categoriesMemo,

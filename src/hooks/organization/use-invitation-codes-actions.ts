@@ -1,8 +1,17 @@
-import { addDoc, collection, deleteDoc, doc } from 'firebase/firestore';
+import { collection, doc } from 'firebase/firestore';
+import { useAddDocumentMutation, useDeleteDocumentMutation } from '@tanstack-query-firebase/react/firestore';
 import { db } from '@/lib/firebase';
 import { UserRole } from '@/types';
 
 export function useInvitationCodesActions(organizationId: string | undefined) {
+  const addInvitationCodeMutation = useAddDocumentMutation(
+    collection(db, 'organizations', organizationId || 'dummy', 'invitationCodes')
+  );
+  
+  const deleteInvitationCodeMutation = useDeleteDocumentMutation(
+    doc(db, 'organizations', organizationId || 'dummy', 'invitationCodes', 'dummy')
+  );
+
   const createInvitationCode = async (invitationData: {
     code: string;
     role: UserRole;
@@ -19,7 +28,7 @@ export function useInvitationCodesActions(organizationId: string | undefined) {
       createdAt: new Date(),
     };
 
-    const docRef = await addDoc(collection(db, 'organizations', organizationId, 'invitationCodes'), invitationCode);
+    const docRef = await addInvitationCodeMutation.mutateAsync(invitationCode);
     return docRef.id;
   };
 
@@ -44,7 +53,7 @@ export function useInvitationCodesActions(organizationId: string | undefined) {
     }
 
     const codeRef = doc(db, 'organizations', organizationId, 'invitationCodes', codeId);
-    await deleteDoc(codeRef);
+    await deleteInvitationCodeMutation.mutateAsync();
   };
 
   return {

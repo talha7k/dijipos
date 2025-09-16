@@ -164,7 +164,7 @@ export default function SimplifiedPOSPage() {
 
         <POSMainContent>
            <POSViewsManager
-             currentView={currentView}
+             currentView={currentView as import('./components/POSViewsManager').POSViewType}
             products={products}
             services={services}
             categories={categories}
@@ -185,7 +185,9 @@ export default function SimplifiedPOSPage() {
             onOrderSelect={handleOrderReopen}
             onPayOrder={() => {}}
             onBackToItems={handleBackToItems}
-            onPaymentProcessed={handlePaymentProcessed}
+            onPaymentProcessed={async (payments) => {
+              await handlePaymentProcessed(payments);
+            }}
           />
         </POSMainContent>
       </POSLeftColumn>

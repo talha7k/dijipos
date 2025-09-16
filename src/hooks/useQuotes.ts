@@ -1,78 +1,48 @@
-import { useState, useEffect, useMemo } from 'react';
-import { collection, query, onSnapshot, updateDoc, doc, addDoc, deleteDoc } from 'firebase/firestore';
+import { useState, useMemo } from 'react';
+import { collection, doc } from 'firebase/firestore';
+import { useCollectionQuery, useUpdateDocumentMutation, useAddDocumentMutation, useDeleteDocumentMutation } from '@tanstack-query-firebase/react/firestore';
 import { db } from '@/lib/firebase';
 import { Quote } from '@/types';
-
-// Global singleton to prevent duplicate listeners
-const globalQuoteListeners = new Map<string, {
-  unsubscribe: () => void;
-  refCount: number;
-}>();
 
 export function useQuotesData(organizationId: string | undefined) {
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!organizationId) {
-      setLoading(false);
-      return;
+  // Always call the hook, but conditionally enable it
+  const quotesQuery = useCollectionQuery(
+    collection(db, 'organizations', organizationId || 'dummy', 'quotes'),
+    {
+      queryKey: ['quotes', organizationId],
+      enabled: !!organizationId,
     }
+  );
 
-    const listenerKey = `quotes-${organizationId}`;
-    
-    // Check if listener already exists
-    if (globalQuoteListeners.has(listenerKey)) {
-      const existing = globalQuoteListeners.get(listenerKey)!;
-      existing.refCount++;
-      setLoading(false);
-      return () => {
-        existing.refCount--;
-        if (existing.refCount <= 0) {
-          existing.unsubscribe();
-          globalQuoteListeners.delete(listenerKey);
-        }
-      };
-    }
+  const quotesData = useMemo(() => {
+    if (!quotesQuery.data) return [];
+    return quotesQuery.data.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: doc.data().createdAt?.toDate(),
+      updatedAt: doc.data().updatedAt?.toDate(),
+      validUntil: doc.data().validUntil?.toDate(),
+    })) as Quote[];
+  }, [quotesQuery.data]);
 
-    // Create new listener
-    setLoading(true);
-    const quotesQ = query(collection(db, 'organizations', organizationId, 'quotes'));
-    const unsubscribe = onSnapshot(quotesQ, (querySnapshot) => {
-      const quotesData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-        validUntil: doc.data().validUntil?.toDate(),
-      })) as Quote[];
-      setQuotes(quotesData);
-      setLoading(false);
-    }, (error) => {
-      console.error('Error fetching quotes:', error);
-      setLoading(false);
-    });
-
-    // Store in global singleton
-    globalQuoteListeners.set(listenerKey, {
-      unsubscribe,
-      refCount: 1
-    });
-
-    // Return cleanup function
-    return () => {
-      const listener = globalQuoteListeners.get(listenerKey);
-      if (listener) {
-        listener.refCount--;
-        if (listener.refCount <= 0) {
-          listener.unsubscribe();
-          globalQuoteListeners.delete(listenerKey);
-        }
-      }
-    };
-  }, [organizationId]);
+  // Update state
+  useMemo(() => {
+    setQuotes(quotesData);
+    setLoading(quotesQuery.isLoading);
+  }, [quotesData, quotesQuery.isLoading]);
 
   const quotesMemo = useMemo(() => quotes, [quotes]);
+
+  // Return empty data when no organizationId
+  if (!organizationId) {
+    return {
+      quotes: [],
+      loading: false,
+    };
+  }
 
   return {
     quotes: quotesMemo,
@@ -82,6 +52,18 @@ export function useQuotesData(organizationId: string | undefined) {
 
 export function useQuoteActions(organizationId: string | undefined) {
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
+  
+  const updateQuoteMutation = useUpdateDocumentMutation(
+    doc(db, 'organizations', organizationId || 'dummy', 'quotes', 'dummy')
+  );
+  
+  const addQuoteMutation = useAddDocumentMutation(
+    collection(db, 'organizations', organizationId || 'dummy', 'quotes')
+  );
+  
+  const deleteQuoteMutation = useDeleteDocumentMutation(
+    doc(db, 'organizations', organizationId || 'dummy', 'quotes', 'dummy')
+  );
 
   const updateQuote = async (quoteId: string, quoteData: Partial<Quote>) => {
     if (!organizationId) return;
@@ -89,7 +71,7 @@ export function useQuoteActions(organizationId: string | undefined) {
     setUpdatingStatus(quoteId);
     try {
       const quoteRef = doc(db, 'organizations', organizationId, 'quotes', quoteId);
-      await updateDoc(quoteRef, {
+      await updateQuoteMutation.mutateAsync({
         ...quoteData,
         updatedAt: new Date(),
       });
@@ -120,7 +102,7 @@ export function useQuoteActions(organizationId: string | undefined) {
         updatedAt: new Date(),
       };
 
-      const docRef = await addDoc(collection(db, 'organizations', organizationId, 'quotes'), cleanedData);
+      const docRef = await addQuoteMutation.mutateAsync(cleanedData);
       return docRef.id;
     } catch (error) {
       console.error('Error creating quote:', error);
@@ -132,12 +114,23 @@ export function useQuoteActions(organizationId: string | undefined) {
     if (!organizationId) return;
 
     try {
-      await deleteDoc(doc(db, 'organizations', organizationId, 'quotes', quoteId));
+      const quoteRef = doc(db, 'organizations', organizationId, 'quotes', quoteId);
+      await deleteQuoteMutation.mutateAsync();
     } catch (error) {
       console.error('Error deleting quote:', error);
       throw error;
     }
   };
+
+  // Return empty functions when no organizationId
+  if (!organizationId) {
+    return {
+      updateQuote: async () => {},
+      createQuote: async () => {},
+      deleteQuote: async () => {},
+      updatingStatus: null,
+    };
+  }
 
   return {
     updateQuote,

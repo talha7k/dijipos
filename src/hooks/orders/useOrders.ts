@@ -1,8 +1,10 @@
 'use client';
 
-import { useEffect, useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useEffect } from 'react';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
-import { collection, query, onSnapshot, addDoc, updateDoc, doc, deleteDoc, Timestamp, getDoc } from 'firebase/firestore';
+import { collection, doc, Timestamp } from 'firebase/firestore';
+import { useCollectionQuery } from '@tanstack-query-firebase/react/firestore';
+import { addDoc, updateDoc, deleteDoc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Order, OrderPayment, OrderStatus, TableStatus } from '@/types';
 import { useAuthState } from '@/hooks/useAuthState';
@@ -80,40 +82,31 @@ export function useOrders(organizationId: string | undefined): UseOrdersResult {
   const [paymentsRefreshKey, setPaymentsRefreshKey] = useAtom(paymentsRefreshKeyAtom);
 
   // Fetch orders
-  useEffect(() => {
-    if (!organizationId) {
-      setLoading(false);
-      setOrders([]);
-      return;
+  const ordersQuery = useCollectionQuery(
+    collection(db, 'organizations', organizationId || 'dummy', 'orders'),
+    {
+      queryKey: ['orders', organizationId],
+      enabled: !!organizationId,
     }
+  );
 
-    setLoading(true);
-    setError(null);
+  // Process orders data
+  const ordersData = useMemo(() => {
+    if (!ordersQuery.data) return [];
+    return ordersQuery.data.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: doc.data().createdAt?.toDate(),
+      updatedAt: doc.data().updatedAt?.toDate(),
+    })) as Order[];
+  }, [ordersQuery.data]);
 
-    const ordersQuery = query(collection(db, 'organizations', organizationId, 'orders'));
-    const unsubscribe = onSnapshot(ordersQuery, (querySnapshot) => {
-      try {
-        const ordersData = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          createdAt: doc.data().createdAt?.toDate(),
-          updatedAt: doc.data().updatedAt?.toDate(),
-        })) as Order[];
-        setOrders(ordersData);
-        setLoading(false);
-      } catch (err) {
-        console.error('Error processing orders:', err);
-        setError('Failed to process orders');
-        setLoading(false);
-      }
-    }, (err) => {
-      console.error('Error fetching orders:', err);
-      setError('Failed to fetch orders');
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [organizationId, ordersRefreshKey, setOrders, setLoading, setError]);
+  // Update orders atom
+  useMemo(() => {
+    setOrders(ordersData);
+    setLoading(ordersQuery.isLoading);
+    setError(ordersQuery.error?.message || null);
+  }, [ordersData, ordersQuery.isLoading, ordersQuery.error, setOrders, setLoading, setError]);
 
   // Keep selectedOrder in sync with updated orders list
   useEffect(() => {
@@ -128,63 +121,57 @@ export function useOrders(organizationId: string | undefined): UseOrdersResult {
   
 
   // Fetch payments
-  useEffect(() => {
-    if (!organizationId) {
-      setPaymentsLoading(false);
-      setOrderPayments({});
-      return;
+  const paymentsQuery = useCollectionQuery(
+    collection(db, 'organizations', organizationId || 'dummy', 'orderPayments'),
+    {
+      queryKey: ['orderPayments', organizationId, paymentsRefreshKey],
+      enabled: !!organizationId,
     }
+  );
 
-    setPaymentsLoading(true);
-    setPaymentsError(null);
 
-    const paymentsQuery = query(collection(db, 'organizations', organizationId, 'orderPayments'));
-    const unsubscribe = onSnapshot(paymentsQuery, (querySnapshot) => {
-      try {
-        const paymentsData = querySnapshot.docs.map(doc => {
-          const data = doc.data();
-          const paymentDate = data.paymentDate?.toDate ? data.paymentDate.toDate() : new Date(data.paymentDate);
-          const createdAt = data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
-          
-          return {
-            id: doc.id,
-            ...data,
-            paymentDate,
-            createdAt,
-          } as OrderPayment;
-        });
 
-        // Group payments by orderId
-        const paymentsByOrder: { [orderId: string]: OrderPayment[] } = {};
-        paymentsData.forEach(payment => {
-          if (!paymentsByOrder[payment.orderId]) {
-            paymentsByOrder[payment.orderId] = [];
-          }
-          paymentsByOrder[payment.orderId].push(payment);
-        });
+  // Process payments data
+  const paymentsData = useMemo(() => {
+    if (!paymentsQuery.data) return {};
+    const payments = paymentsQuery.data.docs.map(doc => {
+      const data = doc.data();
+      const paymentDate = data.paymentDate?.toDate ? data.paymentDate.toDate() : new Date(data.paymentDate);
+      const createdAt = data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
 
-        // Sort payments by date for each order
-        Object.keys(paymentsByOrder).forEach(orderId => {
-          paymentsByOrder[orderId].sort((a, b) => 
-            new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime()
-          );
-        });
-
-        setOrderPayments(paymentsByOrder);
-        setPaymentsLoading(false);
-      } catch (err) {
-        console.error('Error processing payments:', err);
-        setPaymentsError('Failed to process payments');
-        setPaymentsLoading(false);
-      }
-    }, (err) => {
-      console.error('Error fetching payments:', err);
-      setPaymentsError('Failed to fetch payments');
-      setPaymentsLoading(false);
+      return {
+        id: doc.id,
+        ...data,
+        paymentDate,
+        createdAt,
+      } as OrderPayment;
     });
 
-    return () => unsubscribe();
-  }, [organizationId, paymentsRefreshKey, setOrderPayments, setPaymentsLoading, setPaymentsError]);
+    // Group payments by orderId
+    const paymentsByOrder: { [orderId: string]: OrderPayment[] } = {};
+    payments.forEach(payment => {
+      if (!paymentsByOrder[payment.orderId]) {
+        paymentsByOrder[payment.orderId] = [];
+      }
+      paymentsByOrder[payment.orderId].push(payment);
+    });
+
+    // Sort payments by date for each order
+    Object.keys(paymentsByOrder).forEach(orderId => {
+      paymentsByOrder[orderId].sort((a, b) =>
+        new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime()
+      );
+    });
+
+    return paymentsByOrder;
+  }, [paymentsQuery.data]);
+
+  // Update payments atom
+  useMemo(() => {
+    setOrderPayments(paymentsData);
+    setPaymentsLoading(paymentsQuery.isLoading);
+    setPaymentsError(paymentsQuery.error?.message || null);
+  }, [paymentsData, paymentsQuery.isLoading, paymentsQuery.error, setOrderPayments, setPaymentsLoading, setPaymentsError]);
 
   // Order CRUD operations
   const createOrder = useCallback(async (orderData: Omit<Order, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>): Promise<string> => {

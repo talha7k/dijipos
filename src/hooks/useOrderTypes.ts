@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useCallback, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useAtom, useAtomValue } from 'jotai';
-import { collection, query, onSnapshot, addDoc, updateDoc, doc, deleteDoc } from 'firebase/firestore';
+import { collection, doc } from 'firebase/firestore';
+import { useCollectionQuery, useUpdateDocumentMutation, useAddDocumentMutation, useDeleteDocumentMutation } from '@tanstack-query-firebase/react/firestore';
 import { db } from '@/lib/firebase';
 import { OrderType } from '@/types';
 import { useAuthState } from '@/hooks/useAuthState';
@@ -12,11 +13,6 @@ import {
   orderTypesErrorAtom,
   orderTypesRefreshKeyAtom
 } from '@/store/atoms';
-
-// Global singleton to track active listeners
-const globalListeners = {
-  orderTypes: null as { unsubscribe: () => void; organizationId: string } | null
-};
 
 export interface UseOrderTypesResult {
   orderTypes: OrderType[];
@@ -43,65 +39,43 @@ export function useOrderTypes(organizationId: string | undefined): UseOrderTypes
   // Refresh key
   const [_orderTypesRefreshKey, setOrderTypesRefreshKey] = useAtom(orderTypesRefreshKeyAtom);
 
-  // Fetch order types
-  useEffect(() => {
-    if (!organizationId) {
-      setLoading(false);
-      setOrderTypes([]);
-      return;
+  // Always call the hook, but conditionally enable it
+  const orderTypesQuery = useCollectionQuery(
+    collection(db, 'organizations', organizationId || 'dummy', 'orderTypes'),
+    {
+      queryKey: ['orderTypes', organizationId],
+      enabled: !!organizationId,
     }
+  );
 
-    // Check if we already have a listener for this organization globally
-    if (globalListeners.orderTypes && globalListeners.orderTypes.organizationId === organizationId) {
-      console.log('useOrderTypes: Global listener already exists for organization:', organizationId);
-      return;
-    }
+  const orderTypesData = useMemo(() => {
+    if (!orderTypesQuery.data) return [];
+    return orderTypesQuery.data.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: doc.data().createdAt?.toDate(),
+      updatedAt: doc.data().updatedAt?.toDate(),
+    })) as OrderType[];
+  }, [orderTypesQuery.data]);
 
-    // Clean up existing listener if organization changed
-    if (globalListeners.orderTypes) {
-      console.log('useOrderTypes: Cleaning up previous global listener');
-      globalListeners.orderTypes.unsubscribe();
-      globalListeners.orderTypes = null;
-    }
+  // Update atoms
+  useMemo(() => {
+    setOrderTypes(orderTypesData);
+    setLoading(orderTypesQuery.isLoading);
+    setError(orderTypesQuery.error?.message || null);
+  }, [orderTypesData, orderTypesQuery.isLoading, orderTypesQuery.error, setOrderTypes, setLoading, setError]);
 
-    setLoading(true);
-    setError(null);
-
-    const orderTypesQuery = query(collection(db, 'organizations', organizationId, 'orderTypes'));
-    console.log('useOrderTypes: Setting up global listener for organization:', organizationId);
-    
-    const unsubscribe = onSnapshot(orderTypesQuery, (querySnapshot) => {
-      console.log('useOrderTypes: Received snapshot with', querySnapshot.size, 'documents');
-      try {
-        const orderTypesData = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          createdAt: doc.data().createdAt?.toDate(),
-          updatedAt: doc.data().updatedAt?.toDate(),
-        })) as OrderType[];
-        setOrderTypes(orderTypesData);
-        setLoading(false);
-      } catch (err) {
-        console.error('Error processing order types:', err);
-        setError('Failed to process order types');
-        setLoading(false);
-      }
-    }, (error) => {
-      console.error('Error fetching order types:', error);
-      setError('Failed to fetch order types');
-      setLoading(false);
-    });
-
-    // Store the listener reference globally
-    globalListeners.orderTypes = { unsubscribe, organizationId };
-
-    return () => {
-      if (globalListeners.orderTypes) {
-        globalListeners.orderTypes.unsubscribe();
-        globalListeners.orderTypes = null;
-      }
-    };
-  }, [organizationId, setOrderTypes, setLoading, setError]);
+  const addOrderTypeMutation = useAddDocumentMutation(
+    collection(db, 'organizations', organizationId || 'dummy', 'orderTypes')
+  );
+  
+  const updateOrderTypeMutation = useUpdateDocumentMutation(
+    doc(db, 'organizations', organizationId || 'dummy', 'orderTypes', 'dummy')
+  );
+  
+  const deleteOrderTypeMutation = useDeleteDocumentMutation(
+    doc(db, 'organizations', organizationId || 'dummy', 'orderTypes', 'dummy')
+  );
 
   // CRUD operations
   const createOrderType = useCallback(async (orderTypeData: Omit<OrderType, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>): Promise<string> => {
@@ -115,7 +89,7 @@ export function useOrderTypes(organizationId: string | undefined): UseOrderTypes
         updatedAt: new Date(),
       };
 
-      const docRef = await addDoc(collection(db, 'organizations', organizationId, 'orderTypes'), cleanedData);
+      const docRef = await addOrderTypeMutation.mutateAsync(cleanedData);
       return docRef.id;
     } catch (error) {
       console.error('Error creating order type:', error);
@@ -128,7 +102,7 @@ export function useOrderTypes(organizationId: string | undefined): UseOrderTypes
 
     try {
       const orderTypeRef = doc(db, 'organizations', organizationId, 'orderTypes', orderTypeId);
-      await updateDoc(orderTypeRef, {
+      await updateOrderTypeMutation.mutateAsync({
         ...updates,
         updatedAt: new Date(),
       });
@@ -142,7 +116,8 @@ export function useOrderTypes(organizationId: string | undefined): UseOrderTypes
     if (!organizationId) return;
 
     try {
-      await deleteDoc(doc(db, 'organizations', organizationId, 'orderTypes', orderTypeId));
+      const orderTypeRef = doc(db, 'organizations', organizationId, 'orderTypes', orderTypeId);
+      await deleteOrderTypeMutation.mutateAsync();
     } catch (error) {
       console.error('Error deleting order type:', error);
       throw error;
@@ -156,6 +131,23 @@ export function useOrderTypes(organizationId: string | undefined): UseOrderTypes
 
   // Memoize array to prevent unnecessary re-renders
   const memoizedOrderTypes = useMemo(() => orderTypes, [orderTypes]);
+
+  // Return empty data when no organizationId
+  if (!organizationId) {
+    return {
+      orderTypes: [],
+      loading: false,
+      error: null,
+      
+      // CRUD operations
+      createOrderType: async () => { throw new Error('Organization ID is required'); },
+      updateOrderType: async () => {},
+      deleteOrderType: async () => {},
+      
+      // Utility functions
+      refreshOrderTypes,
+    };
+  }
 
   return {
     orderTypes: memoizedOrderTypes,

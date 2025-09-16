@@ -1,114 +1,71 @@
 "use client";
 
-import { useEffect, useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useAtom } from 'jotai';
-import { collection, query, onSnapshot, updateDoc, doc, getDoc, addDoc } from 'firebase/firestore';
+import { collection, doc } from 'firebase/firestore';
+import { useCollectionQuery, useDocumentQuery, useUpdateDocumentMutation, useAddDocumentMutation } from '@tanstack-query-firebase/react/firestore';
 import { db } from '@/lib/firebase';
 import { Invoice, Organization } from '@/types';
 
-// Global singleton to prevent duplicate listeners
-const globalPurchaseInvoiceListeners = new Map<string, {
-  unsubscribe: () => void;
-  refCount: number;
-}>();
-
 export function usePurchaseInvoicesData(organizationId: string | undefined) {
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [organization, setOrganization] = useState<Organization | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!organizationId) {
-      setLoading(false);
-      setInvoices([]);
-      return;
+  // Organization query
+  const organizationQuery = useDocumentQuery(
+    doc(db, 'organizations', organizationId || 'dummy'),
+    {
+      queryKey: ['organization', organizationId],
+      enabled: !!organizationId,
     }
+  );
 
-    const listenerKey = `purchase-invoices-${organizationId}`;
-    
-    // Check if listener already exists
-    if (globalPurchaseInvoiceListeners.has(listenerKey)) {
-      const existing = globalPurchaseInvoiceListeners.get(listenerKey)!;
-      existing.refCount++;
-      setLoading(false);
-      return () => {
-        existing.refCount--;
-        if (existing.refCount <= 0) {
-          existing.unsubscribe();
-          globalPurchaseInvoiceListeners.delete(listenerKey);
-        }
-      };
+  // Purchase invoices query
+  const invoicesQuery = useCollectionQuery(
+    collection(db, 'organizations', organizationId || 'dummy', 'purchase-invoices'),
+    {
+      queryKey: ['purchase-invoices', organizationId],
+      enabled: !!organizationId,
     }
+  );
 
-    // Create new listener
-    setLoading(true);
+  // Process organization data
+  const organization = useMemo(() => {
+    if (!organizationQuery.data?.exists()) return null;
+    const data = organizationQuery.data.data();
+    return {
+      id: organizationQuery.data.id,
+      ...data,
+      createdAt: data.createdAt?.toDate(),
+    } as Organization;
+  }, [organizationQuery.data]);
 
-    // Fetch organization data
-    const fetchOrganization = async () => {
-      try {
-        const organizationDoc = await getDoc(doc(db, 'organizations', organizationId));
-        if (organizationDoc.exists()) {
-          setOrganization({
-            id: organizationDoc.id,
-            ...organizationDoc.data(),
-            createdAt: organizationDoc.data().createdAt?.toDate(),
-          } as Organization);
-        }
-      } catch (error) {
-        console.error('Error fetching organization:', error);
-      }
-    };
-
-    // Fetch purchase invoices with real-time updates
-    const invoicesQ = query(collection(db, 'organizations', organizationId, 'purchase-invoices'));
-    const unsubscribe = onSnapshot(invoicesQ, (querySnapshot) => {
-      const invoicesData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-        dueDate: doc.data().dueDate?.toDate(),
-      })) as Invoice[];
-      setInvoices(invoicesData);
-      setLoading(false);
-    }, (error) => {
-      console.error('Error fetching purchase invoices:', error);
-      setLoading(false);
-    });
-
-    // Execute fetch operations
-    fetchOrganization();
-
-    // Store in global singleton
-    globalPurchaseInvoiceListeners.set(listenerKey, {
-      unsubscribe,
-      refCount: 1
-    });
-
-    // Return cleanup function
-    return () => {
-      const listener = globalPurchaseInvoiceListeners.get(listenerKey);
-      if (listener) {
-        listener.refCount--;
-        if (listener.refCount <= 0) {
-          listener.unsubscribe();
-          globalPurchaseInvoiceListeners.delete(listenerKey);
-        }
-      }
-    };
-  }, [organizationId]);
-
-  const invoicesMemo = useMemo(() => invoices, [invoices]);
+  // Process invoices data
+  const invoices = useMemo(() => {
+    if (!invoicesQuery.data) return [];
+    return invoicesQuery.data.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: doc.data().createdAt?.toDate(),
+      updatedAt: doc.data().updatedAt?.toDate(),
+      dueDate: doc.data().dueDate?.toDate(),
+    })) as Invoice[];
+  }, [invoicesQuery.data]);
 
   return {
-    invoices: invoicesMemo,
+    invoices,
     organization,
-    loading,
+    loading: invoicesQuery.isLoading || organizationQuery.isLoading,
   };
 }
 
 export function usePurchaseInvoiceActions(organizationId: string | undefined) {
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
+  
+  const updateInvoiceMutation = useUpdateDocumentMutation(
+    doc(db, 'organizations', organizationId || 'dummy', 'purchase-invoices', 'dummy')
+  );
+  
+  const addInvoiceMutation = useAddDocumentMutation(
+    collection(db, 'organizations', organizationId || 'dummy', 'purchase-invoices')
+  );
 
   const updateInvoiceStatus = async (invoiceId: string, status: Invoice['status']) => {
     if (!organizationId) return;
@@ -116,7 +73,7 @@ export function usePurchaseInvoiceActions(organizationId: string | undefined) {
     setUpdatingStatus(invoiceId);
     try {
       const invoiceRef = doc(db, 'organizations', organizationId, 'purchase-invoices', invoiceId);
-      await updateDoc(invoiceRef, { status, updatedAt: new Date() });
+      await updateInvoiceMutation.mutateAsync({ status, updatedAt: new Date() });
     } catch (error) {
       console.error('Error updating invoice status:', error);
       throw error;
@@ -145,7 +102,7 @@ export function usePurchaseInvoiceActions(organizationId: string | undefined) {
     };
 
     try {
-      await addDoc(collection(db, 'organizations', organizationId, 'purchase-invoices'), cleanedData);
+      await addInvoiceMutation.mutateAsync(cleanedData);
     } catch (error) {
       console.error('Error creating purchase invoice:', error);
       throw error;

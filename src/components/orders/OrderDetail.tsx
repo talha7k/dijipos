@@ -40,7 +40,7 @@ export function OrderDetail({
           <Button
             onClick={() => onReopenOrder(order)}
             className="flex-1 bg-orange-500 hover:bg-orange-600 text-white border-orange-500"
-            variant="outline"
+          
           >
             Reopen Order
           </Button>

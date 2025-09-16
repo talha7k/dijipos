@@ -1,200 +1,134 @@
 "use client";
 
-import { useEffect, useState, useMemo } from 'react';
-import { collection, query, onSnapshot, doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { useState, useMemo } from 'react';
+import { collection, doc } from 'firebase/firestore';
+import { useCollectionQuery, useSetDocumentMutation, useDeleteDocumentMutation, useAddDocumentMutation } from '@tanstack-query-firebase/react/firestore';
 import { db } from '@/lib/firebase';
 import { InvoiceTemplate, InvoiceTemplateType } from '@/types';
 import { defaultEnglishInvoiceTemplate } from '@/components/templates/default-invoice-english';
 import { defaultArabicInvoiceTemplate } from '@/components/templates/default-invoice-arabic';
 
-// Global singleton state for invoice templates
-const globalInvoiceTemplatesState = {
-  listeners: new Map<string, {
-    unsubscribe: () => void;
-    refCount: number;
-    data: InvoiceTemplate[];
-    loading: boolean;
-    error: string | null;
-  }>()
-};
-
-function getCacheKey(organizationId: string | undefined): string {
-  return `invoice-templates-${organizationId || 'none'}`;
-}
-
 export function useInvoiceTemplatesData(organizationId: string | undefined) {
   const [invoiceTemplates, setInvoiceTemplates] = useState<InvoiceTemplate[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  const cacheKey = useMemo(() => getCacheKey(organizationId), [organizationId]);
-
-  useEffect(() => {
-    if (!organizationId) {
-      setInvoiceTemplates([]);
-      setLoading(false);
-      return;
+  // Always call the hook, but conditionally enable it
+  const invoiceTemplatesQuery = useCollectionQuery(
+    collection(db, 'organizations', organizationId || 'dummy', 'invoiceTemplates'),
+    {
+      queryKey: ['invoiceTemplates', organizationId],
+      enabled: !!organizationId,
     }
+  );
 
-    const existingListener = globalInvoiceTemplatesState.listeners.get(cacheKey);
+  const processedTemplates = useMemo(() => {
+    if (!invoiceTemplatesQuery.data) return [];
+    
+    const templates = invoiceTemplatesQuery.data.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: doc.data().createdAt?.toDate(),
+      updatedAt: doc.data().updatedAt?.toDate(),
+    })) as InvoiceTemplate[];
 
-    if (existingListener) {
-      // Reuse existing listener
-      existingListener.refCount++;
-      setInvoiceTemplates(existingListener.data);
-      setLoading(existingListener.loading);
-      setError(existingListener.error);
-
-      return () => {
-        existingListener.refCount--;
-        if (existingListener.refCount === 0) {
-          existingListener.unsubscribe();
-          globalInvoiceTemplatesState.listeners.delete(cacheKey);
+    // If no templates exist in Firestore, provide default templates
+    if (templates.length === 0 && organizationId) {
+      return [
+        {
+          id: 'default-english',
+          name: 'Default English Invoice',
+          description: 'Default English invoice template',
+          type: InvoiceTemplateType.ENGLISH,
+          isDefault: true,
+          organizationId,
+          fields: [], // Default fields would be defined
+          style: {
+            primaryColor: '#000000',
+            secondaryColor: '#666666',
+            backgroundColor: '#ffffff',
+            textColor: '#000000',
+            fontFamily: 'Arial, sans-serif',
+            fontSize: 14,
+            showLogo: false,
+            showWatermark: false,
+          },
+          content: defaultEnglishInvoiceTemplate,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: 'default-arabic',
+          name: 'Default Arabic Invoice',
+          description: 'Default Arabic invoice template',
+          type: InvoiceTemplateType.ARABIC,
+          isDefault: false,
+          organizationId,
+          fields: [], // Default fields would be defined
+          style: {
+            primaryColor: '#000000',
+            secondaryColor: '#666666',
+            backgroundColor: '#ffffff',
+            textColor: '#000000',
+            fontFamily: 'Arial, sans-serif',
+            fontSize: 14,
+            showLogo: false,
+            showWatermark: false,
+          },
+          content: defaultArabicInvoiceTemplate,
+          createdAt: new Date(),
+          updatedAt: new Date(),
         }
-      };
+      ];
     }
+    
+    return templates;
+  }, [invoiceTemplatesQuery.data, organizationId]);
 
-    // Create new listener
-    setLoading(true);
-    setError(null);
+  // Update state
+  useMemo(() => {
+    setInvoiceTemplates(processedTemplates);
+  }, [processedTemplates]);
 
-    const invoiceTemplatesQuery = query(
-      collection(db, 'organizations', organizationId, 'invoiceTemplates')
-    );
-
-    const unsubscribe = onSnapshot(
-      invoiceTemplatesQuery,
-      (querySnapshot) => {
-        const templates = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          createdAt: doc.data().createdAt?.toDate(),
-          updatedAt: doc.data().updatedAt?.toDate(),
-        })) as InvoiceTemplate[];
-
-        // If no templates exist in Firestore, provide default templates
-        let finalTemplates = templates;
-        if (templates.length === 0) {
-          finalTemplates = [
-            {
-              id: 'default-english',
-              name: 'Default English Invoice',
-              description: 'Default English invoice template',
-              type: InvoiceTemplateType.ENGLISH,
-              isDefault: true,
-              organizationId,
-              fields: [], // Default fields would be defined
-              style: {
-                primaryColor: '#000000',
-                secondaryColor: '#666666',
-                backgroundColor: '#ffffff',
-                textColor: '#000000',
-                fontFamily: 'Arial, sans-serif',
-                fontSize: 14,
-                showLogo: false,
-                showWatermark: false,
-              },
-              content: defaultEnglishInvoiceTemplate,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            },
-            {
-              id: 'default-arabic',
-              name: 'Default Arabic Invoice',
-              description: 'Default Arabic invoice template',
-              type: InvoiceTemplateType.ARABIC,
-              isDefault: false,
-              organizationId,
-              fields: [], // Default fields would be defined
-              style: {
-                primaryColor: '#000000',
-                secondaryColor: '#666666',
-                backgroundColor: '#ffffff',
-                textColor: '#000000',
-                fontFamily: 'Arial, sans-serif',
-                fontSize: 14,
-                showLogo: false,
-                showWatermark: false,
-              },
-              content: defaultArabicInvoiceTemplate,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            }
-          ];
-        }
-
-        const listener = globalInvoiceTemplatesState.listeners.get(cacheKey);
-        if (listener) {
-          listener.data = finalTemplates;
-          listener.loading = false;
-          listener.error = null;
-        }
-        setInvoiceTemplates(finalTemplates);
-        setLoading(false);
-      },
-      (error) => {
-        console.error('Error fetching invoice templates:', error);
-        const listener = globalInvoiceTemplatesState.listeners.get(cacheKey);
-        if (listener) {
-          listener.loading = false;
-          listener.error = error.message;
-        }
-        setError(error.message);
-        setLoading(false);
-      }
-    );
-
-    // Store the listener
-    globalInvoiceTemplatesState.listeners.set(cacheKey, {
-      unsubscribe,
-      refCount: 1,
-      data: [],
-      loading: true,
-      error: null,
-    });
-
-    return () => {
-      const listener = globalInvoiceTemplatesState.listeners.get(cacheKey);
-      if (listener) {
-        listener.refCount--;
-        if (listener.refCount === 0) {
-          listener.unsubscribe();
-          globalInvoiceTemplatesState.listeners.delete(cacheKey);
-        }
-      }
-    };
-  }, [organizationId, cacheKey]);
+  const addTemplateMutation = useAddDocumentMutation(
+    collection(db, 'organizations', organizationId || 'dummy', 'invoiceTemplates')
+  );
+  
+  const setTemplateMutation = useSetDocumentMutation(
+    doc(db, 'organizations', organizationId || 'dummy', 'invoiceTemplates', 'dummy')
+  );
+  
+  const deleteTemplateMutation = useDeleteDocumentMutation(
+    doc(db, 'organizations', organizationId || 'dummy', 'invoiceTemplates', 'dummy')
+  );
 
   const addTemplate = async (template: Omit<InvoiceTemplate, 'id' | 'createdAt' | 'updatedAt'>) => {
     if (!organizationId) throw new Error('No organization selected');
 
-    const templateRef = doc(collection(db, 'organizations', organizationId, 'invoiceTemplates'));
     const newTemplate: InvoiceTemplate = {
       ...template,
-      id: templateRef.id,
+      id: '', // Will be set by Firebase
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
-    await setDoc(templateRef, newTemplate);
-    return newTemplate;
+    const docRef = await addTemplateMutation.mutateAsync(newTemplate);
+    return { ...newTemplate, id: docRef.id };
   };
 
   const updateTemplate = async (id: string, updates: Partial<InvoiceTemplate>) => {
     if (!organizationId) throw new Error('No organization selected');
 
     const templateRef = doc(db, 'organizations', organizationId, 'invoiceTemplates', id);
-    await setDoc(templateRef, {
+    await setTemplateMutation.mutateAsync({
       ...updates,
       updatedAt: new Date(),
-    }, { merge: true });
+    });
   };
 
   const deleteTemplate = async (id: string) => {
     if (!organizationId) throw new Error('No organization selected');
 
     const templateRef = doc(db, 'organizations', organizationId, 'invoiceTemplates', id);
-    await deleteDoc(templateRef);
+    await deleteTemplateMutation.mutateAsync();
   };
 
   const setDefaultTemplate = async (id: string) => {
@@ -210,10 +144,23 @@ export function useInvoiceTemplatesData(organizationId: string | undefined) {
     await updateTemplate(id, { isDefault: true });
   };
 
+  // Return empty data when no organizationId
+  if (!organizationId) {
+    return {
+      invoiceTemplates: [],
+      loading: false,
+      error: null,
+      addTemplate: async () => { throw new Error('No organization selected'); },
+      updateTemplate: async () => { throw new Error('No organization selected'); },
+      deleteTemplate: async () => { throw new Error('No organization selected'); },
+      setDefaultTemplate: async () => { throw new Error('No organization selected'); },
+    };
+  }
+
   return {
     invoiceTemplates,
-    loading,
-    error,
+    loading: invoiceTemplatesQuery.isLoading,
+    error: invoiceTemplatesQuery.error?.message || null,
     addTemplate,
     updateTemplate,
     deleteTemplate,

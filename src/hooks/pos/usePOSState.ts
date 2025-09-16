@@ -9,7 +9,8 @@ import { useOrderState } from '@/hooks/useOrderState';
 import { useOrders } from '@/hooks/orders/useOrders';
 import { toast } from 'sonner';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, updateDoc, doc, serverTimestamp, FieldValue } from 'firebase/firestore';
+import { collection, doc, serverTimestamp, FieldValue } from 'firebase/firestore';
+import { useAddDocumentMutation, useUpdateDocumentMutation } from '@tanstack-query-firebase/react/firestore';
 
 type OrderCreateData = Omit<Order, 'id' | 'createdAt' | 'updatedAt'> & {
   createdAt: FieldValue;
@@ -50,6 +51,19 @@ export function usePOSLogic() {
   const [editingCartItem, setEditingCartItem] = useState<CartItem | null>(null);
 
   const cartTotal = useAtomValue(cartTotalAtom);
+
+  // Mutations for Firebase operations
+  const addOrderMutation = useAddDocumentMutation(
+    collection(db, 'organizations', organizationId || 'dummy', 'orders')
+  );
+  
+  const updateOrderMutation = useUpdateDocumentMutation(
+    doc(db, 'organizations', organizationId || 'dummy', 'orders', 'dummy')
+  );
+  
+  const updateTableMutation = useUpdateDocumentMutation(
+    doc(db, 'organizations', organizationId || 'dummy', 'tables', 'dummy')
+  );
 
   const handleAddToCart = useCallback((item: Product | Service, type: 'product' | 'service') => {
     if (!item) return;
@@ -183,19 +197,21 @@ export function usePOSLogic() {
         if (selectedTable?.id !== undefined) updateData.tableId = selectedTable.id;
         if (selectedTable?.name !== undefined) updateData.tableName = selectedTable.name;
 
-        await updateDoc(orderRef, updateData);
+        await updateOrderMutation.mutateAsync(updateData);
 
         // Update table status if table is selected and different from original
         if (selectedTable?.id && selectedTable.id !== selectedOrder.tableId) {
           // Release old table if it exists
           if (selectedOrder.tableId) {
-            await updateDoc(doc(db, 'organizations', organizationId, 'tables', selectedOrder.tableId), {
+            const oldTableRef = doc(db, 'organizations', organizationId, 'tables', selectedOrder.tableId);
+            await updateTableMutation.mutateAsync({
               status: TableStatus.AVAILABLE,
               updatedAt: serverTimestamp()
             });
           }
           // Occupy new table
-          await updateDoc(doc(db, 'organizations', organizationId, 'tables', selectedTable.id), {
+          const newTableRef = doc(db, 'organizations', organizationId, 'tables', selectedTable.id);
+          await updateTableMutation.mutateAsync({
             status: TableStatus.OCCUPIED,
             updatedAt: serverTimestamp()
           });
@@ -251,11 +267,12 @@ export function usePOSLogic() {
         if (selectedTable?.id !== undefined) orderData.tableId = selectedTable.id;
         if (selectedTable?.name !== undefined) orderData.tableName = selectedTable.name;
 
-        await addDoc(collection(db, 'organizations', organizationId, 'orders'), orderData);
+        await addOrderMutation.mutateAsync(orderData);
 
         // Update table status if table is selected
         if (selectedTable?.id) {
-          await updateDoc(doc(db, 'organizations', organizationId, 'tables', selectedTable.id), {
+          const tableRef = doc(db, 'organizations', organizationId, 'tables', selectedTable.id);
+          await updateTableMutation.mutateAsync({
             status: TableStatus.OCCUPIED,
             updatedAt: serverTimestamp()
           });
@@ -272,7 +289,7 @@ export function usePOSLogic() {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       toast.error(`Failed to save order: ${errorMessage}`);
     }
-  }, [organizationId, cartItems, cartTotal, selectedOrder, selectedOrderType, selectedCustomer, selectedTable, user, clearCart, clearPOSData, refreshOrders]);
+  }, [organizationId, cartItems, cartTotal, selectedOrder, selectedOrderType, selectedCustomer, selectedTable, user, clearCart, clearPOSData, refreshOrders, addOrderMutation, updateOrderMutation, updateTableMutation]);
 
   const handlePaymentProcessed = useCallback(async (payments: OrderPayment[]) => {
     setPaymentSuccessData({ totalPaid: payments.reduce((sum, payment) => sum + payment.amount, 0) });
@@ -397,6 +414,61 @@ export function usePOSLogic() {
       setCurrentView('payment');
     }
   }, [cartItems, selectedOrder, createTempOrderForPayment, setCurrentOrder, setCurrentView]);
+
+  // Return empty functions when no organizationId
+  if (!organizationId) {
+    return {
+      // State
+      cartItems: [],
+      cartTotal: 0,
+      selectedTable: null,
+      selectedCustomer: null,
+      selectedOrderType: null,
+      selectedOrder: null,
+      categoryPath: [],
+      posView: 'items',
+      pendingOrderToReopen: null,
+      showOrderConfirmationDialog: false,
+      isCartOpen: false,
+      showPaymentSuccessDialog: false,
+      paymentSuccessData: null,
+      setShowPaymentSuccessDialog: () => {},
+      setPaymentSuccessData: () => {},
+      showCartItemModal: false,
+      editingCartItem: null,
+      setShowCartItemModal: () => {},
+      setEditingCartItem: () => {},
+
+      // Handlers
+      handleAddToCart: () => {},
+      handleTableSelected: () => {},
+      handleCustomerSelected: () => {},
+      handleOrderTypeSelect: () => {},
+      handleOrderReopen: () => {},
+      proceedWithOrderReopen: () => {},
+      handleSaveOrder: () => {},
+      handlePaymentProcessed: () => {},
+      handleClearCart: () => {},
+      handleBackToItems: () => {},
+      handleTableDeselect: () => {},
+      handleCustomerDeselect: () => {},
+      handleOrderTypeDeselect: () => {},
+      handleTableSelect: () => {},
+      handleCustomerSelect: () => {},
+      handleOrdersClick: () => {},
+      handleCategoryClick: () => {},
+      handleNavigateToRoot: () => {},
+      handleNavigateToPath: () => {},
+      handlePayOrder: () => {},
+      handlePaymentClick: () => {},
+      createTempOrderForPayment: () => null,
+      updateCartItem: () => {},
+      removeFromCart: () => {},
+      setShowOrderConfirmationDialog: () => {},
+      setPendingOrderToReopen: () => {},
+      setPosView: () => {},
+    };
+  }
 
   return {
     // State
