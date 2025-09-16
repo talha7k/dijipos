@@ -124,7 +124,7 @@ export function useFirestoreAddDocument<T extends DocumentData>(collectionRef: C
   return useAddDocumentMutation<T>(collectionRef);
 }
 
-export function useFirestoreDeleteDocument<T>(documentRef: DocumentReference<T>) {
+export function useFirestoreDeleteDocument<T extends DocumentData>(documentRef: DocumentReference<T>) {
   return useDeleteDocumentMutation<T>(documentRef);
 }
 
@@ -141,7 +141,7 @@ export function useFirestoreRunTransaction<T>(updateFunction: (transaction: Tran
 }
 
 export function useFirestoreWaitForPendingWrites() {
-  return useWaitForPendingWritesQuery(db, {});
+  return useWaitForPendingWritesQuery(db, { queryKey: ['pendingWrites'] });
 }
 
 // Generic Firestore mutation hooks with optimistic updates (kept for backward compatibility)
@@ -167,12 +167,12 @@ export function useFirestoreAdd<T extends { id?: string }>(collectionPath: strin
       // Optimistically update to the new value
       queryClient.setQueryData([collectionPath], (old: T[] = []) => [
         ...old,
-        { 
-          id: 'temp-id', 
+        {
+          id: 'temp-id',
           ...newData,
           createdAt: new Date(),
           updatedAt: new Date(),
-        } as T
+        } as unknown as T
       ]);
       
       return { previousData };
@@ -211,7 +211,7 @@ export function useFirestoreUpdate<T>(collectionPath: string) {
       
       // Optimistically update
       queryClient.setQueryData([collectionPath], (old: T[] = []) =>
-        old.map(item => item.id === newData.id ? { ...item, ...newData.data, updatedAt: new Date() } as T : item)
+        old.map(item => (item as { id?: string }).id === newData.id ? { ...item, ...newData.data, updatedAt: new Date() } as T : item)
       );
       
       queryClient.setQueryData([collectionPath, newData.id], (old: T | null) =>
@@ -235,9 +235,9 @@ export function useFirestoreUpdate<T>(collectionPath: string) {
   });
 }
 
-export function useFirestoreDelete(collectionPath: string) {
+export function useFirestoreDelete<T extends { id?: string }>(collectionPath: string) {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (id: string) => {
       const docRef = doc(db, collectionPath, id);
@@ -246,14 +246,14 @@ export function useFirestoreDelete(collectionPath: string) {
     },
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: [collectionPath] });
-      
+
       const previousData = queryClient.getQueryData([collectionPath]);
-      
+
       // Optimistically remove from cache
       queryClient.setQueryData([collectionPath], (old: T[] = []) =>
-        old.filter(item => item.id !== id)
+        old.filter((item: T) => (item as { id?: string }).id !== id)
       );
-      
+
       return { previousData };
     },
     onError: (err, id, context) => {

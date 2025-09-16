@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useMemo } from 'react';
-import { collection, doc } from 'firebase/firestore';
-import { useCollectionQuery, useSetDocumentMutation, useDeleteDocumentMutation, useAddDocumentMutation } from '@tanstack-query-firebase/react/firestore';
+import { collection, doc, setDoc, deleteDoc, DocumentReference, SetOptions } from 'firebase/firestore';
+import { useMutation } from '@tanstack/react-query';
+import { useCollectionQuery, useAddDocumentMutation } from '@tanstack-query-firebase/react/firestore';
 import { db } from '@/lib/firebase';
 import { UnifiedTemplate, TemplateCategory } from '@/types';
 import { defaultReceiptTemplate } from '@/components/templates/default-receipt-thermal';
@@ -98,14 +99,18 @@ export function useTemplatesData(organizationId: string | undefined, category?: 
   const addTemplateMutation = useAddDocumentMutation(
     collection(db, 'organizations', organizationId || 'dummy', collectionName)
   );
-  
-  const setTemplateMutation = useSetDocumentMutation(
-    doc(db, 'organizations', organizationId || 'dummy', collectionName, 'dummy')
-  );
-  
-  const deleteTemplateMutation = useDeleteDocumentMutation(
-    doc(db, 'organizations', organizationId || 'dummy', collectionName, 'dummy')
-  );
+
+  const setTemplateMutation = useMutation({
+    mutationFn: async ({ docRef, data, options }: { docRef: DocumentReference; data: Partial<UnifiedTemplate>; options: SetOptions }) => {
+      await setDoc(docRef, data, options);
+    },
+  });
+
+  const deleteTemplateMutation = useMutation({
+    mutationFn: async (docRef: DocumentReference) => {
+      await deleteDoc(docRef);
+    },
+  });
 
   const addTemplate = async (template: Omit<UnifiedTemplate, 'id' | 'createdAt' | 'updatedAt'>) => {
     if (!organizationId) throw new Error('No organization selected');
@@ -126,12 +131,12 @@ export function useTemplatesData(organizationId: string | undefined, category?: 
 
     const templateRef = doc(db, 'organizations', organizationId, collectionName, id);
     await setTemplateMutation.mutateAsync({
-      ...updates,
-      updatedAt: new Date(),
-    }, { 
-      mutationFn: async (data) => {
-        await setTemplateMutation.mutateAsync(data, { merge: true });
-      }
+      docRef: templateRef,
+      data: {
+        ...updates,
+        updatedAt: new Date(),
+      },
+      options: { merge: true }
     });
   };
 
@@ -139,7 +144,7 @@ export function useTemplatesData(organizationId: string | undefined, category?: 
     if (!organizationId || !category) throw new Error('No organization or category selected');
 
     const templateRef = doc(db, 'organizations', organizationId, collectionName, id);
-    await deleteTemplateMutation.mutateAsync();
+    await deleteTemplateMutation.mutateAsync(templateRef);
   };
 
   const setDefaultTemplate = async (id: string) => {

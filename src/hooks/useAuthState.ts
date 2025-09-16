@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 
 import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, doc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { useDocumentQuery } from '@tanstack-query-firebase/react/firestore';
 import { Organization, OrganizationUser } from '@/types';
 import {
