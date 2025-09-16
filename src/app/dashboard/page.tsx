@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { signOut } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { auth } from '@/lib/firebase/config';
 import { useRouter } from 'next/navigation';
 import { useQuotesData } from '@/legacy_hooks/useQuotes';
 import { useInvoicesData } from '@/legacy_hooks/useInvoices';

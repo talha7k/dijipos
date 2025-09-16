@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useAtom, useSetAtom } from 'jotai';
 import { collection, query, onSnapshot } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db } from '@/lib/firebase/config';
 import { Table } from '@/types';
 import {
   tablesAtom,

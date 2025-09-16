@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 
-import { db } from '@/lib/firebase';
+import { db } from '@/lib/firebase/config';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { useDocumentQuery } from '@tanstack-query-firebase/react/firestore';
 import { Organization, OrganizationUser } from '@/types';
@@ -139,7 +139,7 @@ export function useAuthState() {
 
   const logout = async () => {
     try {
-      const { auth } = await import('@/lib/firebase');
+      const { auth } = await import('@/lib/firebase/config');
       await auth.signOut();
       resetAuthState();
     } catch (error) {

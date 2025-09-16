@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { doc } from 'firebase/firestore';
 import { useDocumentQuery, useSetDocumentMutation } from '@tanstack-query-firebase/react/firestore';
-import { db } from '@/lib/firebase';
+import { db } from '@/lib/firebase/config';
 import { VATSettings, PrinterSettings, FontSize, CHARACTER_SETS } from '@/types';
 
 export function useSettingsData(organizationId: string | undefined) {

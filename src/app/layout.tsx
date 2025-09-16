@@ -6,7 +6,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { JotaiProvider } from "@/components/JotaiProvider";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
-import { QueryProvider } from "@/components/QueryProvider";
+
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,14 +20,12 @@ export default function RootLayout({
       <body className={inter.className}>
         <JotaiProvider>
         <ThemeProvider>
-          <QueryProvider>
-            <AuthProvider>
-              <RouteGuard>
-                <AppLayout>{children}</AppLayout>
-              </RouteGuard>
-              <Toaster />
-            </AuthProvider>
-          </QueryProvider>
+          <AuthProvider>
+            <RouteGuard>
+              <AppLayout>{children}</AppLayout>
+            </RouteGuard>
+            <Toaster />
+          </AuthProvider>
         </ThemeProvider>
         </JotaiProvider>
       </body>

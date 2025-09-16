@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { collection, doc } from 'firebase/firestore';
 import { useCollectionQuery, useUpdateDocumentMutation, useAddDocumentMutation, useDeleteDocumentMutation } from '@tanstack-query-firebase/react/firestore';
-import { db } from '@/lib/firebase';
+import { db } from '@/lib/firebase/config';
 import { Supplier } from '@/types';
 
 export function useSuppliersData(organizationId: string | undefined) {

@@ -15,7 +15,7 @@ import { Plus, Trash2, Edit, Search, Users, X, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { ActionButtons } from '@/components/ui/action-buttons';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { storage } from '@/lib/firebase';
+import { storage } from '@/lib/firebase/config';
 
 export default function SuppliersPage() {
   const organizationId = useOrganizationId() || undefined;

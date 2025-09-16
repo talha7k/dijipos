@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar, Download, TrendingUp, Calculator } from 'lucide-react';
 import { useOrganizationId, useUser, useSelectedOrganization } from '@/legacy_hooks/useAuthState';
 import { collection, getDocs, query, Timestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db } from '@/lib/firebase/config';
 import { InvoiceType } from '@/types';
 
 interface InvoiceItem {

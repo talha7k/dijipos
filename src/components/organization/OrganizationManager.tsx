@@ -32,10 +32,10 @@ import {
   doc,
   getDoc,
 } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { db } from "@/lib/firebase/config";
 import { Organization, UserRole } from "@/types";
 import { useThemeState } from "@/legacy_hooks/useThemeState";
-import { auth } from "@/lib/firebase";
+import { auth } from "@/lib/firebase/config";
 import { toast } from "sonner";
 
 export function OrganizationManager() {

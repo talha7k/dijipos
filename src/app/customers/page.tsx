@@ -16,7 +16,7 @@ import { Plus, Trash2, Edit, Search, Phone, Mail, MapPin, Users, X, Upload } fro
 import { toast } from 'sonner';
 import { ActionButtons } from '@/components/ui/action-buttons';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { storage } from '@/lib/firebase';
+import { storage } from '@/lib/firebase/config';
 
 export default function CustomersPage() {
   const organizationId = useOrganizationId();

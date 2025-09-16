@@ -1,6 +1,6 @@
 import { collection, doc } from 'firebase/firestore';
 import { useAddDocumentMutation, useDeleteDocumentMutation } from '@tanstack-query-firebase/react/firestore';
-import { db } from '@/lib/firebase';
+import { db } from '@/lib/firebase/config';
 import { UserRole } from '@/types';
 
 export function useInvitationCodesActions(organizationId: string | undefined) {

@@ -1,6 +1,6 @@
 import { doc } from 'firebase/firestore';
 import { useUpdateDocumentMutation, useDeleteDocumentMutation } from '@tanstack-query-firebase/react/firestore';
-import { db } from '@/lib/firebase';
+import { db } from '@/lib/firebase/config';
 import { OrganizationUser, UserRole } from '@/types';
 
 export function useOrganizationUsersActions(organizationId: string | undefined) {

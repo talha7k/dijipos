@@ -4,7 +4,7 @@ import { useMemo, useEffect } from 'react';
 import { useAtom } from 'jotai';
 import { collection } from 'firebase/firestore';
 import { useCollectionQuery, useAddDocumentMutation } from '@tanstack-query-firebase/react/firestore';
-import { db } from '@/lib/firebase';
+import { db } from '@/lib/firebase/config';
 import { Payment } from '@/types';
 import {
   invoicePaymentsAtom,

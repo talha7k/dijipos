@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { doc } from 'firebase/firestore';
 import { useDocumentQuery } from '@tanstack-query-firebase/react/firestore';
-import { db } from '@/lib/firebase';
+import { db } from '@/lib/firebase/config';
 import { Organization } from '@/types';
 
 export function useOrganizationData(organizationId: string | undefined) {

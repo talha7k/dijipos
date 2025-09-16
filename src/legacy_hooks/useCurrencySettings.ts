@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { collection, doc } from 'firebase/firestore';
 import { useCollectionQuery, useSetDocumentMutation } from '@tanstack-query-firebase/react/firestore';
-import { db } from '@/lib/firebase';
+import { db } from '@/lib/firebase/config';
 import { CurrencySettings } from '@/types';
 import { Currency, CurrencyLocale } from '@/types/enums';
 import { useOrganizationId } from '@/legacy_hooks/useAuthState';

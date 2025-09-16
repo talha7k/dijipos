@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { useAtom } from 'jotai';
 import { collection, doc } from 'firebase/firestore';
 import { useCollectionQuery, useDocumentQuery, useUpdateDocumentMutation, useAddDocumentMutation } from '@tanstack-query-firebase/react/firestore';
-import { db } from '@/lib/firebase';
+import { db } from '@/lib/firebase/config';
 import { Invoice, Organization } from '@/types';
 
 export function usePurchaseInvoicesData(organizationId: string | undefined) {

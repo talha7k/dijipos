@@ -1,4 +1,4 @@
-import { db } from '@/lib/firebase';
+import { db } from '@/lib/firebase/config';
 import { collection, doc, writeBatch } from 'firebase/firestore';
 import { Product, Service, Quote, Customer, Supplier, Item, Payment, PurchaseInvoice, Invoice, Category, Order, OrderPayment, CartItem, OrderType, PaymentType, Table, TableStatus, OrderStatus, CategoryType, ItemType, InvoiceType, QuoteStatus, InvoiceStatus } from '@/types';
 import { InvoiceTemplateType } from '@/types/enums';

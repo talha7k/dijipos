@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db } from '@/lib/firebase/config';
 import { InvitationCode } from '@/types';
 
 // Global singleton state for invitation codes

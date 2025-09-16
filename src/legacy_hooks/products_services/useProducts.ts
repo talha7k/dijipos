@@ -4,8 +4,8 @@ import { useMemo, useEffect } from 'react';
 import { useAtom } from 'jotai';
 import { collection, doc, deleteDoc } from 'firebase/firestore';
 import { useCollectionQuery, useUpdateDocumentMutation, useAddDocumentMutation, useDeleteDocumentMutation } from '@tanstack-query-firebase/react/firestore';
-import { useFirestoreDeleteDocument } from '@/lib/firebase-query';
-import { db } from '@/lib/firebase';
+import { useFirestoreDeleteDocument } from '@/lib/firebase/config-query';
+import { db } from '@/lib/firebase/config';
 import { Product } from '@/types';
 import {
   productsAtom,

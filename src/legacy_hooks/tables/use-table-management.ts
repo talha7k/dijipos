@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { collection, addDoc, deleteDoc, doc, runTransaction, Transaction } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db } from '@/lib/firebase/config';
 import { Table, Order } from '@/types';
 import { toast } from 'sonner';
 import { getTableStatusColor } from '@/lib/utils';

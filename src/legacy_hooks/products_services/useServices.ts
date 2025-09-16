@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useCollectionQuery, useUpdateDocumentMutation, useAddDocumentMutation, useDeleteDocumentMutation, useDocumentQuery, useSetDocumentMutation, useClearIndexedDbPersistenceMutation, useRunTransactionMutation, useWaitForPendingWritesQuery, useDisableNetworkMutation,useEnableNetworkMutation,useGetAggregateFromServerQuery,useGetCountFromServerQuery,useNamedQuery,useWriteBatchCommitMutation } from '@tanstack-query-firebase/react/firestore';
-import { db } from '@/lib/firebase';
+import { db } from '@/lib/firebase/config';
 import { Service } from '@/types';
 
 export function useServicesData(organizationId: string | undefined) {

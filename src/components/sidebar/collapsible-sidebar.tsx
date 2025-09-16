@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { useThemeState } from "@/legacy_hooks/useThemeState";
 import { useAuthState, useUser, useOrganizationId } from "@/legacy_hooks/useAuthState";
 import { useSidebarState } from "@/legacy_hooks/useSidebarState";
-import { auth } from "@/lib/firebase";
+import { auth } from "@/lib/firebase/config";
 import { DesktopSidebar } from "./desktop-sidebar";
 import { MobileSidebar } from "./mobile-sidebar";
 import { SidebarProps } from "./sidebar-types";

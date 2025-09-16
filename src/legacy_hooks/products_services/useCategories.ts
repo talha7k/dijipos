@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { collection, doc } from 'firebase/firestore';
 import { useCollectionQuery, useAddDocumentMutation, useUpdateDocumentMutation, useDeleteDocumentMutation } from '@tanstack-query-firebase/react/firestore';
-import { db } from '@/lib/firebase';
+import { db } from '@/lib/firebase/config';
 import { Category } from '@/types';
 
 export interface UseCategoriesDataResult {

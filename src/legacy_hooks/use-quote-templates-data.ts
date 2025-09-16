@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { collection, doc } from 'firebase/firestore';
 import { useCollectionQuery, useSetDocumentMutation, useDeleteDocumentMutation, useAddDocumentMutation } from '@tanstack-query-firebase/react/firestore';
-import { db } from '@/lib/firebase';
+import { db } from '@/lib/firebase/config';
 import { QuoteTemplate, QuoteTemplateType } from '@/types';
 import { defaultEnglishQuoteTemplate } from '@/components/templates/default-quote-english';
 import { defaultArabicQuoteTemplate } from '@/components/templates/default-quote-arabic';

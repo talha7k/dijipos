@@ -5,7 +5,7 @@ import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { collection, doc, Timestamp } from 'firebase/firestore';
 import { useCollectionQuery } from '@tanstack-query-firebase/react/firestore';
 import { addDoc, updateDoc, deleteDoc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db } from '@/lib/firebase/config';
 import { Order, OrderPayment, OrderStatus, TableStatus } from '@/types';
 import { useAuthState } from '@/legacy_hooks/useAuthState';
 import {

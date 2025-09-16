@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { doc, onSnapshot } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db } from '@/lib/firebase/config';
 import { PrinterSettings } from '@/types';
 
 // Global singleton state for printer settings

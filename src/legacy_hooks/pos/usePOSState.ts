@@ -8,7 +8,7 @@ import { useAuthState } from '@/legacy_hooks/useAuthState';
 import { useOrderState } from '@/legacy_hooks/useOrderState';
 import { useOrders } from '@/legacy_hooks/orders/useOrders';
 import { toast } from 'sonner';
-import { db } from '@/lib/firebase';
+import { db } from '@/lib/firebase/config';
 import { collection, doc, serverTimestamp, FieldValue } from 'firebase/firestore';
 import { useAddDocumentMutation, useUpdateDocumentMutation } from '@tanstack-query-firebase/react/firestore';
 

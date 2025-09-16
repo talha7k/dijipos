@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useAtom, useSetAtom } from 'jotai';
-import { auth, db } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase/config';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { Organization, OrganizationUser } from '@/types';

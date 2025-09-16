@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { useAuthState } from '@/legacy_hooks/useAuthState';
 import { Building2, Plus, Users, ArrowRight, Link } from 'lucide-react';
 import { collection, query, where, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db } from '@/lib/firebase/config';
 import { toast } from 'sonner';
 
 interface OrganizationSelectorProps {
