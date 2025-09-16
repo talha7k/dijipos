@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Package, Wrench, Search } from 'lucide-react';
+import { Package, Wrench, Search, Database } from 'lucide-react';
 import { toast } from 'sonner';
 import { AddProductDialog } from '@/components/products_services/AddProductDialog';
 import { AddServiceDialog } from '@/components/products_services/AddServiceDialog';
@@ -20,6 +20,7 @@ import { AddCategoryDialog } from '@/components/products_services/AddCategoryDia
 import { ProductList } from '@/components/products_services/ProductList';
 import { ServiceList } from '@/components/products_services/ServiceList';
 import { CategoryTree } from '@/components/products_services/CategoryTree';
+import { ExportImportProducts } from '@/components/ExportImportProducts';
 
 export default function ProductsServicesPage() {
   const organizationId = useOrganizationId();
@@ -156,8 +157,18 @@ export default function ProductsServicesPage() {
 
       <Tabs defaultValue="products" className="w-full">
         <TabsList>
-          <TabsTrigger value="products">Products</TabsTrigger>
-          <TabsTrigger value="services">Services</TabsTrigger>
+          <TabsTrigger value="products">
+            <Package className="w-4 h-4 mr-2" />
+            Products
+          </TabsTrigger>
+          <TabsTrigger value="services">
+            <Wrench className="w-4 h-4 mr-2" />
+            Services
+          </TabsTrigger>
+          <TabsTrigger value="data">
+            <Database className="w-4 h-4 mr-2" />
+            Data Management
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="products" className="space-y-4">
@@ -354,6 +365,10 @@ export default function ProductsServicesPage() {
               </Card>
             </div>
           </div>
+        </TabsContent>
+
+        <TabsContent value="data" className="space-y-4">
+          <ExportImportProducts organizationId={organizationId || undefined} />
         </TabsContent>
       </Tabs>
 

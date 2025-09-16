@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useEffect } from 'react';
 import { useAtom, useSetAtom } from 'jotai';
 import { collection, doc } from 'firebase/firestore';
 import { useCollectionQuery, useUpdateDocumentMutation, useAddDocumentMutation, useDeleteDocumentMutation } from '@tanstack-query-firebase/react/firestore';
@@ -46,7 +46,7 @@ export function useCustomersData(organizationId: string | undefined): UseCustome
   }, [customersQuery.data]);
 
   // Update atoms
-  useMemo(() => {
+  useEffect(() => {
     setCustomers(customersData);
     setLoading(customersQuery.isLoading);
     setError(customersQuery.error?.message || null);

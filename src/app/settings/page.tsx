@@ -97,7 +97,6 @@ function SettingsContent() {
         <TabsContent value="templates" className="space-y-4">
           <TemplatesTab
             receiptTemplates={receiptTemplates}
-            onRefresh={() => {}} // Real-time updates via onSnapshot
           />
         </TabsContent>
       </Tabs>

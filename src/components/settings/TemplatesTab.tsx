@@ -20,10 +20,9 @@ import { defaultReceiptTemplate } from '@/components/templates/default-receipt-t
 
 interface TemplatesTabProps {
   receiptTemplates: UnifiedTemplate[];
-  onRefresh?: () => void;
 }
 
-export function TemplatesTab({ receiptTemplates, onRefresh }: TemplatesTabProps) {
+export function TemplatesTab({ receiptTemplates }: TemplatesTabProps) {
   const organizationId = useOrganizationId();
   const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
   const [deleteTemplateId, setDeleteTemplateId] = useState<string | null>(null);
@@ -56,7 +55,6 @@ export function TemplatesTab({ receiptTemplates, onRefresh }: TemplatesTabProps)
 
     setNewTemplate({ name: '', description: '', content: '', type: 'thermal', customHeader: '', customFooter: '' });
     setTemplateDialogOpen(false);
-    onRefresh?.();
     toast.success(`${selectedCategory} template added successfully`);
   };
 
@@ -65,7 +63,6 @@ export function TemplatesTab({ receiptTemplates, onRefresh }: TemplatesTabProps)
 
     // Use the hook's setDefaultTemplate method
     await setDefaultTemplate(templateId);
-    onRefresh?.();
   };
 
   const handleDeleteTemplate = (id: string) => {
@@ -78,7 +75,6 @@ export function TemplatesTab({ receiptTemplates, onRefresh }: TemplatesTabProps)
     try {
       await deleteTemplate(deleteTemplateId);
       toast.success(`${selectedCategory} template deleted successfully`);
-      onRefresh?.();
     } catch (error) {
       console.error(`Error deleting ${selectedCategory.toLowerCase()} template:`, error);
       toast.error(`Failed to delete ${selectedCategory.toLowerCase()} template`);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { useAtom } from 'jotai';
 import { collection, doc } from 'firebase/firestore';
 import { useCollectionQuery, useUpdateDocumentMutation, useAddDocumentMutation, useDeleteDocumentMutation } from '@tanstack-query-firebase/react/firestore';
@@ -36,7 +36,7 @@ export function useProductsData(organizationId: string | undefined) {
   }, [productsQuery.data]);
 
   // Update atoms
-  useMemo(() => {
+  useEffect(() => {
     setProducts(productsData);
     setLoading(productsQuery.isLoading);
   }, [productsData, productsQuery.isLoading, setProducts, setLoading]);

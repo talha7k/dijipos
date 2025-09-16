@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { collection, doc } from 'firebase/firestore';
 import { useCollectionQuery, useUpdateDocumentMutation, useAddDocumentMutation, useDeleteDocumentMutation } from '@tanstack-query-firebase/react/firestore';
 import { db } from '@/lib/firebase';
@@ -13,6 +13,7 @@ export function useSuppliersData(organizationId: string | undefined) {
     {
       queryKey: ['suppliers', organizationId],
       enabled: !!organizationId,
+      subscribed: true, // Enable real-time updates
     }
   );
 
@@ -27,7 +28,7 @@ export function useSuppliersData(organizationId: string | undefined) {
   }, [suppliersQuery.data]);
 
   // Update state
-  useMemo(() => {
+  useEffect(() => {
     setSuppliers(suppliersData);
   }, [suppliersData]);
 

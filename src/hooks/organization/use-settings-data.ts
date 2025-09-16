@@ -15,6 +15,7 @@ export function useSettingsData(organizationId: string | undefined) {
     {
       queryKey: ['vatSettings', organizationId],
       enabled: !!organizationId,
+      subscribed: true, // Enable real-time updates
     }
   );
 
@@ -23,6 +24,7 @@ export function useSettingsData(organizationId: string | undefined) {
     {
       queryKey: ['printerSettings', organizationId],
       enabled: !!organizationId,
+      subscribed: true, // Enable real-time updates
     }
   );
 
