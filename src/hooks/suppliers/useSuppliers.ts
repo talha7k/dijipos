@@ -1,7 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { collection, query, onSnapshot, updateDoc, doc, addDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Supplier } from '@/types';
+
+// Global singleton to prevent duplicate listeners
+const globalSupplierListeners = new Map<string, {
+  unsubscribe: () => void;
+  refCount: number;
+}>();
 
 export function useSuppliersData(organizationId: string | undefined) {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
@@ -13,7 +19,24 @@ export function useSuppliersData(organizationId: string | undefined) {
       return;
     }
 
-    // Fetch suppliers with real-time updates
+    const listenerKey = `suppliers-${organizationId}`;
+    
+    // Check if listener already exists
+    if (globalSupplierListeners.has(listenerKey)) {
+      const existing = globalSupplierListeners.get(listenerKey)!;
+      existing.refCount++;
+      setLoading(false);
+      return () => {
+        existing.refCount--;
+        if (existing.refCount <= 0) {
+          existing.unsubscribe();
+          globalSupplierListeners.delete(listenerKey);
+        }
+      };
+    }
+
+    // Create new listener
+    setLoading(true);
     const suppliersQ = query(collection(db, 'organizations', organizationId, 'suppliers'));
     const unsubscribe = onSnapshot(suppliersQ, (querySnapshot) => {
       const suppliersData = querySnapshot.docs.map(doc => ({
@@ -29,12 +52,29 @@ export function useSuppliersData(organizationId: string | undefined) {
       setLoading(false);
     });
 
+    // Store in global singleton
+    globalSupplierListeners.set(listenerKey, {
+      unsubscribe,
+      refCount: 1
+    });
+
     // Return cleanup function
-    return () => unsubscribe();
+    return () => {
+      const listener = globalSupplierListeners.get(listenerKey);
+      if (listener) {
+        listener.refCount--;
+        if (listener.refCount <= 0) {
+          listener.unsubscribe();
+          globalSupplierListeners.delete(listenerKey);
+        }
+      }
+    };
   }, [organizationId]);
 
+  const suppliersMemo = useMemo(() => suppliers, [suppliers]);
+
   return {
-    suppliers,
+    suppliers: suppliersMemo,
     loading,
   };
 }

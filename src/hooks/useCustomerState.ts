@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useMemo } from 'react';
 import { useAtom, useSetAtom } from 'jotai';
 import { collection, query, onSnapshot, updateDoc, doc, getDoc, addDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -10,6 +10,12 @@ import {
   customersLoadingAtom,
   customersErrorAtom
 } from '@/store/atoms';
+
+// Global singleton to prevent duplicate listeners
+const globalCustomerListeners = new Map<string, {
+  unsubscribe: () => void;
+  refCount: number;
+}>();
 
 export interface UseCustomersDataResult {
   customers: Customer[];
@@ -32,6 +38,23 @@ export function useCustomersData(organizationId: string | undefined): UseCustome
       return;
     }
 
+    const listenerKey = `customers-${organizationId}`;
+    
+    // Check if listener already exists
+    if (globalCustomerListeners.has(listenerKey)) {
+      const existing = globalCustomerListeners.get(listenerKey)!;
+      existing.refCount++;
+      setLoading(false);
+      return () => {
+        existing.refCount--;
+        if (existing.refCount <= 0) {
+          existing.unsubscribe();
+          globalCustomerListeners.delete(listenerKey);
+        }
+      };
+    }
+
+    // Create new listener
     setLoading(true);
     setError(null);
 
@@ -56,7 +79,22 @@ export function useCustomersData(organizationId: string | undefined): UseCustome
       }
     );
 
-    return () => unsubscribe();
+    // Store in global singleton
+    globalCustomerListeners.set(listenerKey, {
+      unsubscribe,
+      refCount: 1
+    });
+
+    return () => {
+      const listener = globalCustomerListeners.get(listenerKey);
+      if (listener) {
+        listener.refCount--;
+        if (listener.refCount <= 0) {
+          listener.unsubscribe();
+          globalCustomerListeners.delete(listenerKey);
+        }
+      }
+    };
   }, [organizationId, setCustomers, setLoading, setError]);
 
   const createCustomer = async (customerData: Omit<Customer, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => {
@@ -100,8 +138,10 @@ export function useCustomersData(organizationId: string | undefined): UseCustome
     }
   };
 
+  const customersMemo = useMemo(() => customers, [customers]);
+
   return {
-    customers,
+    customers: customersMemo,
     loading,
     error,
     createCustomer,

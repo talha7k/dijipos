@@ -1,10 +1,16 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useAtom } from 'jotai';
 import { collection, query, onSnapshot, updateDoc, doc, getDoc, addDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Invoice, Organization } from '@/types';
+
+// Global singleton to prevent duplicate listeners
+const globalPurchaseInvoiceListeners = new Map<string, {
+  unsubscribe: () => void;
+  refCount: number;
+}>();
 
 export function usePurchaseInvoicesData(organizationId: string | undefined) {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -17,6 +23,25 @@ export function usePurchaseInvoicesData(organizationId: string | undefined) {
       setInvoices([]);
       return;
     }
+
+    const listenerKey = `purchase-invoices-${organizationId}`;
+    
+    // Check if listener already exists
+    if (globalPurchaseInvoiceListeners.has(listenerKey)) {
+      const existing = globalPurchaseInvoiceListeners.get(listenerKey)!;
+      existing.refCount++;
+      setLoading(false);
+      return () => {
+        existing.refCount--;
+        if (existing.refCount <= 0) {
+          existing.unsubscribe();
+          globalPurchaseInvoiceListeners.delete(listenerKey);
+        }
+      };
+    }
+
+    // Create new listener
+    setLoading(true);
 
     // Fetch organization data
     const fetchOrganization = async () => {
@@ -54,12 +79,29 @@ export function usePurchaseInvoicesData(organizationId: string | undefined) {
     // Execute fetch operations
     fetchOrganization();
 
+    // Store in global singleton
+    globalPurchaseInvoiceListeners.set(listenerKey, {
+      unsubscribe,
+      refCount: 1
+    });
+
     // Return cleanup function
-    return () => unsubscribe();
+    return () => {
+      const listener = globalPurchaseInvoiceListeners.get(listenerKey);
+      if (listener) {
+        listener.refCount--;
+        if (listener.refCount <= 0) {
+          listener.unsubscribe();
+          globalPurchaseInvoiceListeners.delete(listenerKey);
+        }
+      }
+    };
   }, [organizationId]);
 
+  const invoicesMemo = useMemo(() => invoices, [invoices]);
+
   return {
-    invoices,
+    invoices: invoicesMemo,
     organization,
     loading,
   };

@@ -1,9 +1,16 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { collection, query, onSnapshot, addDoc, doc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Product, Service, Category } from '@/types';
+
+// Global singletons to prevent duplicate listeners
+const globalPurchaseProductListeners = new Map<string, {
+  productsUnsubscribe: () => void;
+  servicesUnsubscribe: () => void;
+  refCount: number;
+}>();
 
 export function usePurchaseProductsData(organizationId: string | undefined) {
   const [products, setProducts] = useState<Product[]>([]);
@@ -16,9 +23,29 @@ export function usePurchaseProductsData(organizationId: string | undefined) {
       return;
     }
 
+    const listenerKey = `purchase-products-${organizationId}`;
+    
+    // Check if listener already exists
+    if (globalPurchaseProductListeners.has(listenerKey)) {
+      const existing = globalPurchaseProductListeners.get(listenerKey)!;
+      existing.refCount++;
+      setLoading(false);
+      return () => {
+        existing.refCount--;
+        if (existing.refCount <= 0) {
+          existing.productsUnsubscribe();
+          existing.servicesUnsubscribe();
+          globalPurchaseProductListeners.delete(listenerKey);
+        }
+      };
+    }
+
+    // Create new listener
+    setLoading(true);
+
     // Fetch purchase products with real-time updates
     const productsQ = query(collection(db, 'organizations', organizationId, 'purchase-products'));
-    const unsubscribe = onSnapshot(productsQ, (querySnapshot) => {
+    const productsUnsubscribe = onSnapshot(productsQ, (querySnapshot) => {
       const productsData = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
@@ -32,12 +59,31 @@ export function usePurchaseProductsData(organizationId: string | undefined) {
       setLoading(false);
     });
 
+    // Store in global singleton
+    globalPurchaseProductListeners.set(listenerKey, {
+      productsUnsubscribe,
+      servicesUnsubscribe: () => {}, // Placeholder for services
+      refCount: 1
+    });
+
     // Return cleanup function
-    return () => unsubscribe();
+    return () => {
+      const listener = globalPurchaseProductListeners.get(listenerKey);
+      if (listener) {
+        listener.refCount--;
+        if (listener.refCount <= 0) {
+          listener.productsUnsubscribe();
+          listener.servicesUnsubscribe();
+          globalPurchaseProductListeners.delete(listenerKey);
+        }
+      }
+    };
   }, [organizationId]);
 
+  const productsMemo = useMemo(() => products, [products]);
+
   return {
-    products,
+    products: productsMemo,
     loading,
   };
 }
@@ -53,9 +99,29 @@ export function usePurchaseServicesData(organizationId: string | undefined) {
       return;
     }
 
+    const listenerKey = `purchase-services-${organizationId}`;
+    
+    // Check if listener already exists
+    if (globalPurchaseProductListeners.has(listenerKey)) {
+      const existing = globalPurchaseProductListeners.get(listenerKey)!;
+      existing.refCount++;
+      setLoading(false);
+      return () => {
+        existing.refCount--;
+        if (existing.refCount <= 0) {
+          existing.productsUnsubscribe();
+          existing.servicesUnsubscribe();
+          globalPurchaseProductListeners.delete(listenerKey);
+        }
+      };
+    }
+
+    // Create new listener
+    setLoading(true);
+
     // Fetch purchase services with real-time updates
     const servicesQ = query(collection(db, 'organizations', organizationId, 'purchase-services'));
-    const unsubscribe = onSnapshot(servicesQ, (querySnapshot) => {
+    const servicesUnsubscribe = onSnapshot(servicesQ, (querySnapshot) => {
       const servicesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
@@ -69,12 +135,31 @@ export function usePurchaseServicesData(organizationId: string | undefined) {
       setLoading(false);
     });
 
+    // Store in global singleton
+    globalPurchaseProductListeners.set(listenerKey, {
+      productsUnsubscribe: () => {}, // Placeholder for products
+      servicesUnsubscribe,
+      refCount: 1
+    });
+
     // Return cleanup function
-    return () => unsubscribe();
+    return () => {
+      const listener = globalPurchaseProductListeners.get(listenerKey);
+      if (listener) {
+        listener.refCount--;
+        if (listener.refCount <= 0) {
+          listener.productsUnsubscribe();
+          listener.servicesUnsubscribe();
+          globalPurchaseProductListeners.delete(listenerKey);
+        }
+      }
+    };
   }, [organizationId]);
 
+  const servicesMemo = useMemo(() => services, [services]);
+
   return {
-    services,
+    services: servicesMemo,
     loading,
   };
 }

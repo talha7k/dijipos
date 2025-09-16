@@ -5,8 +5,8 @@ import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/use
 
 import { usePaymentTypesData } from '@/hooks/uePaymentTypes';
 import { useTemplatesData } from '@/hooks/use-templates-data';
-import { TemplateCategory } from '@/types';
-import { useOrders } from '@/hooks/orders/useOrders';
+import { TemplateCategory } from '@/types/template';
+import { useOrderTypes } from '@/hooks/useOrderTypes';
 import { useTablesData } from '@/hooks/tables/useTables';
 import { useSettingsData } from '@/hooks/organization/use-settings-data';
 
@@ -23,7 +23,7 @@ function SettingsContent() {
   const organizationId = useOrganizationId();
   const { paymentTypes, loading: paymentTypesLoading } = usePaymentTypesData(organizationId || undefined);
   const { templates: receiptTemplates, loading: receiptTemplatesLoading } = useTemplatesData(organizationId || undefined, TemplateCategory.RECEIPT);
-  const { orderTypes, loading: orderTypesLoading } = useOrders(organizationId || undefined);
+  const { orderTypes, loading: orderTypesLoading } = useOrderTypes(organizationId || undefined);
   const { tables, loading: tablesLoading } = useTablesData(organizationId || undefined);
   const { 
     vatSettings, 
@@ -32,6 +32,17 @@ function SettingsContent() {
     handleVatSettingsUpdate,
     handlePrinterSettingsUpdate 
   } = useSettingsData(organizationId || undefined);
+
+  // Debug logging
+  console.log('SettingsPage Debug:', {
+    organizationId,
+    settingsLoading,
+    paymentTypesLoading,
+    receiptTemplatesLoading,
+    orderTypesLoading,
+    tablesLoading,
+    tablesLength: tables?.length
+  });
 
   if (settingsLoading || paymentTypesLoading || receiptTemplatesLoading || orderTypesLoading || tablesLoading) {
     return <div className="flex justify-center items-center h-64">Loading...</div>;

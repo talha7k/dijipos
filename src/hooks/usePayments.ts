@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useAtom } from 'jotai';
 import { collection, query, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -10,6 +10,12 @@ import {
   invoicePaymentsLoadingAtom,
   invoicePaymentsErrorAtom
 } from '@/store/atoms';
+
+// Global singleton to prevent duplicate listeners
+const globalPaymentListeners = new Map<string, {
+  unsubscribe: () => void;
+  refCount: number;
+}>();
 
 export function usePaymentsData(organizationId: string | undefined) {
   const [payments, setPayments] = useAtom(invoicePaymentsAtom);
@@ -21,7 +27,24 @@ export function usePaymentsData(organizationId: string | undefined) {
       return;
     }
 
-    // Fetch payments with real-time updates
+    const listenerKey = `payments-${organizationId}`;
+    
+    // Check if listener already exists
+    if (globalPaymentListeners.has(listenerKey)) {
+      const existing = globalPaymentListeners.get(listenerKey)!;
+      existing.refCount++;
+      setLoading(false);
+      return () => {
+        existing.refCount--;
+        if (existing.refCount <= 0) {
+          existing.unsubscribe();
+          globalPaymentListeners.delete(listenerKey);
+        }
+      };
+    }
+
+    // Create new listener
+    setLoading(true);
     const paymentsQ = query(collection(db, 'organizations', organizationId, 'payments'));
     const unsubscribe = onSnapshot(paymentsQ, (querySnapshot) => {
       const paymentsData = querySnapshot.docs.map(doc => {
@@ -46,12 +69,29 @@ export function usePaymentsData(organizationId: string | undefined) {
       setLoading(false);
     });
 
+    // Store in global singleton
+    globalPaymentListeners.set(listenerKey, {
+      unsubscribe,
+      refCount: 1
+    });
+
     // Return cleanup function
-    return () => unsubscribe();
+    return () => {
+      const listener = globalPaymentListeners.get(listenerKey);
+      if (listener) {
+        listener.refCount--;
+        if (listener.refCount <= 0) {
+          listener.unsubscribe();
+          globalPaymentListeners.delete(listenerKey);
+        }
+      }
+    };
   }, [organizationId]);
 
+  const paymentsMemo = useMemo(() => payments, [payments]);
+
   return {
-    payments,
+    payments: paymentsMemo,
     loading,
   };
 }

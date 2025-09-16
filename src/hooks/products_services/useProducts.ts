@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useAtom } from 'jotai';
 import { collection, query, onSnapshot, updateDoc, doc, addDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -10,6 +10,12 @@ import {
   productsLoadingAtom,
   productsErrorAtom
 } from '@/store/atoms';
+
+// Global singleton to prevent duplicate listeners
+const globalProductListeners = new Map<string, {
+  unsubscribe: () => void;
+  refCount: number;
+}>();
 
 export function useProductsData(organizationId: string | undefined) {
   const [products, setProducts] = useAtom(productsAtom);
@@ -22,7 +28,24 @@ export function useProductsData(organizationId: string | undefined) {
       return;
     }
 
-    // Fetch products with real-time updates
+    const listenerKey = `products-${organizationId}`;
+    
+    // Check if listener already exists
+    if (globalProductListeners.has(listenerKey)) {
+      const existing = globalProductListeners.get(listenerKey)!;
+      existing.refCount++;
+      setLoading(false);
+      return () => {
+        existing.refCount--;
+        if (existing.refCount <= 0) {
+          existing.unsubscribe();
+          globalProductListeners.delete(listenerKey);
+        }
+      };
+    }
+
+    // Create new listener
+    setLoading(true);
     const productsQ = query(collection(db, 'organizations', organizationId, 'products'));
     const unsubscribe = onSnapshot(productsQ, (querySnapshot) => {
       const productsData = querySnapshot.docs.map(doc => ({
@@ -38,12 +61,29 @@ export function useProductsData(organizationId: string | undefined) {
       setLoading(false);
     });
 
+    // Store in global singleton
+    globalProductListeners.set(listenerKey, {
+      unsubscribe,
+      refCount: 1
+    });
+
     // Return cleanup function
-    return () => unsubscribe();
+    return () => {
+      const listener = globalProductListeners.get(listenerKey);
+      if (listener) {
+        listener.refCount--;
+        if (listener.refCount <= 0) {
+          listener.unsubscribe();
+          globalProductListeners.delete(listenerKey);
+        }
+      }
+    };
   }, [organizationId, setProducts, setLoading]);
 
+  const productsMemo = useMemo(() => products, [products]);
+
   return {
-    products,
+    products: productsMemo,
     loading,
   };
 }

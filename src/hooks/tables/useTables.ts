@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useAtom } from 'jotai';
 import { collection, query, onSnapshot, updateDoc, doc, addDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -10,6 +10,12 @@ import {
   tablesLoadingAtom,
   tablesErrorAtom
 } from '@/store/atoms';
+
+// Global singleton to prevent duplicate listeners
+const globalTableListeners = new Map<string, {
+  unsubscribe: () => void;
+  refCount: number;
+}>();
 
 export function useTablesData(organizationId: string | undefined) {
   const [tables, setTables] = useAtom(tablesAtom);
@@ -22,9 +28,32 @@ export function useTablesData(organizationId: string | undefined) {
       return;
     }
 
+    const listenerKey = `tables-${organizationId}`;
+    
+    // Check if listener already exists
+    if (globalTableListeners.has(listenerKey)) {
+      const existing = globalTableListeners.get(listenerKey)!;
+      existing.refCount++;
+      console.log('useTablesData: Global listener already exists for organization:', organizationId);
+      setLoading(false);
+      return () => {
+        existing.refCount--;
+        if (existing.refCount <= 0) {
+          existing.unsubscribe();
+          globalTableListeners.delete(listenerKey);
+        }
+      };
+    }
+
+    // Set loading to true when starting to fetch
+    setLoading(true);
+
     // Fetch tables with real-time updates
     const tablesQ = query(collection(db, 'organizations', organizationId, 'tables'));
+    console.log('useTablesData: Setting up global listener for organization:', organizationId);
+    
     const unsubscribe = onSnapshot(tablesQ, (querySnapshot) => {
+      console.log('useTablesData: Received snapshot with', querySnapshot.size, 'documents');
       const tablesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
@@ -34,16 +63,34 @@ export function useTablesData(organizationId: string | undefined) {
       setTables(tablesData);
       setLoading(false);
     }, (error) => {
-      console.error('Error fetching tables:', error);
+      console.error('useTablesData: Error fetching tables:', error);
       setLoading(false);
     });
 
+    // Store in global singleton
+    globalTableListeners.set(listenerKey, {
+      unsubscribe,
+      refCount: 1
+    });
+
     // Return cleanup function
-    return () => unsubscribe();
+    return () => {
+      const listener = globalTableListeners.get(listenerKey);
+      if (listener) {
+        listener.refCount--;
+        if (listener.refCount <= 0) {
+          listener.unsubscribe();
+          globalTableListeners.delete(listenerKey);
+        }
+      }
+    };
   }, [organizationId, setTables, setLoading]);
 
+  // Memoize the tables array to prevent unnecessary re-renders
+  const memoizedTables = useMemo(() => tables, [tables]);
+
   return {
-    tables,
+    tables: memoizedTables,
     loading,
   };
 }

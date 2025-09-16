@@ -1,16 +1,33 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { collection, query, onSnapshot, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { QuoteTemplate, QuoteTemplateType } from '@/types';
 import { defaultEnglishQuoteTemplate } from '@/components/templates/default-quote-english';
 import { defaultArabicQuoteTemplate } from '@/components/templates/default-quote-arabic';
 
+// Global singleton state for quote templates
+const globalQuoteTemplatesState = {
+  listeners: new Map<string, {
+    unsubscribe: () => void;
+    refCount: number;
+    data: QuoteTemplate[];
+    loading: boolean;
+    error: string | null;
+  }>()
+};
+
+function getCacheKey(organizationId: string | undefined): string {
+  return `quote-templates-${organizationId || 'none'}`;
+}
+
 export function useQuoteTemplatesData(organizationId: string | undefined) {
   const [quoteTemplates, setQuoteTemplates] = useState<QuoteTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const cacheKey = useMemo(() => getCacheKey(organizationId), [organizationId]);
 
   useEffect(() => {
     if (!organizationId) {
@@ -19,6 +36,25 @@ export function useQuoteTemplatesData(organizationId: string | undefined) {
       return;
     }
 
+    const existingListener = globalQuoteTemplatesState.listeners.get(cacheKey);
+
+    if (existingListener) {
+      // Reuse existing listener
+      existingListener.refCount++;
+      setQuoteTemplates(existingListener.data);
+      setLoading(existingListener.loading);
+      setError(existingListener.error);
+
+      return () => {
+        existingListener.refCount--;
+        if (existingListener.refCount === 0) {
+          existingListener.unsubscribe();
+          globalQuoteTemplatesState.listeners.delete(cacheKey);
+        }
+      };
+    }
+
+    // Create new listener
     setLoading(true);
     setError(null);
 
@@ -37,8 +73,9 @@ export function useQuoteTemplatesData(organizationId: string | undefined) {
         })) as QuoteTemplate[];
 
         // If no templates exist in Firestore, provide default templates
+        let finalTemplates = templates;
         if (templates.length === 0) {
-          const defaultTemplates: QuoteTemplate[] = [
+          finalTemplates = [
             {
               id: 'default-english',
               name: 'Default English Quote',
@@ -84,21 +121,49 @@ export function useQuoteTemplatesData(organizationId: string | undefined) {
               updatedAt: new Date(),
             }
           ];
-          setQuoteTemplates(defaultTemplates);
-        } else {
-          setQuoteTemplates(templates);
         }
+
+        const listener = globalQuoteTemplatesState.listeners.get(cacheKey);
+        if (listener) {
+          listener.data = finalTemplates;
+          listener.loading = false;
+          listener.error = null;
+        }
+        setQuoteTemplates(finalTemplates);
         setLoading(false);
       },
       (error) => {
         console.error('Error fetching quote templates:', error);
+        const listener = globalQuoteTemplatesState.listeners.get(cacheKey);
+        if (listener) {
+          listener.loading = false;
+          listener.error = error.message;
+        }
         setError(error.message);
         setLoading(false);
       }
     );
 
-    return () => unsubscribe();
-  }, [organizationId]);
+    // Store the listener
+    globalQuoteTemplatesState.listeners.set(cacheKey, {
+      unsubscribe,
+      refCount: 1,
+      data: [],
+      loading: true,
+      error: null,
+    });
+
+    return () => {
+      const listener = globalQuoteTemplatesState.listeners.get(cacheKey);
+      if (listener) {
+        listener.refCount--;
+        if (listener.refCount === 0) {
+          listener.unsubscribe();
+          globalQuoteTemplatesState.listeners.delete(cacheKey);
+        }
+      }
+    };
+  }, [organizationId, cacheKey]);
 
   const addTemplate = async (template: Omit<QuoteTemplate, 'id' | 'createdAt' | 'updatedAt'>) => {
     if (!organizationId) throw new Error('No organization selected');

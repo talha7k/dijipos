@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useMemo } from 'react';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { collection, query, onSnapshot, addDoc, updateDoc, doc, deleteDoc, Timestamp, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Order, OrderPayment, OrderType, OrderStatus, TableStatus } from '@/types';
+import { Order, OrderPayment, OrderStatus, TableStatus } from '@/types';
 import { useAuthState } from '@/hooks/useAuthState';
 import {
   ordersAtom,
@@ -12,18 +12,15 @@ import {
   ordersLoadingAtom,
   ordersErrorAtom,
   paymentsAtom,
-  orderTypesAtom,
-  orderTypesLoadingAtom,
-  orderTypesErrorAtom,
   ordersRefreshKeyAtom,
-  paymentsRefreshKeyAtom,
-  orderTypesRefreshKeyAtom
+  paymentsRefreshKeyAtom
 } from '@/store/atoms';
+
+
 
 export interface UseOrdersResult {
   // Orders data
   orders: Order[];
-  orderTypes: OrderType[];
   loading: boolean;
   error: string | null;
   
@@ -60,7 +57,6 @@ export interface UseOrdersResult {
   // Utility functions
   refreshOrders: () => void;
   refreshPayments: () => void;
-  refreshOrderTypes: () => void;
 }
 
 export function useOrders(organizationId: string | undefined): UseOrdersResult {
@@ -72,10 +68,7 @@ export function useOrders(organizationId: string | undefined): UseOrdersResult {
   const [loading, setLoading] = useAtom(ordersLoadingAtom);
   const [error, setError] = useAtom(ordersErrorAtom);
   
-  // Order types state
-  const [orderTypes, setOrderTypes] = useAtom(orderTypesAtom);
-  const [orderTypesLoading, setOrderTypesLoading] = useAtom(orderTypesLoadingAtom);
-  const [orderTypesError, setOrderTypesError] = useAtom(orderTypesErrorAtom);
+  
   
   // Payments state
   const [orderPayments, setOrderPayments] = useAtom(paymentsAtom);
@@ -85,7 +78,6 @@ export function useOrders(organizationId: string | undefined): UseOrdersResult {
   // Refresh keys
   const [ordersRefreshKey, setOrdersRefreshKey] = useAtom(ordersRefreshKeyAtom);
   const [paymentsRefreshKey, setPaymentsRefreshKey] = useAtom(paymentsRefreshKeyAtom);
-  const [orderTypesRefreshKey, setOrderTypesRefreshKey] = useAtom(orderTypesRefreshKeyAtom);
 
   // Fetch orders
   useEffect(() => {
@@ -133,41 +125,7 @@ export function useOrders(organizationId: string | undefined): UseOrdersResult {
     }
   }, [orders, selectedOrder, setSelectedOrder]);
 
-  // Fetch order types
-  useEffect(() => {
-    if (!organizationId) {
-      setOrderTypesLoading(false);
-      setOrderTypes([]);
-      return;
-    }
-
-    setOrderTypesLoading(true);
-    setOrderTypesError(null);
-
-    const orderTypesQuery = query(collection(db, 'organizations', organizationId, 'orderTypes'));
-    const unsubscribe = onSnapshot(orderTypesQuery, (querySnapshot) => {
-      try {
-        const orderTypesData = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          createdAt: doc.data().createdAt?.toDate(),
-          updatedAt: doc.data().updatedAt?.toDate(),
-        })) as OrderType[];
-        setOrderTypes(orderTypesData);
-        setOrderTypesLoading(false);
-      } catch (err) {
-        console.error('Error processing order types:', err);
-        setOrderTypesError('Failed to process order types');
-        setOrderTypesLoading(false);
-      }
-    }, (error) => {
-      console.error('Error fetching order types:', error);
-      setOrderTypesError('Failed to fetch order types');
-      setOrderTypesLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [organizationId, orderTypesRefreshKey, setOrderTypes, setOrderTypesLoading, setOrderTypesError]);
+  
 
   // Fetch payments
   useEffect(() => {
@@ -481,14 +439,14 @@ export function useOrders(organizationId: string | undefined): UseOrdersResult {
     setPaymentsRefreshKey(prev => prev + 1);
   }, [setPaymentsRefreshKey]);
 
-  const refreshOrderTypes = useCallback(() => {
-    setOrderTypesRefreshKey(prev => prev + 1);
-  }, [setOrderTypesRefreshKey]);
+  
+
+  // Memoize arrays to prevent unnecessary re-renders
+  const memoizedOrders = useMemo(() => orders, [orders]);
 
   return {
     // Data
-    orders,
-    orderTypes,
+    orders: memoizedOrders,
     loading,
     error,
     orderPayments,
@@ -521,7 +479,6 @@ export function useOrders(organizationId: string | undefined): UseOrdersResult {
     // Utilities
     refreshOrders,
     refreshPayments,
-    refreshOrderTypes,
   };
 }
 
@@ -530,9 +487,7 @@ export function useOrdersData() {
   return useAtomValue(ordersAtom);
 }
 
-export function useOrderTypesData() {
-  return useAtomValue(orderTypesAtom);
-}
+
 
 export function useOrderPaymentsData() {
   return useAtomValue(paymentsAtom);

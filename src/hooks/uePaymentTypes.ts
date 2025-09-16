@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useAtom } from 'jotai';
 import { collection, query, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -10,6 +10,11 @@ import {
   paymentTypesLoadingAtom,
   paymentTypesErrorAtom
 } from '@/store/atoms';
+
+// Global singleton to track active listeners
+const globalListeners = {
+  paymentTypes: null as { unsubscribe: () => void; organizationId: string } | null
+};
 
 export function usePaymentTypesData(organizationId: string | undefined) {
   const [paymentTypes, setPaymentTypes] = useAtom(paymentTypesAtom);
@@ -22,11 +27,27 @@ export function usePaymentTypesData(organizationId: string | undefined) {
       return;
     }
 
+    // Check if we already have a listener for this organization globally
+    if (globalListeners.paymentTypes && globalListeners.paymentTypes.organizationId === organizationId) {
+      console.log('usePaymentTypesData: Global listener already exists for organization:', organizationId);
+      return;
+    }
+
+    // Clean up existing listener if organization changed
+    if (globalListeners.paymentTypes) {
+      console.log('usePaymentTypesData: Cleaning up previous global listener');
+      globalListeners.paymentTypes.unsubscribe();
+      globalListeners.paymentTypes = null;
+    }
+
     setLoading(true);
 
     // Fetch payment types with real-time updates
     const paymentTypesQ = query(collection(db, 'organizations', organizationId, 'paymentTypes'));
+    console.log('usePaymentTypesData: Setting up global listener for organization:', organizationId);
+    
     const unsubscribe = onSnapshot(paymentTypesQ, (querySnapshot) => {
+      console.log('usePaymentTypesData: Received snapshot with', querySnapshot.size, 'documents');
       const paymentTypesData = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
@@ -40,12 +61,23 @@ export function usePaymentTypesData(organizationId: string | undefined) {
       setLoading(false);
     });
 
+    // Store the listener reference globally
+    globalListeners.paymentTypes = { unsubscribe, organizationId };
+
     // Return cleanup function
-    return () => unsubscribe();
+    return () => {
+      if (globalListeners.paymentTypes) {
+        globalListeners.paymentTypes.unsubscribe();
+        globalListeners.paymentTypes = null;
+      }
+    };
   }, [organizationId, setPaymentTypes, setLoading]);
 
+  // Memoize paymentTypes array to prevent unnecessary re-renders
+  const memoizedPaymentTypes = useMemo(() => paymentTypes, [paymentTypes]);
+
   return {
-    paymentTypes,
+    paymentTypes: memoizedPaymentTypes,
     loading,
   };
 }

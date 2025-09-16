@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { collection, query, onSnapshot, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { ReceiptTemplate, PrinterFormat, ReceiptTemplateType } from '@/types';
@@ -9,10 +9,27 @@ import { defaultArabicReceiptTemplate } from '@/components/templates/default-ara
 import { defaultReceiptA4Template } from '@/components/templates/default-receipt-a4';
 import { defaultArabicReceiptA4Template } from '@/components/templates/default-arabic-receipt-a4';
 
+// Global singleton state for receipt templates
+const globalReceiptTemplatesState = {
+  listeners: new Map<string, {
+    unsubscribe: () => void;
+    refCount: number;
+    data: ReceiptTemplate[];
+    loading: boolean;
+    error: string | null;
+  }>()
+};
+
+function getCacheKey(organizationId: string | undefined): string {
+  return `receipt-templates-${organizationId || 'none'}`;
+}
+
 export function useReceiptTemplatesData(organizationId: string | undefined) {
   const [receiptTemplates, setReceiptTemplates] = useState<ReceiptTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const cacheKey = useMemo(() => getCacheKey(organizationId), [organizationId]);
 
   useEffect(() => {
     if (!organizationId) {
@@ -21,11 +38,29 @@ export function useReceiptTemplatesData(organizationId: string | undefined) {
       return;
     }
 
+    const existingListener = globalReceiptTemplatesState.listeners.get(cacheKey);
+
+    if (existingListener) {
+      // Reuse existing listener
+      existingListener.refCount++;
+      setReceiptTemplates(existingListener.data);
+      setLoading(existingListener.loading);
+      setError(existingListener.error);
+
+      return () => {
+        existingListener.refCount--;
+        if (existingListener.refCount === 0) {
+          existingListener.unsubscribe();
+          globalReceiptTemplatesState.listeners.delete(cacheKey);
+        }
+      };
+    }
+
+    // Create new listener - using local templates for now
     setLoading(true);
     setError(null);
 
-    // Temporarily use local templates instead of Firestore to avoid incomplete templates
-    console.log('=== USING LOCAL TEMPLATES (BYPASSING FIRESTORE) ===');
+    // Simulate onSnapshot behavior with local data
     const defaultTemplates: ReceiptTemplate[] = [
       {
         id: 'default-thermal',
@@ -72,104 +107,30 @@ export function useReceiptTemplatesData(organizationId: string | undefined) {
         updatedAt: new Date(),
       }
     ];
+
+    // Store the listener with local data
+    globalReceiptTemplatesState.listeners.set(cacheKey, {
+      unsubscribe: () => {}, // No-op for local data
+      refCount: 1,
+      data: defaultTemplates,
+      loading: false,
+      error: null,
+    });
+
     setReceiptTemplates(defaultTemplates);
     setLoading(false);
 
-    // Keep Firestore functions commented out for now
-    /*
-    const receiptTemplatesQuery = query(
-      collection(db, 'organizations', organizationId, 'receiptTemplates')
-    );
-
-    const unsubscribe = onSnapshot(
-      receiptTemplatesQuery,
-      (querySnapshot) => {
-        const templates = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          createdAt: doc.data().createdAt?.toDate(),
-          updatedAt: doc.data().updatedAt?.toDate(),
-        })) as ReceiptTemplate[];
-
-        console.log('=== FIRESTORE TEMPLATES DEBUG ===');
-        console.log('Templates found in Firestore:', templates.length);
-        templates.forEach(template => {
-          console.log(`Template: ${template.id} - ${template.name} (${template.type})`);
-          if (template.content) {
-            console.log(`Content length: ${template.content.length}`);
-            console.log(`First 200 chars: ${template.content.substring(0, 200)}`);
-            console.log(`Contains {{orderType}}: ${template.content.includes('{{orderType}}')}`);
-            console.log(`Contains {{queueNumber}}: ${template.content.includes('{{queueNumber}}')}`);
-            console.log(`Contains {{subtotal}}: ${template.content.includes('{{subtotal}}')}`);
-          } else {
-            console.log('No content found');
-          }
-        });
-
-        // If no templates exist in Firestore, provide default templates
-        if (templates.length === 0) {
-          const defaultTemplates: ReceiptTemplate[] = [
-            {
-              id: 'default-thermal',
-              name: 'Default Thermal Receipt',
-              description: 'Default thermal printer receipt template in English',
-              type: ReceiptTemplateType.ENGLISH_THERMAL,
-              content: defaultReceiptTemplate,
-              isDefault: true,
-              organizationId,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            },
-            {
-              id: 'arabic-thermal',
-              name: 'Arabic Thermal Receipt',
-              description: 'Arabic thermal printer receipt template',
-              type: ReceiptTemplateType.ARABIC_THERMAL,
-              content: defaultArabicReceiptTemplate,
-              isDefault: false,
-              organizationId,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            },
-            {
-              id: 'default-a4',
-              name: 'Default A4 Receipt',
-              description: 'Default A4 paper receipt template',
-              type: ReceiptTemplateType.ENGLISH_A4,
-              content: defaultReceiptA4Template,
-              isDefault: false,
-              organizationId,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            },
-            {
-              id: 'arabic-a4',
-              name: 'Arabic A4 Receipt',
-              description: 'Arabic A4 paper receipt template',
-              type: ReceiptTemplateType.ARABIC_A4,
-              content: defaultArabicReceiptA4Template,
-              isDefault: false,
-              organizationId,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            }
-          ];
-          setReceiptTemplates(defaultTemplates);
-        } else {
-          setReceiptTemplates(templates);
+    return () => {
+      const listener = globalReceiptTemplatesState.listeners.get(cacheKey);
+      if (listener) {
+        listener.refCount--;
+        if (listener.refCount === 0) {
+          listener.unsubscribe();
+          globalReceiptTemplatesState.listeners.delete(cacheKey);
         }
-        setLoading(false);
-      },
-      (error) => {
-        console.error('Error fetching receipt templates:', error);
-        setError(error.message);
-        setLoading(false);
       }
-    );
-
-    return () => unsubscribe();
-    */
-  }, [organizationId]);
+    };
+  }, [organizationId, cacheKey]);
 
   const addTemplate = async (template: Omit<ReceiptTemplate, 'id' | 'createdAt' | 'updatedAt'>) => {
     if (!organizationId) throw new Error('No organization selected');

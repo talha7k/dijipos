@@ -9,6 +9,7 @@ import { useCategoriesData } from "@/hooks/products_services/useCategories";
 import { useTablesData } from "@/hooks/tables/useTables";
 import { useCustomersData } from "@/hooks/useCustomerState";
 import { useOrders } from "@/hooks/orders/useOrders";
+import { useOrderTypes } from "@/hooks/useOrderTypes";
 import { usePaymentTypesData } from "@/hooks/uePaymentTypes";
 
 import {
@@ -57,11 +58,11 @@ export default function SimplifiedPOSPage() {
   );
   const { 
     orders = [], 
-    orderTypes = [], 
     orderPayments = {},
     loading: ordersLoading,
     paymentsLoading: orderPaymentsLoading 
   } = useOrders(organizationId || undefined);
+  const { orderTypes = [] } = useOrderTypes(organizationId || undefined);
   const { paymentTypes = [], loading: paymentTypesLoading } =
     usePaymentTypesData(organizationId || "");
 

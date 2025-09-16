@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { collection, query, onSnapshot, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { ReceiptTemplate, InvoiceTemplate, QuoteTemplate, TemplateCategory, UnifiedTemplate } from '@/types';
@@ -10,10 +10,27 @@ import { defaultArabicReceiptTemplate } from '@/components/templates/default-ara
 import { defaultReceiptA4Template } from '@/components/templates/default-receipt-a4';
 import { defaultArabicReceiptA4Template } from '@/components/templates/default-arabic-receipt-a4';
 
+// Global singleton state for templates
+const globalTemplatesState = {
+  listeners: new Map<string, {
+    unsubscribe: () => void;
+    refCount: number;
+    data: UnifiedTemplate[];
+    loading: boolean;
+    error: string | null;
+  }>()
+};
+
+function getCacheKey(organizationId: string | undefined, category?: TemplateCategory): string {
+  return `${organizationId || 'none'}-${category || 'receipt'}`;
+}
+
 export function useTemplatesData(organizationId: string | undefined, category?: TemplateCategory) {
   const [templates, setTemplates] = useState<UnifiedTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const cacheKey = useMemo(() => getCacheKey(organizationId, category), [organizationId, category]);
 
   useEffect(() => {
     if (!organizationId) {
@@ -22,6 +39,25 @@ export function useTemplatesData(organizationId: string | undefined, category?: 
       return;
     }
 
+    const existingListener = globalTemplatesState.listeners.get(cacheKey);
+
+    if (existingListener) {
+      // Reuse existing listener
+      existingListener.refCount++;
+      setTemplates(existingListener.data);
+      setLoading(existingListener.loading);
+      setError(existingListener.error);
+
+      return () => {
+        existingListener.refCount--;
+        if (existingListener.refCount === 0) {
+          existingListener.unsubscribe();
+          globalTemplatesState.listeners.delete(cacheKey);
+        }
+      };
+    }
+
+    // Create new listener
     setLoading(true);
     setError(null);
 
@@ -42,8 +78,9 @@ export function useTemplatesData(organizationId: string | undefined, category?: 
         })) as UnifiedTemplate[];
 
         // If no templates exist in Firestore, provide default templates for receipts
+        let finalTemplates = templates;
         if (templates.length === 0 && (!category || category === TemplateCategory.RECEIPT)) {
-          const defaultTemplates: UnifiedTemplate[] = [
+          finalTemplates = [
             {
               id: 'default-thermal',
               name: 'Default Thermal Receipt',
@@ -93,21 +130,49 @@ export function useTemplatesData(organizationId: string | undefined, category?: 
               updatedAt: new Date(),
             }
           ];
-          setTemplates(defaultTemplates);
-        } else {
-          setTemplates(templates);
         }
+
+        const listener = globalTemplatesState.listeners.get(cacheKey);
+        if (listener) {
+          listener.data = finalTemplates;
+          listener.loading = false;
+          listener.error = null;
+        }
+        setTemplates(finalTemplates);
         setLoading(false);
       },
       (error) => {
         console.error(`Error fetching ${category || 'receipt'} templates:`, error);
+        const listener = globalTemplatesState.listeners.get(cacheKey);
+        if (listener) {
+          listener.loading = false;
+          listener.error = error.message;
+        }
         setError(error.message);
         setLoading(false);
       }
     );
 
-    return () => unsubscribe();
-  }, [organizationId, category]);
+    // Store the listener
+    globalTemplatesState.listeners.set(cacheKey, {
+      unsubscribe,
+      refCount: 1,
+      data: [],
+      loading: true,
+      error: null,
+    });
+
+    return () => {
+      const listener = globalTemplatesState.listeners.get(cacheKey);
+      if (listener) {
+        listener.refCount--;
+        if (listener.refCount === 0) {
+          listener.unsubscribe();
+          globalTemplatesState.listeners.delete(cacheKey);
+        }
+      }
+    };
+  }, [organizationId, category, cacheKey]);
 
   const addTemplate = async (template: Omit<UnifiedTemplate, 'id' | 'createdAt' | 'updatedAt'>) => {
     if (!organizationId) throw new Error('No organization selected');

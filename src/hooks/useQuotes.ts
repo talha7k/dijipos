@@ -1,7 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { collection, query, onSnapshot, updateDoc, doc, addDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Quote } from '@/types';
+
+// Global singleton to prevent duplicate listeners
+const globalQuoteListeners = new Map<string, {
+  unsubscribe: () => void;
+  refCount: number;
+}>();
 
 export function useQuotesData(organizationId: string | undefined) {
   const [quotes, setQuotes] = useState<Quote[]>([]);
@@ -13,7 +19,24 @@ export function useQuotesData(organizationId: string | undefined) {
       return;
     }
 
-    // Fetch quotes with real-time updates
+    const listenerKey = `quotes-${organizationId}`;
+    
+    // Check if listener already exists
+    if (globalQuoteListeners.has(listenerKey)) {
+      const existing = globalQuoteListeners.get(listenerKey)!;
+      existing.refCount++;
+      setLoading(false);
+      return () => {
+        existing.refCount--;
+        if (existing.refCount <= 0) {
+          existing.unsubscribe();
+          globalQuoteListeners.delete(listenerKey);
+        }
+      };
+    }
+
+    // Create new listener
+    setLoading(true);
     const quotesQ = query(collection(db, 'organizations', organizationId, 'quotes'));
     const unsubscribe = onSnapshot(quotesQ, (querySnapshot) => {
       const quotesData = querySnapshot.docs.map(doc => ({
@@ -30,12 +53,29 @@ export function useQuotesData(organizationId: string | undefined) {
       setLoading(false);
     });
 
+    // Store in global singleton
+    globalQuoteListeners.set(listenerKey, {
+      unsubscribe,
+      refCount: 1
+    });
+
     // Return cleanup function
-    return () => unsubscribe();
+    return () => {
+      const listener = globalQuoteListeners.get(listenerKey);
+      if (listener) {
+        listener.refCount--;
+        if (listener.refCount <= 0) {
+          listener.unsubscribe();
+          globalQuoteListeners.delete(listenerKey);
+        }
+      }
+    };
   }, [organizationId]);
 
+  const quotesMemo = useMemo(() => quotes, [quotes]);
+
   return {
-    quotes,
+    quotes: quotesMemo,
     loading,
   };
 }

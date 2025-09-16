@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useAtom } from 'jotai';
 import { collection, query, onSnapshot, updateDoc, doc, getDoc, addDoc, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -15,6 +15,13 @@ import {
   invoicePaymentsErrorAtom
 } from '@/store/atoms';
 
+// Global singletons to prevent duplicate listeners
+const globalInvoiceListeners = new Map<string, {
+  invoicesUnsubscribe: () => void;
+  paymentsUnsubscribe: () => void;
+  refCount: number;
+}>();
+
 export function useInvoicesData(organizationId: string | undefined) {
   const [invoices, setInvoices] = useAtom(invoicesAtom);
   const [organization, setOrganization] = useState<Organization | null>(null);
@@ -29,6 +36,26 @@ export function useInvoicesData(organizationId: string | undefined) {
       setInvoices([]);
       return;
     }
+
+    const listenerKey = `invoices-${organizationId}`;
+    
+    // Check if listeners already exist
+    if (globalInvoiceListeners.has(listenerKey)) {
+      const existing = globalInvoiceListeners.get(listenerKey)!;
+      existing.refCount++;
+      setLoading(false);
+      return () => {
+        existing.refCount--;
+        if (existing.refCount <= 0) {
+          existing.invoicesUnsubscribe();
+          existing.paymentsUnsubscribe();
+          globalInvoiceListeners.delete(listenerKey);
+        }
+      };
+    }
+
+    // Create new listeners
+    setLoading(true);
 
     // Fetch organization data
     const fetchOrganization = async () => {
@@ -123,19 +150,38 @@ export function useInvoicesData(organizationId: string | undefined) {
     fetchCustomers();
     fetchSuppliers();
 
+    // Store in global singleton
+    globalInvoiceListeners.set(listenerKey, {
+      invoicesUnsubscribe,
+      paymentsUnsubscribe,
+      refCount: 1
+    });
+
     // Return cleanup function
     return () => {
-      invoicesUnsubscribe();
-      paymentsUnsubscribe();
+      const listener = globalInvoiceListeners.get(listenerKey);
+      if (listener) {
+        listener.refCount--;
+        if (listener.refCount <= 0) {
+          listener.invoicesUnsubscribe();
+          listener.paymentsUnsubscribe();
+          globalInvoiceListeners.delete(listenerKey);
+        }
+      }
     };
   }, [organizationId, setInvoices, setLoading, setSuppliers]);
 
+  const invoicesMemo = useMemo(() => invoices, [invoices]);
+  const customersMemo = useMemo(() => customers, [customers]);
+  const suppliersMemo = useMemo(() => suppliers, [suppliers]);
+  const paymentsMemo = useMemo(() => payments, [payments]);
+
   return {
-    invoices,
+    invoices: invoicesMemo,
     organization,
-    customers,
-    suppliers,
-    payments,
+    customers: customersMemo,
+    suppliers: suppliersMemo,
+    payments: paymentsMemo,
     loading,
   };
 }

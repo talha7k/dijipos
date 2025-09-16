@@ -1,9 +1,15 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { collection, query, onSnapshot, updateDoc, doc, addDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Service } from '@/types';
+
+// Global singleton to prevent duplicate listeners
+const globalServiceListeners = new Map<string, {
+  unsubscribe: () => void;
+  refCount: number;
+}>();
 
 export function useServicesData(organizationId: string | undefined) {
   const [services, setServices] = useState<Service[]>([]);
@@ -15,7 +21,24 @@ export function useServicesData(organizationId: string | undefined) {
       return;
     }
 
-    // Fetch services with real-time updates
+    const listenerKey = `services-${organizationId}`;
+    
+    // Check if listener already exists
+    if (globalServiceListeners.has(listenerKey)) {
+      const existing = globalServiceListeners.get(listenerKey)!;
+      existing.refCount++;
+      setLoading(false);
+      return () => {
+        existing.refCount--;
+        if (existing.refCount <= 0) {
+          existing.unsubscribe();
+          globalServiceListeners.delete(listenerKey);
+        }
+      };
+    }
+
+    // Create new listener
+    setLoading(true);
     const servicesQ = query(collection(db, 'organizations', organizationId, 'services'));
     const unsubscribe = onSnapshot(servicesQ, (querySnapshot) => {
       const servicesData = querySnapshot.docs.map(doc => ({
@@ -31,12 +54,29 @@ export function useServicesData(organizationId: string | undefined) {
       setLoading(false);
     });
 
+    // Store in global singleton
+    globalServiceListeners.set(listenerKey, {
+      unsubscribe,
+      refCount: 1
+    });
+
     // Return cleanup function
-    return () => unsubscribe();
+    return () => {
+      const listener = globalServiceListeners.get(listenerKey);
+      if (listener) {
+        listener.refCount--;
+        if (listener.refCount <= 0) {
+          listener.unsubscribe();
+          globalServiceListeners.delete(listenerKey);
+        }
+      }
+    };
   }, [organizationId]);
 
+  const servicesMemo = useMemo(() => services, [services]);
+
   return {
-    services,
+    services: servicesMemo,
     loading,
   };
 }
