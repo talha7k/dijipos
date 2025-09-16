@@ -1,12 +1,13 @@
 import { atom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
-import { Organization, User as AppUser, OrganizationUser } from '@/types';
-import { Order, CartItem, OrderPayment, Table, OrderType } from '@/types/order';
-import { Customer, Supplier } from '@/types/customer-supplier';
-import { Product, Service, Category } from '@/types/product-service';
-import { Invoice, Quote, Payment, PaymentType } from '@/types';
+import { Organization, OrganizationUser } from '@/types';
+import { Order } from '@/types/order';
 import { User } from 'firebase/auth';
 import { indexedDBStorage } from '@/lib/storage';
+
+// Re-export atoms from organized modules
+export * from './atoms/posAtoms';
+export * from './atoms/uiAtoms';
 
 // =====================
 // AUTH STATE ATOMS
@@ -28,47 +29,11 @@ export const organizationErrorAtom = atom<string | null>(null);
 export const organizationIdAtom = atomWithStorage<string | null>('dijibill-organization-id', null, indexedDBStorage);
 
 // =====================
-// THEME STATE ATOMS
-// =====================
-
-export const themeAtom = atomWithStorage<'light' | 'dark'>('dijibill-theme', 'light', indexedDBStorage);
-
-// =====================
-// SIDEBAR STATE ATOMS
-// =====================
-
-export const sidebarCollapsedAtom = atomWithStorage<boolean>('dijibill-sidebar-collapsed', false, indexedDBStorage);
-export const mobileSidebarOpenAtom = atom<boolean>(false);
-
-// =====================
 // ORDER STATE ATOMS
 // =====================
 
 // Client-side selection state for orders
 export const currentOrderAtom = atom<Order | null>(null);
-
-
-// =====================
-// POS STATE ATOMS
-// =====================
-
-// Cart state
-export const cartItemsAtom = atomWithStorage<CartItem[]>('dijibill-cart-items', [], indexedDBStorage);
-export const cartTotalAtom = atom(async (get) => {
-  const cartItems = await get(cartItemsAtom);
-  return (cartItems || []).reduce((sum: number, item: CartItem) => sum + item.total, 0);
-});
-export const cartLoadingAtom = atom<boolean>(false);
-
-// POS selection state
-export const selectedTableAtom = atomWithStorage<Table | null>('dijibill-selected-table', null, indexedDBStorage);
-export const selectedCustomerAtom = atomWithStorage<Customer | null>('dijibill-selected-customer', null, indexedDBStorage);
-export const selectedOrderTypeAtom = atomWithStorage<OrderType | null>('dijibill-selected-order-type', null, indexedDBStorage);
-export const selectedCartOrderAtom = atom<Order | null>(null);
-
-// POS navigation state
-export const currentViewAtom = atom<'items' | 'tables' | 'customers' | 'orders' | 'payment'>('items');
-export const categoryPathAtom = atom<string[]>([]);
 
 // =====================
 // DERIVED ATOMS
@@ -78,31 +43,6 @@ export const categoryPathAtom = atom<string[]>([]);
 export const isAuthenticatedAtom = atom((get) => get(userAtom) !== null);
 export const hasOrganizationAtom = atom((get) => get(selectedOrganizationAtom) !== null);
 export const hasOrganizationsAtom = atom((get) => get(userOrganizationsAtom).length > 0);
-
-// Cart derived atoms
-export const hasItemsInCartAtom = atom(async (get) => {
-  const cartItems = await get(cartItemsAtom);
-  return cartItems && cartItems.length > 0;
-});
-export const cartItemCountAtom = atom(async (get) => {
-  const cartItems = await get(cartItemsAtom);
-  return cartItems ? cartItems.reduce((count, item) => count + (item.quantity || 1), 0) : 0;
-});
-
-// Order derived atoms (removed - use hooks instead)
-
-// =====================
-// PERSISTENCE ATOMS
-// =====================
-
-// Note: Persistence is now handled directly by IndexedDB atoms above
-
-// =====================
-// ASYNC ATOMS
-// =====================
-
-// These atoms can be used for async data fetching
-// Example: export const fetchOrdersAtom = atom(async (get) => { ... });
 
 // =====================
 // UTILITY ATOMS
@@ -118,16 +58,6 @@ export const resetAuthStateAtom = atom(null, (get, set) => {
   set(emailVerifiedAtom, false);
   set(authLoadingAtom, false);
   set(authErrorAtom, null);
-});
-
-export const resetPOSStateAtom = atom(null, (get, set) => {
-  set(cartItemsAtom, []);
-  set(selectedTableAtom, null);
-  set(selectedCustomerAtom, null);
-  // Don't clear order type - preserve user preference
-  set(currentViewAtom, 'items');
-  set(categoryPathAtom, []);
-  set(selectedCartOrderAtom, null);
 });
 
 // =====================
