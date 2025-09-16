@@ -13,13 +13,32 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
+// Check for missing environment variables
+const missingVars = Object.entries(firebaseConfig)
+  .filter(([key, value]) => !value)
+  .map(([key]) => key);
+
+if (missingVars.length > 0) {
+  console.error('Firebase: Missing environment variables:', missingVars);
+  throw new Error(`Missing Firebase environment variables: ${missingVars.join(', ')}`);
+}
+
+console.log('Firebase: All environment variables present');
+
 // Initialize Firebase
+console.log('Firebase: Initializing app with config:', {
+  projectId: firebaseConfig.projectId,
+  authDomain: firebaseConfig.authDomain,
+  hasApiKey: !!firebaseConfig.apiKey
+});
 const app = initializeApp(firebaseConfig);
+console.log('Firebase: App initialized successfully');
 
 // Initialize Firebase services
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
+console.log('Firebase: Services initialized - auth:', !!auth, 'db:', !!db, 'storage:', !!storage);
 
 // Configure Google Auth Provider
 export const googleProvider = new GoogleAuthProvider();

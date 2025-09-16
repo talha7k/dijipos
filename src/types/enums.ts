@@ -127,3 +127,29 @@ export const CHARACTER_SETS = {
 } as const;
 
 export type CharacterSet = typeof CHARACTER_SETS[keyof typeof CHARACTER_SETS];
+
+// Currency and Locale enums for settings
+export enum Currency {
+  SAR = 'SAR',
+  USD = 'USD',
+  EUR = 'EUR',
+  GBP = 'GBP',
+  AED = 'AED',
+  KWD = 'KWD',
+  BHD = 'BHD',
+  OMR = 'OMR',
+  QAR = 'QAR'
+}
+
+export enum CurrencyLocale {
+  AR_SA = 'ar-SA', // Arabic - Saudi Arabia
+  EN_US = 'en-US', // English - United States
+  EN_GB = 'en-GB', // English - United Kingdom
+  DE_DE = 'de-DE', // German - Germany
+  FR_FR = 'fr-FR', // French - France
+  AR_AE = 'ar-AE', // Arabic - UAE
+  AR_KW = 'ar-KW', // Arabic - Kuwait
+  AR_BH = 'ar-BH', // Arabic - Bahrain
+  AR_OM = 'ar-OM', // Arabic - Oman
+  AR_QA = 'ar-QA'  // Arabic - Qatar
+}

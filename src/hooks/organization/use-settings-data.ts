@@ -62,8 +62,13 @@ export function useSettingsData(organizationId: string | undefined) {
     };
 
     const loadData = async () => {
-      await Promise.all([fetchVatSettings(), fetchPrinterSettings()]);
-      setLoading(false);
+      try {
+        await Promise.all([fetchVatSettings(), fetchPrinterSettings()]);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error loading settings:', error);
+        setLoading(false);
+      }
     };
 
     loadData();

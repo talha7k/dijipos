@@ -12,8 +12,10 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Table, Customer, OrderType, Order } from '@/types';
+import { Currency, CurrencyLocale } from '@/types/enums';
 import { Users, LayoutGrid, FileText, ShoppingBag, Plus, RotateCcw, PlusCircle } from 'lucide-react';
 import { OrderTypeSelectionDialog } from './OrderTypeSelectionDialog';
+import { useCurrencySettings } from '@/hooks/useCurrencySettings';
 
 interface CartItem {
   id: string;
@@ -59,6 +61,8 @@ export function POSHeader({
   onOrderTypeDeselect,
   onOrderToggle
 }: POSHeaderProps) {
+  const { currencySettings } = useCurrencySettings();
+
   const handleOrderToggle = () => {
     if (onOrderToggle) onOrderToggle();
   };
@@ -125,9 +129,9 @@ export function POSHeader({
           <div className="flex items-center w-full">
             <Badge className='bg-blue-500 hover:bg-blue-600 text-[10px] text-white mr-2'>{cartItems.length}</Badge>
             <Badge className='bg-green-500 hover:bg-green-600 text-[10px] text-white justify-end'>
-              {new Intl.NumberFormat('en-US', {
+              {new Intl.NumberFormat(currencySettings?.locale || CurrencyLocale.AR_SA, {
                 style: 'currency',
-                currency: 'SAR',
+                currency: currencySettings?.currency || Currency.SAR,
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               }).format(cartTotal)}

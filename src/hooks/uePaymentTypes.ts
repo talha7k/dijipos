@@ -22,6 +22,8 @@ export function usePaymentTypesData(organizationId: string | undefined) {
       return;
     }
 
+    setLoading(true);
+
     // Fetch payment types with real-time updates
     const paymentTypesQ = query(collection(db, 'organizations', organizationId, 'paymentTypes'));
     const unsubscribe = onSnapshot(paymentTypesQ, (querySnapshot) => {

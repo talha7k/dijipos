@@ -31,8 +31,11 @@ export default function TablesPage() {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
+    console.log('TablesPage: organizationId:', organizationId);
+    console.log('TablesPage: tablesLoading:', tablesLoading);
+    console.log('TablesPage: tables length:', tables.length);
     setLoading(tablesLoading);
-  }, [tablesLoading]);
+  }, [tablesLoading, organizationId, tables]);
 
   const handleAddTable = async (table: {
     name: string;

@@ -3,17 +3,15 @@
 import { useState } from 'react';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
+import { useOrganizationId } from '@/hooks/useAuthState';
 import { VATSettings } from '@/types';
+import { useCurrencySettings } from '@/hooks/useCurrencySettings';
+import { Currency, CurrencyLocale } from '@/types/enums';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { EditableSetting } from '@/components/ui/editable-setting';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Percent, Settings, FileText } from 'lucide-react';
+import { Percent, FileText, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface StoreSettingsTabProps {
@@ -23,27 +21,36 @@ interface StoreSettingsTabProps {
 
 export function StoreSettingsTab({ vatSettings, onVatSettingsUpdate }: StoreSettingsTabProps) {
   const organizationId = useOrganizationId();
-  const [vatDialogOpen, setVatDialogOpen] = useState(false);
+  const { currencySettings, updateCurrencySettings } = useCurrencySettings();
   const [showSampleDataConfirm, setShowSampleDataConfirm] = useState(false);
-  const [newVatSettings, setNewVatSettings] = useState({
-    rate: vatSettings?.rate || 15,
-    isEnabled: vatSettings?.isEnabled ?? true
-  });
 
-  const handleUpdateVatSettings = async () => {
-    if (!organizationId) return;
+  const handleUpdateVatSettings = async (field: keyof VATSettings, value: string | number | boolean) => {
+    if (!organizationId || !vatSettings) return;
 
     const updatedVat: VATSettings = {
-      id: 'vat',
-      ...newVatSettings,
-      organizationId,
-      createdAt: vatSettings?.createdAt || new Date(),
+      ...vatSettings,
+      [field]: value,
       updatedAt: new Date(),
     };
 
     await setDoc(doc(db, 'organizations', organizationId, 'settings', 'vat'), updatedVat);
     onVatSettingsUpdate(updatedVat);
-    setVatDialogOpen(false);
+  };
+
+  const getCurrencyFromLocale = (locale: CurrencyLocale): Currency => {
+    const currencyMap: Record<CurrencyLocale, Currency> = {
+      [CurrencyLocale.AR_SA]: Currency.SAR,
+      [CurrencyLocale.EN_US]: Currency.USD,
+      [CurrencyLocale.EN_GB]: Currency.GBP,
+      [CurrencyLocale.DE_DE]: Currency.EUR,
+      [CurrencyLocale.FR_FR]: Currency.EUR,
+      [CurrencyLocale.AR_AE]: Currency.AED,
+      [CurrencyLocale.AR_KW]: Currency.KWD,
+      [CurrencyLocale.AR_BH]: Currency.BHD,
+      [CurrencyLocale.AR_OM]: Currency.OMR,
+      [CurrencyLocale.AR_QA]: Currency.QAR,
+    };
+    return currencyMap[locale] || Currency.SAR;
   };
 
   const handleGenerateSampleData = () => {
@@ -71,69 +78,70 @@ export function StoreSettingsTab({ vatSettings, onVatSettingsUpdate }: StoreSett
       {/* VAT Settings */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Percent className="h-5 w-5" />
-              VAT Settings
-            </div>
-            <Dialog open={vatDialogOpen} onOpenChange={setVatDialogOpen}>
-              <DialogTrigger asChild>
-                <Button>
-                  <Settings className="h-4 w-4 mr-2" />
-                  Update VAT Settings
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Update VAT Settings</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="vat-enabled"
-                      checked={newVatSettings.isEnabled}
-                      onCheckedChange={(checked) => setNewVatSettings({ ...newVatSettings, isEnabled: checked })}
-                    />
-                    <Label htmlFor="vat-enabled">Enable VAT</Label>
-                  </div>
-                  {newVatSettings.isEnabled && (
-                    <div>
-                      <Label htmlFor="vat-rate">VAT Rate (%)</Label>
-                      <Input
-                        id="vat-rate"
-                        type="number"
-                        placeholder="15"
-                        value={newVatSettings.rate}
-                        onChange={(e) => setNewVatSettings({ ...newVatSettings, rate: parseFloat(e.target.value) || 0 })}
-                      />
-                    </div>
-                  )}
-                  <Button onClick={handleUpdateVatSettings} className="w-full">
-                    Update Settings
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+          <CardTitle className="flex items-center gap-2">
+            <Percent className="h-5 w-5" />
+            VAT Settings
+            <span className="text-sm text-muted-foreground">(Double-click to edit)</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
           {vatSettings ? (
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span>Status:</span>
-                <Badge variant={vatSettings.isEnabled ? "default" : "secondary"}>
-                  {vatSettings.isEnabled ? "Enabled" : "Disabled"}
-                </Badge>
-              </div>
+              <EditableSetting
+                label="VAT Status"
+                value={vatSettings.isEnabled}
+                type="switch"
+                onSave={(value) => handleUpdateVatSettings('isEnabled', value)}
+              />
               {vatSettings.isEnabled && (
-                <div className="flex items-center justify-between">
-                  <span>VAT Rate:</span>
-                  <span className="font-medium">{vatSettings.rate}%</span>
-                </div>
+                <EditableSetting
+                  label="VAT Rate"
+                  value={vatSettings.rate}
+                  type="number"
+                  onSave={(value) => handleUpdateVatSettings('rate', value)}
+                  placeholder="15"
+                />
               )}
             </div>
           ) : (
             <p className="text-muted-foreground">VAT settings not configured.</p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Currency Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <DollarSign className="h-5 w-5" />
+            Currency Settings
+            <span className="text-sm text-muted-foreground">(Double-click to edit)</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {currencySettings ? (
+            <div className="space-y-4">
+              <EditableSetting
+                label="Currency Format"
+                value={currencySettings.locale}
+                type="select"
+                options={[
+                  { value: CurrencyLocale.AR_SA, label: 'Arabic (SAR)' },
+                  { value: CurrencyLocale.EN_US, label: 'English (USD)' },
+                  { value: CurrencyLocale.EN_GB, label: 'English (GBP)' },
+                  { value: CurrencyLocale.DE_DE, label: 'German (EUR)' },
+                  { value: CurrencyLocale.FR_FR, label: 'French (EUR)' },
+                  { value: CurrencyLocale.AR_AE, label: 'Arabic UAE (AED)' },
+                  { value: CurrencyLocale.AR_KW, label: 'Arabic Kuwait (KWD)' },
+                  { value: CurrencyLocale.AR_BH, label: 'Arabic Bahrain (BHD)' },
+                  { value: CurrencyLocale.AR_OM, label: 'Arabic Oman (OMR)' },
+                  { value: CurrencyLocale.AR_QA, label: 'Arabic Qatar (QAR)' },
+                ]}
+                onSave={(value: CurrencyLocale) => updateCurrencySettings({ locale: value, currency: getCurrencyFromLocale(value) })}
+              />
+            </div>
+          ) : (
+            <p className="text-muted-foreground">Currency settings not configured.</p>
           )}
         </CardContent>
       </Card>

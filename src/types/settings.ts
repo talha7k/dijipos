@@ -1,5 +1,5 @@
 // Import enums from the main enums file
-import { PrinterType, FontSize, PaperWidth, CHARACTER_SETS } from './enums';
+import { PrinterType, FontSize, PaperWidth, CHARACTER_SETS, Currency, CurrencyLocale } from './enums';
 import type { CharacterSet } from './enums';
 
 export interface PrinterSettings {
@@ -26,10 +26,20 @@ export interface VATSettings {
   updatedAt: Date;
 }
 
+export interface CurrencySettings {
+  id: string;
+  locale: CurrencyLocale; // e.g., CurrencyLocale.AR_SA, CurrencyLocale.EN_US
+  currency: Currency; // e.g., Currency.SAR, Currency.USD
+  organizationId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface StoreSettings {
   id: string;
   organizationId: string;
   vatSettings: VATSettings;
+  currencySettings: CurrencySettings;
   orderTypes: OrderType[];
   paymentTypes: PaymentType[];
   createdAt: Date;

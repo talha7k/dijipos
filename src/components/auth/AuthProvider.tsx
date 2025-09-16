@@ -62,8 +62,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Initialize auth state listener - only once
   useEffect(() => {
     console.log('AuthProvider: Setting up auth state listener');
+    console.log('AuthProvider: Firebase auth object:', auth);
+    console.log('AuthProvider: Firebase app initialized:', auth.app);
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       console.log('AuthProvider: Auth state changed, user:', user?.email || 'null');
+      console.log('AuthProvider: User object:', user);
 
       // Prevent multiple simultaneous auth operations
       if (authProcessingRef.current) {
