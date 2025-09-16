@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { useAtom } from 'jotai';
 import { collection } from 'firebase/firestore';
 import { useCollectionQuery } from '@tanstack-query-firebase/react/firestore';
+import { useQueryClient } from '@tanstack/react-query';
 import { db } from '@/lib/firebase';
 import { PaymentType } from '@/types';
 import {
@@ -15,6 +16,7 @@ import {
 export function usePaymentTypesData(organizationId: string | undefined) {
   const [paymentTypes, setPaymentTypes] = useAtom(paymentTypesAtom);
   const [loading, setLoading] = useAtom(paymentTypesLoadingAtom);
+  const queryClient = useQueryClient();
 
   // Always call the hook, but conditionally enable it
   const paymentTypesQuery = useCollectionQuery(
@@ -22,6 +24,7 @@ export function usePaymentTypesData(organizationId: string | undefined) {
     {
       queryKey: ['paymentTypes', organizationId],
       enabled: !!organizationId,
+      subscribed: true, // Enable real-time updates
     }
   );
 
@@ -36,7 +39,7 @@ export function usePaymentTypesData(organizationId: string | undefined) {
   }, [paymentTypesQuery.data]);
 
   // Update atoms
-  useMemo(() => {
+  useEffect(() => {
     setPaymentTypes(paymentTypesData);
     setLoading(paymentTypesQuery.isLoading);
   }, [paymentTypesData, paymentTypesQuery.isLoading, setPaymentTypes, setLoading]);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { useAtom } from 'jotai';
 import { collection, doc } from 'firebase/firestore';
 import { useCollectionQuery, useUpdateDocumentMutation, useAddDocumentMutation, useDeleteDocumentMutation } from '@tanstack-query-firebase/react/firestore';
@@ -22,6 +22,7 @@ export function useTablesData(organizationId: string | undefined) {
     {
       queryKey: ['tables', organizationId],
       enabled: !!organizationId,
+      subscribed: true, // Enable real-time updates
     }
   );
 
@@ -36,7 +37,7 @@ export function useTablesData(organizationId: string | undefined) {
   }, [tablesQuery.data]);
 
   // Update atoms
-  useMemo(() => {
+  useEffect(() => {
     setTables(tablesData);
     setLoading(tablesQuery.isLoading);
   }, [tablesData, tablesQuery.isLoading, setTables, setLoading]);

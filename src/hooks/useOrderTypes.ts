@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useEffect } from 'react';
 import { useAtom, useAtomValue } from 'jotai';
 import { collection, doc } from 'firebase/firestore';
 import { useCollectionQuery, useUpdateDocumentMutation, useAddDocumentMutation, useDeleteDocumentMutation } from '@tanstack-query-firebase/react/firestore';
@@ -45,6 +45,7 @@ export function useOrderTypes(organizationId: string | undefined): UseOrderTypes
     {
       queryKey: ['orderTypes', organizationId],
       enabled: !!organizationId,
+      subscribed: true, // Enable real-time updates
     }
   );
 
@@ -59,7 +60,7 @@ export function useOrderTypes(organizationId: string | undefined): UseOrderTypes
   }, [orderTypesQuery.data]);
 
   // Update atoms
-  useMemo(() => {
+  useEffect(() => {
     setOrderTypes(orderTypesData);
     setLoading(orderTypesQuery.isLoading);
     setError(orderTypesQuery.error?.message || null);

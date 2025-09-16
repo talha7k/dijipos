@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { UnifiedTemplate, TemplateCategory } from '@/types';
 import { defaultReceiptTemplate } from '@/components/templates/default-receipt-thermal';
 import { defaultArabicReceiptTemplate } from '@/components/templates/default-arabic-receipt-thermal';
@@ -135,7 +135,7 @@ export function useTemplatesData(organizationId: string | undefined, category?: 
   }, [organizationId, category]);
 
   // Update state with static templates
-  useMemo(() => {
+  useEffect(() => {
     setTemplates(staticTemplates);
   }, [staticTemplates]);
 

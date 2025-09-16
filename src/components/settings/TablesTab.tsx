@@ -16,10 +16,9 @@ import { useTableManagement } from '@/hooks/tables/use-table-management';
 
 interface TablesTabProps {
   tables: Table[];
-  onRefresh?: () => void;
 }
 
-export function TablesTab({ tables, onRefresh }: TablesTabProps) {
+export function TablesTab({ tables }: TablesTabProps) {
   const organizationId = useOrganizationId();
   const {
     dialogOpen,
@@ -93,7 +92,7 @@ export function TablesTab({ tables, onRefresh }: TablesTabProps) {
                     </SelectContent>
                   </Select>
                 </div>
-<Button onClick={() => handleAddTable(onRefresh)} className="w-full">
+<Button onClick={() => handleAddTable()} className="w-full">
                     Add Table
                   </Button>
               </div>
@@ -151,7 +150,7 @@ export function TablesTab({ tables, onRefresh }: TablesTabProps) {
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel onClick={() => setDeleteTableId(null)}>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => confirmDeleteTable(onRefresh)} className="bg-destructive text-destructive-foreground">
+                        <AlertDialogAction onClick={() => confirmDeleteTable()} className="bg-destructive text-destructive-foreground">
                           Delete
                         </AlertDialogAction>
                       </AlertDialogFooter>

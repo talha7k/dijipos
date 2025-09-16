@@ -15,7 +15,7 @@ export function useTableManagement(organizationId: string | undefined) {
     status: 'available' as 'available' | 'occupied' | 'reserved' | 'maintenance'
   });
 
-  const handleAddTable = async (onRefresh?: () => void) => {
+  const handleAddTable = async () => {
     if (!organizationId || !newTable.name.trim()) return;
 
     try {
@@ -28,7 +28,6 @@ export function useTableManagement(organizationId: string | undefined) {
 
       setNewTable({ name: '', capacity: 1, status: 'available' });
       setDialogOpen(false);
-      onRefresh?.();
       toast.success('Table added successfully');
     } catch (error) {
       console.error('Error adding table:', error);
@@ -40,13 +39,12 @@ export function useTableManagement(organizationId: string | undefined) {
     setDeleteTableId(id);
   };
 
-  const confirmDeleteTable = async (onRefresh?: () => void) => {
+  const confirmDeleteTable = async () => {
     if (!organizationId || !deleteTableId) return;
 
     try {
       await deleteDoc(doc(db, 'organizations', organizationId, 'tables', deleteTableId));
       toast.success('Table deleted successfully');
-      onRefresh?.();
     } catch (error) {
       console.error('Error deleting table:', error);
       toast.error('Failed to delete table');

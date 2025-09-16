@@ -16,10 +16,9 @@ import { toast } from 'sonner';
 
 interface OrderTypesTabProps {
   orderTypes: OrderType[];
-  onRefresh?: () => void;
 }
 
-export function OrderTypesTab({ orderTypes, onRefresh }: OrderTypesTabProps) {
+export function OrderTypesTab({ orderTypes }: OrderTypesTabProps) {
   const organizationId = useOrganizationId();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteOrderTypeId, setDeleteOrderTypeId] = useState<string | null>(null);
@@ -37,7 +36,6 @@ export function OrderTypesTab({ orderTypes, onRefresh }: OrderTypesTabProps) {
 
     setNewOrderType({ name: '', description: '' });
     setDialogOpen(false);
-    onRefresh?.();
     toast.success('Order type added successfully');
   };
 
@@ -51,7 +49,6 @@ export function OrderTypesTab({ orderTypes, onRefresh }: OrderTypesTabProps) {
     try {
       await deleteDoc(doc(db, 'organizations', organizationId, 'orderTypes', deleteOrderTypeId));
       toast.success('Order type deleted successfully');
-      onRefresh?.();
     } catch (error) {
       console.error('Error deleting order type:', error);
       toast.error('Failed to delete order type');

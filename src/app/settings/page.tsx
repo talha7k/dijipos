@@ -65,21 +65,18 @@ function SettingsContent() {
         <TabsContent value="order-types" className="space-y-4">
           <OrderTypesTab
             orderTypes={orderTypes}
-            onRefresh={() => {}} // Real-time updates via onSnapshot
           />
         </TabsContent>
 
         <TabsContent value="payment-types" className="space-y-4">
           <PaymentTypesTab
             paymentTypes={paymentTypes}
-            onRefresh={() => {}} // Real-time updates via onSnapshot
           />
         </TabsContent>
 
         <TabsContent value="tables" className="space-y-4">
           <TablesTab
             tables={tables}
-            onRefresh={() => {}} // Real-time updates via onSnapshot
           />
         </TabsContent>
 

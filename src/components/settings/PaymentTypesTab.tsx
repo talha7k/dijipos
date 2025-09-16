@@ -16,10 +16,9 @@ import { toast } from 'sonner';
 
 interface PaymentTypesTabProps {
   paymentTypes: PaymentType[];
-  onRefresh?: () => void;
 }
 
-export function PaymentTypesTab({ paymentTypes, onRefresh }: PaymentTypesTabProps) {
+export function PaymentTypesTab({ paymentTypes }: PaymentTypesTabProps) {
   const organizationId = useOrganizationId();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deletePaymentTypeId, setDeletePaymentTypeId] = useState<string | null>(null);
@@ -37,7 +36,6 @@ export function PaymentTypesTab({ paymentTypes, onRefresh }: PaymentTypesTabProp
 
     setNewPaymentType({ name: '', description: '' });
     setDialogOpen(false);
-    onRefresh?.();
     toast.success('Payment type added successfully');
   };
 
@@ -51,7 +49,6 @@ export function PaymentTypesTab({ paymentTypes, onRefresh }: PaymentTypesTabProp
     try {
       await deleteDoc(doc(db, 'organizations', organizationId, 'paymentTypes', deletePaymentTypeId));
       toast.success('Payment type deleted successfully');
-      onRefresh?.();
     } catch (error) {
       console.error('Error deleting payment type:', error);
       toast.error('Failed to delete payment type');
