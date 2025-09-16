@@ -180,6 +180,11 @@ export function OrderSummaryCard({
           className="space-y-2 cursor-pointer"
         >
           <div className="flex-row justify-center text-center items-center bg-muted/70 rounded-lg py-2 my-4">
+            {order.queueNumber && (
+              <div className="text-sm font-semibold text-primary mb-1">
+                Queue #: {order.queueNumber}
+              </div>
+            )}
             <span className="font-bold">{order.orderNumber}</span>
             <br/>
             {showCreatedDate && (

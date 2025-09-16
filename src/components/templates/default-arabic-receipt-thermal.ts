@@ -17,10 +17,10 @@ export const defaultArabicReceiptTemplate = `<!DOCTYPE html>
     th, td { text-align: left; padding: 2px 0; }
     th { font-weight: bold; border-bottom: 1px solid #000; }
     .amount-col { text-align: right; }
-    .qty-col { text-align: center; width: 60px; }
-    .item-col { width: 200px; }
-    .bilingual { display: flex; justify-content: space-between; margin-bottom: 2px; }
-    .english { text-align: left; direction: ltr; }
+    .qty-col { text-align: center; width: 40px; }
+    .item-col { width: 120px; }
+    .bilingual { margin-bottom: 2px; }
+    .english { text-align: left; direction: ltr; margin-bottom: 1px; }
     .arabic { text-align: right; direction: rtl; }
   </style>
 </head>
@@ -95,15 +95,15 @@ export const defaultArabicReceiptTemplate = `<!DOCTYPE html>
       <table>
         <thead>
           <tr>
-            <th class="item-col bilingual">
+            <th class="item-col">
               <div class="english">Item</div>
               <div class="arabic">الصنف</div>
             </th>
-            <th class="qty-col bilingual">
+            <th class="qty-col">
               <div class="english">Qty</div>
               <div class="arabic">الكمية</div>
             </th>
-            <th class="amount-col bilingual">
+            <th class="amount-col">
               <div class="english">Amount</div>
               <div class="arabic">المبلغ</div>
             </th>
@@ -145,11 +145,11 @@ export const defaultArabicReceiptTemplate = `<!DOCTYPE html>
       <table style="width: 100%; border-collapse: collapse;">
         <thead>
           <tr>
-            <th style="text-align: left; border-bottom: 1px solid #000; padding: 2px 0;" class="bilingual">
+            <th style="text-align: left; border-bottom: 1px solid #000; padding: 2px 0;">
               <div class="english">Payment Type</div>
               <div class="arabic">نوع الدفع</div>
             </th>
-            <th style="text-align: right; border-bottom: 1px solid #000; padding: 2px 0;" class="bilingual">
+            <th style="text-align: right; border-bottom: 1px solid #000; padding: 2px 0;">
               <div class="english">Amount</div>
               <div class="arabic">المبلغ</div>
             </th>

@@ -19,7 +19,7 @@ type OrderCreateData = Omit<Order, 'id' | 'createdAt' | 'updatedAt'> & {
 
 export function usePOSLogic() {
   const { organizationId, user } = useAuthState();
-  const { refreshOrders } = useOrders(organizationId || undefined);
+  const { orders, refreshOrders } = useOrders(organizationId || undefined);
   const {
     cartItems,
     selectedTable,
@@ -225,7 +225,18 @@ export function usePOSLogic() {
         const orderNumber = `ORD-${Date.now()}`;
 
         // Generate queue number for the order
-        const queueNumber = Math.floor(Math.random() * 1000) + 1;
+        let highestQueueNumber = 0;
+        orders.forEach(order => {
+          if (order.queueNumber) {
+            const num = parseInt(order.queueNumber, 10);
+            if (!isNaN(num) && num > highestQueueNumber) {
+              highestQueueNumber = num;
+            }
+          }
+        });
+        
+        // Increment by 1, or reset to 1 if we've reached 1000
+        const queueNumber = highestQueueNumber >= 1000 ? 1 : highestQueueNumber + 1;
 
         const orderData: OrderCreateData = {
           organizationId,
@@ -358,7 +369,18 @@ export function usePOSLogic() {
     const total = subtotal + taxAmount;
 
     // Generate queue number for preview
-    const queueNumber = Math.floor(Math.random() * 1000) + 1;
+    let highestQueueNumber = 0;
+    orders.forEach(order => {
+      if (order.queueNumber) {
+        const num = parseInt(order.queueNumber, 10);
+        if (!isNaN(num) && num > highestQueueNumber) {
+          highestQueueNumber = num;
+        }
+      }
+    });
+    
+    // Increment by 1, or reset to 1 if we've reached 1000
+    const queueNumber = highestQueueNumber >= 1000 ? 1 : highestQueueNumber + 1;
 
     const orderData: Order = {
       id: 'temp-checkout',

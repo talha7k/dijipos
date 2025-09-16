@@ -178,8 +178,29 @@ export function useOrders(organizationId: string | undefined): UseOrdersResult {
     if (!organizationId) throw new Error('Organization ID is required');
 
     try {
+      // Generate queue number if not provided
+      let queueNumber = orderData.queueNumber;
+      
+      if (!queueNumber) {
+        // Find the highest queue number from existing orders
+        let highestQueueNumber = 0;
+        orders.forEach(order => {
+          if (order.queueNumber) {
+            const num = parseInt(order.queueNumber, 10);
+            if (!isNaN(num) && num > highestQueueNumber) {
+              highestQueueNumber = num;
+            }
+          }
+        });
+        
+        // Increment by 1, or reset to 1 if we've reached 1000
+        const nextQueueNumber = highestQueueNumber >= 1000 ? 1 : highestQueueNumber + 1;
+        queueNumber = nextQueueNumber.toString();
+      }
+      
       const cleanedData = {
         ...orderData,
+        queueNumber,
         customerName: orderData.customerName || null,
         customerPhone: orderData.customerPhone || null,
         tableId: orderData.tableId || null,
@@ -195,7 +216,7 @@ export function useOrders(organizationId: string | undefined): UseOrdersResult {
       console.error('Error creating order:', error);
       throw error;
     }
-  }, [organizationId]);
+  }, [organizationId, orders]);
 
   const updateOrder = useCallback(async (orderId: string, updates: Partial<Order>): Promise<void> => {
     if (!organizationId) return;
