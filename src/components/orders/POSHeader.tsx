@@ -124,7 +124,14 @@ export function POSHeader({
           </div>
           <div className="flex items-center w-full">
             <Badge className='bg-blue-500 hover:bg-blue-600 text-[10px] text-white mr-2'>{cartItems.length}</Badge>
-            <Badge className='bg-green-500 hover:bg-green-600 text-[10px] text-white justify-end'>{cartTotal.toFixed(2)}</Badge>
+            <Badge className='bg-green-500 hover:bg-green-600 text-[10px] text-white justify-end'>
+              {new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'SAR',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              }).format(cartTotal)}
+            </Badge>
           </div>
         </div>
         <div className="flex items-center space-x-4">
