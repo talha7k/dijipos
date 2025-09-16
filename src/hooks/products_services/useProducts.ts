@@ -2,8 +2,9 @@
 
 import { useMemo, useEffect } from 'react';
 import { useAtom } from 'jotai';
-import { collection, doc } from 'firebase/firestore';
+import { collection, doc, deleteDoc } from 'firebase/firestore';
 import { useCollectionQuery, useUpdateDocumentMutation, useAddDocumentMutation, useDeleteDocumentMutation } from '@tanstack-query-firebase/react/firestore';
+import { useFirestoreDeleteDocument } from '@/lib/firebase-query';
 import { db } from '@/lib/firebase';
 import { Product } from '@/types';
 import {
@@ -59,6 +60,7 @@ export function useProductsData(organizationId: string | undefined) {
 
 export function useProductActions(organizationId: string | undefined) {
   const [updatingStatus, setUpdatingStatus] = useAtom(productsErrorAtom);
+  const [, setProducts] = useAtom(productsAtom);
   
   const updateProductMutation = useUpdateDocumentMutation(
     doc(db, 'organizations', organizationId || 'dummy', 'products', 'dummy')

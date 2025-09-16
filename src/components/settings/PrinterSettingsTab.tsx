@@ -1,8 +1,7 @@
 'use client';
 
-import { doc, setDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import { useOrganizationId } from '@/hooks/useAuthState';
+import { useSettingsData } from '@/hooks/organization/use-settings-data';
 import { PrinterSettings } from '@/types';
 import { useReceiptTemplatesData } from '@/hooks/use-receipt-templates-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,6 +17,7 @@ interface PrinterSettingsTabProps {
 export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }: PrinterSettingsTabProps) {
   const organizationId = useOrganizationId();
   const { receiptTemplates, loading: templatesLoading } = useReceiptTemplatesData(organizationId || undefined);
+  const { handlePrinterSettingsUpdate } = useSettingsData(organizationId || undefined);
 
   const handleUpdateSettings = async (field: keyof PrinterSettings, value: string | number | boolean) => {
     if (!organizationId || !printerSettings) return;
@@ -29,7 +29,7 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
     };
 
     try {
-      await setDoc(doc(db, 'organizations', organizationId, 'settings', 'printer'), updatedSettings);
+      handlePrinterSettingsUpdate(updatedSettings);
       onPrinterSettingsUpdate(updatedSettings);
       toast.success('Settings updated successfully!');
     } catch (error) {

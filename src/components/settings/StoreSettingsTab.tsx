@@ -1,9 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { doc, setDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import { useOrganizationId } from '@/hooks/useAuthState';
+import { useSettingsData } from '@/hooks/organization/use-settings-data';
 import { VATSettings } from '@/types';
 import { useCurrencySettings } from '@/hooks/useCurrencySettings';
 import { Currency, CurrencyLocale } from '@/types/enums';
@@ -22,6 +21,7 @@ interface StoreSettingsTabProps {
 export function StoreSettingsTab({ vatSettings, onVatSettingsUpdate }: StoreSettingsTabProps) {
   const organizationId = useOrganizationId();
   const { currencySettings, updateCurrencySettings } = useCurrencySettings();
+  const { handleVatSettingsUpdate } = useSettingsData(organizationId || undefined);
   const [showSampleDataConfirm, setShowSampleDataConfirm] = useState(false);
 
   const handleUpdateVatSettings = async (field: keyof VATSettings, value: string | number | boolean) => {
@@ -33,7 +33,7 @@ export function StoreSettingsTab({ vatSettings, onVatSettingsUpdate }: StoreSett
       updatedAt: new Date(),
     };
 
-    await setDoc(doc(db, 'organizations', organizationId, 'settings', 'vat'), updatedVat);
+    handleVatSettingsUpdate(updatedVat);
     onVatSettingsUpdate(updatedVat);
   };
 

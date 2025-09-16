@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { collection, addDoc, deleteDoc, doc, runTransaction, Transaction } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Table, Order } from '@/types';
@@ -15,7 +15,9 @@ export function useTableManagement(organizationId: string | undefined) {
     status: 'available' as 'available' | 'occupied' | 'reserved' | 'maintenance'
   });
 
-  const handleAddTable = async () => {
+  
+
+  const handleAddTable = useCallback(async () => {
     if (!organizationId || !newTable.name.trim()) return;
 
     try {
@@ -33,13 +35,13 @@ export function useTableManagement(organizationId: string | undefined) {
       console.error('Error adding table:', error);
       toast.error('Failed to add table');
     }
-  };
+  }, [organizationId, newTable]);
 
   const handleDeleteTable = (id: string) => {
     setDeleteTableId(id);
   };
 
-  const confirmDeleteTable = async () => {
+  const confirmDeleteTable = useCallback(async () => {
     if (!organizationId || !deleteTableId) return;
 
     try {
@@ -51,7 +53,7 @@ export function useTableManagement(organizationId: string | undefined) {
     } finally {
       setDeleteTableId(null);
     }
-  };
+  }, [organizationId, deleteTableId]);
 
   const resetForm = () => {
     setNewTable({ name: '', capacity: 1, status: 'available' });
@@ -77,7 +79,7 @@ export function useTableManagement(organizationId: string | undefined) {
     return status === 'maintenance';
   };
 
-  const releaseTable = async (tableId: string, order: Order) => {
+  const releaseTable = useCallback(async (tableId: string, order: Order) => {
     if (!organizationId) return false;
 
     setUpdating(true);
@@ -109,7 +111,7 @@ export function useTableManagement(organizationId: string | undefined) {
     } finally {
       setUpdating(false);
     }
-  };
+  }, [organizationId]);
 
   const moveOrderToTable = async (order: Order, fromTableId: string, toTableId: string, targetTableName: string) => {
     if (!organizationId) return false;

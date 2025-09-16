@@ -1,9 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { collection, addDoc, deleteDoc, doc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
+import { useOrganizationId } from '@/hooks/useAuthState';
+import { useOrderTypes } from '@/hooks/useOrderTypes';
 import { OrderType } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,23 +19,31 @@ interface OrderTypesTabProps {
 
 export function OrderTypesTab({ orderTypes }: OrderTypesTabProps) {
   const organizationId = useOrganizationId();
+  const { createOrderType, deleteOrderType, loading } = useOrderTypes(organizationId || undefined);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteOrderTypeId, setDeleteOrderTypeId] = useState<string | null>(null);
   const [newOrderType, setNewOrderType] = useState({ name: '', description: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleAddOrderType = async () => {
     if (!organizationId || !newOrderType.name.trim()) return;
 
-    await addDoc(collection(db, 'organizations', organizationId, 'orderTypes'), {
-      ...newOrderType,
-      organizationId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
+    setIsSubmitting(true);
+    try {
+      await createOrderType({
+        name: newOrderType.name,
+        description: newOrderType.description,
+      });
 
-    setNewOrderType({ name: '', description: '' });
-    setDialogOpen(false);
-    toast.success('Order type added successfully');
+      setNewOrderType({ name: '', description: '' });
+      setDialogOpen(false);
+      toast.success('Order type added successfully');
+    } catch (error) {
+      console.error('Error creating order type:', error);
+      toast.error('Failed to create order type');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleDeleteOrderType = (id: string) => {
@@ -46,14 +53,16 @@ export function OrderTypesTab({ orderTypes }: OrderTypesTabProps) {
   const confirmDeleteOrderType = async () => {
     if (!organizationId || !deleteOrderTypeId) return;
     
+    setIsSubmitting(true);
     try {
-      await deleteDoc(doc(db, 'organizations', organizationId, 'orderTypes', deleteOrderTypeId));
+      await deleteOrderType(deleteOrderTypeId);
       toast.success('Order type deleted successfully');
     } catch (error) {
       console.error('Error deleting order type:', error);
       toast.error('Failed to delete order type');
     } finally {
       setDeleteOrderTypeId(null);
+      setIsSubmitting(false);
     }
   };
 
@@ -95,8 +104,8 @@ export function OrderTypesTab({ orderTypes }: OrderTypesTabProps) {
                     onChange={(e) => setNewOrderType({ ...newOrderType, description: e.target.value })}
                   />
                 </div>
-                <Button onClick={handleAddOrderType} className="w-full">
-                  Add Order Type
+                <Button onClick={handleAddOrderType} className="w-full" disabled={isSubmitting}>
+                  {isSubmitting ? 'Adding...' : 'Add Order Type'}
                 </Button>
               </div>
             </DialogContent>
@@ -136,8 +145,8 @@ export function OrderTypesTab({ orderTypes }: OrderTypesTabProps) {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel onClick={() => setDeleteOrderTypeId(null)}>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={confirmDeleteOrderType} className="bg-destructive text-destructive-foreground">
-                        Delete
+                      <AlertDialogAction onClick={confirmDeleteOrderType} className="bg-destructive text-destructive-foreground" disabled={isSubmitting}>
+                        {isSubmitting ? 'Deleting...' : 'Delete'}
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>

@@ -1,9 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { collection, addDoc, deleteDoc, doc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
+import { useOrganizationId } from '@/hooks/useAuthState';
+import { usePaymentTypes } from '@/hooks/uePaymentTypes';
 import { PaymentType } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,28 +14,36 @@ import { CreditCard, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface PaymentTypesTabProps {
-  paymentTypes: PaymentType[];
+  paymentTypes?: PaymentType[];
 }
 
-export function PaymentTypesTab({ paymentTypes }: PaymentTypesTabProps) {
+export function PaymentTypesTab({ paymentTypes = [] }: PaymentTypesTabProps) {
   const organizationId = useOrganizationId();
+  const { createPaymentType, deletePaymentType, loading } = usePaymentTypes(organizationId || undefined);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deletePaymentTypeId, setDeletePaymentTypeId] = useState<string | null>(null);
   const [newPaymentType, setNewPaymentType] = useState({ name: '', description: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleAddPaymentType = async () => {
     if (!organizationId || !newPaymentType.name.trim()) return;
 
-    await addDoc(collection(db, 'organizations', organizationId, 'paymentTypes'), {
-      ...newPaymentType,
-      organizationId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
+    setIsSubmitting(true);
+    try {
+      await createPaymentType({
+        name: newPaymentType.name,
+        description: newPaymentType.description,
+      });
 
-    setNewPaymentType({ name: '', description: '' });
-    setDialogOpen(false);
-    toast.success('Payment type added successfully');
+      setNewPaymentType({ name: '', description: '' });
+      setDialogOpen(false);
+      toast.success('Payment type added successfully');
+    } catch (error) {
+      console.error('Error creating payment type:', error);
+      toast.error('Failed to create payment type');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleDeletePaymentType = (id: string) => {
@@ -46,14 +53,16 @@ export function PaymentTypesTab({ paymentTypes }: PaymentTypesTabProps) {
   const confirmDeletePaymentType = async () => {
     if (!organizationId || !deletePaymentTypeId) return;
     
+    setIsSubmitting(true);
     try {
-      await deleteDoc(doc(db, 'organizations', organizationId, 'paymentTypes', deletePaymentTypeId));
+      await deletePaymentType(deletePaymentTypeId);
       toast.success('Payment type deleted successfully');
     } catch (error) {
       console.error('Error deleting payment type:', error);
       toast.error('Failed to delete payment type');
     } finally {
       setDeletePaymentTypeId(null);
+      setIsSubmitting(false);
     }
   };
 
@@ -95,8 +104,8 @@ export function PaymentTypesTab({ paymentTypes }: PaymentTypesTabProps) {
                     onChange={(e) => setNewPaymentType({ ...newPaymentType, description: e.target.value })}
                   />
                 </div>
-                <Button onClick={handleAddPaymentType} className="w-full">
-                  Add Payment Type
+                <Button onClick={handleAddPaymentType} className="w-full" disabled={isSubmitting}>
+                  {isSubmitting ? 'Adding...' : 'Add Payment Type'}
                 </Button>
               </div>
             </DialogContent>
@@ -136,8 +145,8 @@ export function PaymentTypesTab({ paymentTypes }: PaymentTypesTabProps) {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel onClick={() => setDeletePaymentTypeId(null)}>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={confirmDeletePaymentType} className="bg-destructive text-destructive-foreground">
-                        Delete
+                      <AlertDialogAction onClick={confirmDeletePaymentType} className="bg-destructive text-destructive-foreground" disabled={isSubmitting}>
+                        {isSubmitting ? 'Deleting...' : 'Delete'}
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>

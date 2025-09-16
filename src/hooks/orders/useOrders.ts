@@ -9,13 +9,7 @@ import { db } from '@/lib/firebase';
 import { Order, OrderPayment, OrderStatus, TableStatus } from '@/types';
 import { useAuthState } from '@/hooks/useAuthState';
 import {
-  ordersAtom,
-  currentOrderAtom,
-  ordersLoadingAtom,
-  ordersErrorAtom,
-  paymentsAtom,
-  ordersRefreshKeyAtom,
-  paymentsRefreshKeyAtom
+  currentOrderAtom
 } from '@/store/atoms';
 
 
@@ -63,23 +57,9 @@ export interface UseOrdersResult {
 
 export function useOrders(organizationId: string | undefined): UseOrdersResult {
   const { user } = useAuthState();
-  
-  // Orders state
-  const [orders, setOrders] = useAtom(ordersAtom);
+
+  // Client-side state only for selected order
   const [selectedOrder, setSelectedOrder] = useAtom(currentOrderAtom);
-  const [loading, setLoading] = useAtom(ordersLoadingAtom);
-  const [error, setError] = useAtom(ordersErrorAtom);
-  
-  
-  
-  // Payments state
-  const [orderPayments, setOrderPayments] = useAtom(paymentsAtom);
-  const [paymentsLoading, setPaymentsLoading] = useAtom(ordersLoadingAtom); // Reuse orders loading for now
-  const [paymentsError, setPaymentsError] = useAtom(ordersErrorAtom); // Reuse orders error for now
-  
-  // Refresh keys
-  const [ordersRefreshKey, setOrdersRefreshKey] = useAtom(ordersRefreshKeyAtom);
-  const [paymentsRefreshKey, setPaymentsRefreshKey] = useAtom(paymentsRefreshKeyAtom);
 
   // Fetch orders
   const ordersQuery = useCollectionQuery(
@@ -101,30 +81,21 @@ export function useOrders(organizationId: string | undefined): UseOrdersResult {
     })) as Order[];
   }, [ordersQuery.data]);
 
-  // Update orders atom
-  useMemo(() => {
-    setOrders(ordersData);
-    setLoading(ordersQuery.isLoading);
-    setError(ordersQuery.error?.message || null);
-  }, [ordersData, ordersQuery.isLoading, ordersQuery.error, setOrders, setLoading, setError]);
-
   // Keep selectedOrder in sync with updated orders list
   useEffect(() => {
-    if (selectedOrder && orders.length > 0) {
-      const updatedOrder = orders.find(order => order.id === selectedOrder.id);
+    if (selectedOrder && ordersData.length > 0) {
+      const updatedOrder = ordersData.find(order => order.id === selectedOrder.id);
       if (updatedOrder && (updatedOrder.updatedAt !== selectedOrder.updatedAt || JSON.stringify(updatedOrder.items) !== JSON.stringify(selectedOrder.items))) {
         setSelectedOrder(updatedOrder);
       }
     }
-  }, [orders, selectedOrder, setSelectedOrder]);
-
-  
+  }, [ordersData, selectedOrder, setSelectedOrder]);
 
   // Fetch payments
   const paymentsQuery = useCollectionQuery(
     collection(db, 'organizations', organizationId || 'dummy', 'orderPayments'),
     {
-      queryKey: ['orderPayments', organizationId, paymentsRefreshKey],
+      queryKey: ['orderPayments', organizationId],
       enabled: !!organizationId,
     }
   );
@@ -166,13 +137,6 @@ export function useOrders(organizationId: string | undefined): UseOrdersResult {
     return paymentsByOrder;
   }, [paymentsQuery.data]);
 
-  // Update payments atom
-  useMemo(() => {
-    setOrderPayments(paymentsData);
-    setPaymentsLoading(paymentsQuery.isLoading);
-    setPaymentsError(paymentsQuery.error?.message || null);
-  }, [paymentsData, paymentsQuery.isLoading, paymentsQuery.error, setOrderPayments, setPaymentsLoading, setPaymentsError]);
-
   // Order CRUD operations
   const createOrder = useCallback(async (orderData: Omit<Order, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>): Promise<string> => {
     if (!organizationId) throw new Error('Organization ID is required');
@@ -180,11 +144,11 @@ export function useOrders(organizationId: string | undefined): UseOrdersResult {
     try {
       // Generate queue number if not provided
       let queueNumber = orderData.queueNumber;
-      
+
       if (!queueNumber) {
         // Find the highest queue number from existing orders
         let highestQueueNumber = 0;
-        orders.forEach(order => {
+        ordersData.forEach(order => {
           if (order.queueNumber) {
             const num = parseInt(order.queueNumber, 10);
             if (!isNaN(num) && num > highestQueueNumber) {
@@ -192,7 +156,7 @@ export function useOrders(organizationId: string | undefined): UseOrdersResult {
             }
           }
         });
-        
+
         // Increment by 1, or reset to 1 if we've reached 1000
         const nextQueueNumber = highestQueueNumber >= 1000 ? 1 : highestQueueNumber + 1;
         queueNumber = nextQueueNumber.toString();
@@ -216,7 +180,7 @@ export function useOrders(organizationId: string | undefined): UseOrdersResult {
       console.error('Error creating order:', error);
       throw error;
     }
-  }, [organizationId, orders]);
+  }, [organizationId, ordersData]);
 
   const updateOrder = useCallback(async (orderId: string, updates: Partial<Order>): Promise<void> => {
     if (!organizationId) return;
@@ -308,8 +272,8 @@ export function useOrders(organizationId: string | undefined): UseOrdersResult {
   }, [organizationId]);
 
   const getOrderPayments = useCallback((orderId: string): OrderPayment[] => {
-    return orderPayments[orderId] || [];
-  }, [orderPayments]);
+    return paymentsData[orderId] || [];
+  }, [paymentsData]);
 
   const getOrderTotalPaid = useCallback((orderId: string): number => {
     const payments = getOrderPayments(orderId);
@@ -385,7 +349,7 @@ export function useOrders(organizationId: string | undefined): UseOrdersResult {
 
     // Check if trying to complete an unpaid order
     if (status === OrderStatus.COMPLETED) {
-      const order = orders.find(o => o.id === orderId);
+      const order = ordersData.find(o => o.id === orderId);
       if (order) {
         let isPaid = order.paid;
         
@@ -412,7 +376,7 @@ export function useOrders(organizationId: string | undefined): UseOrdersResult {
 
       // Release table if order is being completed
       if (status === OrderStatus.COMPLETED) {
-        const order = orders.find(o => o.id === orderId);
+        const order = ordersData.find(o => o.id === orderId);
         if (order?.tableId) {
           const tableRef = doc(db, 'organizations', organizationId, 'tables', order.tableId);
           await updateDoc(tableRef, {
@@ -427,7 +391,7 @@ export function useOrders(organizationId: string | undefined): UseOrdersResult {
       console.error('Error updating order status:', error);
       return false;
     }
-  }, [organizationId, user, orders, getOrderTotalPaid]);
+  }, [organizationId, user, ordersData, getOrderTotalPaid]);
 
   // Selection operations
   const selectOrder = useCallback((order: Order | null) => {
@@ -440,26 +404,23 @@ export function useOrders(organizationId: string | undefined): UseOrdersResult {
 
   // Refresh functions
   const refreshOrders = useCallback(() => {
-    setOrdersRefreshKey(prev => prev + 1);
-  }, [setOrdersRefreshKey]);
+    ordersQuery.refetch();
+  }, [ordersQuery]);
 
   const refreshPayments = useCallback(() => {
-    setPaymentsRefreshKey(prev => prev + 1);
-  }, [setPaymentsRefreshKey]);
+    paymentsQuery.refetch();
+  }, [paymentsQuery]);
 
   
 
-  // Memoize arrays to prevent unnecessary re-renders
-  const memoizedOrders = useMemo(() => orders, [orders]);
-
   return {
     // Data
-    orders: memoizedOrders,
-    loading,
-    error,
-    orderPayments,
-    paymentsLoading,
-    paymentsError,
+    orders: ordersData,
+    loading: ordersQuery.isLoading,
+    error: ordersQuery.error?.message || null,
+    orderPayments: paymentsData,
+    paymentsLoading: paymentsQuery.isLoading,
+    paymentsError: paymentsQuery.error?.message || null,
     selectedOrder,
     
     // Order CRUD
@@ -491,14 +452,14 @@ export function useOrders(organizationId: string | undefined): UseOrdersResult {
 }
 
 // Read-only hooks for optimization
-export function useOrdersData() {
-  return useAtomValue(ordersAtom);
+export function useOrdersData(): Order[] {
+  const { orders } = useOrders(undefined);
+  return orders;
 }
 
-
-
-export function useOrderPaymentsData() {
-  return useAtomValue(paymentsAtom);
+export function useOrderPaymentsData(): { [orderId: string]: OrderPayment[] } {
+  const { orderPayments } = useOrders(undefined);
+  return orderPayments;
 }
 
 export function useSelectedOrder() {

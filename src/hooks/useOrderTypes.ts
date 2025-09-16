@@ -1,18 +1,11 @@
 'use client';
 
-import { useCallback, useMemo, useEffect } from 'react';
-import { useAtom, useAtomValue } from 'jotai';
+import { useCallback, useMemo } from 'react';
 import { collection, doc } from 'firebase/firestore';
 import { useCollectionQuery, useUpdateDocumentMutation, useAddDocumentMutation, useDeleteDocumentMutation } from '@tanstack-query-firebase/react/firestore';
 import { db } from '@/lib/firebase';
 import { OrderType } from '@/types';
 import { useAuthState } from '@/hooks/useAuthState';
-import {
-  orderTypesAtom,
-  orderTypesLoadingAtom,
-  orderTypesErrorAtom,
-  orderTypesRefreshKeyAtom
-} from '@/store/atoms';
 
 export interface UseOrderTypesResult {
   orderTypes: OrderType[];
@@ -30,14 +23,6 @@ export interface UseOrderTypesResult {
 
 export function useOrderTypes(organizationId: string | undefined): UseOrderTypesResult {
   const { user: _user } = useAuthState();
-  
-  // Order types state
-  const [orderTypes, setOrderTypes] = useAtom(orderTypesAtom);
-  const [loading, setLoading] = useAtom(orderTypesLoadingAtom);
-  const [error, setError] = useAtom(orderTypesErrorAtom);
-  
-  // Refresh key
-  const [_orderTypesRefreshKey, setOrderTypesRefreshKey] = useAtom(orderTypesRefreshKeyAtom);
 
   // Always call the hook, but conditionally enable it
   const orderTypesQuery = useCollectionQuery(
@@ -58,13 +43,6 @@ export function useOrderTypes(organizationId: string | undefined): UseOrderTypes
       updatedAt: doc.data().updatedAt?.toDate(),
     })) as OrderType[];
   }, [orderTypesQuery.data]);
-
-  // Update atoms
-  useEffect(() => {
-    setOrderTypes(orderTypesData);
-    setLoading(orderTypesQuery.isLoading);
-    setError(orderTypesQuery.error?.message || null);
-  }, [orderTypesData, orderTypesQuery.isLoading, orderTypesQuery.error, setOrderTypes, setLoading, setError]);
 
   const addOrderTypeMutation = useAddDocumentMutation(
     collection(db, 'organizations', organizationId || 'dummy', 'orderTypes')
@@ -111,7 +89,7 @@ export function useOrderTypes(organizationId: string | undefined): UseOrderTypes
       console.error('Error updating order type:', error);
       throw error;
     }
-  }, [organizationId]);
+  }, [organizationId, updateOrderTypeMutation]);
 
   const deleteOrderType = useCallback(async (orderTypeId: string): Promise<void> => {
     if (!organizationId) return;
@@ -123,15 +101,12 @@ export function useOrderTypes(organizationId: string | undefined): UseOrderTypes
       console.error('Error deleting order type:', error);
       throw error;
     }
-  }, [organizationId]);
+  }, [organizationId, deleteOrderTypeMutation]);
 
-  // Refresh function
+  // Refresh function (invalidate query cache)
   const refreshOrderTypes = useCallback(() => {
-    setOrderTypesRefreshKey(prev => prev + 1);
-  }, [setOrderTypesRefreshKey]);
-
-  // Memoize array to prevent unnecessary re-renders
-  const memoizedOrderTypes = useMemo(() => orderTypes, [orderTypes]);
+    orderTypesQuery.refetch();
+  }, [orderTypesQuery]);
 
   // Return empty data when no organizationId
   if (!organizationId) {
@@ -139,43 +114,28 @@ export function useOrderTypes(organizationId: string | undefined): UseOrderTypes
       orderTypes: [],
       loading: false,
       error: null,
-      
+
       // CRUD operations
       createOrderType: async () => { throw new Error('Organization ID is required'); },
       updateOrderType: async () => {},
       deleteOrderType: async () => {},
-      
+
       // Utility functions
       refreshOrderTypes,
     };
   }
 
   return {
-    orderTypes: memoizedOrderTypes,
-    loading,
-    error,
-    
+    orderTypes: orderTypesData,
+    loading: orderTypesQuery.isLoading,
+    error: orderTypesQuery.error?.message || null,
+
     // CRUD operations
     createOrderType,
     updateOrderType,
     deleteOrderType,
-    
+
     // Utility functions
     refreshOrderTypes,
   };
-}
-
-// Read-only hook for optimization
-export function useOrderTypesData() {
-  return useAtomValue(orderTypesAtom);
-}
-
-// Hook for loading state
-export function useOrderTypesLoading() {
-  return useAtomValue(orderTypesLoadingAtom);
-}
-
-// Hook for error state
-export function useOrderTypesError() {
-  return useAtomValue(orderTypesErrorAtom);
 }

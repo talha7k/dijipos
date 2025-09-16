@@ -1,9 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { collection, addDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { useOrganizationId, useUser, useSelectedOrganization } from '@/hooks/useAuthState';
+import { useOrganizationId } from '@/hooks/useAuthState';
 import { ReceiptTemplate, TemplateCategory, UnifiedTemplate } from '@/types';
 import { useTemplatesData } from '@/hooks/use-templates-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

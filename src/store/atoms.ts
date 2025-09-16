@@ -44,24 +44,9 @@ export const mobileSidebarOpenAtom = atom<boolean>(false);
 // ORDER STATE ATOMS
 // =====================
 
-// Order management
-export const ordersAtom = atom<Order[]>([]);
+// Client-side selection state for orders
 export const currentOrderAtom = atom<Order | null>(null);
-export const ordersLoadingAtom = atom<boolean>(false);
-export const ordersErrorAtom = atom<string | null>(null);
 
-// Order payments
-export const paymentsAtom = atom<{ [orderId: string]: OrderPayment[] }>({});
-
-// Order types state
-export const orderTypesAtom = atom<OrderType[]>([]);
-export const orderTypesLoadingAtom = atom<boolean>(false);
-export const orderTypesErrorAtom = atom<string | null>(null);
-
-// Refresh keys for data refetching
-export const ordersRefreshKeyAtom = atom<number>(0);
-export const paymentsRefreshKeyAtom = atom<number>(0);
-export const orderTypesRefreshKeyAtom = atom<number>(0);
 
 // =====================
 // POS STATE ATOMS
@@ -104,11 +89,7 @@ export const cartItemCountAtom = atom(async (get) => {
   return cartItems ? cartItems.reduce((count, item) => count + (item.quantity || 1), 0) : 0;
 });
 
-// Order derived atoms
-export const hasOrdersAtom = atom((get) => get(ordersAtom).length > 0);
-export const activeOrdersAtom = atom((get) => 
-  get(ordersAtom).filter(order => order.status !== 'completed' && order.status !== 'cancelled')
-);
+// Order derived atoms (removed - use hooks instead)
 
 // =====================
 // PERSISTENCE ATOMS
@@ -152,57 +133,3 @@ export const resetPOSStateAtom = atom(null, (get, set) => {
 // =====================
 // DATA STATE ATOMS
 // =====================
-
-// Customers state
-export const customersAtom = atom<Customer[]>([]);
-export const customersLoadingAtom = atom<boolean>(false);
-export const customersErrorAtom = atom<string | null>(null);
-
-// Products state
-export const productsAtom = atom<Product[]>([]);
-export const productsLoadingAtom = atom<boolean>(false);
-export const productsErrorAtom = atom<string | null>(null);
-
-// Services state
-export const servicesAtom = atom<Service[]>([]);
-export const servicesLoadingAtom = atom<boolean>(false);
-export const servicesErrorAtom = atom<string | null>(null);
-
-// Tables state
-export const tablesAtom = atom<Table[]>([]);
-export const tablesLoadingAtom = atom<boolean>(false);
-export const tablesErrorAtom = atom<string | null>(null);
-
-// Invoices state
-export const invoicesAtom = atom<Invoice[]>([]);
-export const invoicesLoadingAtom = atom<boolean>(false);
-export const invoicesErrorAtom = atom<string | null>(null);
-
-// Quotes state
-export const quotesAtom = atom<Quote[]>([]);
-export const quotesLoadingAtom = atom<boolean>(false);
-export const quotesErrorAtom = atom<string | null>(null);
-
-// Invoice/Quote payments state (different from order payments)
-export const invoicePaymentsAtom = atom<Payment[]>([]);
-export const invoicePaymentsLoadingAtom = atom<boolean>(false);
-export const invoicePaymentsErrorAtom = atom<string | null>(null);
-
-// Payment types state
-export const paymentTypesAtom = atom<PaymentType[]>([]);
-export const paymentTypesLoadingAtom = atom<boolean>(false);
-export const paymentTypesErrorAtom = atom<string | null>(null);
-
-// Suppliers state
-export const suppliersAtom = atom<Supplier[]>([]);
-export const suppliersLoadingAtom = atom<boolean>(false);
-export const suppliersErrorAtom = atom<string | null>(null);
-
-// Categories state
-export const categoriesAtom = atom<Category[]>([]);
-export const categoriesLoadingAtom = atom<boolean>(false);
-export const categoriesErrorAtom = atom<string | null>(null);
-
-// Order management state
-export const orderManagementLoadingAtom = atom<boolean>(false);
-export const orderManagementErrorAtom = atom<string | null>(null);

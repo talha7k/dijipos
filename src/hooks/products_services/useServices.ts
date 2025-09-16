@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useMemo } from 'react';
-import { collection, doc } from 'firebase/firestore';
-import { useCollectionQuery, useUpdateDocumentMutation, useAddDocumentMutation, useDeleteDocumentMutation } from '@tanstack-query-firebase/react/firestore';
+import { useCollectionQuery, useUpdateDocumentMutation, useAddDocumentMutation, useDeleteDocumentMutation, useDocumentQuery, useSetDocumentMutation, useClearIndexedDbPersistenceMutation, useRunTransactionMutation, useWaitForPendingWritesQuery, useDisableNetworkMutation,useEnableNetworkMutation,useGetAggregateFromServerQuery,useGetCountFromServerQuery,useNamedQuery,useWriteBatchCommitMutation } from '@tanstack-query-firebase/react/firestore';
 import { db } from '@/lib/firebase';
 import { Service } from '@/types';
 
