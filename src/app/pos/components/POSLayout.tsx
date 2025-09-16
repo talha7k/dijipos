@@ -47,7 +47,7 @@ interface POSHeaderContainerProps {
 
 export function POSHeaderContainer({ children, className }: POSHeaderContainerProps) {
   return (
-    <div className={cn("bg-card shadow p-4 border-b border-r lg:border-r-0", className)}>
+    <div className={cn("bg-card p-0 border-b border-r lg:border-r-0", className)}>
       {children}
     </div>
   );

@@ -12,7 +12,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Table, Customer, OrderType, Order } from '@/types';
-import { Users, LayoutGrid, FileText, ShoppingBag, Plus, RotateCcw } from 'lucide-react';
+import { Users, LayoutGrid, FileText, ShoppingBag, Plus, RotateCcw, PlusCircle } from 'lucide-react';
 import { OrderTypeSelectionDialog } from './OrderTypeSelectionDialog';
 
 interface CartItem {
@@ -71,55 +71,61 @@ export function POSHeader({
     if (onOrderToggle) onOrderToggle();
   };
   return (
-    <div className="bg-card shadow p-4 border-b">
+    <div className="bg-card shadow p-3">
       <div className="flex justify-between items-center max-w-7xl mx-auto">
-        <div className="flex items-center space-x-3">
-          {selectedOrder ? (
-            cartItems.length > 0 ? (
+        <div className="flex flex-col items-start space-y-2 flex-1">
+          <div className="flex items-center">
+            {selectedOrder ? (
+              cartItems.length > 0 ? (
+                <ClearOrderDialog
+                  title="Reset Order?"
+                  description="This will clear all items from the current cart. Any unsaved changes will be lost."
+                  confirmText="Reset"
+                  onConfirm={handleConfirmOrderReset}
+                >
+                  {({ openDialog }) => (
+                    <Badge
+                      variant="default"
+                      className="flex py-1 items-center space-x-1 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white"
+                      onClick={openDialog}
+                    >
+                      <RotateCcw className="h-4 w-4" />
+                      <span>Order #{selectedOrder.orderNumber}</span>
+                    </Badge>
+                  )}
+                </ClearOrderDialog>
+              ) : (
+                <Badge
+                  variant="default"
+                  className="flex py-1 items-center space-x-1 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white"
+                  onClick={handleOrderToggle}
+                >
+                  <RotateCcw className="h-5 w-5" />
+                  <span>Order #{selectedOrder.orderNumber}</span>
+                </Badge>
+              )
+            ) : (
               <ClearOrderDialog
-                title="Reset Order?"
-                description="This will clear all items from the current cart. Any unsaved changes will be lost."
-                confirmText="Reset"
-                onConfirm={handleConfirmOrderReset}
+                title="Confirm New Order"
+                onConfirm={handleConfirmNewOrder}
               >
                 {({ openDialog }) => (
                   <Badge
-                    variant="default"
-                    className="flex items-center space-x-1 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white"
+                    variant="secondary"
+                    className="flex items-center py-1 space-x-1 cursor-pointer bg-orange-100 text-orange-800 hover:bg-orange-200"
                     onClick={openDialog}
                   >
-                    <RotateCcw className="h-3 w-3" />
-                    <span>Order #{selectedOrder.orderNumber}</span>
+                    <PlusCircle className="h-5 w-5" />
+                    <span>New Order</span>
                   </Badge>
                 )}
               </ClearOrderDialog>
-            ) : (
-              <Badge
-                variant="default"
-                className="flex items-center space-x-1 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white"
-                onClick={handleOrderToggle}
-              >
-                <RotateCcw className="h-3 w-3" />
-                <span>Order #{selectedOrder.orderNumber}</span>
-              </Badge>
-            )
-          ) : (
-            <ClearOrderDialog
-              title="Confirm New Order"
-              onConfirm={handleConfirmNewOrder}
-            >
-              {({ openDialog }) => (
-                <Badge
-                  variant="secondary"
-                  className="flex items-center space-x-1 cursor-pointer bg-orange-100 text-orange-800 hover:bg-orange-200"
-                  onClick={openDialog}
-                >
-                  <Plus className="h-3 w-3" />
-                  <span>New Order</span>
-                </Badge>
-              )}
-            </ClearOrderDialog>
-          )}
+            )}
+          </div>
+          <div className="flex items-center w-full">
+            <Badge className='bg-blue-500 hover:bg-blue-600 text-[10px] text-white mr-2'>{cartItems.length}</Badge>
+            <Badge className='bg-green-500 hover:bg-green-600 text-[10px] text-white justify-end'>{cartTotal.toFixed(2)}</Badge>
+          </div>
         </div>
         <div className="flex items-center space-x-4">
           {/* Table Selection */}
@@ -186,10 +192,6 @@ export function POSHeader({
               <FileText className="h-4 w-4" />
               <span>Orders</span>
             </Button>
-          </div>
-          <div className="flex flex-col gap-1 items-center">
-            <Badge className='w-12 bg-blue-500 hover:bg-blue-600 text-white'>{cartItems.length}</Badge>
-            <Badge className='w-15 bg-green-500 hover:bg-green-600  text-white'>{cartTotal}</Badge>
           </div>
         </div>
       </div>
