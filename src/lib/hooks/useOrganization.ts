@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Organization, OrganizationUser } from '@/types';
-import { getOrganization, getOrganizationUsers, getOrganizationsForUser } from '../firebase/firestore/organizations';
+import { getOrganization, getOrganizationsForUser } from '../firebase/firestore/organizations';
+import { useRealtimeCollection } from './useRealtimeCollection';
 import { useAuth } from './useAuth';
 
 interface OrganizationState {
@@ -14,7 +15,6 @@ interface OrganizationState {
 interface OrganizationActions {
   selectOrganization: (organizationId: string) => Promise<void>;
   refreshOrganizations: () => Promise<void>;
-  refreshOrganizationUsers: () => Promise<void>;
 }
 
 /**
@@ -24,9 +24,18 @@ export function useOrganization(): OrganizationState & OrganizationActions {
   const { user } = useAuth();
   const [selectedOrganization, setSelectedOrganization] = useState<Organization | null>(null);
   const [userOrganizations, setUserOrganizations] = useState<Organization[]>([]);
-  const [organizationUsers, setOrganizationUsers] = useState<OrganizationUser[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Real-time organization users for selected organization
+  const {
+    data: organizationUsers,
+    loading: usersLoading,
+    error: usersError
+  } = useRealtimeCollection<OrganizationUser>(
+    'organizationUsers',
+    selectedOrganization?.id || null
+  );
 
   // Load user organizations when user changes
   useEffect(() => {
@@ -35,18 +44,8 @@ export function useOrganization(): OrganizationState & OrganizationActions {
     } else {
       setUserOrganizations([]);
       setSelectedOrganization(null);
-      setOrganizationUsers([]);
     }
   }, [user?.uid]);
-
-  // Load organization users when selected organization changes
-  useEffect(() => {
-    if (selectedOrganization?.id) {
-      refreshOrganizationUsers();
-    } else {
-      setOrganizationUsers([]);
-    }
-  }, [selectedOrganization?.id]);
 
   const selectOrganization = async (organizationId: string) => {
     if (!organizationId) {
@@ -89,26 +88,17 @@ export function useOrganization(): OrganizationState & OrganizationActions {
     }
   };
 
-  const refreshOrganizationUsers = async () => {
-    if (!selectedOrganization?.id) return;
-
-    try {
-      const users = await getOrganizationUsers(selectedOrganization.id);
-      setOrganizationUsers(users);
-    } catch (err) {
-      console.error('Error loading organization users:', err);
-      // Don't set error state for this as it's not critical
-    }
-  };
+  // Combine loading states
+  const combinedLoading = loading || usersLoading;
+  const combinedError = error || usersError;
 
   return {
     selectedOrganization,
     userOrganizations,
     organizationUsers,
-    loading,
-    error,
+    loading: combinedLoading,
+    error: combinedError,
     selectOrganization,
     refreshOrganizations,
-    refreshOrganizationUsers,
   };
 }

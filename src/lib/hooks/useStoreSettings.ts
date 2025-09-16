@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { StoreSettings } from '@/types';
 import { getStoreSettings, createDefaultStoreSettings } from '../firebase/firestore/settings/store';
+import { useRealtimeCollection } from './useRealtimeCollection';
 import { useOrganization } from './useOrganization';
 
 interface StoreSettingsState {
@@ -10,7 +11,6 @@ interface StoreSettingsState {
 }
 
 interface StoreSettingsActions {
-  refreshStoreSettings: () => Promise<void>;
   createDefaultSettings: () => Promise<void>;
 }
 
@@ -19,41 +19,37 @@ interface StoreSettingsActions {
  */
 export function useStoreSettings(): StoreSettingsState & StoreSettingsActions {
   const { selectedOrganization } = useOrganization();
-  const [storeSettings, setStoreSettings] = useState<StoreSettings | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Load store settings when selected organization changes
+  // Real-time store settings
+  const {
+    data: storeSettingsList,
+    loading: realtimeLoading,
+    error: realtimeError
+  } = useRealtimeCollection<StoreSettings>(
+    'storeSettings',
+    selectedOrganization?.id || null
+  );
+
+  // Get the first (and should be only) store settings document
+  const storeSettings = storeSettingsList.length > 0 ? storeSettingsList[0] : null;
+
+  // Load store settings when selected organization changes (for initial setup)
   useEffect(() => {
-    if (selectedOrganization?.id) {
-      refreshStoreSettings();
-    } else {
-      setStoreSettings(null);
+    if (selectedOrganization?.id && !storeSettings) {
+      // Only try to create default settings if we don't have any
+      getStoreSettings(selectedOrganization.id).then(existing => {
+        if (!existing) {
+          createDefaultStoreSettings(selectedOrganization.id).catch(err => {
+            console.error('Error creating default store settings:', err);
+          });
+        }
+      }).catch(err => {
+        console.error('Error checking for existing store settings:', err);
+      });
     }
-  }, [selectedOrganization?.id]);
-
-  const refreshStoreSettings = async () => {
-    if (!selectedOrganization?.id) return;
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      let settings = await getStoreSettings(selectedOrganization.id);
-
-      // If no settings exist, create default ones
-      if (!settings) {
-        settings = await createDefaultStoreSettings(selectedOrganization.id);
-      }
-
-      setStoreSettings(settings);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load store settings');
-      console.error('Error loading store settings:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [selectedOrganization?.id, storeSettings]);
 
   const createDefaultSettings = async () => {
     if (!selectedOrganization?.id) return;
@@ -62,8 +58,8 @@ export function useStoreSettings(): StoreSettingsState & StoreSettingsActions {
     setError(null);
 
     try {
-      const settings = await createDefaultStoreSettings(selectedOrganization.id);
-      setStoreSettings(settings);
+      await createDefaultStoreSettings(selectedOrganization.id);
+      // Real-time listener will automatically update the storeSettings
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create default settings');
       console.error('Error creating default settings:', err);
@@ -72,11 +68,13 @@ export function useStoreSettings(): StoreSettingsState & StoreSettingsActions {
     }
   };
 
+  const combinedLoading = loading || realtimeLoading;
+  const combinedError = error || realtimeError;
+
   return {
     storeSettings,
-    loading,
-    error,
-    refreshStoreSettings,
+    loading: combinedLoading,
+    error: combinedError,
     createDefaultSettings,
   };
 }
