@@ -1,13 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { useOrganizationId, useUser, useSelectedOrganization } from '@/legacy_hooks/useAuthState';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { useOrganization } from '@/lib/hooks/useOrganization';
 
-import { usePaymentTypesData } from '@/legacy_hooks/uePaymentTypes';
+import { useRealtimeCollection } from '@/lib/hooks/useRealtimeCollection';
+import { useTables } from '@/lib/hooks/useTables';
 import { useTemplatesData } from '@/legacy_hooks/use-templates-data';
 import { TemplateCategory } from '@/types/template';
-import { useOrderTypes } from '@/legacy_hooks/useOrderTypes';
-import { useTablesData } from '@/legacy_hooks/tables/useTables';
+import { PaymentType, OrderType } from '@/types';
 import { useSettingsData } from '@/legacy_hooks/organization/use-settings-data';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -20,11 +21,13 @@ import { TemplatesTab } from '@/components/settings/TemplatesTab';
 import { TablesTab } from '@/components/settings/TablesTab';
 
 function SettingsContent() {
-  const organizationId = useOrganizationId();
-  const { paymentTypes, loading: paymentTypesLoading } = usePaymentTypesData(organizationId || undefined);
+  const { user } = useAuth();
+  const { selectedOrganization } = useOrganization();
+  const organizationId = selectedOrganization?.id;
+  const { data: paymentTypes, loading: paymentTypesLoading } = useRealtimeCollection<PaymentType>('paymentTypes', organizationId || null);
   const { templates: receiptTemplates, loading: receiptTemplatesLoading } = useTemplatesData(organizationId || undefined, TemplateCategory.RECEIPT);
-  const { orderTypes, loading: orderTypesLoading } = useOrderTypes(organizationId || undefined);
-  const { tables, loading: tablesLoading } = useTablesData(organizationId || undefined);
+  const { data: orderTypes, loading: orderTypesLoading } = useRealtimeCollection<OrderType>('orderTypes', organizationId || null);
+  const { tables, loading: tablesLoading } = useTables();
   const { 
     vatSettings, 
     printerSettings, 

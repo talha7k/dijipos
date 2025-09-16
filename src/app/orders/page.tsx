@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useSelectedOrganization } from '@/legacy_hooks/useAuthState';
+import { useState, useEffect, useMemo } from 'react';
+import { useOrganization } from '@/lib/hooks/useOrganization';
 import { Order, OrderPayment, OrderStatus } from '@/types';
-import { useOrders } from '@/legacy_hooks/orders/useOrders';
-import { useUsersData } from '@/legacy_hooks/organization/use-users-data';
+import { useOrders } from '@/lib/hooks/useOrders';
+import { useRealtimeCollection } from '@/lib/hooks/useRealtimeCollection';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,10 +18,20 @@ import { OrderActionsDialog } from '@/components/orders/OrderStatusActionsDialog
 
 
 function OrdersContent() {
-  const selectedOrganization = useSelectedOrganization();
+  const { selectedOrganization } = useOrganization();
   const organizationId = selectedOrganization?.id || '';
-  const { orders: fetchedOrders, loading: ordersLoading, orderPayments, markOrderAsPaid, completeOrder, updateOrderStatus } = useOrders(organizationId || undefined);
-  const { users: usersArray, loading: usersLoading } = useUsersData(organizationId || undefined);
+  const { orders: fetchedOrders, loading: ordersLoading, updateExistingOrder } = useOrders();
+  const { data: paymentsData, loading: paymentsLoading } = useRealtimeCollection<OrderPayment>('orderPayments', organizationId);
+
+  const orderPayments = useMemo(() => {
+    const map: { [orderId: string]: OrderPayment[] } = {};
+    paymentsData.forEach(payment => {
+      if (!map[payment.orderId]) map[payment.orderId] = [];
+      map[payment.orderId].push(payment);
+    });
+    return map;
+  }, [paymentsData]);
+
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   const orders = fetchedOrders || [];
@@ -58,24 +68,21 @@ function OrdersContent() {
   const clearSelection = () => setSelectedOrder(null);
 
   const handleMarkAsPaid = async (orderId: string) => {
-    await markOrderAsPaid(orderId);
+    await updateExistingOrder(orderId, { paid: true });
     clearSelection();
   };
 
   const handleCompleteOrder = async (orderId: string) => {
-    const order = orders.find(o => o.id === orderId);
-    if (order) {
-      await completeOrder(order);
-      clearSelection();
-    }
-  };
-
-  const handleUpdateOrderStatus = async (orderId: string, newStatus: OrderStatus) => {
-    await updateOrderStatus(orderId, newStatus);
+    await updateExistingOrder(orderId, { status: OrderStatus.COMPLETED });
     clearSelection();
   };
 
-  if (ordersLoading || usersLoading) return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  const handleUpdateOrderStatus = async (orderId: string, newStatus: OrderStatus) => {
+    await updateExistingOrder(orderId, { status: newStatus });
+    clearSelection();
+  };
+
+  if (ordersLoading || paymentsLoading) return <div className="flex items-center justify-center h-screen">Loading...</div>;
 
   return (
     <div className="container mx-auto p-4">
@@ -311,9 +318,9 @@ function OrdersContent() {
                                        </AlertDialogHeader>
                                        <AlertDialogFooter>
                                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                         <AlertDialogAction
-                                           onClick={() => updateOrderStatus(selectedOrder.id, OrderStatus.OPEN)}
-                                         >
+                                          <AlertDialogAction
+                                            onClick={() => handleUpdateOrderStatus(selectedOrder.id, OrderStatus.OPEN)}
+                                          >
                                            Save Order
                                          </AlertDialogAction>
                                        </AlertDialogFooter>
@@ -336,10 +343,10 @@ function OrdersContent() {
                                        </AlertDialogHeader>
                                        <AlertDialogFooter>
                                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                         <AlertDialogAction
-                                           onClick={() => updateOrderStatus(selectedOrder.id, OrderStatus.COMPLETED)}
-                                           className="bg-green-600 hover:bg-green-700"
-                                         >
+                                          <AlertDialogAction
+                                            onClick={() => handleUpdateOrderStatus(selectedOrder.id, OrderStatus.COMPLETED)}
+                                            className="bg-green-600 hover:bg-green-700"
+                                          >
                                            Complete Order
                                          </AlertDialogAction>
                                        </AlertDialogFooter>

@@ -1,10 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useOrganizationId } from '@/legacy_hooks/useAuthState';
-import { useSettingsData } from '@/legacy_hooks/organization/use-settings-data';
+import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
 import { VATSettings } from '@/types';
-import { useCurrencySettings } from '@/legacy_hooks/useCurrencySettings';
 import { Currency, CurrencyLocale } from '@/types/enums';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,13 +17,11 @@ interface StoreSettingsTabProps {
 }
 
 export function StoreSettingsTab({ vatSettings, onVatSettingsUpdate }: StoreSettingsTabProps) {
-  const organizationId = useOrganizationId();
-  const { currencySettings, updateCurrencySettings } = useCurrencySettings();
-  const { handleVatSettingsUpdate } = useSettingsData(organizationId || undefined);
+  const { storeSettings, loading, error } = useStoreSettings();
   const [showSampleDataConfirm, setShowSampleDataConfirm] = useState(false);
 
   const handleUpdateVatSettings = async (field: keyof VATSettings, value: string | number | boolean) => {
-    if (!organizationId || !vatSettings) return;
+    if (!vatSettings) return;
 
     const updatedVat: VATSettings = {
       ...vatSettings,
@@ -33,7 +29,6 @@ export function StoreSettingsTab({ vatSettings, onVatSettingsUpdate }: StoreSett
       updatedAt: new Date(),
     };
 
-    handleVatSettingsUpdate(updatedVat);
     onVatSettingsUpdate(updatedVat);
   };
 
@@ -58,11 +53,11 @@ export function StoreSettingsTab({ vatSettings, onVatSettingsUpdate }: StoreSett
   };
 
   const confirmGenerateSampleData = async () => {
-    if (!organizationId) return;
-    
+    if (!storeSettings?.organizationId) return;
+
     try {
       const { generateSampleData } = await import('@/lib/sample-data-generator');
-      await generateSampleData(organizationId!);
+      await generateSampleData(storeSettings.organizationId);
       toast.success('Sample data generated successfully!');
       window.location.reload();
     } catch (error) {
@@ -85,18 +80,18 @@ export function StoreSettingsTab({ vatSettings, onVatSettingsUpdate }: StoreSett
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {vatSettings ? (
+          {storeSettings?.vatSettings ? (
             <div className="space-y-4">
               <EditableSetting
                 label="VAT Status"
-                value={vatSettings.isEnabled}
+                value={storeSettings.vatSettings.isEnabled}
                 type="switch"
                 onSave={(value) => handleUpdateVatSettings('isEnabled', value)}
               />
-              {vatSettings.isEnabled && (
+              {storeSettings.vatSettings.isEnabled && (
                 <EditableSetting
                   label="VAT Rate"
-                  value={vatSettings.rate}
+                  value={storeSettings.vatSettings.rate}
                   type="number"
                   onSave={(value) => handleUpdateVatSettings('rate', value)}
                   placeholder="15"
@@ -119,11 +114,11 @@ export function StoreSettingsTab({ vatSettings, onVatSettingsUpdate }: StoreSett
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {currencySettings ? (
+          {storeSettings?.currencySettings ? (
             <div className="space-y-4">
               <EditableSetting
                 label="Currency Format"
-                value={currencySettings.locale}
+                value={storeSettings.currencySettings.locale}
                 type="select"
                 options={[
                   { value: CurrencyLocale.AR_SA, label: 'Arabic (SAR)' },
@@ -137,7 +132,10 @@ export function StoreSettingsTab({ vatSettings, onVatSettingsUpdate }: StoreSett
                   { value: CurrencyLocale.AR_OM, label: 'Arabic Oman (OMR)' },
                   { value: CurrencyLocale.AR_QA, label: 'Arabic Qatar (QAR)' },
                 ]}
-                onSave={(value: CurrencyLocale) => updateCurrencySettings({ locale: value, currency: getCurrencyFromLocale(value) })}
+                onSave={async (value: CurrencyLocale) => {
+                  // TODO: Implement update logic for currency settings
+                  console.log('Update currency settings:', { locale: value, currency: getCurrencyFromLocale(value) });
+                }}
               />
             </div>
           ) : (

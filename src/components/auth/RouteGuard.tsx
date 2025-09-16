@@ -2,7 +2,8 @@
 
 import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { useAuthState } from '@/legacy_hooks/useAuthState';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { useOrganization } from '@/lib/hooks/useOrganization';
 import { toast } from 'sonner';
 
 interface RouteGuardProps {
@@ -10,18 +11,22 @@ interface RouteGuardProps {
 }
 
 export function RouteGuard({ children }: RouteGuardProps) {
-  const { 
-    user, 
-    authLoading: loading, 
-    organizationLoading,
-    authError: error, 
-    organizationError,
-    emailVerified, 
-    selectedOrganization: currentOrganization, 
-    userOrganizations, 
-    organizationId,
-    retryOrganizationLoad
-  } = useAuthState();
+  const { user, loading: authLoading, initialized } = useAuth();
+  const {
+    selectedOrganization: currentOrganization,
+    userOrganizations,
+    loading: organizationLoading,
+    error: organizationError,
+    selectOrganization,
+    refreshOrganizations
+  } = useOrganization();
+
+  // Adapt legacy variables
+  const loading = authLoading;
+  const error = organizationError;
+  const organizationId = currentOrganization?.id;
+  const emailVerified = user?.emailVerified ?? false; // Firebase user has emailVerified property
+  const retryOrganizationLoad = refreshOrganizations;
   const router = useRouter();
   const pathname = usePathname();
 
@@ -132,7 +137,7 @@ export function RouteGuard({ children }: RouteGuardProps) {
       } else if (organizationId && !currentOrganization && !organizationLoading) {
         // organizationId is set but selectedOrganization is not - this might be a timing issue
         // Allow access to protected routes if organizationId exists and user has organizations
-        if (userOrganizations.some(ou => ou.organizationId === organizationId)) {
+        if (userOrganizations.some(ou => ou.id === organizationId)) {
           // organizationId is valid, allow access
           return;
         } else {
@@ -215,7 +220,7 @@ export function RouteGuard({ children }: RouteGuardProps) {
   }
 
   // For protected routes, render children only if user is authenticated and has organization
-  if (user && emailVerified && (currentOrganization || (organizationId && userOrganizations.some(ou => ou.organizationId === organizationId)))) {
+  if (user && emailVerified && (currentOrganization || (organizationId && userOrganizations.some(ou => ou.id === organizationId)))) {
     return <>{children}</>;
   }
 

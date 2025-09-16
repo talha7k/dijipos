@@ -1,15 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { useOrganizationId, useSelectedOrganization } from '@/legacy_hooks/useAuthState';
-import { Invoice } from '@/types';
+import { useOrganization } from '@/lib/hooks/useOrganization';
+import { useMemo } from 'react';
+import { Invoice, Payment } from '@/types';
 import { InvoiceList } from '@/components/invoices_quotes/InvoiceList';
 import InvoiceForm from '@/components/invoices_quotes/InvoiceForm';
 import { InvoiceDetails } from '@/components/invoices_quotes/InvoiceDetails';
 import { InvoicePrintDialog } from '@/components/invoices_quotes/InvoicePrintDialog';
 import { Button } from '@/components/ui/button';
 import { Plus, Printer } from 'lucide-react';
-import { useInvoiceTemplatesData } from '@/legacy_hooks/use-invoice-templates-data';
+import { useTemplates } from '@/lib/hooks/useTemplates';
 import {
   Dialog,
   DialogContent,
@@ -17,11 +18,14 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useInvoicesData, useInvoiceActions } from '@/legacy_hooks/useInvoices';
+import { useInvoices } from '@/lib/hooks/useInvoices';
+import { useCustomers } from '@/lib/hooks/useCustomers';
+import { useSuppliers } from '@/lib/hooks/useSuppliers';
+import { useRealtimeCollection } from '@/lib/hooks/useRealtimeCollection';
 
 export default function InvoicesPage() {
-  const organizationId = useOrganizationId();
-  const selectedOrganization = useSelectedOrganization();
+  const { selectedOrganization } = useOrganization();
+  const organizationId = selectedOrganization?.id;
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
@@ -29,13 +33,17 @@ export default function InvoicesPage() {
   const [activeTab, setActiveTab] = useState('all');
 
   // Use custom hooks for data fetching
-  const { invoices, customers, suppliers, payments, loading } = useInvoicesData(organizationId || undefined);
-  const { updateInvoiceStatus } = useInvoiceActions(organizationId || undefined);
-  const { invoiceTemplates } = useInvoiceTemplatesData(organizationId || undefined);
+  const { salesInvoices, purchaseInvoices, loading: invoicesLoading, updateExistingInvoice } = useInvoices();
+  const invoices = [...salesInvoices, ...purchaseInvoices];
+  const { customers, loading: customersLoading } = useCustomers();
+  const { suppliers, loading: suppliersLoading } = useSuppliers();
+  const { data: payments, loading: paymentsLoading } = useRealtimeCollection<Payment>('payments', organizationId || null);
+  const { invoiceTemplates, loading: templatesLoading } = useTemplates();
+  const loading = invoicesLoading || customersLoading || suppliersLoading || paymentsLoading || templatesLoading;
 
   const handleStatusChange = async (invoiceId: string, newStatus: Invoice['status']) => {
     try {
-      await updateInvoiceStatus(invoiceId, newStatus);
+      await updateExistingInvoice(invoiceId, { status: newStatus });
     } catch (error) {
       console.error('Error updating invoice status:', error);
     }

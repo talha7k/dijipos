@@ -10,7 +10,7 @@ import { useTablesData } from "@/legacy_hooks/tables/useTables";
 import { useCustomersData } from "@/legacy_hooks/useCustomerState";
 import { useOrders } from "@/legacy_hooks/orders/useOrders";
 import { useOrderTypes } from "@/legacy_hooks/useOrderTypes";
-import { usePaymentTypesData } from "@/legacy_hooks/uePaymentTypes";
+import { usePaymentTypes } from "@/legacy_hooks/uePaymentTypes";
 
 import {
   POSLayout,
@@ -56,15 +56,15 @@ export default function SimplifiedPOSPage() {
   const { customers = [], loading: customersLoading } = useCustomersData(
     organizationId || ""
   );
-  const { 
-    orders = [], 
+  const {
+    orders = [],
     orderPayments = {},
     loading: ordersLoading,
-    paymentsLoading: orderPaymentsLoading 
+    paymentsLoading: orderPaymentsLoading
   } = useOrders(organizationId || undefined);
   const { orderTypes = [] } = useOrderTypes(organizationId || undefined);
   const { paymentTypes = [], loading: paymentTypesLoading } =
-    usePaymentTypesData(organizationId || "");
+    usePaymentTypes(organizationId || undefined);
 
   // Use the custom POS logic hook
   const {
@@ -163,32 +163,32 @@ export default function SimplifiedPOSPage() {
         </POSHeaderContainer>
 
         <POSMainContent>
-           <POSViewsManager
-             currentView={currentView as import('./components/POSViewsManager').POSViewType}
-            products={products}
-            services={services}
-            categories={categories}
-            tables={tables}
-            customers={customers}
-            orders={orders}
-            orderPayments={orderPayments}
-            paymentTypes={paymentTypes}
-            selectedOrder={selectedOrder}
-            categoryPath={categoryPath}
-            organizationId={organizationId || undefined}
-            onCategoryClick={handleCategoryClick}
-            onNavigateToRoot={handleNavigateToRoot}
-            onNavigateToPath={handleNavigateToPath}
-            onItemClick={handleAddToCart}
-            onTableSelect={handleTableSelected}
-            onCustomerSelect={handleCustomerSelected}
-            onOrderSelect={handleOrderReopen}
-            onPayOrder={() => {}}
-            onBackToItems={handleBackToItems}
-            onPaymentProcessed={async (payments) => {
-              await handlePaymentProcessed(payments);
-            }}
-          />
+            <POSViewsManager
+              currentView={currentView as import('./components/POSViewsManager').POSViewType}
+             products={products}
+             services={services}
+             categories={categories}
+             tables={tables}
+             customers={customers}
+             orders={orders}
+             orderPayments={orderPayments}
+             paymentTypes={paymentTypes}
+             selectedOrder={selectedOrder}
+             categoryPath={categoryPath}
+             organizationId={organizationId || undefined}
+             onCategoryClick={handleCategoryClick}
+             onNavigateToRoot={handleNavigateToRoot}
+             onNavigateToPath={handleNavigateToPath}
+             onItemClick={handleAddToCart}
+             onTableSelect={handleTableSelected}
+             onCustomerSelect={handleCustomerSelected}
+             onOrderSelect={handleOrderReopen}
+             onPayOrder={() => {}}
+             onBackToItems={handleBackToItems}
+             onPaymentProcessed={async (payments) => {
+               await handlePaymentProcessed(payments);
+             }}
+           />
         </POSMainContent>
       </POSLeftColumn>
 
