@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import { Table, Order, TableStatus } from '@/types';
-import { useTablesData } from '@/legacy_hooks/tables/useTables';
-import { useOrders } from '@/legacy_hooks/orders/useOrders';
+import { useTables } from '@/lib/hooks/useTables';
+import { useOrders } from '@/lib/hooks/useOrders';
 import { useTableManagement } from '@/legacy_hooks/tables/use-table-management';
-import { useOrganizationId, useUser, useSelectedOrganization } from '@/legacy_hooks/useAuthState';
+import { useOrganization } from '@/lib/hooks/useOrganization';
 import {
   Dialog,
   DialogContent,
@@ -25,9 +25,10 @@ interface TableActionsDialogProps {
 }
 
 export function TableActionsDialog({ table, children }: TableActionsDialogProps) {
-  const organizationId = useOrganizationId();
-  const { tables } = useTablesData(organizationId || undefined);
-  const { orders } = useOrders(organizationId || undefined);
+  const { selectedOrganization } = useOrganization();
+  const organizationId = selectedOrganization?.id;
+  const { tables } = useTables();
+  const { orders } = useOrders();
   const { releaseTable, moveOrderToTable, updating } = useTableManagement(organizationId || undefined);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedTableId, setSelectedTableId] = useState<string>('');

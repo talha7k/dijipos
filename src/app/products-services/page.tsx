@@ -1,10 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { useOrganizationId } from '@/legacy_hooks/useAuthState';
-import { useProductsData, useProductActions } from '@/legacy_hooks/products_services/useProducts';
-import { useServicesData, useServiceActions } from '@/legacy_hooks/products_services/useServices';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { useOrganization } from '@/lib/hooks/useOrganization';
+import { useProducts } from '@/lib/hooks/useProducts';
+import { useServices } from '@/lib/hooks/useServices';
 import { useCategoriesData } from '@/legacy_hooks/products_services/useCategories';
+import { useProductActions } from '@/legacy_hooks/products_services/useProducts';
+import { useServiceActions } from '@/legacy_hooks/products_services/useServices';
 import { Product, Service, CategoryType } from '@/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,9 +26,10 @@ import { CategoryTree } from '@/components/products_services/CategoryTree';
 import { ExportImportProducts } from '@/components/ExportImportProducts';
 
 export default function ProductsServicesPage() {
-  const organizationId = useOrganizationId();
-  const { products, loading: productsLoading } = useProductsData(organizationId || undefined);
-  const { services, loading: servicesLoading } = useServicesData(organizationId || undefined);
+  const { selectedOrganization } = useOrganization();
+  const organizationId = selectedOrganization?.id;
+  const { products, loading: productsLoading } = useProducts();
+  const { services, loading: servicesLoading } = useServices();
   const { categories, loading: categoriesLoading, createCategory, deleteCategory: deleteCategoryHook } = useCategoriesData(organizationId || undefined);
   const { createProduct, deleteProduct: deleteProductHook } = useProductActions(organizationId || undefined);
   const { createService, deleteService: deleteServiceHook } = useServiceActions(organizationId || undefined);

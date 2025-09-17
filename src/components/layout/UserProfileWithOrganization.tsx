@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthState } from '@/legacy_hooks/useAuthState';
+import { useAtomValue } from 'jotai';
+import { userAtom } from '@/store/atoms';
+import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
 import { Button } from '@/components/ui/button';
 import { Building2, LogOut, ChevronDown, ChevronUp, User } from 'lucide-react';
 
@@ -14,7 +16,12 @@ export function UserProfileWithOrganization({
   isCollapsed = false 
 }: UserProfileWithOrganizationProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const { user, selectedOrganization, logout } = useAuthState();
+  const user = useAtomValue(userAtom);
+  const selectedOrganization = useAtomValue(selectedOrganizationAtom);
+  const logout = () => {
+    // TODO: implement logout
+    console.log('Logout not implemented');
+  };
   const router = useRouter();
 
   const handleLogout = async () => {

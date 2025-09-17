@@ -1,7 +1,8 @@
 'use client';
 
 import { Table } from '@/types';
-import { useOrganizationId, useUser, useSelectedOrganization } from '@/legacy_hooks/useAuthState';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { useOrganization } from '@/lib/hooks/useOrganization';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,7 +20,8 @@ interface TablesTabProps {
 }
 
 export function TablesTab({ tables }: TablesTabProps) {
-  const organizationId = useOrganizationId();
+  const { selectedOrganization } = useOrganization();
+  const organizationId = selectedOrganization?.id;
   const {
     dialogOpen,
     setDialogOpen,

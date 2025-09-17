@@ -7,7 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useAuthState } from '@/legacy_hooks/useAuthState';
+import { useAtomValue, useSetAtom } from 'jotai';
+import { userAtom } from '@/store/atoms';
+import { selectedOrganizationAtom, userOrganizationsAtom, organizationUsersAtom, selectedOrganizationIdAtom } from '@/store/atoms/organizationAtoms';
+import { getOrganizationsForUser } from '@/lib/firebase/firestore/organizations';
 import { Building2, Plus, Users, ArrowRight, Link } from 'lucide-react';
 import { collection, query, where, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
@@ -18,7 +21,28 @@ interface OrganizationSelectorProps {
 }
 
 export function OrganizationSelector({ children }: OrganizationSelectorProps) {
-  const { user, organizationId, userOrganizations, selectedOrganization, selectOrganization, refreshUserOrganizations } = useAuthState();
+  const user = useAtomValue(userAtom);
+  const selectedOrganization = useAtomValue(selectedOrganizationAtom);
+  const userOrganizations = useAtomValue(userOrganizationsAtom);
+  const organizationUsers = useAtomValue(organizationUsersAtom);
+  const organizationId = selectedOrganization?.id;
+  const setSelectedOrganizationId = useSetAtom(selectedOrganizationIdAtom);
+
+  // Simple functions to replace the hook functions
+  const selectOrganization = async (organizationId: string) => {
+    setSelectedOrganizationId(organizationId);
+  };
+
+  const refreshOrganizations = async () => {
+    if (!user?.uid) return;
+    try {
+      const orgs = await getOrganizationsForUser(user.uid);
+      // The organizations will be updated via the useOrganizationManager hook
+      // which listens to changes in the atoms
+    } catch (error) {
+      console.error('Error refreshing organizations:', error);
+    }
+  };
   const [isOpen, setIsOpen] = useState(false);
   const [showJoinForm, setShowJoinForm] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -87,7 +111,7 @@ export function OrganizationSelector({ children }: OrganizationSelectorProps) {
       });
       
       // Refresh user organizations to include the new one
-      await refreshUserOrganizations();
+      await     refreshOrganizations();
       
       // Switch to the new organization
       await selectOrganization(invitationCode.organizationId);
@@ -128,7 +152,7 @@ export function OrganizationSelector({ children }: OrganizationSelectorProps) {
       });
       
       // Refresh user organizations to include the new one
-      await refreshUserOrganizations();
+      await     refreshOrganizations();
       
       // Switch to the new organization
       await selectOrganization(organizationRef.id);
@@ -180,7 +204,7 @@ export function OrganizationSelector({ children }: OrganizationSelectorProps) {
                     <h3 className="font-semibold text-lg">{selectedOrganization.name}</h3>
                     <p className="text-sm text-gray-600">{selectedOrganization.email}</p>
                     <Badge variant="secondary" className="mt-2">
-                      {userOrganizations.find(ou => ou.organizationId === organizationId)?.role || 'User'}
+                      {organizationUsers.find(ou => ou.organizationId === organizationId)?.role || 'User'}
                     </Badge>
                   </div>
                   <Badge variant="default" className="bg-green-100 text-green-800">
@@ -192,29 +216,29 @@ export function OrganizationSelector({ children }: OrganizationSelectorProps) {
           )}
 
           {/* Available Organizations */}
-          {userOrganizations.filter(ou => ou.organizationId !== organizationId).length > 0 && (
+          {userOrganizations.filter(org => org.id !== organizationId).length > 0 && (
             <div>
               <h3 className="text-lg font-semibold mb-4">Your Organizations</h3>
               <div className="grid gap-4">
                 {userOrganizations
-                  .filter(ou => ou.organizationId !== organizationId)
-                  .map((organizationUser) => (
-                    <Card key={organizationUser.organizationId} className="cursor-pointer hover:shadow-md transition-shadow">
+                  .filter(org => org.id !== organizationId)
+                  .map((org) => (
+                    <Card key={org.id} className="cursor-pointer hover:shadow-md transition-shadow">
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <Building2 className="h-8 w-8 text-gray-400" />
                             <div>
-                              <h4 className="font-medium">Organization {organizationUser.organizationId.slice(-6)}</h4>
+                              <h4 className="font-medium">{org.name}</h4>
                               <Badge variant="outline" className="capitalize">
-                                {organizationUser.role}
+                                {organizationUsers.find(ou => ou.organizationId === org.id)?.role || 'User'}
                               </Badge>
                             </div>
                           </div>
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleSwitchOrganization(organizationUser.organizationId)}
+                            onClick={() => handleSwitchOrganization(org.id)}
                           >
                             Switch
                             <ArrowRight className="h-4 w-4 ml-2" />

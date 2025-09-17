@@ -2,8 +2,9 @@
 
 import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { useAuth } from '@/lib/hooks/useAuth';
-import { useOrganization } from '@/lib/hooks/useOrganization';
+import { useAtomValue } from 'jotai';
+import { userAtom, authLoadingAtom } from '@/store/atoms';
+import { selectedOrganizationAtom, userOrganizationsAtom, organizationLoadingAtom, organizationErrorAtom } from '@/store/atoms/organizationAtoms';
 import { toast } from 'sonner';
 
 interface RouteGuardProps {
@@ -11,22 +12,18 @@ interface RouteGuardProps {
 }
 
 export function RouteGuard({ children }: RouteGuardProps) {
-  const { user, loading: authLoading, initialized } = useAuth();
-  const {
-    selectedOrganization: currentOrganization,
-    userOrganizations,
-    loading: organizationLoading,
-    error: organizationError,
-    selectOrganization,
-    refreshOrganizations
-  } = useOrganization();
+  const user = useAtomValue(userAtom);
+  const authLoading = useAtomValue(authLoadingAtom);
+  const currentOrganization = useAtomValue(selectedOrganizationAtom);
+  const userOrganizations = useAtomValue(userOrganizationsAtom);
+  const organizationLoading = useAtomValue(organizationLoadingAtom);
+  const organizationError = useAtomValue(organizationErrorAtom);
 
   // Adapt legacy variables
   const loading = authLoading;
   const error = organizationError;
   const organizationId = currentOrganization?.id;
   const emailVerified = user?.emailVerified ?? false; // Firebase user has emailVerified property
-  const retryOrganizationLoad = refreshOrganizations;
   const router = useRouter();
   const pathname = usePathname();
 
@@ -189,7 +186,7 @@ export function RouteGuard({ children }: RouteGuardProps) {
           <p className="text-red-600 mt-2">{error}</p>
           {isOrganizationError && (
             <button
-              onClick={retryOrganizationLoad}
+              onClick={() => window.location.reload()}
               className="mt-4 w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition-colors"
             >
               Retry Loading Organizations

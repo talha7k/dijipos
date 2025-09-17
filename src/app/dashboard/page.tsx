@@ -1,33 +1,34 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useOrganizationId, useUser, useSelectedOrganization } from '@/legacy_hooks/useAuthState';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { useOrganization } from '@/lib/hooks/useOrganization';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase/config';
 import { useRouter } from 'next/navigation';
-import { useQuotesData } from '@/legacy_hooks/useQuotes';
-import { useInvoicesData } from '@/legacy_hooks/useInvoices';
-import { usePaymentsData } from '@/legacy_hooks/usePayments';
-import { useProductsData } from '@/legacy_hooks/products_services/useProducts';
-import { useServicesData } from '@/legacy_hooks/products_services/useServices';
-import { useTablesData } from '@/legacy_hooks/tables/useTables';
+import { useQuotes } from '@/lib/hooks/useQuotes';
+import { useInvoices } from '@/lib/hooks/useInvoices';
+import { usePayments } from '@/lib/hooks/usePayments';
+import { useProducts } from '@/lib/hooks/useProducts';
+import { useServices } from '@/lib/hooks/useServices';
+import { useTables } from '@/lib/hooks/useTables';
 import { TableStatus } from '@/types';
 
 function DashboardContent() {
-  const user = useUser();
-  const organizationId = useOrganizationId();
+  const { user } = useAuth();
+  const { selectedOrganization } = useOrganization();
   const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  const { quotes } = useQuotesData(organizationId || undefined);
-  const { invoices } = useInvoicesData(organizationId || undefined);
-  const { payments } = usePaymentsData(organizationId || undefined);
-  const { products } = useProductsData(organizationId || undefined);
-  const { services } = useServicesData(organizationId || undefined);
-  const { tables } = useTablesData(organizationId || undefined);
+  const { quotes } = useQuotes();
+  const { salesInvoices: invoices } = useInvoices();
+  const { payments } = usePayments();
+  const { products } = useProducts();
+  const { services } = useServices();
+  const { tables } = useTables();
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -88,7 +89,7 @@ function DashboardContent() {
               <CardDescription>Total Received</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${payments.reduce((sum, p) => sum + p.amount, 0).toFixed(2)}</div>
+               <div className="text-2xl font-bold">${payments.reduce((sum: number, p: any) => sum + p.amount, 0).toFixed(2)}</div>
               <p className="text-sm text-muted-foreground">
                 Revenue collected
               </p>

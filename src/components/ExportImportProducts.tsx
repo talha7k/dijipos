@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Download, Upload, FileText, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { useExportImport } from '@/legacy_hooks/useExportImport';
-import { useAuthState } from '@/legacy_hooks/useAuthState';
+import { useAuth } from '@/lib/hooks/useAuth';
 
 interface ExportImportProductsProps {
   organizationId?: string;
@@ -18,7 +18,7 @@ export function ExportImportProducts({ organizationId }: ExportImportProductsPro
   const [overwriteExisting, setOverwriteExisting] = useState(false);
   const [skipDuplicates, setSkipDuplicates] = useState(true);
 
-  const { user } = useAuthState();
+  const { user } = useAuth();
   const {
     exportData,
     downloadSample,

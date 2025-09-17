@@ -4,12 +4,12 @@ import { useState } from 'react';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useOrganization } from '@/lib/hooks/useOrganization';
 
-import { useRealtimeCollection } from '@/lib/hooks/useRealtimeCollection';
 import { useTables } from '@/lib/hooks/useTables';
-import { useTemplatesData } from '@/legacy_hooks/use-templates-data';
+import { useTemplates } from '@/lib/hooks/useTemplates';
+import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
+import { useOrderTypes } from '@/lib/hooks/useOrderTypes';
+import { usePaymentTypes } from '@/lib/hooks/usePaymentTypes';
 import { TemplateCategory } from '@/types/template';
-import { PaymentType, OrderType } from '@/types';
-import { useSettingsData } from '@/legacy_hooks/organization/use-settings-data';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SettingsHeader } from '@/components/settings/SettingsHeader';
@@ -24,17 +24,26 @@ function SettingsContent() {
   const { user } = useAuth();
   const { selectedOrganization } = useOrganization();
   const organizationId = selectedOrganization?.id;
-  const { data: paymentTypes, loading: paymentTypesLoading } = useRealtimeCollection<PaymentType>('paymentTypes', organizationId || null);
-  const { templates: receiptTemplates, loading: receiptTemplatesLoading } = useTemplatesData(organizationId || undefined, TemplateCategory.RECEIPT);
-  const { data: orderTypes, loading: orderTypesLoading } = useRealtimeCollection<OrderType>('orderTypes', organizationId || null);
+  const { paymentTypes, loading: paymentTypesLoading } = usePaymentTypes();
+  const { receiptTemplates, loading: receiptTemplatesLoading } = useTemplates();
+  const { orderTypes, loading: orderTypesLoading } = useOrderTypes();
   const { tables, loading: tablesLoading } = useTables();
-  const { 
-    vatSettings, 
-    printerSettings, 
-    loading: settingsLoading,
-    handleVatSettingsUpdate,
-    handlePrinterSettingsUpdate 
-  } = useSettingsData(organizationId || undefined);
+  const {
+    storeSettings,
+    loading: settingsLoading
+  } = useStoreSettings();
+
+  // Extract data from storeSettings
+  const vatSettings = storeSettings?.vatSettings || null;
+  const handleVatSettingsUpdate = (settings: any) => {
+    // TODO: implement update
+    console.log('Update VAT settings:', settings);
+  };
+  const printerSettings = null; // TODO: get from separate hook
+  const handlePrinterSettingsUpdate = (settings: any) => {
+    // TODO: implement update
+    console.log('Update printer settings:', settings);
+  };
 
   // Debug logging
   console.log('SettingsPage Debug:', {
@@ -67,19 +76,19 @@ function SettingsContent() {
 
         <TabsContent value="order-types" className="space-y-4">
           <OrderTypesTab
-            orderTypes={orderTypes}
+            orderTypes={orderTypes || []}
           />
         </TabsContent>
 
         <TabsContent value="payment-types" className="space-y-4">
           <PaymentTypesTab
-            paymentTypes={paymentTypes}
+            paymentTypes={paymentTypes || []}
           />
         </TabsContent>
 
         <TabsContent value="tables" className="space-y-4">
           <TablesTab
-            tables={tables}
+            tables={tables || []}
           />
         </TabsContent>
 
@@ -99,7 +108,7 @@ function SettingsContent() {
 
         <TabsContent value="templates" className="space-y-4">
           <TemplatesTab
-            receiptTemplates={receiptTemplates}
+            receiptTemplates={receiptTemplates as any || []}
           />
         </TabsContent>
       </Tabs>

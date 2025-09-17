@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useOrganizationId } from '@/legacy_hooks/useAuthState';
+import { useOrganization } from '@/lib/hooks/useOrganization';
 import { usePaymentTypes } from '@/legacy_hooks/uePaymentTypes';
 import { PaymentType } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,7 +18,8 @@ interface PaymentTypesTabProps {
 }
 
 export function PaymentTypesTab({ paymentTypes = [] }: PaymentTypesTabProps) {
-  const organizationId = useOrganizationId();
+  const { selectedOrganization } = useOrganization();
+  const organizationId = selectedOrganization?.id;
   const { createPaymentType, deletePaymentType, loading } = usePaymentTypes(organizationId || undefined);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deletePaymentTypeId, setDeletePaymentTypeId] = useState<string | null>(null);

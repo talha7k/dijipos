@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useOrganizationId } from '@/legacy_hooks/useAuthState';
-import { useTablesData, useTableActions } from '@/legacy_hooks/tables/useTables';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { useOrganization } from '@/lib/hooks/useOrganization';
+import { useTables } from '@/lib/hooks/useTables';
+import { useTableActions } from '@/legacy_hooks/tables/useTables';
 import { TableStatus } from '@/types/enums';
 import { Table as TableType } from '@/types';
 
@@ -23,8 +25,9 @@ import { AddTableDialog } from '@/components/AddTableDialog';
 import { TableActionsDialog } from '@/components/tables/TableActionsDialog';
 
 export default function TablesPage() {
-  const organizationId = useOrganizationId();
-  const { tables, loading: tablesLoading } = useTablesData(organizationId || undefined);
+  const { selectedOrganization } = useOrganization();
+  const organizationId = selectedOrganization?.id;
+  const { tables, loading: tablesLoading } = useTables();
   const { createTable, deleteTable } = useTableActions(organizationId || undefined);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);

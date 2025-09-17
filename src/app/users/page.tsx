@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useOrganizationId, useUser, useSelectedOrganization } from '@/legacy_hooks/useAuthState';
-import { useOrganizationUsersData } from '@/legacy_hooks/organization/use-organization-users-data';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { useOrganization } from '@/lib/hooks/useOrganization';
 import { useInvitationCodesData } from '@/legacy_hooks/organization/use-invitation-codes-data';
 import { useOrganizationUsersActions } from '@/legacy_hooks/organization/use-organization-users-actions';
 import { useInvitationCodesActions } from '@/legacy_hooks/organization/use-invitation-codes-actions';
@@ -21,9 +21,8 @@ import { Users, Plus, Edit, Trash2, Shield, Settings, Copy, Link } from 'lucide-
 import { toast } from 'sonner';
 
 function UsersContent() {
-  const organizationId = useOrganizationId();
-
-  const { organizationUsers, loading: usersLoading } = useOrganizationUsersData(organizationId || undefined);
+  const { selectedOrganization, organizationUsers, loading: orgLoading } = useOrganization();
+  const organizationId = selectedOrganization?.id;
   const { invitationCodes, loading: codesLoading } = useInvitationCodesData(organizationId || undefined);
   const { updateUser, toggleUserStatus } = useOrganizationUsersActions(organizationId || undefined);
   const { createInvitationCode, deleteInvitationCode } = useInvitationCodesActions(organizationId || undefined);
@@ -39,7 +38,7 @@ function UsersContent() {
     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
   });
 
-  const loading = usersLoading || codesLoading;
+  const loading = orgLoading || codesLoading;
 
   const generateInvitationCode = () => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';

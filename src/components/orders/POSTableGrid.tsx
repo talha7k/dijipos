@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Users, ArrowLeft } from 'lucide-react';
-import { useTableManagement } from '@/legacy_hooks/tables/use-table-management';
+// Utility function
+const isAvailable = (status: string) => status === 'available';
 import { TableCard } from '@/components/tables/TableCard';
 
 interface POSTableGridProps {
@@ -16,7 +17,6 @@ interface POSTableGridProps {
 }
 
 export function POSTableGrid({ tables, orders, onTableSelect, onBack }: POSTableGridProps) {
-  const { isAvailable } = useTableManagement(undefined);
 
   const availableTables = tables; // Show all tables regardless of status
 

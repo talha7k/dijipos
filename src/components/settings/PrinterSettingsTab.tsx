@@ -1,7 +1,9 @@
 'use client';
 
-import { useOrganizationId } from '@/legacy_hooks/useAuthState';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { useOrganization } from '@/lib/hooks/useOrganization';
 import { useSettingsData } from '@/legacy_hooks/organization/use-settings-data';
+import { useReceiptTemplatesData } from '@/legacy_hooks/use-receipt-templates-data';
 import { PrinterSettings } from '@/types';
 import { useReceiptTemplatesData } from '@/legacy_hooks/use-receipt-templates-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,7 +17,8 @@ interface PrinterSettingsTabProps {
 }
 
 export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }: PrinterSettingsTabProps) {
-  const organizationId = useOrganizationId();
+  const { selectedOrganization } = useOrganization();
+  const organizationId = selectedOrganization?.id;
   const { receiptTemplates, loading: templatesLoading } = useReceiptTemplatesData(organizationId || undefined);
   const { handlePrinterSettingsUpdate } = useSettingsData(organizationId || undefined);
 

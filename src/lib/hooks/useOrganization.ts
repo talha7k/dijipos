@@ -1,104 +1,99 @@
-import { useState, useEffect } from 'react';
-import { Organization, OrganizationUser } from '@/types';
+// lib/hooks/useOrganization.ts
+import { useEffect } from 'react';
+import { useAtom } from 'jotai';
+import {
+  selectedOrganizationIdAtom,
+  selectedOrganizationAtom,
+  userOrganizationsAtom,
+  organizationLoadingAtom,
+  organizationErrorAtom,
+  organizationUsersAtom
+} from '@/atoms/organizationAtoms';
 import { getOrganization, getOrganizationsForUser } from '../firebase/firestore/organizations';
-import { useRealtimeCollection } from './useRealtimeCollection';
 import { useAuth } from './useAuth';
-
-interface OrganizationState {
-  selectedOrganization: Organization | null;
-  userOrganizations: Organization[];
-  organizationUsers: OrganizationUser[];
-  loading: boolean;
-  error: string | null;
-}
-
-interface OrganizationActions {
-  selectOrganization: (organizationId: string) => Promise<void>;
-  refreshOrganizations: () => Promise<void>;
-}
+import { useRealtimeCollection } from './useRealtimeCollection';
 
 /**
- * Hook that manages the currently selected organization, its full details, and related users
+ * Hook that orchestrates fetching organization data and syncing it with Jotai atoms.
+ * This hook itself does not return state, it manages the global state.
  */
-export function useOrganization(): OrganizationState & OrganizationActions {
+export function useOrganizationManager() {
   const { user } = useAuth();
-  const [selectedOrganization, setSelectedOrganization] = useState<Organization | null>(null);
-  const [userOrganizations, setUserOrganizations] = useState<Organization[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [selectedOrgId, setSelectedOrgId] = useAtom(selectedOrganizationIdAtom);
+  const [, setSelectedOrganization] = useAtom(selectedOrganizationAtom);
+  const [, setUserOrganizations] = useAtom(userOrganizationsAtom);
+  const [, setLoading] = useAtom(organizationLoadingAtom);
+  const [, setError] = useAtom(organizationErrorAtom);
 
-  // Real-time organization users for selected organization
-  const {
-    data: organizationUsers,
-    loading: usersLoading,
-    error: usersError
-  } = useRealtimeCollection<OrganizationUser>(
-    'organizationUsers',
-    selectedOrganization?.id || null
-  );
-
-  // Load user organizations when user changes
+  // Effect to fetch the user's list of organizations when they log in
   useEffect(() => {
-    if (user?.uid) {
-      refreshOrganizations();
-    } else {
+    if (!user?.uid) {
       setUserOrganizations([]);
-      setSelectedOrganization(null);
+      setSelectedOrgId(null); // Clear selection on logout
+      return;
     }
-  }, [user?.uid]);
 
-  const selectOrganization = async (organizationId: string) => {
-    if (!organizationId) {
+    const fetchUserOrgs = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const orgs = await getOrganizationsForUser(user.uid);
+        setUserOrganizations(orgs);
+        // If no org is selected, or the selected one is not in the list, select the first one.
+        if (orgs.length > 0 && (!selectedOrgId || !orgs.find(o => o.id === selectedOrgId))) {
+          setSelectedOrgId(orgs[0].id);
+        }
+      } catch (err) {
+        setError('Failed to load organizations');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserOrgs();
+  }, [user?.uid, setUserOrganizations, selectedOrgId, setSelectedOrgId, setLoading, setError]);
+
+  // Effect to fetch the full details of the selected organization when the ID changes
+  useEffect(() => {
+    if (!selectedOrgId) {
       setSelectedOrganization(null);
       return;
     }
 
-    setLoading(true);
-    setError(null);
-
-    try {
-      const organization = await getOrganization(organizationId);
-      if (organization) {
+    const fetchOrgDetails = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const organization = await getOrganization(selectedOrgId);
         setSelectedOrganization(organization);
-      } else {
-        throw new Error('Organization not found');
+      } catch (err) {
+        setError('Failed to fetch organization details');
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to select organization');
-      console.error('Error selecting organization:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  const refreshOrganizations = async () => {
-    if (!user?.uid) return;
+    fetchOrgDetails();
+  }, [selectedOrgId, setSelectedOrganization, setLoading, setError]);
 
-    setLoading(true);
-    setError(null);
+  // Use the real-time hook to listen to users of the selected organization
+  // and sync the result directly to its atom.
+  useRealtimeUsersSyncer(selectedOrgId);
+}
 
-    try {
-      const organizations = await getOrganizationsForUser(user.uid);
-      setUserOrganizations(organizations);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load organizations');
-      console.error('Error loading organizations:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+/**
+ * A helper hook to keep the real-time user list synced to the organizationUsersAtom
+ */
+function useRealtimeUsersSyncer(organizationId: string | null) {
+    const [, setOrganizationUsers] = useAtom(organizationUsersAtom);
+    const { data: users, loading, error } = useRealtimeCollection<OrganizationUser>(
+        'organizationUsers',
+        organizationId
+    );
 
-  // Combine loading states
-  const combinedLoading = loading || usersLoading;
-  const combinedError = error || usersError;
+    useEffect(() => {
+        setOrganizationUsers(users);
+    }, [users, setOrganizationUsers]);
 
-  return {
-    selectedOrganization,
-    userOrganizations,
-    organizationUsers,
-    loading: combinedLoading,
-    error: combinedError,
-    selectOrganization,
-    refreshOrganizations,
-  };
+    // Optionally, you could also sync loading/error states to dedicated atoms here.
 }

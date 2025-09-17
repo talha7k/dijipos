@@ -7,7 +7,8 @@ import { useInvitationCodesData } from '@/legacy_hooks/organization/use-invitati
 import { useOrganizationActions } from '@/legacy_hooks/organization/use-organization-actions';
 import { useInvitationCodesActions } from '@/legacy_hooks/organization/use-invitation-codes-actions';
 import { useOrganizationUsersActions } from '@/legacy_hooks/organization/use-organization-users-actions';
-import { useOrganizationId, useUser, useSelectedOrganization } from '@/legacy_hooks/useAuthState';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { useOrganization } from '@/lib/hooks/useOrganization';
 import { Organization, OrganizationUser, InvitationCode } from '@/types';
 import { UserRole } from '@/types/enums';
 import { Button } from '@/components/ui/button';
@@ -28,8 +29,9 @@ import { toast } from 'sonner';
 
 
 function CompanyContent() {
-  const user = useUser();
-  const organizationId = useOrganizationId();
+  const { user } = useAuth();
+  const { selectedOrganization } = useOrganization();
+  const organizationId = selectedOrganization?.id;
   const { organization, loading: orgLoading, error: orgError } = useOrganizationData(organizationId || undefined);
   const { organizationUsers, loading: usersLoading, error: usersError } = useOrganizationUsersData(organizationId || undefined);
   const { invitationCodes, loading: codesLoading, error: codesError } = useInvitationCodesData(organizationId || undefined);

@@ -1,10 +1,10 @@
 'use client';
 
-import { useAuthLoading } from '@/legacy_hooks/useAuthState';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { OrganizationManager } from '@/components/organization/OrganizationManager';
 
 export default function SelectOrganizationPage() {
-  const loading = useAuthLoading();
+  const { loading } = useAuth();
 
   // Show loading state while auth is initializing
   if (loading) {

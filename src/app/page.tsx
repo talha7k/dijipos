@@ -1,6 +1,7 @@
 'use client';
 
-import { useOrganizationId, useUser, useSelectedOrganization, useAuthLoading, useEmailVerified, useUserOrganizations } from '@/legacy_hooks/useAuthState';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { useOrganization } from '@/lib/hooks/useOrganization';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,11 +12,10 @@ import { Suspense } from 'react';
 import { toast } from 'sonner';
 
 function HomeContent() {
-  const user = useUser();
-  const authLoading = useAuthLoading();
-  const emailVerified = useEmailVerified();
-  const organizationId = useOrganizationId();
-  const userOrganizations = useUserOrganizations();
+  const { user, loading: authLoading } = useAuth();
+  const { selectedOrganization, userOrganizations } = useOrganization();
+  const organizationId = selectedOrganization?.id;
+  const emailVerified = user?.emailVerified || false;
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isProcessing, setIsProcessing] = useState(false);

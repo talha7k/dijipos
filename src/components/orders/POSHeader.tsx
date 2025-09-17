@@ -15,7 +15,7 @@ import { Table, Customer, OrderType, Order } from '@/types';
 import { Currency, CurrencyLocale } from '@/types/enums';
 import { Users, LayoutGrid, FileText, ShoppingBag, Plus, RotateCcw, PlusCircle } from 'lucide-react';
 import { OrderTypeSelectionDialog } from './OrderTypeSelectionDialog';
-import { useCurrencySettings } from '@/legacy_hooks/useCurrencySettings';
+import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
 
 interface CartItem {
   id: string;
@@ -61,7 +61,8 @@ export function POSHeader({
   onOrderTypeDeselect,
   onOrderToggle
 }: POSHeaderProps) {
-  const { currencySettings } = useCurrencySettings();
+  const { storeSettings } = useStoreSettings();
+  const currencySettings = storeSettings?.currencySettings;
 
   const handleOrderToggle = () => {
     if (onOrderToggle) onOrderToggle();

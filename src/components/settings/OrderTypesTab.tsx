@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useOrganizationId } from '@/legacy_hooks/useAuthState';
+import { useOrganization } from '@/lib/hooks/useOrganization';
 import { useOrderTypes } from '@/legacy_hooks/useOrderTypes';
 import { OrderType } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,7 +18,8 @@ interface OrderTypesTabProps {
 }
 
 export function OrderTypesTab({ orderTypes }: OrderTypesTabProps) {
-  const organizationId = useOrganizationId();
+  const { selectedOrganization } = useOrganization();
+  const organizationId = selectedOrganization?.id;
   const { createOrderType, deleteOrderType, loading } = useOrderTypes(organizationId || undefined);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteOrderTypeId, setDeleteOrderTypeId] = useState<string | null>(null);

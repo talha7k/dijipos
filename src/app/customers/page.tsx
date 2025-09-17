@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { useOrganizationId } from '@/legacy_hooks/useAuthState';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { useOrganization } from '@/lib/hooks/useOrganization';
 import { Customer } from '@/types';
+import { useCustomers } from '@/lib/hooks/useCustomers';
 import { useCustomersData } from '@/legacy_hooks/useCustomerState';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,8 +21,10 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/lib/firebase/config';
 
 export default function CustomersPage() {
-  const organizationId = useOrganizationId();
-  const { customers, loading: customersLoading, createCustomer, updateCustomer, deleteCustomer } = useCustomersData(organizationId || undefined);
+  const { selectedOrganization } = useOrganization();
+  const organizationId = selectedOrganization?.id;
+  const { customers, loading: customersLoading } = useCustomers();
+  const { createCustomer, updateCustomer, deleteCustomer } = useCustomersData(organizationId || undefined);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);

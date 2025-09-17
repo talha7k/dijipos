@@ -1,8 +1,9 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { useAuth } from '@/lib/hooks/useAuth';
-import { useOrganization } from '@/lib/hooks/useOrganization';
+import { useAtomValue } from 'jotai';
+import { userAtom, authLoadingAtom } from '@/store/atoms';
+import { selectedOrganizationAtom, userOrganizationsAtom, organizationLoadingAtom } from '@/store/atoms/organizationAtoms';
 import { useSidebarState } from '@/legacy_hooks/useSidebarState';
 import { CollapsibleSidebar } from '@/components/sidebar/collapsible-sidebar';
 import { OrganizationManager } from '@/components/organization/OrganizationManager';
@@ -13,12 +14,11 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const pathname = usePathname();
-  const { user, loading: authLoading, initialized } = useAuth();
-  const {
-    selectedOrganization: currentOrganization,
-    userOrganizations,
-    loading: organizationLoading
-  } = useOrganization();
+  const user = useAtomValue(userAtom);
+  const authLoading = useAtomValue(authLoadingAtom);
+  const currentOrganization = useAtomValue(selectedOrganizationAtom);
+  const userOrganizations = useAtomValue(userOrganizationsAtom);
+  const organizationLoading = useAtomValue(organizationLoadingAtom);
 
   const loading = authLoading;
   const { sidebarCollapsed: isCollapsed } = useSidebarState();

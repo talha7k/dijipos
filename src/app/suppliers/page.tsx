@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { useOrganizationId } from '@/legacy_hooks/useAuthState';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { useOrganization } from '@/lib/hooks/useOrganization';
 import { Supplier } from '@/types';
-import { useSuppliersData, useSupplierActions } from '@/legacy_hooks/suppliers/useSuppliers';
+import { useSuppliers } from '@/lib/hooks/useSuppliers';
+import { useSupplierActions } from '@/legacy_hooks/suppliers/useSuppliers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,8 +20,9 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/lib/firebase/config';
 
 export default function SuppliersPage() {
-  const organizationId = useOrganizationId() || undefined;
-  const { suppliers, loading } = useSuppliersData(organizationId);
+  const { selectedOrganization } = useOrganization();
+  const organizationId = selectedOrganization?.id;
+  const { suppliers, loading } = useSuppliers();
   const { createSupplier, updateSupplier, deleteSupplier, updatingStatus } = useSupplierActions(organizationId);
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);

@@ -1,13 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { useOrganizationId, useSelectedOrganization } from '@/legacy_hooks/useAuthState';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { useOrganization } from '@/lib/hooks/useOrganization';
 import { Quote } from '@/types';
 import { QuoteTemplateType, QuoteStatus, InvoiceStatus } from '@/types/enums';
-import { useQuotesData, useQuoteActions } from '@/legacy_hooks/useQuotes';
+import { useQuotes } from '@/lib/hooks/useQuotes';
+import { useInvoices } from '@/lib/hooks/useInvoices';
+import { useCustomers } from '@/lib/hooks/useCustomers';
+import { useQuoteActions } from '@/legacy_hooks/useQuotes';
 import { useInvoiceActions } from '@/legacy_hooks/useInvoices';
 import { useQuoteTemplatesData } from '@/legacy_hooks/use-quote-templates-data';
-import { useCustomersData } from '@/legacy_hooks/useCustomerState';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import QuoteForm from '@/components/invoices_quotes/QuoteForm';
@@ -17,13 +20,15 @@ import { QuoteActionsDialog } from '@/components/invoices_quotes/QuoteActionsDia
 import { QuotePrintDialog } from '@/components/invoices_quotes/QuotePrintDialog';
 
 function QuotesContent() {
-  const organizationId = useOrganizationId();
-  const selectedOrganization = useSelectedOrganization();
-  const { quotes, loading } = useQuotesData(organizationId || undefined);
+  const { selectedOrganization } = useOrganization();
+  const organizationId = selectedOrganization?.id;
+  const { quotes, loading: quotesLoading } = useQuotes();
+  const { customers, loading: customersLoading } = useCustomers();
   const { createQuote, updateQuote } = useQuoteActions(organizationId || undefined);
   const { createInvoice } = useInvoiceActions(organizationId || undefined);
-  const { quoteTemplates } = useQuoteTemplatesData(organizationId || undefined);
-  const { customers } = useCustomersData(organizationId || undefined);
+  const { quoteTemplates, loading: templatesLoading } = useQuoteTemplatesData(organizationId || undefined);
+
+  const loading = quotesLoading || customersLoading || templatesLoading;
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedQuote, setSelectedQuote] = useState<Quote | null>(null);
   const [showDetails, setShowDetails] = useState(false);

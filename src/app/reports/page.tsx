@@ -10,31 +10,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Download, TrendingUp, Calculator } from 'lucide-react';
-import { useOrganizationId, useUser, useSelectedOrganization } from '@/legacy_hooks/useAuthState';
-import { collection, getDocs, query, Timestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { useOrganization } from '@/lib/hooks/useOrganization';
+import { useInvoices } from '@/lib/hooks/useInvoices';
 import { InvoiceType } from '@/types';
-
-interface InvoiceItem {
-  id: string;
-  description: string;
-  quantity: number;
-  price: number;
-  total: number;
-}
-
-interface Invoice {
-  id: string;
-  type: InvoiceType;
-  items: InvoiceItem[];
-  subtotal: number;
-  taxRate: number;
-  taxAmount: number;
-  total: number;
-  status: string;
-  createdAt: Timestamp;
-  dueDate: Timestamp;
-}
 
 interface ReportData {
   totalSales: number;
@@ -48,10 +27,11 @@ interface ReportData {
 }
 
 export default function ReportsPage() {
-  const organizationId = useOrganizationId();
-  const [loading, setLoading] = useState(true);
+  const { selectedOrganization } = useOrganization();
+  const organizationId = selectedOrganization?.id;
+  const { salesInvoices, purchaseInvoices, loading } = useInvoices();
+  const invoices = [...salesInvoices, ...purchaseInvoices];
   const [reportData, setReportData] = useState<ReportData | null>(null);
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [dateRange, setDateRange] = useState({
     startDate: '',
     endDate: ''
@@ -60,49 +40,17 @@ export default function ReportsPage() {
   const [exporting, setExporting] = useState(false);
   const [exportingVAT, setExportingVAT] = useState(false);
 
-  const fetchInvoices = useCallback(async () => {
-    if (!organizationId) return;
-    
-    setLoading(true);
-    try {
-      const invoicesRef = collection(db, 'organizations', organizationId, 'invoices');
-      const q = query(invoicesRef);
-      const querySnapshot = await getDocs(q);
-      
-      const invoicesData: Invoice[] = [];
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        invoicesData.push({
-          id: doc.id,
-          type: data.type,
-          items: data.items || [],
-          subtotal: data.subtotal || 0,
-          taxRate: data.taxRate || 0,
-          taxAmount: data.taxAmount || 0,
-          total: data.total || 0,
-          status: data.status,
-          createdAt: data.createdAt,
-          dueDate: data.dueDate
-        });
-      });
-      
-      setInvoices(invoicesData);
-      
-      // Set default date range to current month
-      const now = new Date();
-      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-      const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-      
-      setDateRange({
-        startDate: firstDay.toISOString().split('T')[0],
-        endDate: lastDay.toISOString().split('T')[0]
-      });
-    } catch (error) {
-      console.error('Error fetching invoices:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [organizationId]);
+  // Set default date range to current month
+  useEffect(() => {
+    const now = new Date();
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+    setDateRange({
+      startDate: firstDay.toISOString().split('T')[0],
+      endDate: lastDay.toISOString().split('T')[0]
+    });
+  }, []);
 
   const calculateReportData = useCallback(() => {
     if (!dateRange.startDate || !dateRange.endDate) return;
@@ -113,7 +61,7 @@ export default function ReportsPage() {
     
     // Filter invoices by date range
     const filteredInvoices = invoices.filter(invoice => {
-      const invoiceDate = invoice.createdAt.toDate();
+      const invoiceDate = invoice.createdAt;
       return invoiceDate >= startDate && invoiceDate <= endDate;
     });
     
@@ -148,12 +96,6 @@ export default function ReportsPage() {
       profitMargin: profitMargin || 0
     });
   }, [invoices, dateRange]);
-
-  useEffect(() => {
-    if (organizationId) {
-      fetchInvoices();
-    }
-  }, [organizationId, fetchInvoices]);
 
   useEffect(() => {
     if (invoices.length > 0) {

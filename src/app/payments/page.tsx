@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { useOrganizationId } from '@/legacy_hooks/useAuthState';
-import { usePaymentsData, usePaymentsActions } from '@/legacy_hooks/usePayments';
-import { useInvoicesData } from '@/legacy_hooks/useInvoices';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { useOrganization } from '@/lib/hooks/useOrganization';
+import { usePayments } from '@/lib/hooks/usePayments';
+import { useInvoices } from '@/lib/hooks/useInvoices';
+import { usePaymentsActions } from '@/legacy_hooks/usePayments';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,9 +17,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { CreditCard } from 'lucide-react';
 
 function PaymentsContent() {
-  const organizationId = useOrganizationId();
-  const { payments, loading: paymentsLoading } = usePaymentsData(organizationId || undefined);
-  const { invoices, loading: invoicesLoading } = useInvoicesData(organizationId || undefined);
+  const { selectedOrganization } = useOrganization();
+  const organizationId = selectedOrganization?.id;
+  const { payments, loading: paymentsLoading } = usePayments();
+  const { salesInvoices, purchaseInvoices, loading: invoicesLoading } = useInvoices();
+  const invoices = [...salesInvoices, ...purchaseInvoices];
   const { createPayment } = usePaymentsActions(organizationId || undefined);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedInvoiceId, setSelectedInvoiceId] = useState('');
