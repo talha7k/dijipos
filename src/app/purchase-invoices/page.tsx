@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { useAtomValue } from 'jotai';
 
 import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
-import { usePurchaseInvoicesData, usePurchaseInvoiceActions } from '@/legacy_hooks/usePurchaseInvoices';
+import { getPurchaseInvoices, createPurchaseInvoice, updateInvoice } from '@/lib/firebase/firestore/invoices';
+import { useOrganization } from '@/lib/hooks/useOrganization';
 import { Invoice, PurchaseInvoice, Organization, InvoiceStatus } from '@/types';
 import { InvoiceTemplateType } from '@/types/enums';
 

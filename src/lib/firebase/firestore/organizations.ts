@@ -118,6 +118,23 @@ export async function updateOrganization(organizationId: string, updates: Partia
 }
 
 /**
+ * Update organization branding (logo and stamp)
+ */
+export async function updateOrganizationBranding(organizationId: string, logoUrl: string, stampUrl: string): Promise<void> {
+  try {
+    const docRef = doc(organizationsRef, organizationId);
+    await updateDoc(docRef, {
+      logoUrl,
+      stampUrl,
+      updatedAt: Timestamp.now(),
+    });
+  } catch (error) {
+    console.error('Error updating organization branding:', error);
+    throw error;
+  }
+}
+
+/**
  * Delete an organization
  */
 export async function deleteOrganization(organizationId: string): Promise<void> {
@@ -214,6 +231,44 @@ export async function updateUserRole(
     }
   } catch (error) {
     console.error('Error updating user role:', error);
+    throw error;
+  }
+}
+
+/**
+ * Update organization user (role and status)
+ */
+export async function updateOrganizationUser(
+  organizationUserId: string,
+  updates: { role?: UserRole; isActive?: boolean }
+): Promise<void> {
+  try {
+    const docRef = doc(organizationUsersRef, organizationUserId);
+    await updateDoc(docRef, {
+      ...updates,
+      updatedAt: Timestamp.now(),
+    });
+  } catch (error) {
+    console.error('Error updating organization user:', error);
+    throw error;
+  }
+}
+
+/**
+ * Update user status in organization
+ */
+export async function updateUserStatus(
+  organizationUserId: string,
+  isActive: boolean
+): Promise<void> {
+  try {
+    const docRef = doc(organizationUsersRef, organizationUserId);
+    await updateDoc(docRef, {
+      isActive,
+      updatedAt: Timestamp.now(),
+    });
+  } catch (error) {
+    console.error('Error updating user status:', error);
     throw error;
   }
 }

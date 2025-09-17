@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { useOrganization } from '@/lib/hooks/useOrganization';
+import { useAtom } from 'jotai';
+import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
 
 import { useTables } from '@/lib/hooks/useTables';
 import { useTemplates } from '@/lib/hooks/useTemplates';
@@ -22,7 +23,7 @@ import { TablesTab } from '@/components/settings/TablesTab';
 
 function SettingsContent() {
   const { user } = useAuth();
-  const { selectedOrganization } = useOrganization();
+  const [selectedOrganization] = useAtom(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
   const { paymentTypes, loading: paymentTypesLoading } = usePaymentTypes();
   const { receiptTemplates, loading: receiptTemplatesLoading } = useTemplates();

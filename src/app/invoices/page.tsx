@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useOrganization } from '@/lib/hooks/useOrganization';
+import { useAtom } from 'jotai';
+import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
 import { useMemo } from 'react';
 import { Invoice, Payment } from '@/types';
 import { InvoiceList } from '@/components/invoices_quotes/InvoiceList';
@@ -24,7 +25,7 @@ import { useSuppliers } from '@/lib/hooks/useSuppliers';
 import { useRealtimeCollection } from '@/lib/hooks/useRealtimeCollection';
 
 export default function InvoicesPage() {
-  const { selectedOrganization } = useOrganization();
+  const [selectedOrganization] = useAtom(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [showForm, setShowForm] = useState(false);

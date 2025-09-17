@@ -5,27 +5,77 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Download, Upload, FileText, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
-import { useExportImport } from '@/legacy_hooks/useExportImport';
+import {
+  downloadSampleData,
+  exportProductsAndCategories,
+  parseImportFile,
+  importProductsAndCategories,
+  ImportOptions,
+  ImportResult
+} from '@/lib/export-import-utils';
 import { useAuth } from '@/lib/hooks/useAuth';
 
 interface ExportImportProductsProps {
   organizationId?: string;
+  categories?: any[];
+  products?: any[];
+  onCreateCategory?: (data: any) => Promise<void>;
+  onCreateProduct?: (data: any) => Promise<void>;
 }
 
-export function ExportImportProducts({ organizationId }: ExportImportProductsProps) {
+export function ExportImportProducts({
+  organizationId,
+  categories = [],
+  products = [],
+  onCreateCategory,
+  onCreateProduct
+}: ExportImportProductsProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [overwriteExisting, setOverwriteExisting] = useState(false);
   const [skipDuplicates, setSkipDuplicates] = useState(true);
 
   const { user } = useAuth();
-  const {
-    exportData,
-    downloadSample,
-    importFromFile,
-    isImporting,
-    lastImportResult
-  } = useExportImport(organizationId);
+  const [isImporting, setIsImporting] = useState(false);
+  const [lastImportResult, setLastImportResult] = useState<ImportResult | null>(null);
+
+  // Export function
+  const handleExport = () => {
+    if (!organizationId) return;
+    exportProductsAndCategories(organizationId, categories, products);
+  };
+
+  // Download sample data
+  const handleDownloadSample = () => {
+    downloadSampleData();
+  };
+
+  // Import from file
+  const handleImport = async () => {
+    if (!selectedFile || !organizationId || !onCreateCategory || !onCreateProduct) return;
+
+    setIsImporting(true);
+    try {
+      const importData = await parseImportFile(selectedFile);
+      const result = await importProductsAndCategories(
+        organizationId,
+        importData,
+        onCreateCategory,
+        onCreateProduct,
+        { overwriteExisting, skipDuplicates }
+      );
+      setLastImportResult(result);
+    } catch (error) {
+      setLastImportResult({
+        success: false,
+        message: `Import failed: ${error}`,
+        imported: { categories: 0, products: 0 },
+        errors: [error as string]
+      });
+    } finally {
+      setIsImporting(false);
+    }
+  };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -34,13 +84,8 @@ export function ExportImportProducts({ organizationId }: ExportImportProductsPro
     }
   };
 
-  const handleImport = async () => {
-    if (!selectedFile) return;
-
-    await importFromFile(selectedFile, {
-      overwriteExisting,
-      skipDuplicates
-    });
+  const handleImportClick = async () => {
+    await handleImport();
   };
 
   const clearFileSelection = () => {
@@ -71,7 +116,7 @@ export function ExportImportProducts({ organizationId }: ExportImportProductsPro
             <h3 className="text-lg font-medium">Export Data</h3>
             <div className="flex flex-wrap gap-2">
               <Button
-                onClick={exportData}
+                onClick={handleExport}
                 disabled={!canExport}
                 variant="outline"
                 className="flex items-center gap-2"
@@ -80,7 +125,7 @@ export function ExportImportProducts({ organizationId }: ExportImportProductsPro
                 Export Current Data
               </Button>
               <Button
-                onClick={downloadSample}
+                onClick={handleDownloadSample}
                 variant="outline"
                 className="flex items-center gap-2"
               >

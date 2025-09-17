@@ -2,7 +2,24 @@
 
 import * as React from "react"
 
-import { useMediaQuery } from "@/legacy_hooks/use-media-query"
+// Simple media query hook replacement
+function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = React.useState(false)
+
+  React.useEffect(() => {
+    const media = window.matchMedia(query)
+    setMatches(media.matches)
+
+    const listener = (event: MediaQueryListEvent) => {
+      setMatches(event.matches)
+    }
+
+    media.addEventListener('change', listener)
+    return () => media.removeEventListener('change', listener)
+  }, [query])
+
+  return matches
+}
 import { Button } from "@/components/ui/button"
 import {
   Command,

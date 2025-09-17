@@ -2,13 +2,11 @@
 
 import { useState, useEffect } from 'react';
 
-import { useOrganizationActions } from '@/legacy_hooks/organization/use-organization-actions';
-import { useInvitationCodesActions } from '@/legacy_hooks/organization/use-invitation-codes-actions';
-import { useOrganizationUsersActions } from '@/legacy_hooks/organization/use-organization-users-actions';
 import { useAtomValue } from 'jotai';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { selectedOrganizationAtom, organizationUsersAtom, organizationLoadingAtom } from '@/atoms/organizationAtoms';
-import { useInvitationCodesData } from '@/legacy_hooks/organization/use-invitation-codes-data';
+import { useInvitationCodesData, useInvitationCodesActions } from '@/lib/hooks/useInvitationCodes';
+import { updateOrganization, updateOrganizationBranding, updateOrganizationUser, updateUserStatus } from '@/lib/firebase/firestore/organizations';
 import { Organization, OrganizationUser, InvitationCode } from '@/types';
 import { UserRole } from '@/types/enums';
 import { Button } from '@/components/ui/button';
@@ -36,20 +34,18 @@ function CompanyContent() {
   const organizationId = selectedOrganization?.id;
   const organization = selectedOrganization;
   const { invitationCodes, loading: codesLoading, error: codesError } = useInvitationCodesData(organizationId || undefined);
-  const { updateOrganization, updateOrganizationBranding } = useOrganizationActions(organizationId || undefined);
   const { createInvitationCodeSimple, deleteInvitationCode } = useInvitationCodesActions(organizationId || undefined);
-  const { updateOrganizationUser, updateUserStatus } = useOrganizationUsersActions(organizationId || undefined);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [invitationDialogOpen, setInvitationDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<OrganizationUser | null>(null);
   const [formData, setFormData] = useState({
-    role: 'waiter' as 'admin' | 'manager' | 'waiter' | 'cashier',
+    role: UserRole.WAITER,
     isActive: true,
   });
   const [invitationFormData, setInvitationFormData] = useState({
-    role: 'waiter' as 'admin' | 'manager' | 'waiter' | 'cashier',
+    role: UserRole.WAITER,
     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
   });
 
@@ -85,9 +81,9 @@ function CompanyContent() {
 
   const handleRemoveLogo = async () => {
     if (!organizationId) return;
-    
+
     try {
-      await updateOrganizationBranding('', stampUrl);
+      await updateOrganizationBranding(organizationId, '', stampUrl);
       setLogoUrl('');
     } catch (error) {
       console.error('Error removing logo:', error);
@@ -97,9 +93,9 @@ function CompanyContent() {
 
   const handleRemoveStamp = async () => {
     if (!organizationId) return;
-    
+
     try {
-      await updateOrganizationBranding(logoUrl, '');
+      await updateOrganizationBranding(organizationId, logoUrl, '');
       setStampUrl('');
     } catch (error) {
       console.error('Error removing stamp:', error);
@@ -112,7 +108,7 @@ function CompanyContent() {
 
     setSaving(true);
     try {
-      await updateOrganization({
+      await updateOrganization(organizationId, {
         name: companyName,
         nameAr: companyNameAr,
         email: companyEmail,
@@ -150,7 +146,7 @@ function CompanyContent() {
 
       setInvitationDialogOpen(false);
       setInvitationFormData({
-        role: 'waiter',
+        role: UserRole.WAITER,
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       });
     } catch (error) {
@@ -185,16 +181,16 @@ function CompanyContent() {
 
     try {
       await updateOrganizationUser(editingUser.id, {
-        role: formData.role === 'admin' ? UserRole.ADMIN : 
-               formData.role === 'manager' ? UserRole.MANAGER : 
-               formData.role === 'waiter' ? UserRole.WAITER : UserRole.CASHIER,
+        role: formData.role === 'admin' ? UserRole.ADMIN :
+              formData.role === 'manager' ? UserRole.MANAGER :
+              formData.role === 'waiter' ? UserRole.WAITER : UserRole.CASHIER,
         isActive: formData.isActive,
       });
 
       setDialogOpen(false);
       setEditingUser(null);
       setFormData({
-        role: 'waiter',
+        role: UserRole.WAITER,
         isActive: true,
       });
     } catch (error) {
@@ -441,17 +437,17 @@ function CompanyContent() {
                 <div className="space-y-4">
                   <div>
                     <Label htmlFor="role">Role</Label>
-                    <Select value={invitationFormData.role} onValueChange={(value: 'admin' | 'manager' | 'cashier' | 'waiter') => setInvitationFormData({ ...invitationFormData, role: value })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select role" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="admin">Admin</SelectItem>
-                        <SelectItem value="manager">Manager</SelectItem>
-                        <SelectItem value="waiter">Waiter</SelectItem>
-                        <SelectItem value="cashier">Cashier</SelectItem>
-                      </SelectContent>
-                    </Select>
+                   <Select value={invitationFormData.role} onValueChange={(value: string) => setInvitationFormData({ ...invitationFormData, role: value as UserRole })}>
+                     <SelectTrigger>
+                       <SelectValue placeholder="Select role" />
+                     </SelectTrigger>
+                     <SelectContent>
+                       <SelectItem value={UserRole.ADMIN}>Admin</SelectItem>
+                       <SelectItem value={UserRole.MANAGER}>Manager</SelectItem>
+                       <SelectItem value={UserRole.WAITER}>Waiter</SelectItem>
+                       <SelectItem value={UserRole.CASHIER}>Cashier</SelectItem>
+                     </SelectContent>
+                   </Select>
                   </div>
                   <div>
                     <Label htmlFor="expiresAt">Expires At</Label>
@@ -646,17 +642,17 @@ function CompanyContent() {
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="role">Role</Label>
-                  <Select value={formData.role} onValueChange={(value: 'admin' | 'manager' | 'cashier' | 'waiter') => setFormData({ ...formData, role: value })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="admin">Admin</SelectItem>
-                      <SelectItem value="manager">Manager</SelectItem>
-                      <SelectItem value="waiter">Waiter</SelectItem>
-                      <SelectItem value="cashier">Cashier</SelectItem>
-                    </SelectContent>
-                  </Select>
+                   <Select value={formData.role} onValueChange={(value: string) => setFormData({ ...formData, role: value as UserRole })}>
+                     <SelectTrigger>
+                       <SelectValue placeholder="Select role" />
+                     </SelectTrigger>
+                     <SelectContent>
+                       <SelectItem value={UserRole.ADMIN}>Admin</SelectItem>
+                       <SelectItem value={UserRole.MANAGER}>Manager</SelectItem>
+                       <SelectItem value={UserRole.WAITER}>Waiter</SelectItem>
+                       <SelectItem value={UserRole.CASHIER}>Cashier</SelectItem>
+                     </SelectContent>
+                   </Select>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Switch

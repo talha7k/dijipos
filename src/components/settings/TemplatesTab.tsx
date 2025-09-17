@@ -4,7 +4,18 @@ import { useState } from 'react';
 import { useAtomValue } from 'jotai';
 import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
 import { ReceiptTemplate, TemplateCategory, UnifiedTemplate } from '@/types';
-import { useTemplatesData } from '@/legacy_hooks/use-templates-data';
+import { useTemplates } from '@/lib/hooks/useTemplates';
+import {
+  createReceiptTemplate,
+  createInvoiceTemplate,
+  createQuoteTemplate,
+  updateReceiptTemplate,
+  updateInvoiceTemplate,
+  updateQuoteTemplate,
+  deleteReceiptTemplate,
+  deleteInvoiceTemplate,
+  deleteQuoteTemplate
+} from '@/lib/firebase/firestore/templates';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -18,10 +29,10 @@ import { toast } from 'sonner';
 import { defaultEnglishReceiptTemplate } from '@/components/templates/receipt/default-receipt-thermal-english';
 
 interface TemplatesTabProps {
-  receiptTemplates: UnifiedTemplate[];
+  // No longer need receiptTemplates prop since we use the hook
 }
 
-export function TemplatesTab({ receiptTemplates }: TemplatesTabProps) {
+export function TemplatesTab({}: TemplatesTabProps) {
   const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
   const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
@@ -36,33 +47,102 @@ export function TemplatesTab({ receiptTemplates }: TemplatesTabProps) {
     customFooter: ''
   });
 
-  const { templates, loading, addTemplate, setDefaultTemplate, deleteTemplate } = useTemplatesData(organizationId || undefined, selectedCategory);
+  const { receiptTemplates, invoiceTemplates, quoteTemplates, loading } = useTemplates();
+
+  // Get templates based on selected category
+  const getTemplates = () => {
+    switch (selectedCategory) {
+      case TemplateCategory.RECEIPT:
+        return receiptTemplates;
+      case TemplateCategory.INVOICE:
+        return invoiceTemplates;
+      case TemplateCategory.QUOTE:
+        return quoteTemplates;
+      default:
+        return [];
+    }
+  };
+
+  const templates = getTemplates();
 
   const handleAddTemplate = async () => {
     if (!organizationId || !newTemplate.name.trim()) return;
 
-    await addTemplate({
-      name: newTemplate.name,
-      description: newTemplate.description,
-      category: selectedCategory,
-      type: newTemplate.type,
-      content: newTemplate.content || defaultEnglishReceiptTemplate,
-      customHeader: newTemplate.customHeader,
-      customFooter: newTemplate.customFooter,
-      isDefault: templates.length === 0,
-      organizationId,
-    });
+    try {
+      const templateData = {
+        name: newTemplate.name,
+        description: newTemplate.description,
+        type: newTemplate.type as any,
+        content: newTemplate.content || defaultEnglishReceiptTemplate,
+        customHeader: newTemplate.customHeader,
+        customFooter: newTemplate.customFooter,
+        isDefault: templates.length === 0,
+        organizationId,
+      };
 
-    setNewTemplate({ name: '', description: '', content: '', type: 'thermal', customHeader: '', customFooter: '' });
-    setTemplateDialogOpen(false);
-    toast.success(`${selectedCategory} template added successfully`);
+      switch (selectedCategory) {
+        case TemplateCategory.RECEIPT:
+          await createReceiptTemplate(templateData);
+          break;
+        case TemplateCategory.INVOICE:
+          await createInvoiceTemplate(templateData as any);
+          break;
+        case TemplateCategory.QUOTE:
+          await createQuoteTemplate(templateData as any);
+          break;
+      }
+
+      setNewTemplate({ name: '', description: '', content: '', type: 'thermal', customHeader: '', customFooter: '' });
+      setTemplateDialogOpen(false);
+      toast.success(`${selectedCategory} template added successfully`);
+    } catch (error) {
+      console.error('Error adding template:', error);
+      toast.error(`Failed to add ${selectedCategory.toLowerCase()} template`);
+    }
   };
 
   const handleSetDefaultTemplate = async (templateId: string) => {
     if (!organizationId) return;
 
-    // Use the hook's setDefaultTemplate method
-    await setDefaultTemplate(templateId);
+    try {
+      // First, unset all other templates as default
+      const allTemplates = getTemplates();
+      for (const template of allTemplates) {
+        if (template.id !== templateId && template.isDefault) {
+          const updateData = { isDefault: false };
+          switch (selectedCategory) {
+            case TemplateCategory.RECEIPT:
+              await updateReceiptTemplate(template.id, updateData);
+              break;
+            case TemplateCategory.INVOICE:
+              await updateInvoiceTemplate(template.id, updateData);
+              break;
+            case TemplateCategory.QUOTE:
+              await updateQuoteTemplate(template.id, updateData);
+              break;
+          }
+        }
+      }
+
+      // Set the selected template as default
+      const updateData = { isDefault: true };
+      switch (selectedCategory) {
+        case TemplateCategory.RECEIPT:
+          await updateReceiptTemplate(templateId, updateData);
+          break;
+        case TemplateCategory.INVOICE:
+          await updateInvoiceTemplate(templateId, updateData);
+          break;
+        case TemplateCategory.QUOTE:
+          await updateQuoteTemplate(templateId, updateData);
+          break;
+      }
+
+      toast.success(`${selectedCategory} template set as default`);
+    } catch (error) {
+      console.error('Error setting default template:', error);
+      toast.error(`Failed to set default ${selectedCategory.toLowerCase()} template`);
+    }
   };
 
   const handleDeleteTemplate = (id: string) => {
@@ -73,7 +153,17 @@ export function TemplatesTab({ receiptTemplates }: TemplatesTabProps) {
     if (!organizationId || !deleteTemplateId) return;
 
     try {
-      await deleteTemplate(deleteTemplateId);
+      switch (selectedCategory) {
+        case TemplateCategory.RECEIPT:
+          await deleteReceiptTemplate(deleteTemplateId);
+          break;
+        case TemplateCategory.INVOICE:
+          await deleteInvoiceTemplate(deleteTemplateId);
+          break;
+        case TemplateCategory.QUOTE:
+          await deleteQuoteTemplate(deleteTemplateId);
+          break;
+      }
       toast.success(`${selectedCategory} template deleted successfully`);
     } catch (error) {
       console.error(`Error deleting ${selectedCategory.toLowerCase()} template:`, error);

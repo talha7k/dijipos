@@ -2,7 +2,7 @@
 
 import { useAtomValue } from 'jotai';
 import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
-import { useSettingsData } from '@/legacy_hooks/organization/use-settings-data';
+import { usePrinterSettings } from '@/lib/hooks/usePrinterSettings';
 import { PrinterSettings } from '@/types';
 import { useReceiptTemplatesData } from '@/lib/hooks/useReceiptTemplatesData';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,7 +19,7 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
   const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
   const { receiptTemplates, loading: templatesLoading } = useReceiptTemplatesData(organizationId || undefined);
-  const { handlePrinterSettingsUpdate } = useSettingsData(organizationId || undefined);
+  const { handlePrinterSettingsUpdate } = usePrinterSettings();
 
   const handleUpdateSettings = async (field: keyof PrinterSettings, value: string | number | boolean) => {
     if (!organizationId || !printerSettings) return;

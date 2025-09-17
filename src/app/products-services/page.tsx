@@ -6,9 +6,8 @@ import { useAtomValue } from 'jotai';
 import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
 import { useProducts } from '@/lib/hooks/useProducts';
 import { useServices } from '@/lib/hooks/useServices';
-import { useCategoriesData } from '@/legacy_hooks/products_services/useCategories';
-import { useProductActions } from '@/legacy_hooks/products_services/useProducts';
-import { useServiceActions } from '@/legacy_hooks/products_services/useServices';
+import { createProduct, updateProduct, deleteProduct } from '@/lib/firebase/firestore/products';
+import { createCategory, updateCategory, deleteCategory } from '@/lib/firebase/firestore/categories';
 import { Product, Service, CategoryType } from '@/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,11 +28,8 @@ import { ExportImportProducts } from '@/components/ExportImportProducts';
 export default function ProductsServicesPage() {
   const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
-  const { products, loading: productsLoading } = useProducts();
-  const { services, loading: servicesLoading } = useServices();
-  const { categories, loading: categoriesLoading, createCategory, deleteCategory: deleteCategoryHook } = useCategoriesData(organizationId || undefined);
-  const { createProduct, deleteProduct: deleteProductHook } = useProductActions(organizationId || undefined);
-  const { createService, deleteService: deleteServiceHook } = useServiceActions(organizationId || undefined);
+  const { products, categories, loading: productsLoading } = useProducts();
+  const { services, loading: servicesLoading, createNewService, deleteExistingService } = useServices();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [productDialogOpen, setProductDialogOpen] = useState(false);
@@ -43,7 +39,7 @@ export default function ProductsServicesPage() {
   const [deleteCategoryName, setDeleteCategoryName] = useState<string>('');
   const [deleteCategoryItemCount, setDeleteCategoryItemCount] = useState<number>(0);
 
-  const loading = productsLoading || servicesLoading || categoriesLoading;
+  const loading = productsLoading || servicesLoading;
 
   const handleAddProduct = async (product: {
     name: string;
@@ -57,6 +53,7 @@ export default function ProductsServicesPage() {
       await createProduct({
         ...product,
         categoryId: product.categoryId || undefined,
+        organizationId,
       });
     } catch (error) {
       console.error('Error creating product:', error);
@@ -73,9 +70,10 @@ export default function ProductsServicesPage() {
     if (!organizationId) return;
 
     try {
-      await createService({
+      await createNewService({
         ...service,
         categoryId: service.categoryId || undefined,
+        organizationId,
       });
     } catch (error) {
       console.error('Error creating service:', error);
@@ -96,6 +94,7 @@ export default function ProductsServicesPage() {
         ...category,
         type: category.type as CategoryType,
         parentId: category.parentId || undefined,
+        organizationId,
       });
     } catch (error) {
       console.error('Error creating category:', error);
@@ -116,9 +115,9 @@ export default function ProductsServicesPage() {
 
   const confirmDeleteCategory = async () => {
     if (!organizationId || !deleteCategoryId) return;
-    
+
     try {
-      await deleteCategoryHook(deleteCategoryId);
+      await deleteCategory(deleteCategoryId);
       toast.success('Category deleted successfully');
     } catch (error) {
       console.error('Error deleting category:', error);
@@ -134,7 +133,7 @@ export default function ProductsServicesPage() {
     if (!organizationId) return;
 
     try {
-      await deleteProductHook(productId);
+      await deleteProduct(productId);
     } catch (error) {
       console.error('Error deleting product:', error);
       toast.error('Failed to delete product');
@@ -145,7 +144,7 @@ export default function ProductsServicesPage() {
     if (!organizationId) return;
 
     try {
-      await deleteServiceHook(serviceId);
+      await deleteExistingService(serviceId);
     } catch (error) {
       console.error('Error deleting service:', error);
       toast.error('Failed to delete service');

@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react';
 import { useAtomValue } from 'jotai';
 
 import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
-import { usePurchaseProductsData, usePurchaseServicesData, usePurchaseProductsActions, usePurchaseServicesActions } from '@/legacy_hooks/usePurchaseProductsServices';
-import { useCategoriesData } from '@/legacy_hooks/products_services/useCategories';
+import { usePurchaseProductsData, usePurchaseProductsActions } from '@/lib/hooks/usePurchaseProducts';
+import { usePurchaseServicesData, usePurchaseServicesActions } from '@/lib/hooks/usePurchaseServices';
+import { useProducts } from '@/lib/hooks/useProducts';
 import { Product, Service, Category } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,7 +22,7 @@ function ProductsContent() {
   const organizationId = selectedOrganization?.id;
   const { products, loading: productsLoading } = usePurchaseProductsData(organizationId || undefined);
   const { services, loading: servicesLoading } = usePurchaseServicesData(organizationId || undefined);
-  const { categories, loading: categoriesLoading } = useCategoriesData(organizationId || undefined);
+  const { categories, loading: categoriesLoading } = useProducts();
   const { createProduct, deleteProduct } = usePurchaseProductsActions(organizationId || undefined);
   const { createService, deleteService } = usePurchaseServicesActions(organizationId || undefined);
   
@@ -52,7 +53,8 @@ function ProductsContent() {
         name: productName,
         description: productDescription,
         price: parseFloat(productPrice),
-        category: productCategory,
+        categoryId: productCategory,
+        organizationId: organizationId || '',
       });
       setProductDialogOpen(false);
       setProductName('');
@@ -71,7 +73,8 @@ function ProductsContent() {
         name: serviceName,
         description: serviceDescription,
         price: parseFloat(servicePrice),
-        category: serviceCategory,
+        categoryId: serviceCategory,
+        organizationId: organizationId || '',
       });
       setServiceDialogOpen(false);
       setServiceName('');

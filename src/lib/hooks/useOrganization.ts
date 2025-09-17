@@ -5,13 +5,15 @@ import {
   selectedOrganizationIdAtom,
   selectedOrganizationAtom,
   userOrganizationsAtom,
+  userOrganizationAssociationsAtom,
   organizationLoadingAtom,
   organizationErrorAtom,
   organizationUsersAtom
 } from '@/atoms/organizationAtoms';
-import { getOrganization, getOrganizationsForUser } from '../firebase/firestore/organizations';
+import { getOrganization, getOrganizationsForUser, getOrganizationUsers } from '../firebase/firestore/organizations';
 import { useAuth } from './useAuth';
 import { useRealtimeCollection } from './useRealtimeCollection';
+import { OrganizationUser } from '@/types';
 
 /**
  * Hook that orchestrates fetching organization data and syncing it with Jotai atoms.
@@ -22,6 +24,7 @@ export function useOrganizationManager() {
   const [selectedOrgId, setSelectedOrgId] = useAtom(selectedOrganizationIdAtom);
   const [, setSelectedOrganization] = useAtom(selectedOrganizationAtom);
   const [, setUserOrganizations] = useAtom(userOrganizationsAtom);
+  const [, setUserOrganizationAssociations] = useAtom(userOrganizationAssociationsAtom);
   const [, setLoading] = useAtom(organizationLoadingAtom);
   const [, setError] = useAtom(organizationErrorAtom);
 
@@ -39,6 +42,22 @@ export function useOrganizationManager() {
       try {
         const orgs = await getOrganizationsForUser(user.uid);
         setUserOrganizations(orgs);
+
+        // Also fetch organization associations with roles
+        const associations = [];
+        for (const org of orgs) {
+          const users = await getOrganizationUsers(org.id);
+          const userAssociation = users.find(u => u.userId === user.uid);
+          if (userAssociation) {
+            associations.push({
+              organizationId: org.id,
+              role: userAssociation.role,
+              isActive: userAssociation.isActive
+            });
+          }
+        }
+        setUserOrganizationAssociations(associations);
+
         // If no org is selected, or the selected one is not in the list, select the first one.
         if (orgs.length > 0 && (!selectedOrgId || !orgs.find(o => o.id === selectedOrgId))) {
           setSelectedOrgId(orgs[0].id);
@@ -96,4 +115,12 @@ function useRealtimeUsersSyncer(organizationId: string | null) {
     }, [users, setOrganizationUsers]);
 
     // Optionally, you could also sync loading/error states to dedicated atoms here.
+}
+
+/**
+ * Hook to get the selected organization
+ */
+export function useOrganization() {
+  const selectedOrganization = useAtom(selectedOrganizationAtom)[0];
+  return { selectedOrganization };
 }

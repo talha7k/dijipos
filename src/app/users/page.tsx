@@ -4,9 +4,8 @@ import { useState } from 'react';
 import { useAtomValue } from 'jotai';
 
 import { selectedOrganizationAtom, organizationUsersAtom, organizationLoadingAtom } from '@/atoms/organizationAtoms';
-import { useInvitationCodesData } from '@/legacy_hooks/organization/use-invitation-codes-data';
-import { useOrganizationUsersActions } from '@/legacy_hooks/organization/use-organization-users-actions';
-import { useInvitationCodesActions } from '@/legacy_hooks/organization/use-invitation-codes-actions';
+import { useInvitationCodesData, useInvitationCodesActions } from '@/lib/hooks/useInvitationCodes';
+import { updateOrganizationUser, updateUserStatus } from '@/lib/firebase/firestore/organizations';
 import { OrganizationUser, UserRole } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,8 +26,7 @@ function UsersContent() {
   const orgLoading = useAtomValue(organizationLoadingAtom);
   const organizationId = selectedOrganization?.id;
   const { invitationCodes, loading: codesLoading } = useInvitationCodesData(organizationId || undefined);
-  const { updateUser, toggleUserStatus } = useOrganizationUsersActions(organizationId || undefined);
-  const { createInvitationCode, deleteInvitationCode } = useInvitationCodesActions(organizationId || undefined);
+  const { createInvitationCodeSimple, deleteInvitationCode } = useInvitationCodesActions(organizationId || undefined);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [invitationDialogOpen, setInvitationDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<OrganizationUser | null>(null);
@@ -56,12 +54,7 @@ function UsersContent() {
     if (!organizationId) return;
 
     try {
-      const code = generateInvitationCode();
-      await createInvitationCode({
-        code,
-        role: invitationFormData.role,
-        expiresAt: invitationFormData.expiresAt,
-      });
+      await createInvitationCodeSimple(invitationFormData.role, invitationFormData.expiresAt);
 
       setInvitationDialogOpen(false);
       setInvitationFormData({
@@ -99,7 +92,7 @@ function UsersContent() {
     if (!editingUser || !organizationId) return;
 
     try {
-      await updateUser(editingUser.id, formData);
+      await updateOrganizationUser(editingUser.id, formData);
 
       setDialogOpen(false);
       setEditingUser(null);
@@ -117,7 +110,7 @@ function UsersContent() {
     if (!organizationId) return;
 
     try {
-      await toggleUserStatus(userId, currentStatus);
+      await updateUserStatus(userId, !currentStatus);
     } catch (error) {
       console.error('Error toggling user status:', error);
       toast.error('Failed to update user status. Please try again.');

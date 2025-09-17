@@ -5,7 +5,8 @@ import { useAtomValue } from 'jotai';
 import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
 import { Customer } from '@/types';
 import { useCustomers } from '@/lib/hooks/useCustomers';
-import { useCustomersData } from '@/legacy_hooks/useCustomerState';
+import { createCustomer as createCustomerFn, updateCustomer as updateCustomerFn, deleteCustomer as deleteCustomerFn } from '@/lib/firebase/firestore/customers';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,7 +25,19 @@ export default function CustomersPage() {
   const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
   const { customers, loading: customersLoading } = useCustomers();
-  const { createCustomer, updateCustomer, deleteCustomer } = useCustomersData(organizationId || undefined);
+  // Customer CRUD functions
+  const createCustomer = async (data: any) => {
+    if (!organizationId) return;
+    await createCustomerFn({ ...data, organizationId });
+  };
+
+  const updateCustomer = async (id: string, data: any) => {
+    await updateCustomerFn(id, data);
+  };
+
+  const deleteCustomer = async (id: string) => {
+    await deleteCustomerFn(id);
+  };
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);

@@ -9,9 +9,8 @@ import { QuoteTemplateType, QuoteStatus, InvoiceStatus } from '@/types/enums';
 import { useQuotes } from '@/lib/hooks/useQuotes';
 import { useInvoices } from '@/lib/hooks/useInvoices';
 import { useCustomers } from '@/lib/hooks/useCustomers';
-import { useQuoteActions } from '@/legacy_hooks/useQuotes';
-import { useInvoiceActions } from '@/legacy_hooks/useInvoices';
-import { useQuoteTemplatesData } from '@/legacy_hooks/use-quote-templates-data';
+import { createQuote as createQuoteFirebase, updateQuote as updateQuoteFirebase } from '@/lib/firebase/firestore/quotes';
+import { useQuotesTemplatesData } from '@/lib/hooks/useQuotesTemplatesData';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import QuoteForm from '@/components/invoices_quotes/QuoteForm';
@@ -25,9 +24,29 @@ function QuotesContent() {
   const organizationId = selectedOrganization?.id;
   const { quotes, loading: quotesLoading } = useQuotes();
   const { customers, loading: customersLoading } = useCustomers();
-  const { createQuote, updateQuote } = useQuoteActions(organizationId || undefined);
-  const { createInvoice } = useInvoiceActions(organizationId || undefined);
-  const { quoteTemplates, loading: templatesLoading } = useQuoteTemplatesData(organizationId || undefined);
+  const { createSalesInvoice } = useInvoices();
+  const { templates: quoteTemplates, loading: templatesLoading } = useQuotesTemplatesData(organizationId || undefined);
+
+  // Quote action functions
+  const createQuote = async (quoteData: any) => {
+    if (!organizationId) return;
+    return await createQuoteFirebase({
+      ...quoteData,
+      organizationId,
+    });
+  };
+
+  const updateQuote = async (quoteId: string, updates: any) => {
+    return await updateQuoteFirebase(quoteId, updates);
+  };
+
+  const createInvoice = async (invoiceData: any) => {
+    if (!organizationId) return;
+    return await createSalesInvoice({
+      ...invoiceData,
+      organizationId,
+    });
+  };
 
   const loading = quotesLoading || customersLoading || templatesLoading;
   const [dialogOpen, setDialogOpen] = useState(false);

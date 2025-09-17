@@ -8,7 +8,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useAuthState } from "@/legacy_hooks/useAuthState";
+import { useAuth } from "@/lib/hooks/useAuth";
+import { useOrganizationManager, useOrganization } from "@/lib/hooks/useOrganization";
+import { useAtom } from "jotai";
+import {
+  selectedOrganizationIdAtom,
+  userOrganizationsAtom,
+  userOrganizationAssociationsAtom,
+  organizationUsersAtom
+} from "@/atoms/organizationAtoms";
+import { themeAtom } from "@/atoms/uiAtoms";
 import {
   Building2,
   Plus,
@@ -34,19 +43,39 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
 import { Organization, UserRole } from "@/types";
-import { useThemeState } from "@/legacy_hooks/useThemeState";
+
 import { auth } from "@/lib/firebase/config";
 import { toast } from "sonner";
 
 export function OrganizationManager() {
-  const {
-    user,
-    organizationId,
-    userOrganizations,
-    selectOrganization,
-    refreshUserOrganizations,
-  } = useAuthState();
-  const { theme, toggleTheme } = useThemeState();
+  const { user } = useAuth();
+  const { selectedOrganization } = useOrganization();
+  useOrganizationManager(); // Initialize organization management
+
+  const [organizationId, setOrganizationId] = useAtom(selectedOrganizationIdAtom);
+  const [userOrganizations] = useAtom(userOrganizationsAtom);
+  const [userOrganizationAssociations] = useAtom(userOrganizationAssociationsAtom);
+  const [theme, setTheme] = useAtom(themeAtom);
+
+  const selectOrganization = (orgId: string) => {
+    setOrganizationId(orgId);
+  };
+
+  const toggleTheme = () => {
+    setTheme(theme === 'light' ? 'dark' : 'light');
+  };
+
+  // Combine organizations with their association data
+  const userOrganizationData = userOrganizations.map(org => {
+    const association = userOrganizationAssociations.find(a => a.organizationId === org.id);
+    return {
+      ...org,
+      organizationId: org.id,
+      role: association?.role || 'member',
+      isActive: association?.isActive ?? true
+    };
+  });
+
   const router = useRouter();
   const [showJoinForm, setShowJoinForm] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -66,10 +95,10 @@ export function OrganizationManager() {
     const fetchOrganizations = async () => {
       const orgData: { [key: string]: Organization } = {};
 
-      for (const userOrg of userOrganizations) {
+      for (const userOrg of userOrganizationData) {
         try {
           const orgDoc = await getDoc(
-            doc(db, "organizations", userOrg.organizationId)
+            doc(db, "organizations", userOrg.id)
           );
           if (orgDoc.exists()) {
             orgData[userOrg.organizationId] = {
@@ -87,7 +116,7 @@ export function OrganizationManager() {
       setOrganizations(orgData);
     };
 
-    if (userOrganizations.length > 0) {
+    if (userOrganizationData.length > 0) {
       fetchOrganizations();
     }
   }, [userOrganizations]);
@@ -143,18 +172,17 @@ export function OrganizationManager() {
         updatedAt: serverTimestamp(),
       });
 
-      // Mark invitation code as used
-      await addDoc(collection(db, "usedInvitationCodes"), {
-        codeId,
-        userId: user.uid,
-        usedAt: serverTimestamp(),
-      });
+       // Mark invitation code as used
+       await addDoc(collection(db, "usedInvitationCodes"), {
+         codeId,
+         userId: user.uid,
+         usedAt: serverTimestamp(),
+       });
 
-      // Refresh user organizations to include the new one
-      await refreshUserOrganizations();
+       // Organization data will be refreshed automatically by the hook
 
-      // Switch to the new organization
-      await selectOrganization(invitationCode.organizationId);
+       // Switch to the new organization
+       await selectOrganization(invitationCode.organizationId);
 
       setShowJoinForm(false);
       setJoinCode("");
@@ -183,20 +211,19 @@ export function OrganizationManager() {
         subscriptionStatus: "trial",
       });
 
-      // Add creator as admin
-      await addDoc(collection(db, "organizationUsers"), {
-        userId: user.uid,
-        organizationId: organizationRef.id,
-        role: "admin",
-        isActive: true,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      });
+       // Add creator as admin
+       await addDoc(collection(db, "organizationUsers"), {
+         userId: user.uid,
+         organizationId: organizationRef.id,
+         role: "admin",
+         isActive: true,
+         createdAt: serverTimestamp(),
+         updatedAt: serverTimestamp(),
+       });
 
-      // Refresh user organizations to include the new one
-      await refreshUserOrganizations();
+       // Organization data will be refreshed automatically by the hook
 
-      // Switch to the new organization
+       // Switch to the new organization
       await selectOrganization(organizationRef.id);
 
       setShowCreateForm(false);
@@ -211,8 +238,8 @@ export function OrganizationManager() {
     }
   };
 
-  const handleSwitchOrganization = async (organizationUserId: string) => {
-    await selectOrganization(organizationUserId);
+  const handleSwitchOrganization = async (organizationId: string) => {
+    await selectOrganization(organizationId);
     router.push("/dashboard");
   };
 
@@ -368,13 +395,13 @@ export function OrganizationManager() {
                   </h2>
                 </div>
                 <div className="space-y-4">
-                  {userOrganizations.map((organizationUser) => {
-                    const org = organizations[organizationUser.organizationId];
+                  {userOrganizationData.map((organizationUser) => {
+                    const org = organizations[organizationUser.id];
                     const isSelected =
-                      organizationId === organizationUser.organizationId;
+                      organizationId === organizationUser.id;
                     return (
                       <Card
-                        key={organizationUser.organizationId}
+                        key={organizationUser.id}
                         className={`group cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:ring-2 hover:ring-offset-2 ${
                           isSelected
                             ? isDark
@@ -385,8 +412,8 @@ export function OrganizationManager() {
                             : "border-slate-300 bg-gradient-to-r from-slate-50 to-blue-50/30 hover:border-blue-300 hover:ring-blue-400/50"
                         }`}
                         onClick={() =>
-                          handleSwitchOrganization(
-                            organizationUser.organizationId
+                          selectOrganization(
+                            organizationUser.id
                           )
                         }
                       >

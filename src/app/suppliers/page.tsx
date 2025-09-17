@@ -5,7 +5,7 @@ import { useAtomValue } from 'jotai';
 import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
 import { Supplier } from '@/types';
 import { useSuppliers } from '@/lib/hooks/useSuppliers';
-import { useSupplierActions } from '@/legacy_hooks/suppliers/useSuppliers';
+import { createSupplier as createSupplierFirebase, updateSupplier as updateSupplierFirebase, deleteSupplier as deleteSupplierFirebase } from '@/lib/firebase/firestore/suppliers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,7 +23,6 @@ export default function SuppliersPage() {
   const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
   const { suppliers, loading } = useSuppliers();
-  const { createSupplier, updateSupplier, deleteSupplier, updatingStatus } = useSupplierActions(organizationId);
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
@@ -72,7 +71,7 @@ export default function SuppliersPage() {
 
   const handleDeleteSupplier = async (id: string) => {
     try {
-      await deleteSupplier(id);
+      await deleteSupplierFirebase(id);
       toast.success('Supplier deleted successfully');
     } catch (error) {
       toast.error('Failed to delete supplier');
@@ -104,15 +103,20 @@ export default function SuppliersPage() {
   };
 
   const handleSaveSupplier = async () => {
+    if (!organizationId) return;
+
     setSaving(true);
     try {
       if (editingSupplier) {
         // Update existing supplier
-        await updateSupplier(editingSupplier.id, formData);
+        await updateSupplierFirebase(editingSupplier.id, formData);
         toast.success('Supplier updated successfully');
       } else {
         // Add new supplier
-        await createSupplier(formData);
+        await createSupplierFirebase({
+          ...formData,
+          organizationId,
+        });
         toast.success('Supplier created successfully');
       }
       setIsDialogOpen(false);

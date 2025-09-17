@@ -19,6 +19,9 @@ export const selectedOrganizationAtom = atom<Organization | null>(null);
 // Holds the list of all organizations the current user is a member of
 export const userOrganizationsAtom = atom<Organization[]>([]);
 
+// Holds the list of user-organization associations with roles
+export const userOrganizationAssociationsAtom = atom<Array<{organizationId: string, role: string, isActive: boolean}>>([]);
+
 // Holds the real-time list of users for the selected organization
 export const organizationUsersAtom = atom<OrganizationUser[]>([]);
 

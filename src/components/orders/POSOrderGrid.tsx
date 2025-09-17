@@ -1,7 +1,7 @@
 import { Order, OrderPayment, OrderStatus } from "@/types";
 import { OrderList } from "@/components/orders/OrderList";
 import { OrderDetailView } from "@/components/orders/OrderDetailView";
-import { useOrders } from "@/legacy_hooks/orders/useOrders";
+import { useOrders } from "@/lib/hooks/useOrders";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -27,16 +27,51 @@ export function POSOrderGrid({
   onBack,
   onOrderUpdate,
 }: POSOrderGridProps) {
-  const {
-    selectedOrder,
-    selectOrder,
-    clearSelection,
-    markOrderAsPaid,
-    completeOrder,
-    updateOrderStatus,
-    loading
-  } = useOrders(organizationId);
+  const { loading, updateExistingOrder } = useOrders();
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [filterStatus, setFilterStatus] = useState<'all' | 'open' | 'completed' | 'preparing' | 'cancelled' | 'on_hold'>('open');
+
+  // Helper functions to replace the legacy hook functionality
+  const selectOrder = (order: Order) => {
+    setSelectedOrder(order);
+  };
+
+  const clearSelection = () => {
+    setSelectedOrder(null);
+  };
+
+  const markOrderAsPaid = async (orderId: string) => {
+    try {
+      await updateExistingOrder(orderId, { status: OrderStatus.COMPLETED });
+      onOrderUpdate?.();
+      return true;
+    } catch (error) {
+      console.error('Error marking order as paid:', error);
+      return false;
+    }
+  };
+
+  const completeOrder = async (order: Order) => {
+    try {
+      await updateExistingOrder(order.id, { status: OrderStatus.COMPLETED });
+      onOrderUpdate?.();
+      return true;
+    } catch (error) {
+      console.error('Error completing order:', error);
+      return false;
+    }
+  };
+
+  const updateOrderStatus = async (orderId: string, newStatus: OrderStatus) => {
+    try {
+      await updateExistingOrder(orderId, { status: newStatus });
+      onOrderUpdate?.();
+      return true;
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      return false;
+    }
+  };
 
   const handleMarkAsPaid = async (orderId: string) => {
     const success = await markOrderAsPaid(orderId);

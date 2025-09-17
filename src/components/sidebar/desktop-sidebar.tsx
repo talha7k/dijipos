@@ -7,7 +7,10 @@ import { SidebarNavSection } from "./sidebar-nav-section";
 import { SidebarNavItem } from "./sidebar-nav-item";
 import { UserProfileWithOrganization } from "../layout/UserProfileWithOrganization";
 import { SidebarProps, NavigationItem } from "./sidebar-types";
-import { useAuthState } from "@/legacy_hooks/useAuthState";
+import { useAuth } from "@/lib/hooks/useAuth";
+import { useOrganization } from "@/lib/hooks/useOrganization";
+import { useAtom } from "jotai";
+import { selectedOrganizationIdAtom } from "@/atoms/organizationAtoms";
 import {
   BarChart3,
   Building2,
@@ -150,8 +153,12 @@ export function DesktopSidebar({
   onExpandSidebar,
   openSections = {},
 }: SidebarProps) {
-  const { organizationUser } = useAuthState();
-  const navigationItems = getNavigationItems(organizationUser?.role || 'waiter');
+  const { selectedOrganization } = useOrganization();
+  const [organizationId] = useAtom(selectedOrganizationIdAtom);
+
+  // For now, assume default role since we need to get user role from organization associations
+  const userRole = 'waiter'; // This should be fetched from the organization associations
+  const navigationItems = getNavigationItems(userRole);
   return (
     <div
       className={cn(

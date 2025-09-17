@@ -5,7 +5,7 @@ import { useAtomValue } from 'jotai';
 import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
 import { usePayments } from '@/lib/hooks/usePayments';
 import { useInvoices } from '@/lib/hooks/useInvoices';
-import { usePaymentsActions } from '@/legacy_hooks/usePayments';
+import { createPayment as createPaymentFn } from '@/lib/firebase/firestore/payments';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,7 +22,11 @@ function PaymentsContent() {
   const { payments, loading: paymentsLoading } = usePayments();
   const { salesInvoices, purchaseInvoices, loading: invoicesLoading } = useInvoices();
   const invoices = [...salesInvoices, ...purchaseInvoices];
-  const { createPayment } = usePaymentsActions(organizationId || undefined);
+  // Create payment function
+  const createPayment = async (data: any) => {
+    if (!organizationId) return;
+    await createPaymentFn({ ...data, organizationId });
+  };
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedInvoiceId, setSelectedInvoiceId] = useState('');
   const [amount, setAmount] = useState('');
