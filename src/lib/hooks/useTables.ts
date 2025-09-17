@@ -16,7 +16,9 @@ export function useTables(): TablesState {
 
   const { data: tables, loading, error } = useRealtimeCollection<Table>(
     'tables',
-    selectedOrganization?.id || null
+    selectedOrganization?.id || null,
+    [],
+    null // Disable orderBy to prevent index errors
   );
 
   return {

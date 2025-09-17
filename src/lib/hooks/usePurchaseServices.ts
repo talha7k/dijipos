@@ -30,7 +30,9 @@ export function usePurchaseServices(): PurchaseServicesState & PurchaseServicesA
 
   const { data: services, loading, error } = useRealtimeCollection<Service>(
     'purchaseServices',
-    selectedOrganization?.id || null
+    selectedOrganization?.id || null,
+    [],
+    null // Disable orderBy to prevent index errors
   );
 
   const getServiceById = async (serviceId: string): Promise<Service | null> => {
@@ -93,7 +95,9 @@ export function usePurchaseServicesData(organizationId?: string): { services: Se
 
   const { data: services, loading } = useRealtimeCollection<Service>(
     'purchaseServices',
-    orgId || null
+    orgId || null,
+    [],
+    null // Disable orderBy to prevent index errors
   );
 
   return { services, loading };

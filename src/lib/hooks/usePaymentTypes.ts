@@ -24,7 +24,9 @@ export function usePaymentTypes(): PaymentTypesState & PaymentTypesActions {
 
   const { data: paymentTypes, loading, error } = useRealtimeCollection<PaymentType>(
     'paymentTypes',
-    selectedOrganization?.id || null
+    selectedOrganization?.id || null,
+    [],
+    null // Disable orderBy to prevent index errors
   );
 
   const createNewPaymentType = async (paymentTypeData: Omit<PaymentType, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {

@@ -19,13 +19,13 @@ export function useProducts(): ProductsState {
     data: products,
     loading: productsLoading,
     error: productsError
-  } = useRealtimeCollection<Product>('products', selectedOrganization?.id || null);
+  } = useRealtimeCollection<Product>('products', selectedOrganization?.id || null, [], null); // Disable orderBy to prevent index errors
 
   const {
     data: categories,
     loading: categoriesLoading,
     error: categoriesError
-  } = useRealtimeCollection<Category>('categories', selectedOrganization?.id || null);
+  } = useRealtimeCollection<Category>('categories', selectedOrganization?.id || null, [], null); // Disable orderBy to prevent index errors
 
   const loading = productsLoading || categoriesLoading;
   const error = productsError || categoriesError;

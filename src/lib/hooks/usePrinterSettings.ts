@@ -29,7 +29,9 @@ export function usePrinterSettings(): PrinterSettingsState & PrinterSettingsActi
     error
   } = useRealtimeCollection<PrinterSettings>(
     'printerSettings',
-    selectedOrganization?.id || null
+    selectedOrganization?.id || null,
+    [],
+    null // Disable orderBy to prevent index errors
   );
 
   const printerSettings = printerSettingsList.length > 0 ? printerSettingsList[0] : null;

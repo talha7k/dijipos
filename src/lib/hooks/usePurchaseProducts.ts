@@ -30,7 +30,9 @@ export function usePurchaseProducts(): PurchaseProductsState & PurchaseProductsA
 
   const { data: products, loading, error } = useRealtimeCollection<Product>(
     'purchaseProducts',
-    selectedOrganization?.id || null
+    selectedOrganization?.id || null,
+    [],
+    null // Disable orderBy to prevent index errors
   );
 
   const getProductById = async (productId: string): Promise<Product | null> => {
@@ -93,7 +95,9 @@ export function usePurchaseProductsData(organizationId?: string): { products: Pr
 
   const { data: products, loading } = useRealtimeCollection<Product>(
     'purchaseProducts',
-    orgId || null
+    orgId || null,
+    [],
+    null // Disable orderBy to prevent index errors
   );
 
   return { products, loading };

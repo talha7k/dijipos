@@ -16,7 +16,9 @@ export function useCustomers(): CustomersState {
 
   const { data: customers, loading, error } = useRealtimeCollection<Customer>(
     'customers',
-    selectedOrganization?.id || null
+    selectedOrganization?.id || null,
+    [],
+    null // Disable orderBy to prevent index errors
   );
 
   return {

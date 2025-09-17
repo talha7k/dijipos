@@ -16,7 +16,9 @@ export function useSuppliers(): SuppliersState {
 
   const { data: suppliers, loading, error } = useRealtimeCollection<Supplier>(
     'suppliers',
-    selectedOrganization?.id || null
+    selectedOrganization?.id || null,
+    [],
+    null // Disable orderBy to prevent index errors
   );
 
   return {

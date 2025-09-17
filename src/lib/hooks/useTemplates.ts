@@ -22,19 +22,19 @@ export function useTemplates(): TemplatesState {
     data: receiptTemplates,
     loading: receiptLoading,
     error: receiptError
-  } = useRealtimeCollection<ReceiptTemplate>('receiptTemplates', organizationId);
+  } = useRealtimeCollection<ReceiptTemplate>('receiptTemplates', organizationId, [], null); // Disable orderBy to prevent index errors
 
   const {
     data: invoiceTemplates,
     loading: invoiceLoading,
     error: invoiceError
-  } = useRealtimeCollection<InvoiceTemplate>('invoiceTemplates', organizationId);
+  } = useRealtimeCollection<InvoiceTemplate>('invoiceTemplates', organizationId, [], null); // Disable orderBy to prevent index errors
 
   const {
     data: quoteTemplates,
     loading: quoteLoading,
     error: quoteError
-  } = useRealtimeCollection<QuoteTemplate>('quoteTemplates', organizationId);
+  } = useRealtimeCollection<QuoteTemplate>('quoteTemplates', organizationId, [], null); // Disable orderBy to prevent index errors
 
   const loading = receiptLoading || invoiceLoading || quoteLoading;
   const error = receiptError || invoiceError || quoteError;

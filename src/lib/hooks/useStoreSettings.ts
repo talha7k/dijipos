@@ -29,7 +29,9 @@ export function useStoreSettings(): StoreSettingsState & StoreSettingsActions {
     error: realtimeError
   } = useRealtimeCollection<StoreSettings>(
     'storeSettings',
-    selectedOrganization?.id || null
+    selectedOrganization?.id || null,
+    [],
+    null // Disable orderBy to prevent index errors
   );
 
   // Get the first (and should be only) store settings document

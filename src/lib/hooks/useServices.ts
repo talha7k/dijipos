@@ -29,7 +29,9 @@ export function useServices(): ServicesState & ServicesActions {
 
   const { data: services, loading, error } = useRealtimeCollection<Service>(
     'services',
-    selectedOrganization?.id || null
+    selectedOrganization?.id || null,
+    [],
+    null // Disable orderBy to prevent index errors
   );
 
   const getServiceById = async (serviceId: string): Promise<Service | null> => {

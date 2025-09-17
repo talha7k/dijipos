@@ -24,7 +24,9 @@ export function useOrderTypes(): OrderTypesState & OrderTypesActions {
 
   const { data: orderTypes, loading, error } = useRealtimeCollection<OrderType>(
     'orderTypes',
-    selectedOrganization?.id || null
+    selectedOrganization?.id || null,
+    [],
+    null // Disable orderBy to prevent index errors
   );
 
   const createNewOrderType = async (orderTypeData: Omit<OrderType, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
