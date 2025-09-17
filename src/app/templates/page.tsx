@@ -17,8 +17,8 @@ import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
 import { InvoiceTemplate, TemplateField, TemplateStyle, TemplateFieldType } from '@/types';
 import { InvoiceTemplateType } from '@/types/enums';
 import { Plus, Edit, Trash2, Copy, Eye } from 'lucide-react';
-import { defaultEnglishInvoiceTemplate } from '@/components/templates/default-invoice-english';
-import { defaultArabicInvoiceTemplate } from '@/components/templates/default-invoice-arabic';
+import { defaultEnglishInvoiceTemplate } from '@/components/templates/invoice/default-invoice-english';
+import { defaultArabicInvoiceTemplate } from '@/components/templates/invoice/default-invoice-arabic';
 
 const defaultFields: TemplateField[] = [
   {

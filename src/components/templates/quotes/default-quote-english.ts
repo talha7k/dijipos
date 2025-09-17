@@ -1,20 +1,19 @@
-export const defaultEnglishInvoiceTemplate = `<!DOCTYPE html>
+ export const defaultQuoteEnglish = `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Invoice</title>
+  <title>Quote</title>
   <style>
     body { font-family: system-ui, sans-serif; margin: 0; padding: 20px; background: white; }
     .container { max-width: 1000px; margin: 0 auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 40px; }
     .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; }
-    .qr-section { margin-bottom: 20px; }
     .logo-section { position: relative; width: 192px; height: 80px; margin-left: auto; }
-    .invoice-title { font-size: 2rem; font-weight: bold; color: #1f2937; }
-    .invoice-number { color: #6b7280; }
+    .quote-title { font-size: 2rem; font-weight: bold; color: #1f2937; }
+    .quote-number { color: #6b7280; }
     .company-info { text-align: right; }
     .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 40px; }
-    .bill-to, .supplier { margin-bottom: 20px; }
-    .customer-logo, .supplier-logo { position: relative; width: 128px; height: 64px; margin-bottom: 10px; }
+    .bill-to { margin-bottom: 20px; }
+    .customer-logo { position: relative; width: 128px; height: 64px; margin-bottom: 10px; }
     .dates-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
     .table { width: 100%; margin-bottom: 40px; border-collapse: collapse; border: 1px solid #d1d5db; }
     .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 12px; text-align: left; }
@@ -24,6 +23,9 @@ export const defaultEnglishInvoiceTemplate = `<!DOCTYPE html>
     .total-line { display: flex; justify-content: space-between; padding: 8px 0; }
     .total-bold { font-weight: bold; font-size: 1.125rem; border-top: 1px solid #d1d5db; padding-top: 8px; }
     .notes { margin-bottom: 40px; }
+    .validity { background: #fef3c7; border: 1px solid #f59e0b; padding: 16px; border-radius: 8px; margin-bottom: 40px; }
+    .validity h3 { color: #92400e; margin: 0 0 8px 0; }
+    .validity p { color: #78350f; margin: 0; }
     .stamp { display: flex; justify-content: flex-end; margin-top: 40px; }
     .stamp div { text-align: center; }
     .stamp img { width: 128px; height: 128px; object-fit: contain; }
@@ -34,16 +36,8 @@ export const defaultEnglishInvoiceTemplate = `<!DOCTYPE html>
     <!-- Header -->
     <div class="header">
       <div>
-        {{#includeQR}}
-        <div class="qr-section">
-          <div style="display: inline-block; padding: 8px; background: white; border: 1px solid #d1d5db; border-radius: 4px;">
-            <img src="{{qrCodeUrl}}" alt="ZATCA QR Code" style="width: 120px; height: 120px;" />
-          </div>
-          <p style="font-size: 0.875rem; color: #6b7280; margin-top: 8px;">ZATCA Compliant QR Code</p>
-        </div>
-        {{/includeQR}}
-        <h1 class="invoice-title">INVOICE</h1>
-        <p class="invoice-number">Invoice #{{invoiceId}}</p>
+        <h1 class="quote-title">QUOTE</h1>
+        <p class="quote-number">Quote #{{quoteId}}</p>
       </div>
       <div class="company-info">
         {{#companyLogo}}
@@ -62,7 +56,7 @@ export const defaultEnglishInvoiceTemplate = `<!DOCTYPE html>
       </div>
     </div>
 
-    <!-- Invoice Details -->
+    <!-- Quote Details -->
     <div class="details-grid">
       <div>
         <h3 style="font-weight: 600; margin-bottom: 8px;">Bill To:</h3>
@@ -80,26 +74,14 @@ export const defaultEnglishInvoiceTemplate = `<!DOCTYPE html>
         {{#clientVat}}<p>VAT: {{clientVat}}</p>{{/clientVat}}
       </div>
       <div>
-        <h3 style="font-weight: 600; margin-bottom: 8px;">Supplier:</h3>
-        {{#supplierLogo}}
-        <div class="supplier-logo">
-          <img src="{{supplierLogo}}" alt="Supplier Logo" style="width: 100%; height: 100%; object-fit: contain;" />
-        </div>
-        {{/supplierLogo}}
-        <p style="font-weight: 500;">{{supplierName}} {{#supplierNameAr}}({{supplierNameAr}}){{/supplierNameAr}}</p>
-        <p>{{supplierAddress}}</p>
-        <p>{{supplierEmail}}</p>
-        {{#supplierVat}}<p>VAT: {{supplierVat}}</p>{{/supplierVat}}
-      </div>
-      <div>
         <div class="dates-grid">
           <div>
-            <p style="color: #6b7280;">Invoice Date:</p>
-            <p style="font-weight: 500;">{{invoiceDate}}</p>
+            <p style="color: #6b7280;">Quote Date:</p>
+            <p style="font-weight: 500;">{{quoteDate}}</p>
           </div>
           <div>
-            <p style="color: #6b7280;">Due Date:</p>
-            <p style="font-weight: 500;">{{dueDate}}</p>
+            <p style="color: #6b7280;">Valid Until:</p>
+            <p style="font-weight: 500;">{{validUntil}}</p>
           </div>
           <div>
             <p style="color: #6b7280;">Status:</p>
@@ -107,6 +89,12 @@ export const defaultEnglishInvoiceTemplate = `<!DOCTYPE html>
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- Validity Notice -->
+    <div class="validity">
+      <h3>Quote Validity</h3>
+      <p>This quote is valid until {{validUntil}}. Prices and availability are subject to change after this date.</p>
     </div>
 
     <!-- Items Table -->

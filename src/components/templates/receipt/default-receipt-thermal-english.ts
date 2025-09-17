@@ -1,4 +1,4 @@
-export const defaultReceiptTemplate = `<!DOCTYPE html>
+export const defaultEnglishReceiptTemplate = `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">

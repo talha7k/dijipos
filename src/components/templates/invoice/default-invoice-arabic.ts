@@ -1,19 +1,20 @@
-export const defaultArabicQuoteTemplate = `<!DOCTYPE html>
+ export const defaultInvoiceArabic = `<!DOCTYPE html>
 <html dir="rtl">
 <head>
   <meta charset="utf-8">
-  <title>عرض سعر</title>
+  <title>فاتورة</title>
   <style>
     body { font-family: 'Amiri', serif; margin: 0; padding: 20px; background: white; }
     .container { max-width: 1000px; margin: 0 auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 40px; }
     .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; }
+    .qr-section { margin-bottom: 20px; }
     .logo-section { position: relative; width: 192px; height: 80px; margin-left: auto; }
-    .quote-title { font-size: 2rem; font-weight: bold; color: #1f2937; }
-    .quote-number { color: #6b7280; }
+    .invoice-title { font-size: 2rem; font-weight: bold; color: #1f2937; }
+    .invoice-number { color: #6b7280; }
     .company-info { text-align: left; }
     .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 40px; }
-    .bill-to { margin-bottom: 20px; }
-    .customer-logo { position: relative; width: 128px; height: 64px; margin-bottom: 10px; }
+    .bill-to, .supplier { margin-bottom: 20px; }
+    .customer-logo, .supplier-logo { position: relative; width: 128px; height: 64px; margin-bottom: 10px; }
     .dates-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
     .table { width: 100%; margin-bottom: 40px; border-collapse: collapse; border: 1px solid #d1d5db; }
     .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 12px; text-align: right; }
@@ -23,9 +24,6 @@ export const defaultArabicQuoteTemplate = `<!DOCTYPE html>
     .total-line { display: flex; justify-content: space-between; padding: 8px 0; }
     .total-bold { font-weight: bold; font-size: 1.125rem; border-top: 1px solid #d1d5db; padding-top: 8px; }
     .notes { margin-bottom: 40px; text-align: right; }
-    .validity { background: #fef3c7; border: 1px solid #f59e0b; padding: 16px; border-radius: 8px; margin-bottom: 40px; text-align: right; }
-    .validity h3 { color: #92400e; margin: 0 0 8px 0; }
-    .validity p { color: #78350f; margin: 0; }
     .stamp { display: flex; justify-content: flex-start; margin-top: 40px; }
     .stamp div { text-align: center; }
     .stamp img { width: 128px; height: 128px; object-fit: contain; }
@@ -36,8 +34,16 @@ export const defaultArabicQuoteTemplate = `<!DOCTYPE html>
     <!-- Header -->
     <div class="header">
       <div>
-        <h1 class="quote-title">عرض سعر</h1>
-        <p class="quote-number">رقم العرض #{{quoteId}}</p>
+        {{#includeQR}}
+        <div class="qr-section">
+          <div style="display: inline-block; padding: 8px; background: white; border: 1px solid #d1d5db; border-radius: 4px;">
+            <img src="{{qrCodeUrl}}" alt="رمز QR متوافق مع زاتكا" style="width: 120px; height: 120px;" />
+          </div>
+          <p style="font-size: 0.875rem; color: #6b7280; margin-top: 8px;">رمز QR متوافق مع زاتكا</p>
+        </div>
+        {{/includeQR}}
+        <h1 class="invoice-title">فاتورة</h1>
+        <p class="invoice-number">رقم الفاتورة #{{invoiceId}}</p>
       </div>
       <div class="company-info">
         {{#companyLogo}}
@@ -56,7 +62,7 @@ export const defaultArabicQuoteTemplate = `<!DOCTYPE html>
       </div>
     </div>
 
-    <!-- Quote Details -->
+    <!-- Invoice Details -->
     <div class="details-grid">
       <div>
         <h3 style="font-weight: 600; margin-bottom: 8px;">:إلى</h3>
@@ -74,14 +80,26 @@ export const defaultArabicQuoteTemplate = `<!DOCTYPE html>
         {{#clientVat}}<p>الرقم الضريبي: {{clientVat}}</p>{{/clientVat}}
       </div>
       <div>
+        <h3 style="font-weight: 600; margin-bottom: 8px;">:المورد</h3>
+        {{#supplierLogo}}
+        <div class="supplier-logo">
+          <img src="{{supplierLogo}}" alt="شعار المورد" style="width: 100%; height: 100%; object-fit: contain;" />
+        </div>
+        {{/supplierLogo}}
+        <p style="font-weight: 500;">{{supplierNameAr}} {{#supplierName}}({{supplierName}}){{/supplierName}}</p>
+        <p>{{supplierAddress}}</p>
+        <p>{{supplierEmail}}</p>
+        {{#supplierVat}}<p>الرقم الضريبي: {{supplierVat}}</p>{{/supplierVat}}
+      </div>
+      <div>
         <div class="dates-grid">
           <div>
-            <p style="color: #6b7280;">:تاريخ العرض</p>
-            <p style="font-weight: 500;">{{quoteDate}}</p>
+            <p style="color: #6b7280;">:تاريخ الفاتورة</p>
+            <p style="font-weight: 500;">{{invoiceDate}}</p>
           </div>
           <div>
-            <p style="color: #6b7280;">:صالح حتى</p>
-            <p style="font-weight: 500;">{{validUntil}}</p>
+            <p style="color: #6b7280;">:تاريخ الاستحقاق</p>
+            <p style="font-weight: 500;">{{dueDate}}</p>
           </div>
           <div>
             <p style="color: #6b7280;">:الحالة</p>
@@ -89,12 +107,6 @@ export const defaultArabicQuoteTemplate = `<!DOCTYPE html>
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- Validity Notice -->
-    <div class="validity">
-      <h3>صلاحية العرض</h3>
-      <p>هذا العرض صالح حتى {{validUntil}}. الأسعار والتوافر عرضة للتغيير بعد هذا التاريخ.</p>
     </div>
 
     <!-- Items Table -->

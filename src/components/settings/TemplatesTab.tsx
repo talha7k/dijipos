@@ -15,7 +15,7 @@ import { Label } from '@/components/ui/label';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { FileText, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { defaultReceiptTemplate } from '@/components/templates/default-receipt-thermal';
+import { defaultEnglishReceiptTemplate } from '@/components/templates/receipt/default-receipt-thermal-english';
 
 interface TemplatesTabProps {
   receiptTemplates: UnifiedTemplate[];
@@ -46,7 +46,7 @@ export function TemplatesTab({ receiptTemplates }: TemplatesTabProps) {
       description: newTemplate.description,
       category: selectedCategory,
       type: newTemplate.type,
-      content: newTemplate.content || defaultReceiptTemplate,
+      content: newTemplate.content || defaultEnglishReceiptTemplate,
       customHeader: newTemplate.customHeader,
       customFooter: newTemplate.customFooter,
       isDefault: templates.length === 0,

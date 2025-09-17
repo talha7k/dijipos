@@ -1,13 +1,13 @@
 import { Order, Organization, ReceiptTemplate, Invoice, InvoiceTemplate, Customer, Supplier, Quote, QuoteTemplate, OrderPayment } from '@/types';
 import { OrderStatus } from '@/types/enums';
-import { defaultReceiptTemplate } from '@/components/templates/default-receipt-thermal';
-import { defaultReceiptA4Template } from '@/components/templates/default-receipt-a4';
-import { defaultArabicReceiptTemplate } from '@/components/templates/default-arabic-receipt-thermal';
-import { defaultArabicReceiptA4Template } from '@/components/templates/default-arabic-receipt-a4';
-import { defaultEnglishInvoiceTemplate } from '@/components/templates/default-invoice-english';
-import { defaultArabicInvoiceTemplate } from '@/components/templates/default-invoice-arabic';
-import { defaultEnglishQuoteTemplate } from '@/components/templates/default-quote-english';
-import { defaultArabicQuoteTemplate } from '@/components/templates/default-quote-arabic';
+import { defaultEnglishReceiptTemplate } from '@/components/templates/receipt/default-receipt-thermal-english';
+import { defaultReceiptA4Template } from '@/components/templates/receipt/default-receipt-a4-english';
+import { defaultArabicReceiptTemplate } from '@/components/templates/receipt/default-receipt-thermal-arabic';
+import { defaultArabicReceiptA4Template } from '@/components/templates/receipt/default-receipt-a4-arabic';
+import { defaultEnglishInvoiceTemplate } from '@/components/templates/invoice/default-invoice-english';
+import { defaultArabicInvoiceTemplate } from '@/components/templates/invoice/default-invoice-arabic';
+import { defaultEnglishQuoteTemplate } from '@/components/templates/quotes/default-quote-english';
+import { defaultArabicQuoteTemplate } from '@/components/templates/quotes/default-quote-arabic';
 import { createReceiptQRData, generateZatcaQRCode } from '@/lib/zatca-qr';
 import { ReceiptTemplateData, InvoiceTemplateData, QuoteTemplateData, TemplateData } from '@/types/template';
 
@@ -244,7 +244,7 @@ function getDefaultReceiptTemplate(templateType: string = 'english_thermal'): st
       return defaultArabicReceiptTemplate;
     case 'english_thermal':
     default:
-      return defaultReceiptTemplate;
+      return defaultEnglishReceiptTemplate;
   }
 }
 

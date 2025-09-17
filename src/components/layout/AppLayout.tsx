@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import { useAtomValue } from 'jotai';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { selectedOrganizationAtom, userOrganizationsAtom, organizationLoadingAtom } from '@/store/atoms/organizationAtoms';
-import { useSidebarState } from '@/legacy_hooks/useSidebarState';
+import { sidebarCollapsedAtom } from '@/store/atoms/uiAtoms';
 import { CollapsibleSidebar } from '@/components/sidebar/collapsible-sidebar';
 import { OrganizationManager } from '@/components/organization/OrganizationManager';
 
@@ -20,7 +20,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const organizationLoading = useAtomValue(organizationLoadingAtom);
 
   const loading = authLoading;
-  const { sidebarCollapsed: isCollapsed } = useSidebarState();
+  const isCollapsed = useAtomValue(sidebarCollapsedAtom);
 
   const isPublicRoute = pathname ? (pathname === '/login' || pathname === '/register' || pathname === '/verify-email' || pathname === '/reset-password' || pathname.startsWith('/auth')) : false;
 

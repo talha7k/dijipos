@@ -4,7 +4,7 @@ import { useAtomValue } from 'jotai';
 import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
 import { useSettingsData } from '@/legacy_hooks/organization/use-settings-data';
 import { PrinterSettings } from '@/types';
-import { useReceiptTemplatesData } from '@/legacy_hooks/use-receipt-templates-data';
+import { useReceiptTemplatesData } from '@/lib/hooks/useReceiptTemplatesData';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EditableSetting } from '@/components/ui/editable-setting';
 import { Settings, FileText, File } from 'lucide-react';

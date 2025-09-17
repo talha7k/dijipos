@@ -21,8 +21,8 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Printer } from 'lucide-react';
 
-import { defaultEnglishInvoiceTemplate } from '@/components/templates/default-invoice-english';
-import { defaultArabicInvoiceTemplate } from '@/components/templates/default-invoice-arabic';
+import { defaultEnglishInvoiceTemplate } from '@/components/templates/invoice/default-invoice-english';
+import { defaultArabicInvoiceTemplate } from '@/components/templates/invoice/default-invoice-arabic';
 import InvoiceForm from '@/components/invoices_quotes/InvoiceForm';
 import { Receipt } from 'lucide-react';
 
