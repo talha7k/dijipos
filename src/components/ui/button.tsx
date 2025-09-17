@@ -20,6 +20,25 @@ const buttonVariants = cva(
         ghost:
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",
+        // Enhanced color variants for better contrast and consistency
+        primary: "bg-blue-600 text-white shadow-xs hover:bg-blue-700 focus-visible:ring-blue-500/20 dark:bg-blue-600 dark:hover:bg-blue-700",
+        success: "bg-green-600 text-white shadow-xs hover:bg-green-700 focus-visible:ring-green-500/20 dark:bg-green-600 dark:hover:bg-green-700",
+        warning: "bg-yellow-600 text-white shadow-xs hover:bg-yellow-700 focus-visible:ring-yellow-500/20 dark:bg-yellow-600 dark:hover:bg-yellow-700",
+        danger: "bg-red-600 text-white shadow-xs hover:bg-red-700 focus-visible:ring-red-500/20 dark:bg-red-600 dark:hover:bg-red-700",
+        // Status-specific colors matching the enums
+        yellow: "bg-yellow-500 text-white shadow-xs hover:bg-yellow-600 focus-visible:ring-yellow-500/20 dark:bg-yellow-500 dark:hover:bg-yellow-600",
+        orange: "bg-orange-500 text-white shadow-xs hover:bg-orange-600 focus-visible:ring-orange-500/20 dark:bg-orange-500 dark:hover:bg-orange-600",
+        green: "bg-green-500 text-white shadow-xs hover:bg-green-600 focus-visible:ring-green-500/20 dark:bg-green-500 dark:hover:bg-green-600",
+        purple: "bg-purple-600 text-white shadow-xs hover:bg-purple-700 focus-visible:ring-purple-500/20 dark:bg-purple-600 dark:hover:bg-purple-700",
+        indigo: "bg-indigo-600 text-white shadow-xs hover:bg-indigo-700 focus-visible:ring-indigo-500/20 dark:bg-indigo-600 dark:hover:bg-indigo-700",
+        pink: "bg-pink-600 text-white shadow-xs hover:bg-pink-700 focus-visible:ring-pink-500/20 dark:bg-pink-600 dark:hover:bg-pink-700",
+        cyan: "bg-cyan-600 text-white shadow-xs hover:bg-cyan-700 focus-visible:ring-cyan-500/20 dark:bg-cyan-600 dark:hover:bg-cyan-700",
+        teal: "bg-teal-600 text-white shadow-xs hover:bg-teal-700 focus-visible:ring-teal-500/20 dark:bg-teal-600 dark:hover:bg-teal-700",
+        lime: "bg-lime-600 text-white shadow-xs hover:bg-lime-700 focus-visible:ring-lime-500/20 dark:bg-lime-600 dark:hover:bg-lime-700",
+        // Gradient variants for special buttons
+        gradient: "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-xs hover:from-blue-700 hover:to-purple-700 focus-visible:ring-purple-500/20",
+        gradientSuccess: "bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-xs hover:from-green-700 hover:to-teal-700 focus-visible:ring-teal-500/20",
+        gradientWarning: "bg-gradient-to-r from-yellow-600 to-orange-600 text-white shadow-xs hover:from-yellow-700 hover:to-orange-700 focus-visible:ring-orange-500/20",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",

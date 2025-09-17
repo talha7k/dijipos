@@ -21,6 +21,14 @@ export function POSItemsGrid({
   onCategoryClick,
   onItemClick
 }: POSItemsGridProps) {
+  console.log('POSItemsGrid Debug:', {
+    categoriesCount: categories.length,
+    productsCount: products.length,
+    servicesCount: services.length,
+    categoryPath,
+    totalItems: products.length + services.length
+  });
+
   // Get child categories for a given parent category
   const getChildCategories = (parentId: string) => {
     return categories.filter(c => c.parentId === parentId);
@@ -85,20 +93,27 @@ export function POSItemsGrid({
   const currentCategoryId = getCurrentCategoryId();
   const currentChildCategories = currentCategoryId ? getChildCategories(currentCategoryId) : [];
   
-  // Get items for current category
-  const filteredItems = isViewingUncategorized ? [
-    // Show uncategorized items
-    ...products.filter((p: Product) => !p.categoryId),
-    ...services.filter((s: Service) => !s.categoryId)
-  ] : currentCategoryId ? [
-    // Show items in specific category
-    ...products.filter((p: Product) => p.categoryId === currentCategoryId),
-    ...services.filter((s: Service) => s.categoryId === currentCategoryId)
-  ] : [
-    // At root level, show items that don't have a category assigned
-    ...products.filter((p: Product) => !p.categoryId),
-    ...services.filter((s: Service) => !s.categoryId)
-  ];
+   // Get items for current category
+   const filteredItems = isViewingUncategorized ? [
+     // Show uncategorized items
+     ...products.filter((p: Product) => !p.categoryId),
+     ...services.filter((s: Service) => !s.categoryId)
+   ] : currentCategoryId ? [
+     // Show items in specific category
+     ...products.filter((p: Product) => p.categoryId === currentCategoryId),
+     ...services.filter((s: Service) => s.categoryId === currentCategoryId)
+   ] : [
+     // At root level, show items that don't have a category assigned
+     ...products.filter((p: Product) => !p.categoryId),
+     ...services.filter((s: Service) => !s.categoryId)
+   ];
+
+   console.log('POSItemsGrid filteredItems:', {
+     isViewingUncategorized,
+     currentCategoryId,
+     filteredItemsCount: filteredItems.length,
+     filteredItems: filteredItems.map(item => ({ id: item.id, name: item.name, categoryId: item.categoryId }))
+   });
 
   return (
     <div className="space-y-8">
@@ -134,14 +149,19 @@ export function POSItemsGrid({
              currentCategoryId ? `Items in ${getCategoryName(currentCategoryId!)}` : 'Uncategorized Items'}
           </h3>
         )}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-          {filteredItems.map((item) => (
-            <ItemCard
-              key={item.id}
-              item={item}
-              onClick={onItemClick}
-            />
-          ))}
+           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+           {filteredItems.map((item) => (
+             <ItemCard
+               key={item.id}
+               item={item}
+               onClick={onItemClick}
+             />
+           ))}
+           {filteredItems.length === 0 && (
+             <div className="col-span-full text-center py-4 text-muted-foreground">
+               Debug: No items to display (filteredItems.length = 0)
+             </div>
+           )}
         </div>
 
         {filteredItems.length === 0 && currentCategoryId && !isViewingUncategorized && (

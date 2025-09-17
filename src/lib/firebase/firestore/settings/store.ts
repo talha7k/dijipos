@@ -181,6 +181,74 @@ export async function updateStoreSettings(storeSettingsId: string, updates: Part
   }
 }
 
+/**
+ * Update VAT settings
+ */
+export async function updateVATSettings(vatSettingsId: string, updates: Partial<Omit<VATSettings, 'id' | 'organizationId' | 'createdAt'>>): Promise<void> {
+  try {
+    const docRef = doc(vatSettingsRef, vatSettingsId);
+    await updateDoc(docRef, {
+      ...updates,
+      updatedAt: Timestamp.now(),
+    });
+  } catch (error) {
+    console.error('Error updating VAT settings:', error);
+    throw error;
+  }
+}
+
+/**
+ * Update currency settings
+ */
+export async function updateCurrencySettings(currencySettingsId: string, updates: Partial<Omit<CurrencySettings, 'id' | 'organizationId' | 'createdAt'>>): Promise<void> {
+  try {
+    const docRef = doc(currencySettingsRef, currencySettingsId);
+    await updateDoc(docRef, {
+      ...updates,
+      updatedAt: Timestamp.now(),
+    });
+  } catch (error) {
+    console.error('Error updating currency settings:', error);
+    throw error;
+  }
+}
+
+/**
+ * Create VAT settings
+ */
+export async function createVATSettings(organizationId: string, vatSettingsData: Omit<VATSettings, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>): Promise<string> {
+  try {
+    const docRef = await addDoc(vatSettingsRef, {
+      ...vatSettingsData,
+      organizationId,
+      createdAt: Timestamp.now(),
+      updatedAt: Timestamp.now(),
+    });
+    return docRef.id;
+  } catch (error) {
+    console.error('Error creating VAT settings:', error);
+    throw error;
+  }
+}
+
+/**
+ * Create currency settings
+ */
+export async function createCurrencySettings(organizationId: string, currencySettingsData: Omit<CurrencySettings, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>): Promise<string> {
+  try {
+    const docRef = await addDoc(currencySettingsRef, {
+      ...currencySettingsData,
+      organizationId,
+      createdAt: Timestamp.now(),
+      updatedAt: Timestamp.now(),
+    });
+    return docRef.id;
+  } catch (error) {
+    console.error('Error creating currency settings:', error);
+    throw error;
+  }
+}
+
 // Order Types CRUD operations
 export async function createOrderType(organizationId: string, orderTypeData: Omit<OrderType, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
   try {

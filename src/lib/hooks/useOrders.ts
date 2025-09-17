@@ -37,7 +37,9 @@ export function useOrders(): OrdersState & OrdersActions {
 
   const { data: orders, loading, error } = useRealtimeCollection<Order>(
     'orders',
-    selectedOrganization?.id || null
+    selectedOrganization?.id || null,
+    [], // additional constraints remove this line later for indexes to be used.
+    null // disable orderBy to prevent index issues remove this line later for indexes to be used.
   );
 
   const getOrderById = async (orderId: string): Promise<Order | null> => {

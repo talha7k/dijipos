@@ -370,11 +370,9 @@ export function OrganizationManager() {
             {organizationId && (
               <Button
                 onClick={() => router.push("/dashboard")}
-                className={`flex items-center gap-2 ${
-                  isDark
-                    ? "bg-purple-600 hover:bg-purple-700"
-                    : "bg-blue-600 hover:bg-blue-700"
-                }`}
+                variant="gradient"
+                size="lg"
+                className="flex items-center gap-2"
               >
                 <ArrowRight className="h-4 w-4" />
                 Continue to Dashboard
@@ -639,11 +637,8 @@ export function OrganizationManager() {
                         <Button
                           onClick={handleJoinOrganization}
                           disabled={!joinCode || loading}
-                          className={`flex-1 py-2 text-sm font-medium text-white ${
-                            isDark
-                              ? "bg-blue-600 hover:bg-blue-700"
-                              : "bg-blue-600 hover:bg-blue-700"
-                          }`}
+                          variant="primary"
+                          className="flex-1 py-2 text-sm font-medium"
                         >
                           {loading ? "Joining..." : "Join Now"}
                         </Button>
@@ -774,11 +769,8 @@ export function OrganizationManager() {
                             !newOrganizationEmail ||
                             loading
                           }
-                          className={`flex-1 py-2 text-sm font-medium text-white ${
-                            isDark
-                              ? "bg-green-600 hover:bg-green-700"
-                              : "bg-green-600 hover:bg-green-700"
-                          }`}
+                          variant="success"
+                          className="flex-1 py-2 text-sm font-medium"
                         >
                           {loading ? "Creating..." : "Create Now"}
                         </Button>

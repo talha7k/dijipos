@@ -13,6 +13,11 @@ import {
   Printer,
 } from "lucide-react";
 import { Order, OrderStatus, OrderPayment } from "@/types";
+import {
+  ORDER_STATUS_COLORS,
+  ORDER_STATUS_BUTTON_VARIANTS,
+  getOrderStatusColor
+} from "@/types/enums";
 import { OrderActionsDialog } from "./OrderStatusActionsDialog";
 import { ReceiptPrintDialog } from "@/components/ReceiptPrintDialog";
 import { useAtom } from 'jotai';
@@ -63,21 +68,21 @@ export function OrderSummaryCard({
       : payments.reduce((sum, payment) => sum + payment.amount, 0);
 
   const isActuallyPaid = order.paid;
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "completed":
-        return "bg-emerald-500";
-      case "preparing":
-        return "bg-blue-500";
-      case "open":
-        return "bg-yellow-500";
-      case "saved":
-      case "on_hold":
-        return "bg-blue-500";
-      case "cancelled":
-        return "bg-destructive";
-      default:
-        return "bg-muted-foreground";
+
+  // Get color for UI indicators using the new status color system
+  const statusColor = getOrderStatusColor(order.status as OrderStatus);
+  const statusButtonVariant = ORDER_STATUS_BUTTON_VARIANTS[order.status as OrderStatus] || 'secondary';
+
+  // Get background color class for badges
+  const getStatusBgColor = (status: OrderStatus) => {
+    const color = getOrderStatusColor(status);
+    switch (color) {
+      case 'yellow': return 'bg-yellow-500';
+      case 'orange': return 'bg-orange-500';
+      case 'green': return 'bg-green-500';
+      case 'red': return 'bg-red-500';
+      case 'gray': return 'bg-gray-500';
+      default: return 'bg-muted-foreground';
     }
   };
 
@@ -117,8 +122,8 @@ export function OrderSummaryCard({
               onUpdateStatus={onStatusChange}
             >
               <Badge
-                className={`${getStatusColor(
-                  order.status
+                className={`${getStatusBgColor(
+                  order.status as OrderStatus
                 )} text-white w-full justify-center py-2 cursor-pointer hover:opacity-80 transition-opacity`}
               >
                 {getStatusIcon(order.status)}
@@ -167,6 +172,22 @@ export function OrderSummaryCard({
             </ReceiptPrintDialog>
           </div>
         )}
+
+        {/* Status Color Demo - Shows how the new color system works */}
+        <div className="flex justify-center gap-2 mt-4">
+          <Button
+            variant={statusButtonVariant}
+            size="sm"
+            className="text-xs"
+          >
+            {order.status.replace("_", " ")}
+          </Button>
+          <div
+            className={`px-3 py-1 rounded-full text-xs font-medium text-white bg-${statusColor}-500`}
+          >
+            {statusColor}
+          </div>
+        </div>
 
         <div
           onClick={onClick ? () => onClick(order) : undefined}

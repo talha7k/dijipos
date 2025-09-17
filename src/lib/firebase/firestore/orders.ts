@@ -25,8 +25,9 @@ export async function getOrders(organizationId: string): Promise<Order[]> {
   try {
     const ordersQuery = query(
       ordersRef,
-      where('organizationId', '==', organizationId),
-      orderBy('createdAt', 'desc')
+      where('organizationId', '==', organizationId)
+      // Temporarily disabled orderBy to prevent index issues
+      // orderBy('createdAt', 'desc')
     );
     const snapshot = await getDocs(ordersQuery);
 

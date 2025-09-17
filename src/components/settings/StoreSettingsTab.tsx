@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
-import { VATSettings } from '@/types';
+import { VATSettings, CurrencySettings } from '@/types';
 import { Currency, CurrencyLocale } from '@/types/enums';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import { EditableSetting } from '@/components/ui/editable-setting';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Percent, FileText, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
+import { updateVATSettings, updateCurrencySettings, createVATSettings, createCurrencySettings } from '@/lib/firebase/firestore/settings/store';
 
 interface StoreSettingsTabProps {
   vatSettings: VATSettings | null;
@@ -17,19 +18,87 @@ interface StoreSettingsTabProps {
 }
 
 export function StoreSettingsTab({ vatSettings, onVatSettingsUpdate }: StoreSettingsTabProps) {
-  const { storeSettings, loading, error } = useStoreSettings();
+  const { storeSettings, loading, error, createDefaultSettings } = useStoreSettings();
   const [showSampleDataConfirm, setShowSampleDataConfirm] = useState(false);
 
+  // Default VAT settings
+  const defaultVatSettings: VATSettings = {
+    id: 'default',
+    rate: 15,
+    isEnabled: true,
+    organizationId: storeSettings?.organizationId || '',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
+  // Default currency settings
+  const defaultCurrencySettings: CurrencySettings = {
+    id: 'default',
+    locale: CurrencyLocale.AR_SA,
+    currency: Currency.SAR,
+    organizationId: storeSettings?.organizationId || '',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
   const handleUpdateVatSettings = async (field: keyof VATSettings, value: string | number | boolean) => {
-    if (!vatSettings) return;
+    if (!storeSettings?.organizationId) return;
 
-    const updatedVat: VATSettings = {
-      ...vatSettings,
-      [field]: value,
-      updatedAt: new Date(),
-    };
+    try {
+      const currentVatSettings = storeSettings.vatSettings || defaultVatSettings;
 
-    onVatSettingsUpdate(updatedVat);
+      if (!storeSettings.vatSettings) {
+        // Create new VAT settings if they don't exist
+        const vatSettingsId = await createVATSettings(storeSettings.organizationId, {
+          rate: defaultVatSettings.rate,
+          isEnabled: defaultVatSettings.isEnabled,
+        });
+
+        // Update store settings to include the new VAT settings ID
+        if (storeSettings.id) {
+          await updateVATSettings(vatSettingsId, { [field]: value });
+        }
+      } else {
+        // Update existing VAT settings
+        await updateVATSettings(currentVatSettings.id, { [field]: value });
+      }
+
+      toast.success('VAT settings updated successfully!');
+      // Refresh the page to show updated data
+      window.location.reload();
+    } catch (error) {
+      console.error('Error updating VAT settings:', error);
+      toast.error('Failed to update VAT settings. Please try again.');
+    }
+  };
+
+  const handleUpdateCurrencySettings = async (value: CurrencyLocale) => {
+    if (!storeSettings?.organizationId) return;
+
+    try {
+      const currency = getCurrencyFromLocale(value);
+
+      if (!storeSettings.currencySettings) {
+        // Create new currency settings if they don't exist
+        await createCurrencySettings(storeSettings.organizationId, {
+          locale: value,
+          currency: currency,
+        });
+      } else {
+        // Update existing currency settings
+        await updateCurrencySettings(storeSettings.currencySettings.id, {
+          locale: value,
+          currency: currency,
+        });
+      }
+
+      toast.success('Currency settings updated successfully!');
+      // Refresh the page to show updated data
+      window.location.reload();
+    } catch (error) {
+      console.error('Error updating currency settings:', error);
+      toast.error('Failed to update currency settings. Please try again.');
+    }
   };
 
   const getCurrencyFromLocale = (locale: CurrencyLocale): Currency => {
@@ -80,27 +149,23 @@ export function StoreSettingsTab({ vatSettings, onVatSettingsUpdate }: StoreSett
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {storeSettings?.vatSettings ? (
-            <div className="space-y-4">
+          <div className="space-y-4">
+            <EditableSetting
+              label="VAT Status"
+              value={storeSettings?.vatSettings?.isEnabled ?? defaultVatSettings.isEnabled}
+              type="switch"
+              onSave={(value) => handleUpdateVatSettings('isEnabled', value)}
+            />
+            {(storeSettings?.vatSettings?.isEnabled ?? defaultVatSettings.isEnabled) && (
               <EditableSetting
-                label="VAT Status"
-                value={storeSettings.vatSettings.isEnabled}
-                type="switch"
-                onSave={(value) => handleUpdateVatSettings('isEnabled', value)}
+                label="VAT Rate"
+                value={storeSettings?.vatSettings?.rate ?? defaultVatSettings.rate}
+                type="number"
+                onSave={(value) => handleUpdateVatSettings('rate', value)}
+                placeholder="15"
               />
-              {storeSettings.vatSettings.isEnabled && (
-                <EditableSetting
-                  label="VAT Rate"
-                  value={storeSettings.vatSettings.rate}
-                  type="number"
-                  onSave={(value) => handleUpdateVatSettings('rate', value)}
-                  placeholder="15"
-                />
-              )}
-            </div>
-          ) : (
-            <p className="text-muted-foreground">VAT settings not configured.</p>
-          )}
+            )}
+          </div>
         </CardContent>
       </Card>
 
@@ -114,33 +179,26 @@ export function StoreSettingsTab({ vatSettings, onVatSettingsUpdate }: StoreSett
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {storeSettings?.currencySettings ? (
-            <div className="space-y-4">
-              <EditableSetting
-                label="Currency Format"
-                value={storeSettings.currencySettings.locale}
-                type="select"
-                options={[
-                  { value: CurrencyLocale.AR_SA, label: 'Arabic (SAR)' },
-                  { value: CurrencyLocale.EN_US, label: 'English (USD)' },
-                  { value: CurrencyLocale.EN_GB, label: 'English (GBP)' },
-                  { value: CurrencyLocale.DE_DE, label: 'German (EUR)' },
-                  { value: CurrencyLocale.FR_FR, label: 'French (EUR)' },
-                  { value: CurrencyLocale.AR_AE, label: 'Arabic UAE (AED)' },
-                  { value: CurrencyLocale.AR_KW, label: 'Arabic Kuwait (KWD)' },
-                  { value: CurrencyLocale.AR_BH, label: 'Arabic Bahrain (BHD)' },
-                  { value: CurrencyLocale.AR_OM, label: 'Arabic Oman (OMR)' },
-                  { value: CurrencyLocale.AR_QA, label: 'Arabic Qatar (QAR)' },
-                ]}
-                onSave={async (value: CurrencyLocale) => {
-                  // TODO: Implement update logic for currency settings
-                  console.log('Update currency settings:', { locale: value, currency: getCurrencyFromLocale(value) });
-                }}
-              />
-            </div>
-          ) : (
-            <p className="text-muted-foreground">Currency settings not configured.</p>
-          )}
+          <div className="space-y-4">
+            <EditableSetting
+              label="Currency Format"
+              value={storeSettings?.currencySettings?.locale ?? defaultCurrencySettings.locale}
+              type="select"
+              options={[
+                { value: CurrencyLocale.AR_SA, label: 'Arabic (SAR)' },
+                { value: CurrencyLocale.EN_US, label: 'English (USD)' },
+                { value: CurrencyLocale.EN_GB, label: 'English (GBP)' },
+                { value: CurrencyLocale.DE_DE, label: 'German (EUR)' },
+                { value: CurrencyLocale.FR_FR, label: 'French (EUR)' },
+                { value: CurrencyLocale.AR_AE, label: 'Arabic UAE (AED)' },
+                { value: CurrencyLocale.AR_KW, label: 'Arabic Kuwait (KWD)' },
+                { value: CurrencyLocale.AR_BH, label: 'Arabic Bahrain (BHD)' },
+                { value: CurrencyLocale.AR_OM, label: 'Arabic Oman (OMR)' },
+                { value: CurrencyLocale.AR_QA, label: 'Arabic Qatar (QAR)' },
+              ]}
+              onSave={handleUpdateCurrencySettings}
+            />
+          </div>
         </CardContent>
       </Card>
 

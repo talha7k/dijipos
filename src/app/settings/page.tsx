@@ -36,9 +36,9 @@ function SettingsContent() {
 
   // Extract data from storeSettings
   const vatSettings = storeSettings?.vatSettings || null;
-  const handleVatSettingsUpdate = (settings: VATSettings) => {
-    // TODO: implement update
-    console.log('Update VAT settings:', settings);
+  const handleVatSettingsUpdate = async (settings: VATSettings) => {
+    // The actual update is handled in the StoreSettingsTab component
+    console.log('VAT settings updated:', settings);
   };
   const printerSettings = null; // TODO: get from separate hook
   const handlePrinterSettingsUpdate = (settings: PrinterSettings) => {

@@ -359,10 +359,16 @@ export default function ProductsServicesPage() {
             categories={categories}
             products={products}
             onCreateCategory={async (data) => {
-              await createCategory(data);
+              return await createCategory(data);
             }}
             onCreateProduct={async (data) => {
-              await createProduct(data);
+              return await createProduct(data);
+            }}
+            onDeleteCategory={async (categoryId) => {
+              await deleteCategory(categoryId);
+            }}
+            onDeleteProduct={async (productId) => {
+              await deleteProduct(productId);
             }}
           />
         </TabsContent>

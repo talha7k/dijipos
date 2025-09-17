@@ -66,6 +66,9 @@ export default function SimplifiedPOSPage() {
 
   // Use POS atoms directly
   const [cartItems, setCartItems] = useAtom(cartItemsAtom);
+
+  // Ensure cartItems is always an array
+  const safeCartItems = cartItems || [];
   const cartTotal = useAtomValue(cartTotalAtom);
   const [selectedTable, setSelectedTable] = useAtom(selectedTableAtom);
   const [selectedCustomer, setSelectedCustomer] = useAtom(selectedCustomerAtom);
@@ -90,7 +93,11 @@ export default function SimplifiedPOSPage() {
 
   // Handler functions
   const handleAddToCart = useCallback((item: Product | Service, type: 'product' | 'service') => {
-    if (!item) return;
+    console.log('handleAddToCart called:', item.name, type);
+    if (!item || !cartItems) {
+      console.log('handleAddToCart: item or cartItems is null/undefined', { item, cartItems });
+      return;
+    }
 
     const existingItem = cartItems.find(
       (cartItem: CartItem) => cartItem.id === item.id && cartItem.type === (type === 'product' ? ItemType.PRODUCT : ItemType.SERVICE)
@@ -102,6 +109,7 @@ export default function SimplifiedPOSPage() {
           ? { ...cartItem, quantity: (cartItem.quantity || 1) + 1, total: ((cartItem.quantity || 1) + 1) * item.price }
           : cartItem
       );
+      console.log('Updating existing item:', existingItem);
       setCartItems(updatedCart);
     } else {
       const newItem: CartItem = {
@@ -112,6 +120,7 @@ export default function SimplifiedPOSPage() {
         quantity: 1,
         total: item.price
       };
+      console.log('Adding new item to cart:', newItem);
       setCartItems([...cartItems, newItem]);
     }
   }, [cartItems, setCartItems]);
@@ -360,10 +369,9 @@ export default function SimplifiedPOSPage() {
             setEditingCartItem(cartItem);
             setShowCartItemModal(true);
           }}
-          onPayOrder={handlePayOrder}
-          onSaveOrder={handleSaveOrder}
-          onPrintReceipt={() => {}}
-          onClearCart={handleClearCart}
+           onPayOrder={handlePayOrder}
+           onSaveOrder={handleSaveOrder}
+           onClearCart={handleClearCart}
         />
       </POSRightColumn>
 

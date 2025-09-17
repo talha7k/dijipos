@@ -11,10 +11,16 @@ export function ItemCard({ item, onClick, className = '' }: ItemCardProps) {
   const isProduct = 'price' in item;
   const price = isProduct ? item.price : (item as Service).price;
 
+  const handleClick = () => {
+    console.log('ItemCard clicked:', item.name, isProduct ? 'product' : 'service');
+    onClick(item, isProduct ? 'product' : 'service');
+  };
+
   return (
     <div
       className={`border-3 border-primary/60 dark:border-primary/20 cursor-pointer bg-card rounded-lg hover:shadow-lg transition-all duration-200 transform hover:scale-105 h-52 flex flex-col active:scale-95 hover:bg-accent/50 ${className}`}
-      onClick={() => onClick(item, isProduct ? 'product' : 'service')}
+      onClick={handleClick}
+      style={{ pointerEvents: 'auto' }}
     >
       <div className="pt-4">
         <div className="flex items-center justify-center gap-2 mb-3">

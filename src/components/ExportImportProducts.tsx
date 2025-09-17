@@ -19,8 +19,10 @@ interface ExportImportProductsProps {
   organizationId?: string;
   categories?: Category[];
   products?: Product[];
-  onCreateCategory?: (data: Omit<Category, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => Promise<void>;
-  onCreateProduct?: (data: Omit<Product, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  onCreateCategory?: (data: Omit<Category, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => Promise<string>;
+  onCreateProduct?: (data: Omit<Product, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => Promise<string>;
+  onDeleteCategory?: (categoryId: string) => Promise<void>;
+  onDeleteProduct?: (productId: string) => Promise<void>;
 }
 
 export function ExportImportProducts({
@@ -28,12 +30,14 @@ export function ExportImportProducts({
   categories = [],
   products = [],
   onCreateCategory,
-  onCreateProduct
+  onCreateProduct,
+  onDeleteCategory,
+  onDeleteProduct
 }: ExportImportProductsProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [overwriteExisting, setOverwriteExisting] = useState(false);
-  const [skipDuplicates, setSkipDuplicates] = useState(true);
+  const [overwriteExistingData, setOverwriteExistingData] = useState(false);
+  const [overwriteDuplicates, setOverwriteDuplicates] = useState(false);
 
   const { user } = useAuth();
   const [isImporting, setIsImporting] = useState(false);
@@ -60,9 +64,13 @@ export function ExportImportProducts({
       const result = await importProductsAndCategories(
         organizationId,
         importData,
-        onCreateCategory,
-        onCreateProduct,
-        { overwriteExisting, skipDuplicates }
+        onCreateCategory || (() => Promise.resolve('')),
+        onCreateProduct || (() => Promise.resolve('')),
+        onDeleteCategory || (() => Promise.resolve()),
+        onDeleteProduct || (() => Promise.resolve()),
+        categories,
+        products,
+        { overwriteExisting: overwriteExistingData, skipDuplicates: !overwriteDuplicates, overwriteDuplicates }
       );
       setLastImportResult(result);
     } catch (error) {
@@ -178,27 +186,28 @@ export function ExportImportProducts({
               )}
             </div>
 
-            {/* Import Options */}
-            {selectedFile && (
-              <div className="space-y-3">
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={skipDuplicates}
-                      onChange={(e) => setSkipDuplicates(e.target.checked)}
-                    />
-                    <span className="text-sm">Skip duplicate entries</span>
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={overwriteExisting}
-                      onChange={(e) => setOverwriteExisting(e.target.checked)}
-                    />
-                    <span className="text-sm">Overwrite existing entries</span>
-                  </label>
-                </div>
+             {/* Import Options */}
+             {selectedFile && (
+               <div className="space-y-3">
+                 <div className="space-y-2">
+                   <label className="flex items-center gap-2">
+                     <input
+                       type="checkbox"
+                       checked={overwriteExistingData}
+                       onChange={(e) => setOverwriteExistingData(e.target.checked)}
+                       className="text-red-600 focus:ring-red-500"
+                     />
+                     <span className="text-sm text-red-600 font-medium">Overwrite existing data</span>
+                   </label>
+                   <label className="flex items-center gap-2">
+                     <input
+                       type="checkbox"
+                       checked={overwriteDuplicates}
+                       onChange={(e) => setOverwriteDuplicates(e.target.checked)}
+                     />
+                     <span className="text-sm">Overwrite duplicate entries (by name)</span>
+                   </label>
+                 </div>
 
                 <Button
                   onClick={handleImport}
