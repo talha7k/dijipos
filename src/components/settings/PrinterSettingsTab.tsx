@@ -23,17 +23,26 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
   const { handlePrinterSettingsUpdate } = usePrinterSettings();
 
   const handleUpdateSettings = async (field: keyof PrinterSettings, value: string | number | boolean) => {
-    if (!organizationId || !printerSettings) return;
-
-    const updatedSettings: PrinterSettings = {
-      ...printerSettings,
-      [field]: value,
-      updatedAt: new Date(),
-    };
+    if (!organizationId) return;
 
     try {
-      handlePrinterSettingsUpdate(updatedSettings);
-      onPrinterSettingsUpdate(updatedSettings);
+      if (printerSettings) {
+        // Update existing settings
+        const updatedSettings: PrinterSettings = {
+          ...printerSettings,
+          [field]: value,
+          updatedAt: new Date(),
+        };
+        await handlePrinterSettingsUpdate(updatedSettings);
+        onPrinterSettingsUpdate(updatedSettings);
+      } else {
+        // Create new settings with the field value
+        const newSettings = {
+          [field]: value,
+        };
+        await handlePrinterSettingsUpdate(newSettings);
+        // The global state will be updated by the usePrinterSettings hook
+      }
       toast.success('Settings updated successfully!');
     } catch (error) {
       console.error('Error updating printer settings:', error);
