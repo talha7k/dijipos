@@ -4,7 +4,7 @@ export const defaultEnglishReceiptTemplate = `<!DOCTYPE html>
   <meta charset="utf-8">
   <title>Receipt</title>
    <style>
-    body { font-family: monospace; margin: 0; padding: 10px; font-size: 12px; max-width: {{paperWidth}}px; }
+    body { font-family: monospace; margin: 0; padding: 0; font-size: 12px; max-width: {{paperWidth}}px; }
     .header { text-align: center; margin-bottom: 10px; }
     .custom-header { text-align: center; margin-bottom: 10px; font-weight: bold; }
     .content { margin-bottom: 10px; }

@@ -4,10 +4,10 @@ export const defaultReceiptA4Template = `<!DOCTYPE html>
   <meta charset="utf-8">
   <title>Receipt</title>
   <style>
-    body { 
-      font-family: system-ui, -apple-system, sans-serif; 
-      margin: 0; 
-      padding: 20px; 
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      margin: 0;
+      padding: 0;
       background: white;
     }
     .receipt-container {

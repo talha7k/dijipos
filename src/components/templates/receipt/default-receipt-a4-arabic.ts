@@ -7,7 +7,7 @@ export const defaultArabicReceiptA4Template = `<!DOCTYPE html>
     body {
       font-family: 'Amiri', serif;
       margin: 0;
-      padding: 20px;
+      padding: 0;
       background: white;
     }
     .receipt-container {
