@@ -1,3 +1,4 @@
+import React from 'react';
 import { PrinterSettings } from '@/types';
 import {
   getPrinterSettings,
@@ -6,7 +7,9 @@ import {
 } from '../firebase/firestore/settings/printer';
 import { useRealtimeCollection } from './useRealtimeCollection';
 import { useOrganization } from './useOrganization';
-import { STATIC_RECEIPT_TEMPLATE_IDS, STATIC_INVOICE_TEMPLATE_IDS, STATIC_QUOTE_TEMPLATE_IDS } from './useSeparatedTemplates';
+
+import { useAtom } from 'jotai';
+import { printerSettingsAtom, printerSettingsLoadingAtom, printerSettingsErrorAtom } from '@/atoms/uiAtoms';
 
 interface PrinterSettingsState {
   printerSettings: PrinterSettings | null;
@@ -23,11 +26,15 @@ interface PrinterSettingsActions {
  */
 export function usePrinterSettings(): PrinterSettingsState & PrinterSettingsActions {
   const { selectedOrganization } = useOrganization();
+  const [printerSettings, setPrinterSettings] = useAtom(printerSettingsAtom);
+  const [loading, setLoading] = useAtom(printerSettingsLoadingAtom);
+  const [error, setError] = useAtom(printerSettingsErrorAtom);
 
+  // Use realtime collection to sync with database
   const {
     data: printerSettingsList,
-    loading,
-    error
+    loading: realtimeLoading,
+    error: realtimeError
   } = useRealtimeCollection<PrinterSettings>(
     'printerSettings',
     selectedOrganization?.id || null,
@@ -35,7 +42,12 @@ export function usePrinterSettings(): PrinterSettingsState & PrinterSettingsActi
     null // Disable orderBy to prevent index errors
   );
 
-  const printerSettings = printerSettingsList.length > 0 ? printerSettingsList[0] : null;
+  // Update global state when realtime data changes
+  React.useEffect(() => {
+    setPrinterSettings(printerSettingsList.length > 0 ? printerSettingsList[0] : null);
+    setLoading(realtimeLoading);
+    setError(realtimeError);
+  }, [printerSettingsList, realtimeLoading, realtimeError, setPrinterSettings, setLoading, setError]);
 
   const handlePrinterSettingsUpdate = async (settings: PrinterSettings | Partial<PrinterSettings>): Promise<void> => {
     try {
@@ -58,8 +70,11 @@ export function usePrinterSettings(): PrinterSettingsState & PrinterSettingsActi
             defaultQuoteTemplateId: undefined,
             ...settings,
           };
-          
-          await createPrinterSettings(newSettings);
+
+          const createdId = await createPrinterSettings(newSettings);
+          // Fetch the created settings to update global state
+          const createdSettings = await getPrinterSettings(selectedOrganization.id);
+          setPrinterSettings(createdSettings);
           return;
         }
 
@@ -73,6 +88,8 @@ export function usePrinterSettings(): PrinterSettingsState & PrinterSettingsActi
         // Update using the existing document ID, but exclude the id field from the update data
         const { id, ...updateData } = mergedSettings;
         await updatePrinterSettings(printerSettings.id, updateData);
+        // Update global state immediately
+        setPrinterSettings(mergedSettings);
         return;
       }
 
@@ -84,15 +101,20 @@ export function usePrinterSettings(): PrinterSettingsState & PrinterSettingsActi
         // Exclude the id field from the update data
         const { id, ...updateData } = fullSettings;
         await updatePrinterSettings(printerSettings.id, updateData);
+        // Update global state immediately
+        setPrinterSettings(fullSettings);
         return;
       }
 
       // No existing settings, create new ones
       const { id, createdAt, updatedAt, ...createData } = fullSettings;
-      await createPrinterSettings({
+      const createdId = await createPrinterSettings({
         ...createData,
         organizationId: selectedOrganization.id,
       });
+      // Fetch the created settings to update global state
+      const createdSettings = await getPrinterSettings(selectedOrganization.id);
+      setPrinterSettings(createdSettings);
     } catch (err) {
       console.error('Error updating printer settings:', err);
       throw err;

@@ -34,7 +34,8 @@ export async function renderReceiptTemplate(
     template: ReceiptTemplate,
     order: Order,
     organization: Organization | null,
-    payments: OrderPayment[] = []
+    payments: OrderPayment[] = [],
+    printerSettings?: { paperWidth?: number }
   ): Promise<string> {
     console.log('=== Receipt Template Debug ===');
     console.log('Template:', template);
@@ -85,10 +86,11 @@ export async function renderReceiptTemplate(
      vatRate: (order.taxRate || 0).toString(),
      vatAmount: (order.taxAmount || 0).toFixed(2),
      total: (order.total || 0).toFixed(2),
-     customHeader: template.customHeader || '',
-     customFooter: template.customFooter || '',
-     totalQty: totalQty,
-     items: order.items.map(item => ({
+      customHeader: template.customHeader || '',
+      customFooter: template.customFooter || '',
+      totalQty: totalQty,
+      paperWidth: printerSettings?.paperWidth,
+      items: order.items.map(item => ({
        name: item.name,
        quantity: item.quantity,
        total: item.total.toFixed(2)
@@ -179,11 +181,12 @@ function renderTemplate(template: string, data: ReceiptTemplateData): string {
    result = result.replace(/{{vatRate}}/g, data.vatRate);
    result = result.replace(/{{vatAmount}}/g, data.vatAmount);
    result = result.replace(/{{total}}/g, data.total);
-   result = result.replace(/{{customHeader}}/g, data.customHeader || '');
-   result = result.replace(/{{customFooter}}/g, data.customFooter || '');
-   result = result.replace(/{{totalQty}}/g, data.totalQty.toString());
-   result = result.replace(/{{queueNumber}}/g, data.queueNumber || '');
-   result = result.replace(/{{orderType}}/g, data.orderType);
+    result = result.replace(/{{customHeader}}/g, data.customHeader || '');
+    result = result.replace(/{{customFooter}}/g, data.customFooter || '');
+    result = result.replace(/{{totalQty}}/g, data.totalQty.toString());
+    result = result.replace(/{{paperWidth}}/g, data.paperWidth?.toString() || '80');
+    result = result.replace(/{{queueNumber}}/g, data.queueNumber || '');
+    result = result.replace(/{{orderType}}/g, data.orderType);
 
    console.log('After simple replacements - template contains {{orderType}}:', result.includes('{{orderType}}'));
    console.log('After simple replacements - template contains {{queueNumber}}:', result.includes('{{queueNumber}}'));

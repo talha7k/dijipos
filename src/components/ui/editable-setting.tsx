@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Check, X, Edit2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,6 +35,11 @@ export function EditableSetting<T extends string | number | boolean>({
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState<T>(value);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Update editValue when value prop changes
+  useEffect(() => {
+    setEditValue(value);
+  }, [value]);
 
   const handleStartEdit = () => {
     if (disabled) return;
@@ -79,9 +84,9 @@ export function EditableSetting<T extends string | number | boolean>({
         );
       case 'select':
         const option = options.find(opt => opt.value === String(value));
-        return option ? option.label : String(value);
+        return option ? option.label : (String(value) || placeholder || 'Not selected');
       default:
-        return String(value);
+        return String(value) || placeholder || 'Not set';
     }
   };
 
@@ -123,9 +128,9 @@ export function EditableSetting<T extends string | number | boolean>({
         );
       case 'select':
         return (
-          <Select value={String(editValue)} onValueChange={(val) => setEditValue(val as T)} disabled={isSaving}>
+          <Select value={String(editValue) || ''} onValueChange={(val) => setEditValue(val as T)} disabled={isSaving}>
             <SelectTrigger className="h-8">
-              <SelectValue />
+              <SelectValue placeholder={placeholder || 'Select option'} />
             </SelectTrigger>
             <SelectContent>
               {options.map((option) => (

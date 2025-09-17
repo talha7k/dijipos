@@ -1,6 +1,7 @@
 import { atom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
 import { indexedDBStorage } from '@/lib/storage';
+import { PrinterSettings } from '@/types';
 
 // =====================
 // THEME STATE ATOMS
@@ -42,3 +43,11 @@ export const notificationAtom = atom<{
   message: string;
   duration?: number;
 } | null>(null);
+
+// =====================
+// PRINTER SETTINGS STATE ATOMS
+// =====================
+
+export const printerSettingsAtom = atom<PrinterSettings | null>(null);
+export const printerSettingsLoadingAtom = atom<boolean>(false);
+export const printerSettingsErrorAtom = atom<string | null>(null);

@@ -7,8 +7,9 @@ import { PrinterSettings } from '@/types';
 import { useReceiptTemplatesData } from '@/lib/hooks/useReceiptTemplatesData';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EditableSetting } from '@/components/ui/editable-setting';
-import { Settings, FileText, File } from 'lucide-react';
+import { Settings } from 'lucide-react';
 import { toast } from 'sonner';
+import { PaperWidth } from '@/types/enums';
 
 interface PrinterSettingsTabProps {
   printerSettings: PrinterSettings | null;
@@ -48,57 +49,68 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
           Template & Print Settings
           <span className="text-sm text-muted-foreground">(Double-click to edit)</span>
         </CardTitle>
+        {!printerSettings && (
+          <p className="text-sm text-muted-foreground mt-2">
+            Settings will be created automatically when you make your first change.
+          </p>
+        )}
       </CardHeader>
       <CardContent>
-        {printerSettings ? (
-          <div className="space-y-4">
-            {!templatesLoading && receiptTemplates.length > 0 && (
-              <>
-                <EditableSetting
-                  label="Default Receipt Template"
-                  value={printerSettings.defaultReceiptTemplateId || ''}
-                  type="select"
-                  options={receiptTemplates.filter(t => t.type.toString().includes('thermal')).map(t => ({
-                    value: t.id,
-                    label: t.name
-                  }))}
-                  onSave={(value) => handleUpdateSettings('defaultReceiptTemplateId', value)}
-                  placeholder="Select template"
-                />
-                <EditableSetting
-                  label="Default Invoice Template"
-                  value={printerSettings.defaultInvoiceTemplateId || ''}
-                  type="select"
-                  options={receiptTemplates.filter(t => t.type.toString().includes('a4')).map(t => ({
-                    value: t.id,
-                    label: t.name
-                  }))}
-                  onSave={(value) => handleUpdateSettings('defaultInvoiceTemplateId', value)}
-                  placeholder="Select template"
-                />
-                <EditableSetting
-                  label="Default Quote Template"
-                  value={printerSettings.defaultQuoteTemplateId || ''}
-                  type="select"
-                  options={receiptTemplates.filter(t => t.type.toString().includes('a4')).map(t => ({
-                    value: t.id,
-                    label: t.name
-                  }))}
-                  onSave={(value) => handleUpdateSettings('defaultQuoteTemplateId', value)}
-                  placeholder="Select template"
-                />
-              </>
-            )}
-            <EditableSetting
-              label="Include ZATCA QR Code"
-              value={printerSettings.includeQRCode ?? true}
-              type="switch"
-              onSave={(value) => handleUpdateSettings('includeQRCode', value)}
-            />
-          </div>
-        ) : (
-          <p className="text-muted-foreground">Print settings not configured.</p>
-        )}
+        <div className="space-y-4">
+          {!templatesLoading && receiptTemplates.length > 0 && (
+            <>
+              <EditableSetting
+                label="Default Receipt Template"
+                value={printerSettings?.defaultReceiptTemplateId || ''}
+                type="select"
+                options={receiptTemplates.filter(t => t.type.toString().includes('thermal')).map(t => ({
+                  value: t.id,
+                  label: t.name
+                }))}
+                onSave={(value) => handleUpdateSettings('defaultReceiptTemplateId', value)}
+                placeholder="Select template"
+              />
+              <EditableSetting
+                label="Default Invoice Template"
+                value={printerSettings?.defaultInvoiceTemplateId || ''}
+                type="select"
+                options={receiptTemplates.filter(t => t.type.toString().includes('a4')).map(t => ({
+                  value: t.id,
+                  label: t.name
+                }))}
+                onSave={(value) => handleUpdateSettings('defaultInvoiceTemplateId', value)}
+                placeholder="Select template"
+              />
+              <EditableSetting
+                label="Default Quote Template"
+                value={printerSettings?.defaultQuoteTemplateId || ''}
+                type="select"
+                options={receiptTemplates.filter(t => t.type.toString().includes('a4')).map(t => ({
+                  value: t.id,
+                  label: t.name
+                }))}
+                onSave={(value) => handleUpdateSettings('defaultQuoteTemplateId', value)}
+                placeholder="Select template"
+              />
+            </>
+          )}
+          <EditableSetting
+            label="Paper Width (mm)"
+            value={printerSettings?.paperWidth?.toString() || PaperWidth.MM_80.toString()}
+            type="select"
+            options={Object.values(PaperWidth).map(width => ({
+              value: width.toString(),
+              label: `${width}mm`
+            }))}
+            onSave={(value) => handleUpdateSettings('paperWidth', parseInt(value))}
+          />
+          <EditableSetting
+            label="Include ZATCA QR Code"
+            value={printerSettings?.includeQRCode ?? true}
+            type="switch"
+            onSave={(value) => handleUpdateSettings('includeQRCode', value)}
+          />
+        </div>
       </CardContent>
     </Card>
   );

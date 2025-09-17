@@ -93,6 +93,7 @@ export interface ReceiptTemplateData {
   customHeader?: string;
   customFooter?: string;
   totalQty: number;
+  paperWidth?: number; // Paper width in mm for dynamic layout
   items: Array<{
     name: string;
     quantity: number;

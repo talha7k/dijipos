@@ -3,8 +3,8 @@ export const defaultArabicReceiptTemplate = `<!DOCTYPE html>
 <head>
   <meta charset="utf-8">
   <title>إيصال</title>
-  <style>
-    body { font-family: 'Amiri', serif; margin: 0; padding: 10px; font-size: 12px; }
+   <style>
+    body { font-family: 'Amiri', serif; margin: 0; padding: 10px; font-size: 12px; max-width: {{paperWidth}}px; }
     .header { text-align: center; margin-bottom: 10px; }
     .custom-header { text-align: center; margin-bottom: 10px; font-weight: bold; }
     .content { margin-bottom: 10px; }
@@ -18,7 +18,7 @@ export const defaultArabicReceiptTemplate = `<!DOCTYPE html>
     th { font-weight: bold; border-bottom: 1px solid #000; }
     .amount-col { text-align: right; }
     .qty-col { text-align: center; width: 50px; }
-    .item-col { width: 200px; }
+    .item-col { width: calc({{paperWidth}}px - 120px); }
     .bilingual { margin-bottom: 2px; text-align: right; }
     .english { text-align: left; direction: ltr; margin-bottom: 1px; }
     .arabic { text-align: right; direction: rtl; }

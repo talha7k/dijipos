@@ -148,11 +148,11 @@ export function POSCartSidebar({
             </Button>
           )}
            {selectedOrganization && cartItems.length > 0 && (
-             <ReceiptPrintDialog
-               order={createTempOrderForPayment()!}
-               organization={selectedOrganization}
-               receiptTemplates={receiptTemplates}
-               payments={[
+              <ReceiptPrintDialog
+                order={createTempOrderForPayment()!}
+                organization={selectedOrganization}
+                receiptTemplates={receiptTemplates}
+                payments={[
                  {
                    id: 'temp-payment',
                    organizationId: organizationId || '',

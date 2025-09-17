@@ -3,8 +3,8 @@ export const defaultEnglishReceiptTemplate = `<!DOCTYPE html>
 <head>
   <meta charset="utf-8">
   <title>Receipt</title>
-  <style>
-    body { font-family: monospace; margin: 0; padding: 10px; font-size: 12px; }
+   <style>
+    body { font-family: monospace; margin: 0; padding: 10px; font-size: 12px; max-width: {{paperWidth}}px; }
     .header { text-align: center; margin-bottom: 10px; }
     .custom-header { text-align: center; margin-bottom: 10px; font-weight: bold; }
     .content { margin-bottom: 10px; }
@@ -18,7 +18,7 @@ export const defaultEnglishReceiptTemplate = `<!DOCTYPE html>
     th { font-weight: bold; border-bottom: 1px solid #000; }
     .amount-col { text-align: right; }
     .qty-col { text-align: center; width: 60px; }
-    .item-col { width: 200px; }
+    .item-col { width: calc({{paperWidth}}px - 120px); }
   </style>
 </head>
 <body>
