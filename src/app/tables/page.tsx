@@ -1,99 +1,24 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useAtomValue } from 'jotai';
-import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
+import { useState } from 'react';
 import { useTables } from '@/lib/hooks/useTables';
 import { TableStatus } from '@/types/enums';
 import { Table as TableType } from '@/types';
-import { createTable as firestoreCreateTable, deleteTable as firestoreDeleteTable } from '@/lib/firebase/firestore/tables';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { MoreHorizontal } from 'lucide-react';
-import { Plus, Trash2, Table as TableIcon } from 'lucide-react';
-import { toast } from 'sonner';
 import { Search, Users } from 'lucide-react';
 import { TableList } from '@/components/TableList';
 import { AddTableDialog } from '@/components/AddTableDialog';
 import { TableActionsDialog } from '@/components/tables/TableActionsDialog';
 
 export default function TablesPage() {
-  const selectedOrganization = useAtomValue(selectedOrganizationAtom);
-  const organizationId = selectedOrganization?.id;
-  const { tables, loading: tablesLoading } = useTables();
-  // Table action functions
-  const createTable = async (tableData: { name: string; capacity: number; status: TableStatus }) => {
-    try {
-      const fullTableData = {
-        ...tableData,
-        organizationId: organizationId!,
-      };
-      return await firestoreCreateTable(fullTableData);
-    } catch (error) {
-      console.error('Error creating table:', error);
-      throw error;
-    }
-  };
-
-  const deleteTable = async (tableId: string) => {
-    try {
-      await firestoreDeleteTable(tableId);
-    } catch (error) {
-      console.error('Error deleting table:', error);
-      throw error;
-    }
-  };
-  const [loading, setLoading] = useState(true);
+  const { tables, loading, createTable, deleteTable } = useTables();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    console.log('TablesPage: organizationId:', organizationId);
-    console.log('TablesPage: tablesLoading:', tablesLoading);
-    console.log('TablesPage: tables length:', tables.length);
-    setLoading(tablesLoading);
-  }, [tablesLoading, organizationId, tables]);
-
-  const handleAddTable = async (table: {
-    name: string;
-    capacity: number;
-    status: TableStatus;
-  }) => {
-    try {
-      await createTable(table);
-    } catch (error) {
-      console.error('Error creating table:', error);
-    }
-  };
-
-  const handleAddMultipleTables = async (tables: Array<{
-    name: string;
-    capacity: number;
-    status: TableStatus;
-  }>) => {
-    try {
-      const promises = tables.map(table => createTable(table));
-      await Promise.all(promises);
-    } catch (error) {
-      console.error('Error creating multiple tables:', error);
-    }
-  };
-
-  const handleDeleteTable = async (tableId: string) => {
-    try {
-      await deleteTable(tableId);
-      toast.success('Table deleted successfully');
-    } catch (error) {
-      console.error('Error deleting table:', error);
-    }
-  };
+  
 
   const getStatusStats = () => {
     const stats = {
@@ -182,8 +107,15 @@ export default function TablesPage() {
         <AddTableDialog
           open={dialogOpen}
           onOpenChange={setDialogOpen}
-          onAddTable={handleAddTable}
-          onAddMultipleTables={handleAddMultipleTables}
+          onAddTable={createTable}
+          onAddMultipleTables={async (tables) => {
+            try {
+              const promises = tables.map(table => createTable(table));
+              await Promise.all(promises);
+            } catch (error) {
+              console.error('Error creating multiple tables:', error);
+            }
+          }}
         />
       </div>
 
@@ -191,7 +123,7 @@ export default function TablesPage() {
       <TableList
         tables={tables}
         searchTerm={searchTerm}
-        onDeleteTable={handleDeleteTable}
+        onDeleteTable={deleteTable}
       />
     </div>
   );

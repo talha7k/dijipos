@@ -1,13 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { useAtomValue } from 'jotai';
-
-import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
 import { useProducts } from '@/lib/hooks/useProducts';
 import { useServices } from '@/lib/hooks/useServices';
-import { createProduct, updateProduct, deleteProduct } from '@/lib/firebase/firestore/products';
-import { createCategory, updateCategory, deleteCategory } from '@/lib/firebase/firestore/categories';
+import { useOrganization } from '@/lib/hooks/useOrganization';
 import { Product, Service, CategoryType } from '@/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,9 +22,9 @@ import { CategoryTree } from '@/components/products_services/CategoryTree';
 import { ExportImportProducts } from '@/components/ExportImportProducts';
 
 export default function ProductsServicesPage() {
-  const selectedOrganization = useAtomValue(selectedOrganizationAtom);
+  const { selectedOrganization } = useOrganization();
   const organizationId = selectedOrganization?.id;
-  const { products, categories, loading: productsLoading } = useProducts();
+  const { products, categories, loading: productsLoading, createProduct, updateProduct, deleteProduct, createCategory, updateCategory, deleteCategory } = useProducts();
   const { services, loading: servicesLoading, createNewService, deleteExistingService } = useServices();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -47,13 +43,10 @@ export default function ProductsServicesPage() {
     price: number;
     categoryId: string | null;
   }) => {
-    if (!organizationId) return;
-
     try {
       await createProduct({
         ...product,
         categoryId: product.categoryId || undefined,
-        organizationId,
       });
     } catch (error) {
       console.error('Error creating product:', error);
@@ -67,13 +60,10 @@ export default function ProductsServicesPage() {
     price: number;
     categoryId: string | null;
   }) => {
-    if (!organizationId) return;
-
     try {
       await createNewService({
         ...service,
         categoryId: service.categoryId || undefined,
-        organizationId,
       });
     } catch (error) {
       console.error('Error creating service:', error);
@@ -87,14 +77,11 @@ export default function ProductsServicesPage() {
     type: 'product' | 'service';
     parentId: string | null;
   }) => {
-    if (!organizationId) return;
-
     try {
       await createCategory({
         ...category,
         type: category.type as CategoryType,
         parentId: category.parentId || undefined,
-        organizationId,
       });
     } catch (error) {
       console.error('Error creating category:', error);
@@ -114,11 +101,10 @@ export default function ProductsServicesPage() {
   };
 
   const confirmDeleteCategory = async () => {
-    if (!organizationId || !deleteCategoryId) return;
+    if (!deleteCategoryId) return;
 
     try {
       await deleteCategory(deleteCategoryId);
-      toast.success('Category deleted successfully');
     } catch (error) {
       console.error('Error deleting category:', error);
       toast.error('Failed to delete category');
@@ -130,8 +116,6 @@ export default function ProductsServicesPage() {
   };
 
   const handleDeleteProduct = async (productId: string) => {
-    if (!organizationId) return;
-
     try {
       await deleteProduct(productId);
     } catch (error) {
@@ -141,8 +125,6 @@ export default function ProductsServicesPage() {
   };
 
   const handleDeleteService = async (serviceId: string) => {
-    if (!organizationId) return;
-
     try {
       await deleteExistingService(serviceId);
     } catch (error) {

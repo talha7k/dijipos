@@ -1,11 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useAtomValue } from 'jotai';
-import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
 import { Customer } from '@/types';
 import { useCustomers } from '@/lib/hooks/useCustomers';
-import { createCustomer as createCustomerFn, updateCustomer as updateCustomerFn, deleteCustomer as deleteCustomerFn } from '@/lib/firebase/firestore/customers';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,22 +19,7 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/lib/firebase/config';
 
 export default function CustomersPage() {
-  const selectedOrganization = useAtomValue(selectedOrganizationAtom);
-  const organizationId = selectedOrganization?.id;
-  const { customers, loading: customersLoading } = useCustomers();
-  // Customer CRUD functions
-  const createCustomer = async (data: Omit<Customer, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => {
-    if (!organizationId) return;
-    await createCustomerFn({ ...data, organizationId });
-  };
-
-  const updateCustomer = async (id: string, data: Partial<Omit<Customer, 'id' | 'createdAt'>>) => {
-    await updateCustomerFn(id, data);
-  };
-
-  const deleteCustomer = async (id: string) => {
-    await deleteCustomerFn(id);
-  };
+  const { customers, loading: customersLoading, createCustomer, updateCustomer, deleteCustomer } = useCustomers();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -119,10 +101,8 @@ export default function CustomersPage() {
     try {
       if (editingCustomer) {
         await updateCustomer(editingCustomer.id, formData);
-        toast.success('Customer updated successfully');
       } else {
         await createCustomer(formData);
-        toast.success('Customer added successfully');
       }
       setIsDialogOpen(false);
       setFormData({
@@ -135,7 +115,7 @@ export default function CustomersPage() {
         logoUrl: '',
       });
     } catch (error) {
-      toast.error('Failed to save customer');
+      // Error handling is done in the hook
     }
   };
 

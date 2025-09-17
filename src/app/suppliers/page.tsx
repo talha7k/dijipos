@@ -1,11 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useAtomValue } from 'jotai';
-import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
 import { Supplier } from '@/types';
 import { useSuppliers } from '@/lib/hooks/useSuppliers';
-import { createSupplier as createSupplierFirebase, updateSupplier as updateSupplierFirebase, deleteSupplier as deleteSupplierFirebase } from '@/lib/firebase/firestore/suppliers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,9 +17,7 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/lib/firebase/config';
 
 export default function SuppliersPage() {
-  const selectedOrganization = useAtomValue(selectedOrganizationAtom);
-  const organizationId = selectedOrganization?.id;
-  const { suppliers, loading } = useSuppliers();
+  const { suppliers, loading, createSupplier, updateSupplier, deleteSupplier } = useSuppliers();
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
@@ -71,10 +66,9 @@ export default function SuppliersPage() {
 
   const handleDeleteSupplier = async (id: string) => {
     try {
-      await deleteSupplierFirebase(id);
-      toast.success('Supplier deleted successfully');
+      await deleteSupplier(id);
     } catch (error) {
-      toast.error('Failed to delete supplier');
+      // Error handling is done in the hook
     }
   };
 
@@ -103,21 +97,14 @@ export default function SuppliersPage() {
   };
 
   const handleSaveSupplier = async () => {
-    if (!organizationId) return;
-
     setSaving(true);
     try {
       if (editingSupplier) {
         // Update existing supplier
-        await updateSupplierFirebase(editingSupplier.id, formData);
-        toast.success('Supplier updated successfully');
+        await updateSupplier(editingSupplier.id, formData);
       } else {
         // Add new supplier
-        await createSupplierFirebase({
-          ...formData,
-          organizationId,
-        });
-        toast.success('Supplier created successfully');
+        await createSupplier(formData);
       }
       setIsDialogOpen(false);
       setFormData({
@@ -131,7 +118,7 @@ export default function SuppliersPage() {
         logoUrl: '',
       });
     } catch (error) {
-      toast.error('Failed to save supplier');
+      // Error handling is done in the hook
     } finally {
       setSaving(false);
     }

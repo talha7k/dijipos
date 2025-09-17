@@ -14,17 +14,17 @@ import {
 import { db } from '../config';
 import { Table } from '@/types';
 
-// Collection reference
-const tablesRef = collection(db, 'tables');
+// Collection reference - this will be dynamically created with organization ID
+const getTablesRef = (organizationId: string) => collection(db, 'organizations', organizationId, 'tables');
 
 /**
  * Fetch all tables for an organization
  */
 export async function getTables(organizationId: string): Promise<Table[]> {
   try {
+    const tablesRef = getTablesRef(organizationId);
     const tablesQuery = query(
       tablesRef,
-      where('organizationId', '==', organizationId),
       orderBy('createdAt', 'desc')
     );
     const snapshot = await getDocs(tablesQuery);
@@ -44,8 +44,9 @@ export async function getTables(organizationId: string): Promise<Table[]> {
 /**
  * Get a single table by ID
  */
-export async function getTable(tableId: string): Promise<Table | null> {
+export async function getTable(organizationId: string, tableId: string): Promise<Table | null> {
   try {
+    const tablesRef = getTablesRef(organizationId);
     const tableDoc = await getDoc(doc(tablesRef, tableId));
     if (!tableDoc.exists()) {
       return null;
@@ -70,6 +71,7 @@ export async function getTable(tableId: string): Promise<Table | null> {
 export async function createTable(data: Omit<Table, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
   try {
     const now = Timestamp.now();
+    const tablesRef = getTablesRef(data.organizationId);
     const docRef = await addDoc(tablesRef, {
       ...data,
       createdAt: now,
@@ -85,8 +87,9 @@ export async function createTable(data: Omit<Table, 'id' | 'createdAt' | 'update
 /**
  * Update a table
  */
-export async function updateTable(tableId: string, updates: Partial<Omit<Table, 'id' | 'createdAt'>>): Promise<void> {
+export async function updateTable(organizationId: string, tableId: string, updates: Partial<Omit<Table, 'id' | 'createdAt'>>): Promise<void> {
   try {
+    const tablesRef = getTablesRef(organizationId);
     const docRef = doc(tablesRef, tableId);
     await updateDoc(docRef, {
       ...updates,
@@ -101,8 +104,9 @@ export async function updateTable(tableId: string, updates: Partial<Omit<Table, 
 /**
  * Delete a table
  */
-export async function deleteTable(tableId: string): Promise<void> {
+export async function deleteTable(organizationId: string, tableId: string): Promise<void> {
   try {
+    const tablesRef = getTablesRef(organizationId);
     await deleteDoc(doc(tablesRef, tableId));
   } catch (error) {
     console.error('Error deleting table:', error);

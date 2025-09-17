@@ -1,15 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { useAtomValue } from 'jotai';
-
-import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
 import { Quote, SalesInvoice } from '@/types';
 import { QuoteTemplateType, QuoteStatus, InvoiceStatus } from '@/types/enums';
 import { useQuotes } from '@/lib/hooks/useQuotes';
 import { useInvoices } from '@/lib/hooks/useInvoices';
 import { useCustomers } from '@/lib/hooks/useCustomers';
-import { createQuote as createQuoteFirebase, updateQuote as updateQuoteFirebase } from '@/lib/firebase/firestore/quotes';
+import { useOrganization } from '@/lib/hooks/useOrganization';
 import { useQuotesTemplatesData } from '@/lib/hooks/useQuotesTemplatesData';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -20,25 +17,12 @@ import { QuoteActionsDialog } from '@/components/invoices_quotes/QuoteActionsDia
 import { QuotePrintDialog } from '@/components/invoices_quotes/QuotePrintDialog';
 
 function QuotesContent() {
-  const selectedOrganization = useAtomValue(selectedOrganizationAtom);
-  const organizationId = selectedOrganization?.id;
-  const { quotes, loading: quotesLoading } = useQuotes();
+  const { quotes, loading: quotesLoading, createQuote, updateQuote } = useQuotes();
   const { customers, loading: customersLoading } = useCustomers();
   const { createSalesInvoice } = useInvoices();
+  const { selectedOrganization } = useOrganization();
+  const organizationId = selectedOrganization?.id;
   const { templates: quoteTemplates, loading: templatesLoading } = useQuotesTemplatesData(organizationId || undefined);
-
-  // Quote action functions
-  const createQuote = async (quoteData: Omit<Quote, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => {
-    if (!organizationId) return;
-    return await createQuoteFirebase({
-      ...quoteData,
-      organizationId,
-    });
-  };
-
-  const updateQuote = async (quoteId: string, updates: Partial<Omit<Quote, 'id' | 'createdAt'>>) => {
-    return await updateQuoteFirebase(quoteId, updates);
-  };
 
   const createInvoice = async (invoiceData: Omit<SalesInvoice, 'id' | 'createdAt' | 'updatedAt' | 'organizationId'>) => {
     if (!organizationId) return;
@@ -56,8 +40,6 @@ function QuotesContent() {
   const [printDialogOpen, setPrintDialogOpen] = useState(false);
 
   const handleCreateQuote = async (quoteData: Omit<Quote, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => {
-    if (!organizationId || !createQuote) return;
-
     await createQuote(quoteData);
     setDialogOpen(false);
   };

@@ -16,7 +16,7 @@ interface ServicesState {
 
 interface ServicesActions {
   getServiceById: (serviceId: string) => Promise<Service | null>;
-  createNewService: (serviceData: Omit<Service, 'id' | 'createdAt' | 'updatedAt'>) => Promise<string>;
+  createNewService: (serviceData: Omit<Service, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => Promise<string>;
   updateExistingService: (serviceId: string, updates: Partial<Omit<Service, 'id' | 'createdAt'>>) => Promise<void>;
   deleteExistingService: (serviceId: string) => Promise<void>;
 }
@@ -43,9 +43,17 @@ export function useServices(): ServicesState & ServicesActions {
     }
   };
 
-  const createNewService = async (serviceData: Omit<Service, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
+  const createNewService = async (serviceData: Omit<Service, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>): Promise<string> => {
+    if (!selectedOrganization?.id) {
+      throw new Error('No organization selected');
+    }
+
     try {
-      const serviceId = await createService(serviceData);
+      const fullServiceData = {
+        ...serviceData,
+        organizationId: selectedOrganization.id,
+      };
+      const serviceId = await createService(fullServiceData);
       // Real-time listener will automatically update the services list
       return serviceId;
     } catch (err) {
