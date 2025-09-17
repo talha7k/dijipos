@@ -6,7 +6,7 @@ import { useAtomValue } from "jotai";
 import {
   selectedOrganizationAtom,
   organizationUsersAtom,
-} from "@/atoms/organizationAtoms";
+} from "@/atoms";
 import { organizationLoadingAtom } from "@/atoms";
 import {
   useInvitationCodesData,

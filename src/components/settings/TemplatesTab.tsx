@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAtomValue } from 'jotai';
-import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
+import { selectedOrganizationAtom } from '@/atoms';
 import { ReceiptTemplate, InvoiceTemplate, QuoteTemplate, TemplateCategory, UnifiedTemplate, PrinterSettings } from '@/types';
 import { ReceiptTemplateType, InvoiceTemplateType, QuoteTemplateType } from '@/types/enums';
 import { useTemplates } from '@/lib/hooks/useTemplates';

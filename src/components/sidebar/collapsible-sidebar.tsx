@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useAtom } from 'jotai';
-import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
+import { selectedOrganizationAtom } from '@/atoms';
 import { themeAtom, sidebarCollapsedAtom } from '@/atoms/uiAtoms';
 import { auth } from "@/lib/firebase/config";
 import { DesktopSidebar } from "./desktop-sidebar";

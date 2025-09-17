@@ -21,7 +21,7 @@ import {
 import { OrderActionsDialog } from "./OrderStatusActionsDialog";
 import { ReceiptPrintDialog } from "@/components/ReceiptPrintDialog";
 import { useAtom } from 'jotai';
-import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
+import { selectedOrganizationAtom } from '@/atoms';
 import { useStoreSettings } from "@/lib/hooks/useStoreSettings";
 import { useTemplates } from "@/lib/hooks/useTemplates";
 

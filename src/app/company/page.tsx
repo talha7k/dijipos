@@ -5,7 +5,7 @@ import Image from 'next/image';
 
 import { useAtomValue } from 'jotai';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { selectedOrganizationAtom, organizationUsersAtom,  } from '@/atoms/organizationAtoms';
+import { selectedOrganizationAtom, organizationUsersAtom,  } from '@/atoms';
 import { organizationLoadingAtom } from '@/atoms';
 import { useInvitationCodesData, useInvitationCodesActions } from '@/lib/hooks/useInvitationCodes';
 import { updateOrganization, updateOrganizationBranding, updateOrganizationUser, updateUserStatus } from '@/lib/firebase/firestore/organizations';

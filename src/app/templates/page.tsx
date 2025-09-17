@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useAtomValue } from 'jotai';
 
-import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
+import { selectedOrganizationAtom } from '@/atoms';
 import { InvoiceTemplate, TemplateField, TemplateStyle, TemplateFieldType } from '@/types';
 import { InvoiceTemplateType } from '@/types/enums';
 import { Plus, Edit, Trash2, Copy, Eye } from 'lucide-react';

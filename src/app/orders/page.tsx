@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useAtom } from 'jotai';
-import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
+import { selectedOrganizationAtom } from '@/atoms';
 import { Order, OrderPayment, OrderStatus } from '@/types';
 import { useOrders } from '@/lib/hooks/useOrders';
 import { useRealtimeCollection } from '@/lib/hooks/useRealtimeCollection';
@@ -362,7 +362,6 @@ function OrdersContent() {
                           order={order}
                           payments={orderPayments[order.id] || []}
                           onMarkAsPaid={handleMarkAsPaid}
-                          onCompleteOrder={handleCompleteOrder}
                           onUpdateStatus={handleUpdateOrderStatus}
                         >
                           <Button

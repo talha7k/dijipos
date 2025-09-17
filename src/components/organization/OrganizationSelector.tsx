@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { selectedOrganizationAtom, userOrganizationsAtom, organizationUsersAtom, selectedOrganizationIdAtom } from '@/atoms/organizationAtoms';
+import { selectedOrganizationAtom, userOrganizationsAtom, organizationUsersAtom, selectedOrganizationIdAtom } from '@/atoms';
 import { getOrganizationsForUser } from '@/lib/firebase/firestore/organizations';
 import { Building2, Plus, Users } from 'lucide-react';
 import { collection, query, where, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';

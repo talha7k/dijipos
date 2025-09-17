@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAtomValue } from 'jotai';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { selectedOrganizationAtom, userOrganizationsAtom, organizationErrorAtom, selectedOrganizationIdAtom } from '@/atoms/organizationAtoms';
+import { selectedOrganizationAtom, userOrganizationsAtom, organizationErrorAtom, selectedOrganizationIdAtom } from '@/atoms';
 import { organizationLoadingAtom } from '@/atoms';
 import { toast } from 'sonner';
 import { indexedDBStorage } from '@/lib/storage';

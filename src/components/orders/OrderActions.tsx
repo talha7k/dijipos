@@ -39,7 +39,6 @@ export function OrderActions({
               payments={payments}
               updatingStatus={updatingStatus}
               onMarkAsPaid={onMarkAsPaid}
-              onCompleteOrder={onCompleteOrder}
               onUpdateStatus={onUpdateStatus}
             >
               <Button
@@ -68,7 +67,6 @@ export function OrderActions({
                 payments={payments}
                 updatingStatus={updatingStatus}
                 onMarkAsPaid={onMarkAsPaid}
-                onCompleteOrder={onCompleteOrder}
                 onUpdateStatus={onUpdateStatus}
               >
                 <Button
@@ -95,7 +93,6 @@ export function OrderActions({
             payments={payments}
             updatingStatus={updatingStatus}
             onMarkAsPaid={onMarkAsPaid}
-            onCompleteOrder={onCompleteOrder}
             onUpdateStatus={onUpdateStatus}
           >
             <Button

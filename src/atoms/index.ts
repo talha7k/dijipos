@@ -2,7 +2,7 @@
 
 import { atom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
-import { Organization, OrganizationUser } from '@/types'; //
+import { Organization, OrganizationUser, UserRole } from '@/types';
 import { indexedDBStorage } from '@/lib/storage';
 
 // Re-export atoms from more specific files
@@ -33,6 +33,12 @@ export const userOrganizationsAtom = atom<Organization[]>([]);
 
 // This atom holds the user's role and details for the currently selected organization.
 export const organizationUserRoleAtom = atom<OrganizationUser | null>(null);
+
+// This atom holds the user's associations with organizations (roles, etc.)
+export const userOrganizationAssociationsAtom = atom<{ organizationId: string; role: UserRole; isActive: boolean }[]>([]);
+
+// This atom holds the users in the currently selected organization
+export const organizationUsersAtom = atom<OrganizationUser[]>([]);
 
 
 // --- STATUS ATOMS ---

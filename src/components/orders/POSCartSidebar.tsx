@@ -5,7 +5,7 @@ import { POSCartItem } from './POSCartItem';
 import { ReceiptPrintDialog } from '@/components/ReceiptPrintDialog';
 import { Order, OrderStatus, ItemType } from '@/types';
 import { useAtomValue } from 'jotai';
-import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
+import { selectedOrganizationAtom } from '@/atoms';
 import { selectedTableAtom, selectedCustomerAtom, selectedOrderTypeAtom, currentQueueNumberAtom } from '@/atoms/posAtoms';
 import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
 import { useTemplates } from '@/lib/hooks/useTemplates';

@@ -10,7 +10,7 @@ import { SidebarProps, NavigationItem } from "./sidebar-types";
 
 import { useOrganization } from "@/lib/hooks/useOrganization";
 import { useAtom } from "jotai";
-import { selectedOrganizationIdAtom, userOrganizationAssociationsAtom } from "@/atoms/organizationAtoms";
+import { selectedOrganizationIdAtom, organizationUserRoleAtom } from "@/atoms";
 import {
   BarChart3,
   Building2,
@@ -154,14 +154,9 @@ export function DesktopSidebar({
 }: SidebarProps) {
 
   const [organizationId] = useAtom(selectedOrganizationIdAtom);
-  const [userOrganizationAssociations] = useAtom(userOrganizationAssociationsAtom);
+  const [organizationUserRole] = useAtom(organizationUserRoleAtom);
 
-  // Get user role for the selected organization
-  const userAssociation = userOrganizationAssociations.find(
-    (assoc: {organizationId: string, role: string, isActive: boolean}) =>
-      assoc.organizationId === organizationId && assoc.isActive
-  );
-  const userRole = userAssociation?.role || 'waiter'; // Default to waiter if no role found
+  const userRole = organizationUserRole?.role || 'waiter'; // Default to waiter if no role found
   const navigationItems = getNavigationItems(userRole);
   return (
     <div

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useAtom } from 'jotai';
-import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
+import { selectedOrganizationAtom } from '@/atoms';
 import { useMemo } from 'react';
 import { Invoice, Payment } from '@/types';
 import { InvoiceList } from '@/components/invoices_quotes/InvoiceList';
@@ -200,7 +200,6 @@ export default function InvoicesPage() {
           invoiceTemplates={invoiceTemplates}
           customer={selectedInvoice.type === 'sales' && selectedInvoice.clientName ? customers.find(c => c.name === selectedInvoice.clientName) : undefined}
           supplier={selectedInvoice.type === 'purchase' && selectedInvoice.supplierId ? suppliers.find(s => s.id === selectedInvoice.supplierId) : undefined}
-          payments={getPaymentsForInvoice(selectedInvoice.id)}
           open={showPrint}
           onOpenChange={setShowPrint}
         >

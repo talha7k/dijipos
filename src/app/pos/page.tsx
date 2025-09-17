@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
-import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
+import { selectedOrganizationAtom } from '@/atoms';
 import { CartItem, ItemType, Order, OrderStatus, Product, Service, Table, Customer, OrderType, OrderPayment } from "@/types";
 import { useProducts } from "@/lib/hooks/useProducts";
 import { useServices } from "@/lib/hooks/useServices";

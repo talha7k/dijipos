@@ -8,7 +8,7 @@ import {
   userOrganizationAssociationsAtom,
   organizationErrorAtom,
   organizationUsersAtom
-} from '@/atoms/organizationAtoms';
+} from '@/atoms';
 import { organizationsLoadingAtom, organizationDetailsLoadingAtom, organizationLoadingAtom } from '@/atoms';
 import { getOrganization, getOrganizationsForUser, getOrganizationUsers } from '../firebase/firestore/organizations';
 import { useAuth } from './useAuth';

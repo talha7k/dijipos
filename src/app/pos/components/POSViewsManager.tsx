@@ -69,7 +69,6 @@ export function POSViewsManager({
             <POSBreadcrumb
               categoryPath={categoryPath}
               categories={categories}
-              onNavigateToRoot={onNavigateToRoot}
               onNavigateToPath={onNavigateToPath}
             />
 
@@ -138,7 +137,6 @@ export function POSViewsManager({
         <POSOrderGrid
           orders={orders.filter(order => order.status !== 'cancelled')}
           payments={orderPayments}
-          organizationId={organizationId}
           onOrderSelect={onOrderSelect}
           onPayOrder={onPayOrder}
           onBack={onBackToItems}

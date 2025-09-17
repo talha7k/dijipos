@@ -16,7 +16,7 @@ import {
   userOrganizationsAtom,
   userOrganizationAssociationsAtom,
   organizationUsersAtom
-} from "@/atoms/organizationAtoms";
+} from "@/atoms";
 import { organizationsLoadingAtom } from "@/atoms";
 import { themeAtom } from "@/atoms/uiAtoms";
 import {

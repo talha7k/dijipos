@@ -3,7 +3,7 @@
 
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useAtom } from 'jotai';
-import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
+import { selectedOrganizationAtom } from '@/atoms';
 
 import { useTables } from '@/lib/hooks/useTables';
 import { useTemplates } from '@/lib/hooks/useTemplates';

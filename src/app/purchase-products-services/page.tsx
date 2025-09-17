@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAtomValue } from 'jotai';
 
-import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
+import { selectedOrganizationAtom } from '@/atoms';
 import { usePurchaseProductsData, usePurchaseProductsActions } from '@/lib/hooks/usePurchaseProducts';
 import { usePurchaseServicesData, usePurchaseServicesActions } from '@/lib/hooks/usePurchaseServices';
 import { useProducts } from '@/lib/hooks/useProducts';
