@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAtomValue } from 'jotai';
-
+import { useAuth } from '@/lib/hooks/useAuth';
 import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
 import { Button } from '@/components/ui/button';
 import { Building2, LogOut, ChevronDown, ChevronUp, User } from 'lucide-react';
@@ -12,11 +12,11 @@ interface UserProfileWithOrganizationProps {
   isCollapsed?: boolean;
 }
 
-export function UserProfileWithOrganization({ 
-  isCollapsed = false 
+export function UserProfileWithOrganization({
+  isCollapsed = false
 }: UserProfileWithOrganizationProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const user = useAtomValue(userAtom);
+  const { user } = useAuth();
   const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const logout = () => {
     // TODO: implement logout

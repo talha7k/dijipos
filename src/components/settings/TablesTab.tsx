@@ -13,7 +13,11 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Table as TableIcon, Plus, Trash2, Users, MoreHorizontal } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { TableActionsDialog } from '@/components/tables/TableActionsDialog';
-import { useTableManagement } from '@/legacy_hooks/tables/use-table-management';
+import { useState } from 'react';
+import { addDoc, deleteDoc, doc, collection } from 'firebase/firestore';
+import { db } from '@/lib/firebase/config';
+import { toast } from 'sonner';
+import { getTableStatusColor } from '@/lib/utils';
 
 interface TablesTabProps {
   tables: Table[];
@@ -22,18 +26,58 @@ interface TablesTabProps {
 export function TablesTab({ tables }: TablesTabProps) {
   const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
-  const {
-    dialogOpen,
-    setDialogOpen,
-    deleteTableId,
-    setDeleteTableId,
-    newTable,
-    setNewTable,
-    handleAddTable,
-    handleDeleteTable,
-    confirmDeleteTable,
-    getStatusColor,
-  } = useTableManagement(organizationId || undefined);
+
+  // Local state management
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [deleteTableId, setDeleteTableId] = useState<string | null>(null);
+  const [newTable, setNewTable] = useState({
+    name: '',
+    capacity: 1,
+    status: 'available' as 'available' | 'occupied' | 'reserved' | 'maintenance'
+  });
+
+  // Table management functions
+  const handleAddTable = async () => {
+    if (!organizationId || !newTable.name.trim()) return;
+
+    try {
+      await addDoc(collection(db, 'organizations', organizationId, 'tables'), {
+        ...newTable,
+        organizationId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      setNewTable({ name: '', capacity: 1, status: 'available' });
+      setDialogOpen(false);
+      toast.success('Table added successfully');
+    } catch (error) {
+      console.error('Error adding table:', error);
+      toast.error('Failed to add table');
+    }
+  };
+
+  const handleDeleteTable = (id: string) => {
+    setDeleteTableId(id);
+  };
+
+  const confirmDeleteTable = async () => {
+    if (!organizationId || !deleteTableId) return;
+
+    try {
+      await deleteDoc(doc(db, 'organizations', organizationId, 'tables', deleteTableId));
+      toast.success('Table deleted successfully');
+    } catch (error) {
+      console.error('Error deleting table:', error);
+      toast.error('Failed to delete table');
+    } finally {
+      setDeleteTableId(null);
+    }
+  };
+
+  const getStatusColor = (status: string, withBorder = true) => {
+    return getTableStatusColor(status, withBorder);
+  };
 
   return (
     <Card>

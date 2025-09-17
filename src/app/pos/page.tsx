@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState, useCallback } from "react";
 import { useOrganization } from "@/lib/hooks/useOrganization";
-import { CartItem, ItemType } from "@/types";
+import { CartItem, ItemType, Order, OrderStatus, Product, Service, Table, Customer, OrderType, OrderPayment } from "@/types";
 import { useProducts } from "@/lib/hooks/useProducts";
 import { useServices } from "@/lib/hooks/useServices";
 import { useTables } from "@/lib/hooks/useTables";
@@ -10,6 +10,7 @@ import { useCustomers } from "@/lib/hooks/useCustomers";
 import { useOrders } from "@/lib/hooks/useOrders";
 import { useOrderTypes } from "@/legacy_hooks/useOrderTypes";
 import { usePaymentTypes } from "@/legacy_hooks/uePaymentTypes";
+import { useAuth } from "@/lib/hooks/useAuth";
 
 import {
   POSLayout,
@@ -21,7 +22,18 @@ import {
 import { POSHeader } from "@/components/orders/POSHeader";
 import { POSViewsManager } from "./components/POSViewsManager";
 import { POSCartSidebar } from "@/components/orders/POSCartSidebar";
-import { usePOSLogic } from "@/legacy_hooks/pos/usePOSState";
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
+import {
+  cartItemsAtom,
+  cartTotalAtom,
+  selectedTableAtom,
+  selectedCustomerAtom,
+  selectedOrderTypeAtom,
+  selectedCartOrderAtom,
+  currentViewAtom,
+  categoryPathAtom,
+  resetPOSStateAtom
+} from '@/store/atoms/posAtoms';
 
 import {
   AlertDialog,
@@ -50,49 +62,193 @@ export default function SimplifiedPOSPage() {
   const { paymentTypes = [], loading: paymentTypesLoading } =
     usePaymentTypes(organizationId || undefined);
 
-  // Use the custom POS logic hook
-  const {
-    cartItems,
-    cartTotal,
-    posView: currentView,
-    selectedTable,
-    selectedCustomer,
-    selectedOrderType,
-    selectedOrder,
-    categoryPath,
-    showOrderConfirmationDialog,
-    pendingOrderToReopen,
-    showPaymentSuccessDialog,
-    paymentSuccessData,
-    showCartItemModal,
-    editingCartItem,
-    handleAddToCart,
-    handleTableSelected,
-    handleCustomerSelected,
-    handleOrderTypeSelect,
-    handleOrderReopen,
-    proceedWithOrderReopen,
-    handleSaveOrder,
-    handlePaymentProcessed,
-    handleClearCart,
-    handleBackToItems,
-    handleTableDeselect,
-    handleCustomerDeselect,
-    handleOrderTypeDeselect,
-    handleTableSelect,
-    handleCustomerSelect,
-    handleOrdersClick,
-    handleCategoryClick,
-    handleNavigateToRoot,
-    handleNavigateToPath,
-    handlePayOrder,
-    updateCartItem,
-    removeFromCart,
-    setShowOrderConfirmationDialog,
-    setShowCartItemModal,
-    setEditingCartItem,
-    setShowPaymentSuccessDialog,
-  } = usePOSLogic();
+  // Use POS atoms directly
+  const [cartItems, setCartItems] = useAtom(cartItemsAtom);
+  const cartTotal = useAtomValue(cartTotalAtom);
+  const [selectedTable, setSelectedTable] = useAtom(selectedTableAtom);
+  const [selectedCustomer, setSelectedCustomer] = useAtom(selectedCustomerAtom);
+  const [selectedOrderType, setSelectedOrderType] = useAtom(selectedOrderTypeAtom);
+  const [selectedOrder, setSelectedOrder] = useAtom(selectedCartOrderAtom);
+  const [currentView, setCurrentView] = useAtom(currentViewAtom);
+  const [categoryPath, setCategoryPath] = useAtom(categoryPathAtom);
+  const resetPOSState = useSetAtom(resetPOSStateAtom);
+
+  // Local state for UI
+  const [showOrderConfirmationDialog, setShowOrderConfirmationDialog] = useState(false);
+  const [pendingOrderToReopen, setPendingOrderToReopen] = useState<Order | null>(null);
+  const [showPaymentSuccessDialog, setShowPaymentSuccessDialog] = useState(false);
+  const [paymentSuccessData, setPaymentSuccessData] = useState<{ totalPaid: number; order?: Order } | null>(null);
+  const [showCartItemModal, setShowCartItemModal] = useState(false);
+  const [editingCartItem, setEditingCartItem] = useState<CartItem | null>(null);
+
+  // Get auth context
+  const { user } = useAuth();
+
+  // Handler functions
+  const handleAddToCart = useCallback((item: Product | Service, type: 'product' | 'service') => {
+    if (!item) return;
+
+    const existingItem = cartItems.find(
+      (cartItem: CartItem) => cartItem.id === item.id && cartItem.type === (type === 'product' ? ItemType.PRODUCT : ItemType.SERVICE)
+    );
+
+    if (existingItem) {
+      const updatedCart = cartItems.map(cartItem =>
+        cartItem.id === item.id && cartItem.type === (type === 'product' ? ItemType.PRODUCT : ItemType.SERVICE)
+          ? { ...cartItem, quantity: (cartItem.quantity || 1) + 1, total: ((cartItem.quantity || 1) + 1) * item.price }
+          : cartItem
+      );
+      setCartItems(updatedCart);
+    } else {
+      const newItem: CartItem = {
+        id: item.id,
+        type: type === 'product' ? ItemType.PRODUCT : ItemType.SERVICE,
+        name: item.name,
+        unitPrice: item.price,
+        quantity: 1,
+        total: item.price
+      };
+      setCartItems([...cartItems, newItem]);
+    }
+  }, [cartItems, setCartItems]);
+
+  const handleTableSelected = useCallback((table: Table) => {
+    setSelectedTable(table);
+    setCurrentView('items');
+  }, [setSelectedTable, setCurrentView]);
+
+  const handleCustomerSelected = useCallback((customer: Customer) => {
+    setSelectedCustomer(customer);
+    setCurrentView('items');
+  }, [setSelectedCustomer, setCurrentView]);
+
+  const handleOrderTypeSelect = useCallback((orderType: OrderType) => {
+    setSelectedOrderType(orderType);
+  }, [setSelectedOrderType]);
+
+  const handleOrderReopen = useCallback((order: Order) => {
+    setPendingOrderToReopen(order);
+    setShowOrderConfirmationDialog(true);
+  }, []);
+
+  const proceedWithOrderReopen = useCallback(() => {
+    if (!pendingOrderToReopen) return;
+
+    // Clear existing cart and load order items
+    setCartItems([]);
+
+    const newCartItems = pendingOrderToReopen.items.map((item: CartItem) => ({
+      id: item.productId || item.serviceId || item.id,
+      type: item.type === 'product' ? ItemType.PRODUCT : ItemType.SERVICE,
+      name: item.name,
+      unitPrice: item.unitPrice,
+      quantity: item.quantity,
+      total: item.total
+    }));
+
+    setCartItems(newCartItems);
+    setSelectedOrder(pendingOrderToReopen);
+    setShowOrderConfirmationDialog(false);
+    setPendingOrderToReopen(null);
+    setCurrentView('items');
+  }, [pendingOrderToReopen, setCartItems, setSelectedOrder, setCurrentView]);
+
+  const handleSaveOrder = useCallback(async () => {
+    if (!organizationId || cartItems.length === 0) return;
+
+    // This would need to be implemented with Firebase operations
+    console.log('Save order functionality to be implemented');
+  }, [organizationId, cartItems]);
+
+  const handlePaymentProcessed = useCallback(async (payments: OrderPayment[]) => {
+    setPaymentSuccessData({ totalPaid: payments.reduce((sum, payment) => sum + payment.amount, 0) });
+    setShowPaymentSuccessDialog(true);
+    setCurrentView('items');
+  }, [setCurrentView]);
+
+  const handleClearCart = useCallback(() => {
+    setCartItems([]);
+  }, [setCartItems]);
+
+  const handleBackToItems = useCallback(() => {
+    resetPOSState();
+  }, [resetPOSState]);
+
+  const handleTableDeselect = useCallback(() => {
+    setSelectedTable(null);
+  }, [setSelectedTable]);
+
+  const handleCustomerDeselect = useCallback(() => {
+    setSelectedCustomer(null);
+  }, [setSelectedCustomer]);
+
+  const handleOrderTypeDeselect = useCallback(() => {
+    setSelectedOrderType(null);
+  }, [setSelectedOrderType]);
+
+  const handleTableSelect = useCallback(() => {
+    setCurrentView('tables');
+  }, [setCurrentView]);
+
+  const handleCustomerSelect = useCallback(() => {
+    setCurrentView('customers');
+  }, [setCurrentView]);
+
+  const handleOrdersClick = useCallback(() => {
+    setCurrentView('orders');
+  }, [setCurrentView]);
+
+  const handleCategoryClick = useCallback((categoryId: string) => {
+    setCategoryPath([...categoryPath, categoryId]);
+  }, [setCategoryPath, categoryPath]);
+
+  const handleNavigateToRoot = useCallback(() => {
+    setCategoryPath([]);
+  }, [setCategoryPath]);
+
+  const handleNavigateToPath = useCallback((path: string[]) => {
+    setCategoryPath(path);
+  }, [setCategoryPath]);
+
+  const handlePayOrder = useCallback(() => {
+    if (cartItems.length === 0) return;
+
+    const orderToPay = selectedOrder || {
+      id: 'temp-checkout',
+      organizationId: organizationId || '',
+      orderNumber: `TEMP-${Date.now()}`,
+      queueNumber: '1',
+      items: cartItems,
+      subtotal: cartTotal,
+      taxRate: 15,
+      taxAmount: cartTotal * 0.15,
+      total: cartTotal * 1.15,
+      status: OrderStatus.OPEN,
+      paid: false,
+      orderType: selectedOrderType?.name || 'dine-in',
+      createdById: user?.uid || 'unknown',
+      createdByName: user?.displayName || user?.email || 'Unknown User',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    setSelectedOrder(orderToPay);
+    setCurrentView('payment');
+  }, [cartItems, cartTotal, selectedOrder, selectedOrderType, organizationId, user, setSelectedOrder, setCurrentView]);
+
+  const updateCartItem = useCallback((itemId: string, type: string, updates: Partial<CartItem>) => {
+    const updatedCart = cartItems.map(item =>
+      item.id === itemId && item.type === type
+        ? { ...item, ...updates }
+        : item
+    );
+    setCartItems(updatedCart);
+  }, [cartItems, setCartItems]);
+
+  const removeFromCart = useCallback((itemId: string, type: string) => {
+    const updatedCart = cartItems.filter(item => !(item.id === itemId && item.type === type));
+    setCartItems(updatedCart);
+  }, [cartItems, setCartItems]);
 
   // Loading state - exclude ordersLoading when viewing orders to prevent stuck loading
   const loading =

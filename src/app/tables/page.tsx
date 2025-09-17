@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react';
 import { useAtomValue } from 'jotai';
 import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
 import { useTables } from '@/lib/hooks/useTables';
-import { useTableActions } from '@/legacy_hooks/tables/useTables';
 import { TableStatus } from '@/types/enums';
 import { Table as TableType } from '@/types';
+import { createTable as firestoreCreateTable, deleteTable as firestoreDeleteTable } from '@/lib/firebase/firestore/tables';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -28,7 +28,28 @@ export default function TablesPage() {
   const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
   const { tables, loading: tablesLoading } = useTables();
-  const { createTable, deleteTable } = useTableActions(organizationId || undefined);
+  // Table action functions
+  const createTable = async (tableData: { name: string; capacity: number; status: TableStatus }) => {
+    try {
+      const fullTableData = {
+        ...tableData,
+        organizationId: organizationId!,
+      };
+      return await firestoreCreateTable(fullTableData);
+    } catch (error) {
+      console.error('Error creating table:', error);
+      throw error;
+    }
+  };
+
+  const deleteTable = async (tableId: string) => {
+    try {
+      await firestoreDeleteTable(tableId);
+    } catch (error) {
+      console.error('Error deleting table:', error);
+      throw error;
+    }
+  };
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');

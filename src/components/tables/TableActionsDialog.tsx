@@ -4,9 +4,11 @@ import { useState } from 'react';
 import { Table, Order, TableStatus } from '@/types';
 import { useTables } from '@/lib/hooks/useTables';
 import { useOrders } from '@/lib/hooks/useOrders';
-import { useTableManagement } from '@/legacy_hooks/tables/use-table-management';
 import { useAtomValue } from 'jotai';
 import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
+import { doc, runTransaction } from 'firebase/firestore';
+import { db } from '@/lib/firebase/config';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -30,10 +32,77 @@ export function TableActionsDialog({ table, children }: TableActionsDialogProps)
   const organizationId = selectedOrganization?.id;
   const { tables } = useTables();
   const { orders } = useOrders();
-  const { releaseTable, moveOrderToTable, updating } = useTableManagement(organizationId || undefined);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedTableId, setSelectedTableId] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // Table management functions
+  const releaseTable = async (tableId: string, order: Order) => {
+    if (!organizationId) return false;
+
+    try {
+      await runTransaction(db, async (transaction) => {
+        // Update table status to available
+        const tableRef = doc(db, 'organizations', organizationId, 'tables', tableId);
+        transaction.update(tableRef, {
+          status: 'available',
+          updatedAt: new Date(),
+        });
+
+        // Update order to remove table assignment
+        const orderRef = doc(db, 'organizations', organizationId, 'orders', order.id);
+        transaction.update(orderRef, {
+          tableId: null,
+          tableName: null,
+          updatedAt: new Date(),
+        });
+      });
+
+      toast.success('Table released successfully');
+      return true;
+    } catch (error) {
+      console.error('Error releasing table:', error);
+      toast.error('Failed to release table');
+      return false;
+    }
+  };
+
+  const moveOrderToTable = async (order: Order, fromTableId: string, toTableId: string, targetTableName: string) => {
+    if (!organizationId) return false;
+
+    try {
+      await runTransaction(db, async (transaction) => {
+        // Update order with new table
+        const orderRef = doc(db, 'organizations', organizationId, 'orders', order.id);
+        transaction.update(orderRef, {
+          tableId: toTableId,
+          tableName: targetTableName,
+          updatedAt: new Date(),
+        });
+
+        // Update source table to available
+        const fromTableRef = doc(db, 'organizations', organizationId, 'tables', fromTableId);
+        transaction.update(fromTableRef, {
+          status: 'available',
+          updatedAt: new Date(),
+        });
+
+        // Update target table to occupied
+        const toTableRef = doc(db, 'organizations', organizationId, 'tables', toTableId);
+        transaction.update(toTableRef, {
+          status: 'occupied',
+          updatedAt: new Date(),
+        });
+      });
+
+      toast.success('Order moved successfully');
+      return true;
+    } catch (error) {
+      console.error('Error moving order:', error);
+      toast.error('Failed to move order');
+      return false;
+    }
+  };
 
   // Find active order for this table
   const tableOrder = orders.find(

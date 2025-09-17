@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useAtomValue } from 'jotai';
 import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
-import { useOrderTypes } from '@/legacy_hooks/useOrderTypes';
+import { useOrderTypes } from '@/lib/hooks/useOrderTypes';
 import { OrderType } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,10 +18,10 @@ interface OrderTypesTabProps {
   orderTypes: OrderType[];
 }
 
-export function OrderTypesTab({ orderTypes }: OrderTypesTabProps) {
+export function OrderTypesTab({ orderTypes: propOrderTypes }: OrderTypesTabProps) {
   const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
-  const { createOrderType, deleteOrderType, loading } = useOrderTypes(organizationId || undefined);
+  const { orderTypes, createNewOrderType, deleteExistingOrderType, loading } = useOrderTypes();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteOrderTypeId, setDeleteOrderTypeId] = useState<string | null>(null);
   const [newOrderType, setNewOrderType] = useState({ name: '', description: '' });
@@ -32,9 +32,10 @@ export function OrderTypesTab({ orderTypes }: OrderTypesTabProps) {
 
     setIsSubmitting(true);
     try {
-      await createOrderType({
+      await createNewOrderType({
         name: newOrderType.name,
         description: newOrderType.description,
+        organizationId,
       });
 
       setNewOrderType({ name: '', description: '' });
@@ -54,10 +55,10 @@ export function OrderTypesTab({ orderTypes }: OrderTypesTabProps) {
 
   const confirmDeleteOrderType = async () => {
     if (!organizationId || !deleteOrderTypeId) return;
-    
+
     setIsSubmitting(true);
     try {
-      await deleteOrderType(deleteOrderTypeId);
+      await deleteExistingOrderType(deleteOrderTypeId);
       toast.success('Order type deleted successfully');
     } catch (error) {
       console.error('Error deleting order type:', error);

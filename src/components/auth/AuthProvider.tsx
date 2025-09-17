@@ -7,8 +7,6 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { Organization, OrganizationUser } from '@/types';
 import {
-  userAtom,
-  authLoadingAtom,
   authErrorAtom,
   authInitializedAtom,
   emailVerifiedAtom,
@@ -19,7 +17,7 @@ import {
   organizationErrorAtom,
   organizationIdAtom,
   resetAuthStateAtom,
-  
+
 } from '@/store/atoms';
 import { ReactNode } from 'react';
 import { autoRepairIndexedDB } from '@/lib/debug-indexeddb';
@@ -30,8 +28,6 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = useAtom(userAtom); // eslint-disable-line @typescript-eslint/no-unused-vars
-  const [authLoading, setAuthLoading] = useAtom(authLoadingAtom);
   const [authError, setAuthError] = useAtom(authErrorAtom); // eslint-disable-line @typescript-eslint/no-unused-vars
   const [authInitialized, setAuthInitialized] = useAtom(authInitializedAtom);
   const [emailVerified, setEmailVerified] = useAtom(emailVerifiedAtom); // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -76,10 +72,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       authProcessingRef.current = true;
-      const startTime = Date.now();
-      console.log('AuthProvider: Setting authLoading to true');
-      setAuthLoading(true);
-      setAuthError(null);
 
       // Mark auth as initialized on first call
       if (!authInitialized) {
@@ -87,15 +79,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       try {
-        setUser(user);
         if (user) {
           setEmailVerified(user.emailVerified || false);
-          console.log('AuthProvider: Basic user state set in', Date.now() - startTime, 'ms');
 
           // Set organizationLoading to true while we fetch organization data
-          console.log('AuthProvider: Setting organizationLoading to true');
           setOrganizationLoading(true);
-          console.log('AuthProvider: Basic auth complete, organizationLoading set to true');
 
           // Start organization fetch in background
           const organizationFetchPromise = (async () => {
@@ -173,8 +161,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
               setOrganizationError(orgError instanceof Error ? orgError.message : 'Failed to load organizations');
             } finally {
               setOrganizationLoading(false);
-              console.log('AuthProvider: Setting authLoading to false in finally block');
-              setAuthLoading(false);
               authProcessingRef.current = false;
               console.log('AuthProvider: Organization loading complete, auth process finished');
             }
@@ -184,19 +170,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
               console.error('Organization fetch promise failed:', error);
               // Ensure loading states are reset even if promise fails
               setOrganizationLoading(false);
-              if (authLoading) {
-                setAuthLoading(false);
-              }
             });
         } else {
           console.log('AuthProvider: No user, clearing state');
           resetAuthState();
-          setAuthLoading(false);
         }
       } catch (err) {
         console.error('Auth state change error:', err);
         setAuthError(err instanceof Error ? err.message : 'An unknown error occurred');
-        setAuthLoading(false);
         authProcessingRef.current = false;
       }
     });
@@ -210,18 +191,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
 
   // Add timeouts to prevent infinite loading
-  useEffect(() => {
-    const authTimeout = setTimeout(() => {
-      if (authLoading) {
-        console.warn('AuthProvider: Auth loading timeout reached, forcing loading to false');
-        console.log('AuthProvider: Timeout - Setting authLoading to false and setting error');
-        setAuthLoading(false);
-        setAuthError('Authentication timeout - please check your internet connection and refresh the page');
-      }
-    }, 30000);
-
-    return () => clearTimeout(authTimeout);
-  }, [authLoading, setAuthError, setAuthLoading]);
 
   useEffect(() => {
     const orgTimeout = setTimeout(() => {

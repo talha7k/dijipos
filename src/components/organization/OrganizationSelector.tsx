@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAtomValue, useSetAtom } from 'jotai';
-
+import { useAuth } from '@/lib/hooks/useAuth';
 import { selectedOrganizationAtom, userOrganizationsAtom, organizationUsersAtom, selectedOrganizationIdAtom } from '@/store/atoms/organizationAtoms';
 import { getOrganizationsForUser } from '@/lib/firebase/firestore/organizations';
 import { Building2, Plus, Users, ArrowRight, Link } from 'lucide-react';
@@ -21,7 +21,7 @@ interface OrganizationSelectorProps {
 }
 
 export function OrganizationSelector({ children }: OrganizationSelectorProps) {
-  const user = useAtomValue(userAtom);
+  const { user } = useAuth();
   const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const userOrganizations = useAtomValue(userOrganizationsAtom);
   const organizationUsers = useAtomValue(organizationUsersAtom);

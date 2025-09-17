@@ -4,6 +4,7 @@ import {
   getDoc,
   addDoc,
   updateDoc,
+  deleteDoc,
   query,
   where,
   getDocs,
@@ -176,6 +177,84 @@ export async function updateStoreSettings(storeSettingsId: string, updates: Part
     });
   } catch (error) {
     console.error('Error updating store settings:', error);
+    throw error;
+  }
+}
+
+// Order Types CRUD operations
+export async function createOrderType(organizationId: string, orderTypeData: Omit<OrderType, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+  try {
+    const docRef = await addDoc(orderTypesRef, {
+      ...orderTypeData,
+      organizationId,
+      createdAt: Timestamp.now(),
+      updatedAt: Timestamp.now(),
+    });
+    return docRef.id;
+  } catch (error) {
+    console.error('Error creating order type:', error);
+    throw error;
+  }
+}
+
+export async function updateOrderType(orderTypeId: string, updates: Partial<Omit<OrderType, 'id' | 'createdAt'>>): Promise<void> {
+  try {
+    const docRef = doc(orderTypesRef, orderTypeId);
+    await updateDoc(docRef, {
+      ...updates,
+      updatedAt: Timestamp.now(),
+    });
+  } catch (error) {
+    console.error('Error updating order type:', error);
+    throw error;
+  }
+}
+
+export async function deleteOrderType(orderTypeId: string): Promise<void> {
+  try {
+    const docRef = doc(orderTypesRef, orderTypeId);
+    await deleteDoc(docRef);
+  } catch (error) {
+    console.error('Error deleting order type:', error);
+    throw error;
+  }
+}
+
+// Payment Types CRUD operations
+export async function createPaymentType(organizationId: string, paymentTypeData: Omit<PaymentType, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+  try {
+    const docRef = await addDoc(paymentTypesRef, {
+      ...paymentTypeData,
+      organizationId,
+      createdAt: Timestamp.now(),
+      updatedAt: Timestamp.now(),
+    });
+    return docRef.id;
+  } catch (error) {
+    console.error('Error creating payment type:', error);
+    throw error;
+  }
+}
+
+export async function updatePaymentType(paymentTypeId: string, updates: Partial<Omit<PaymentType, 'id' | 'createdAt'>>): Promise<void> {
+  try {
+    const docRef = doc(paymentTypesRef, paymentTypeId);
+    await updateDoc(docRef, {
+      ...updates,
+      updatedAt: Timestamp.now(),
+    });
+  } catch (error) {
+    console.error('Error updating payment type:', error);
+    throw error;
+  }
+}
+
+export async function deletePaymentType(paymentTypeId: string): Promise<void> {
+  try {
+    const docRef = doc(paymentTypesRef, paymentTypeId);
+    await deleteDoc(docRef);
+  } catch (error) {
+    console.error('Error deleting payment type:', error);
     throw error;
   }
 }

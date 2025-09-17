@@ -6,9 +6,9 @@ import { ReceiptPrintDialog } from '@/components/ReceiptPrintDialog';
 import { Order, OrderStatus, ItemType, OrderPayment } from '@/types';
 import { useAtomValue } from 'jotai';
 import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
-import { useOrderState } from '@/legacy_hooks/useOrderState';
-import { usePrinterSettingsData } from '@/legacy_hooks/organization/use-printer-settings-data';
-import { useReceiptTemplatesData } from '@/legacy_hooks/use-receipt-templates-data';
+import { selectedTableAtom, selectedCustomerAtom, selectedOrderTypeAtom } from '@/store/atoms/posAtoms';
+import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
+import { useTemplates } from '@/lib/hooks/useTemplates';
 
 interface CartItem {
   id: string;
@@ -39,10 +39,12 @@ export function POSCartSidebar({
   onItemClick
 }: POSCartSidebarProps) {
   const selectedOrganization = useAtomValue(selectedOrganizationAtom);
-  const { selectedTable, selectedCustomer, selectedOrderType } = useOrderState();
+  const selectedTable = useAtomValue(selectedTableAtom);
+  const selectedCustomer = useAtomValue(selectedCustomerAtom);
+  const selectedOrderType = useAtomValue(selectedOrderTypeAtom);
   const organizationId = selectedOrganization?.id || '';
-  const { printerSettings } = usePrinterSettingsData(selectedOrganization?.id || undefined);
-  const { receiptTemplates = [] } = useReceiptTemplatesData(selectedOrganization?.id || '');
+  const { storeSettings } = useStoreSettings();
+  const { receiptTemplates = [] } = useTemplates();
 
   const handleClearConfirm = () => {
     if (onClearCart) onClearCart();

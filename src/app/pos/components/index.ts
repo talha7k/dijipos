@@ -6,5 +6,4 @@ export * from './POSViewsManager';
 
 // Simplified POS Page - moved to page.tsx
 
-// Hooks
-export * from '@/legacy_hooks/pos/usePOSState';
+// Hooks - migrated to use posAtoms directly

@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import { useAtomValue } from 'jotai';
-import { userAtom, authLoadingAtom } from '@/store/atoms';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { selectedOrganizationAtom, userOrganizationsAtom, organizationLoadingAtom } from '@/store/atoms/organizationAtoms';
 import { useSidebarState } from '@/legacy_hooks/useSidebarState';
 import { CollapsibleSidebar } from '@/components/sidebar/collapsible-sidebar';
@@ -14,8 +14,7 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const pathname = usePathname();
-  const user = useAtomValue(userAtom);
-  const authLoading = useAtomValue(authLoadingAtom);
+  const { user, loading: authLoading } = useAuth();
   const currentOrganization = useAtomValue(selectedOrganizationAtom);
   const userOrganizations = useAtomValue(userOrganizationsAtom);
   const organizationLoading = useAtomValue(organizationLoadingAtom);

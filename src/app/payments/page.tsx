@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useAtomValue } from 'jotai';
-import { userAtom } from '@/store/atoms';
 import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
 import { usePayments } from '@/lib/hooks/usePayments';
 import { useInvoices } from '@/lib/hooks/useInvoices';

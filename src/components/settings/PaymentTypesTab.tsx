@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useAtomValue } from 'jotai';
 import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
-import { usePaymentTypes } from '@/legacy_hooks/uePaymentTypes';
+import { usePaymentTypes } from '@/lib/hooks/usePaymentTypes';
 import { PaymentType } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,10 +18,10 @@ interface PaymentTypesTabProps {
   paymentTypes?: PaymentType[];
 }
 
-export function PaymentTypesTab({ paymentTypes = [] }: PaymentTypesTabProps) {
+export function PaymentTypesTab({ paymentTypes: propPaymentTypes = [] }: PaymentTypesTabProps) {
   const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
-  const { createPaymentType, deletePaymentType, loading } = usePaymentTypes(organizationId || undefined);
+  const { paymentTypes, createNewPaymentType, deleteExistingPaymentType, loading } = usePaymentTypes();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deletePaymentTypeId, setDeletePaymentTypeId] = useState<string | null>(null);
   const [newPaymentType, setNewPaymentType] = useState({ name: '', description: '' });
@@ -32,9 +32,10 @@ export function PaymentTypesTab({ paymentTypes = [] }: PaymentTypesTabProps) {
 
     setIsSubmitting(true);
     try {
-      await createPaymentType({
+      await createNewPaymentType({
         name: newPaymentType.name,
         description: newPaymentType.description,
+        organizationId,
       });
 
       setNewPaymentType({ name: '', description: '' });
@@ -54,10 +55,10 @@ export function PaymentTypesTab({ paymentTypes = [] }: PaymentTypesTabProps) {
 
   const confirmDeletePaymentType = async () => {
     if (!organizationId || !deletePaymentTypeId) return;
-    
+
     setIsSubmitting(true);
     try {
-      await deletePaymentType(deletePaymentTypeId);
+      await deleteExistingPaymentType(deletePaymentTypeId);
       toast.success('Payment type deleted successfully');
     } catch (error) {
       console.error('Error deleting payment type:', error);

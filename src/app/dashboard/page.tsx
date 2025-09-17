@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useAtomValue } from 'jotai';
-
 import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,7 +18,6 @@ import { useTables } from '@/lib/hooks/useTables';
 import { TableStatus } from '@/types';
 
 function DashboardContent() {
-  const user = useAtomValue(userAtom);
   const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);

@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAtomValue } from 'jotai';
-import { userAtom, authLoadingAtom } from '@/store/atoms';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { selectedOrganizationAtom, userOrganizationsAtom, organizationLoadingAtom, organizationErrorAtom } from '@/store/atoms/organizationAtoms';
 import { toast } from 'sonner';
 
@@ -12,8 +12,7 @@ interface RouteGuardProps {
 }
 
 export function RouteGuard({ children }: RouteGuardProps) {
-  const user = useAtomValue(userAtom);
-  const authLoading = useAtomValue(authLoadingAtom);
+  const { user, loading: authLoading } = useAuth();
   const currentOrganization = useAtomValue(selectedOrganizationAtom);
   const userOrganizations = useAtomValue(userOrganizationsAtom);
   const organizationLoading = useAtomValue(organizationLoadingAtom);
