@@ -6,6 +6,7 @@ import {
 } from '../firebase/firestore/settings/printer';
 import { useRealtimeCollection } from './useRealtimeCollection';
 import { useOrganization } from './useOrganization';
+import { STATIC_RECEIPT_TEMPLATE_IDS, STATIC_INVOICE_TEMPLATE_IDS, STATIC_QUOTE_TEMPLATE_IDS } from './useSeparatedTemplates';
 
 interface PrinterSettingsState {
   printerSettings: PrinterSettings | null;
@@ -14,7 +15,7 @@ interface PrinterSettingsState {
 }
 
 interface PrinterSettingsActions {
-  handlePrinterSettingsUpdate: (settings: PrinterSettings) => Promise<void>;
+  handlePrinterSettingsUpdate: (settings: PrinterSettings | Partial<PrinterSettings>) => Promise<void>;
 }
 
 /**
@@ -36,22 +37,62 @@ export function usePrinterSettings(): PrinterSettingsState & PrinterSettingsActi
 
   const printerSettings = printerSettingsList.length > 0 ? printerSettingsList[0] : null;
 
-  const handlePrinterSettingsUpdate = async (settings: PrinterSettings): Promise<void> => {
+  const handlePrinterSettingsUpdate = async (settings: PrinterSettings | Partial<PrinterSettings>): Promise<void> => {
     try {
       if (!selectedOrganization?.id) {
         throw new Error('No organization selected');
       }
 
-      if (printerSettings) {
-        // Update existing settings
-        await updatePrinterSettings(printerSettings.id, settings);
-      } else {
-        // Create new settings
-        await createPrinterSettings({
+      // Check if this is a partial update or full settings
+      const isPartial = !('id' in settings) || !('organizationId' in settings);
+
+      if (isPartial) {
+        // This is a partial update - merge with existing settings
+        if (!printerSettings) {
+          // No existing settings, create new ones with the partial data
+          const newSettings: Omit<PrinterSettings, 'id' | 'createdAt' | 'updatedAt'> = {
+            organizationId: selectedOrganization.id,
+            includeQRCode: true, // default value
+            defaultReceiptTemplateId: undefined,
+            defaultInvoiceTemplateId: undefined,
+            defaultQuoteTemplateId: undefined,
+            ...settings,
+          };
+          
+          await createPrinterSettings(newSettings);
+          return;
+        }
+
+        // Merge with existing settings and update
+        const mergedSettings: PrinterSettings = {
+          ...printerSettings,
           ...settings,
-          organizationId: selectedOrganization.id,
-        });
+          updatedAt: new Date(),
+        };
+
+        // Update using the existing document ID, but exclude the id field from the update data
+        const { id, ...updateData } = mergedSettings;
+        await updatePrinterSettings(printerSettings.id, updateData);
+        return;
       }
+
+      // Full settings object - proceed with create/update logic
+      const fullSettings = settings as PrinterSettings;
+
+      // If we have existing settings, update them
+      if (printerSettings) {
+        // Exclude the id field from the update data
+        const { id, ...updateData } = fullSettings;
+        await updatePrinterSettings(printerSettings.id, updateData);
+        return;
+      }
+
+      // No existing settings, create new ones
+      const { id, createdAt, updatedAt, ...createData } = fullSettings;
+      await createPrinterSettings({
+        ...createData,
+        organizationId: selectedOrganization.id,
+      });
     } catch (err) {
       console.error('Error updating printer settings:', err);
       throw err;

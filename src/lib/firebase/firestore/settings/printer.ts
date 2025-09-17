@@ -46,14 +46,28 @@ export async function getPrinterSettings(organizationId: string): Promise<Printe
 export async function createPrinterSettings(data: Omit<PrinterSettings, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
   try {
     const now = Timestamp.now();
-    const docRef = await addDoc(printerSettingsRef, {
+
+    // Prepare the data for Firestore - ensure no undefined values
+    const firestoreData: Record<string, unknown> = {
       ...data,
       createdAt: now,
       updatedAt: now,
+    };
+
+    // Remove any undefined values to prevent Firestore errors
+    Object.keys(firestoreData).forEach(key => {
+      if (firestoreData[key] === undefined) {
+        delete firestoreData[key];
+      }
     });
+
+    console.log('Creating printer settings with data:', firestoreData);
+
+    const docRef = await addDoc(printerSettingsRef, firestoreData);
     return docRef.id;
   } catch (error) {
     console.error('Error creating printer settings:', error);
+    console.error('Data that caused error:', data);
     throw error;
   }
 }
@@ -63,13 +77,26 @@ export async function createPrinterSettings(data: Omit<PrinterSettings, 'id' | '
  */
 export async function updatePrinterSettings(printerSettingsId: string, updates: Partial<Omit<PrinterSettings, 'id' | 'organizationId' | 'createdAt'>>): Promise<void> {
   try {
-    const docRef = doc(printerSettingsRef, printerSettingsId);
-    await updateDoc(docRef, {
+    // Prepare the update data - ensure no undefined values
+    const updateData: Record<string, unknown> = {
       ...updates,
       updatedAt: Timestamp.now(),
+    };
+
+    // Remove any undefined values to prevent Firestore errors
+    Object.keys(updateData).forEach(key => {
+      if (updateData[key] === undefined) {
+        delete updateData[key];
+      }
     });
+
+    console.log('Updating printer settings:', printerSettingsId, 'with data:', updateData);
+
+    const docRef = doc(printerSettingsRef, printerSettingsId);
+    await updateDoc(docRef, updateData);
   } catch (error) {
     console.error('Error updating printer settings:', error);
+    console.error('Update data that caused error:', updates);
     throw error;
   }
 }

@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAtomValue } from 'jotai';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { selectedOrganizationAtom, userOrganizationsAtom, organizationErrorAtom } from '@/atoms/organizationAtoms';
+import { selectedOrganizationAtom, userOrganizationsAtom, organizationErrorAtom, selectedOrganizationIdAtom } from '@/atoms/organizationAtoms';
 import { organizationLoadingAtom } from '@/atoms';
 import { toast } from 'sonner';
 import { indexedDBStorage } from '@/lib/storage';
@@ -19,11 +19,7 @@ export function RouteGuard({ children }: RouteGuardProps) {
   const userOrganizations = useAtomValue(userOrganizationsAtom);
   const organizationLoading = useAtomValue(organizationLoadingAtom);
   const organizationError = useAtomValue(organizationErrorAtom);
-
-  // Log when organizationLoading changes
-  useEffect(() => {
-    console.log('RouteGuard: organizationLoading changed to', organizationLoading);
-  }, [organizationLoading]);
+  const selectedOrganizationId = useAtomValue(selectedOrganizationIdAtom);
 
   // Adapt legacy variables
   const loading = authLoading;
@@ -125,7 +121,9 @@ export function RouteGuard({ children }: RouteGuardProps) {
         return;
       }
 
-      if (!currentOrganization && !organizationId) {
+      // Check if user has selected an organization
+      // The fix: Check if we have a selected organization ID from the atom
+      if (!currentOrganization && !selectedOrganizationId) {
         // Only redirect if we're not still loading organizations
         if (!organizationLoading) {
           // User needs to select an organization
@@ -137,17 +135,11 @@ export function RouteGuard({ children }: RouteGuardProps) {
           }
           return;
         }
-      } else if (organizationId && !currentOrganization && !organizationLoading) {
-        // organizationId is set but selectedOrganization is not - this might be a timing issue
-        // Allow access to protected routes if organizationId exists and user has organizations
-        if (userOrganizations.some(ou => ou.id === organizationId)) {
-          // organizationId is valid, allow access
-          return;
-        } else {
-          // organizationId is invalid, redirect to select-organization
-          router.push('/select-organization');
-          return;
-        }
+      } else if (selectedOrganizationId && !currentOrganization) {
+        // We have a selected organization ID but haven't loaded the details yet
+        // This is normal during initial load - allow access to protected routes
+        // The organization details will be loaded by useOrganizationManager in the background
+        return;
       }
     }
   }, [
@@ -166,9 +158,15 @@ export function RouteGuard({ children }: RouteGuardProps) {
     router
   ]);
 
+  // Log when organizationLoading changes
+  useEffect(() => {
+    console.log('RouteGuard: organizationLoading changed to', organizationLoading);
+  }, [organizationLoading]);
+
   // Show loading state - be more defensive about organization loading
-  if (loading || organizationLoading || !currentOrganization) {
-    console.log('RouteGuard: Showing loading - authLoading:', loading, 'organizationLoading:', organizationLoading, 'currentOrganization:', currentOrganization);
+  // Allow access to protected routes when we have selectedOrganizationId but details are loading
+  if (loading || (organizationLoading && !selectedOrganizationId)) {
+    console.log('RouteGuard: Showing loading - authLoading:', loading, 'organizationLoading:', organizationLoading, 'currentOrganization:', currentOrganization, 'selectedOrganizationId:', selectedOrganizationId);
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -243,7 +241,8 @@ export function RouteGuard({ children }: RouteGuardProps) {
   }
 
   // For protected routes, render children only if user is authenticated and has organization
-  if (user && emailVerified && (currentOrganization || (organizationId && userOrganizations.some(ou => ou.id === organizationId)))) {
+  // Allow access if currentOrganization exists or if we have a selected organization ID
+  if (user && emailVerified && (currentOrganization || selectedOrganizationId)) {
     return <>{children}</>;
   }
 

@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAtomValue } from 'jotai';
 import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
-import { ReceiptTemplate, InvoiceTemplate, QuoteTemplate, TemplateCategory, UnifiedTemplate } from '@/types';
+import { ReceiptTemplate, InvoiceTemplate, QuoteTemplate, TemplateCategory, UnifiedTemplate, PrinterSettings } from '@/types';
 import { ReceiptTemplateType, InvoiceTemplateType, QuoteTemplateType } from '@/types/enums';
 import { useTemplates } from '@/lib/hooks/useTemplates';
+import { usePrinterSettings } from '@/lib/hooks/usePrinterSettings';
+import { useSeparatedTemplates, STATIC_RECEIPT_TEMPLATE_IDS, STATIC_INVOICE_TEMPLATE_IDS, STATIC_QUOTE_TEMPLATE_IDS } from '@/lib/hooks/useSeparatedTemplates';
 import {
   createReceiptTemplate,
   createInvoiceTemplate,
@@ -29,6 +31,8 @@ import { FileText, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { defaultEnglishReceiptTemplate } from '@/components/templates/receipt/default-receipt-thermal-english';
 
+// Static template IDs are imported from useSeparatedTemplates
+
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface TemplatesTabProps {
   // No longer need receiptTemplates prop since we use the hook
@@ -50,16 +54,50 @@ export function TemplatesTab({}: TemplatesTabProps) {
   });
 
   const { receiptTemplates, invoiceTemplates, quoteTemplates, loading } = useTemplates();
+  const { printerSettings, handlePrinterSettingsUpdate } = usePrinterSettings();
+  const { allReceiptTemplates, allInvoiceTemplates, allQuoteTemplates } = useSeparatedTemplates();
+
+  // Local state for default template IDs to ensure immediate UI updates
+  const [localDefaults, setLocalDefaults] = useState({
+    receipt: printerSettings?.defaultReceiptTemplateId,
+    invoice: printerSettings?.defaultInvoiceTemplateId,
+    quote: printerSettings?.defaultQuoteTemplateId,
+  });
+
+  // Update local defaults when printer settings change
+  useEffect(() => {
+    setLocalDefaults({
+      receipt: printerSettings?.defaultReceiptTemplateId,
+      invoice: printerSettings?.defaultInvoiceTemplateId,
+      quote: printerSettings?.defaultQuoteTemplateId,
+    });
+  }, [printerSettings]);
+
+  // Helper function to check if a template is the current default
+  const isTemplateDefault = (templateId: string): boolean => {
+    switch (selectedCategory) {
+      case TemplateCategory.RECEIPT:
+        return localDefaults.receipt === templateId;
+      case TemplateCategory.INVOICE:
+        return localDefaults.invoice === templateId;
+      case TemplateCategory.QUOTE:
+        return localDefaults.quote === templateId;
+      default:
+        return false;
+    }
+  };
+
+
 
   // Get templates based on selected category
   const getTemplates = () => {
     switch (selectedCategory) {
       case TemplateCategory.RECEIPT:
-        return receiptTemplates;
+        return allReceiptTemplates || receiptTemplates;
       case TemplateCategory.INVOICE:
-        return invoiceTemplates;
+        return allInvoiceTemplates || invoiceTemplates;
       case TemplateCategory.QUOTE:
-        return quoteTemplates;
+        return allQuoteTemplates || quoteTemplates;
       default:
         return [];
     }
@@ -107,38 +145,97 @@ export function TemplatesTab({}: TemplatesTabProps) {
     if (!organizationId) return;
 
     try {
-      // First, unset all other templates as default
-      const allTemplates = getTemplates();
-      for (const template of allTemplates) {
-        if (template.id !== templateId && template.isDefault) {
-          const updateData = { isDefault: false };
-          switch (selectedCategory) {
-            case TemplateCategory.RECEIPT:
-              await updateReceiptTemplate(template.id, updateData);
-              break;
-            case TemplateCategory.INVOICE:
-              await updateInvoiceTemplate(template.id, updateData);
-              break;
-            case TemplateCategory.QUOTE:
-              await updateQuoteTemplate(template.id, updateData);
-              break;
+      // Check if this is a static template
+      const isStaticTemplate = 
+        (selectedCategory === TemplateCategory.RECEIPT && STATIC_RECEIPT_TEMPLATE_IDS.includes(templateId)) ||
+        (selectedCategory === TemplateCategory.INVOICE && STATIC_INVOICE_TEMPLATE_IDS.includes(templateId)) ||
+        (selectedCategory === TemplateCategory.QUOTE && STATIC_QUOTE_TEMPLATE_IDS.includes(templateId));
+
+      // Only update Firestore templates (not static templates)
+      if (!isStaticTemplate) {
+        // First, unset all other custom templates as default
+        const allTemplates = getTemplates();
+        for (const template of allTemplates) {
+          if (template.id !== templateId && template.isDefault) {
+            // Skip static templates when updating defaults
+            const isTemplateStatic = 
+              (selectedCategory === TemplateCategory.RECEIPT && STATIC_RECEIPT_TEMPLATE_IDS.includes(template.id)) ||
+              (selectedCategory === TemplateCategory.INVOICE && STATIC_INVOICE_TEMPLATE_IDS.includes(template.id)) ||
+              (selectedCategory === TemplateCategory.QUOTE && STATIC_QUOTE_TEMPLATE_IDS.includes(template.id));
+            
+            if (!isTemplateStatic) {
+              const updateData = { isDefault: false };
+              switch (selectedCategory) {
+                case TemplateCategory.RECEIPT:
+                  await updateReceiptTemplate(template.id, updateData);
+                  break;
+                case TemplateCategory.INVOICE:
+                  await updateInvoiceTemplate(template.id, updateData);
+                  break;
+                case TemplateCategory.QUOTE:
+                  await updateQuoteTemplate(template.id, updateData);
+                  break;
+              }
+            }
           }
+        }
+
+        // Set the selected custom template as default
+        const updateData = { isDefault: true };
+        switch (selectedCategory) {
+          case TemplateCategory.RECEIPT:
+            await updateReceiptTemplate(templateId, updateData);
+            break;
+          case TemplateCategory.INVOICE:
+            await updateInvoiceTemplate(templateId, updateData);
+            break;
+          case TemplateCategory.QUOTE:
+            await updateQuoteTemplate(templateId, updateData);
+            break;
         }
       }
 
-      // Set the selected template as default
-      const updateData = { isDefault: true };
+      // Update local state immediately for instant UI feedback
+      setLocalDefaults(prev => ({
+        ...prev,
+        [selectedCategory === TemplateCategory.RECEIPT ? 'receipt' :
+         selectedCategory === TemplateCategory.INVOICE ? 'invoice' : 'quote']: templateId
+      }));
+
+      // Update printer settings to persist the default template choice
+      // For updates, we only send the fields that can actually change
+      const settingsToUpdate: Partial<PrinterSettings> = {
+        includeQRCode: printerSettings?.includeQRCode ?? true,
+      };
+
+      // Set the appropriate template ID based on category
       switch (selectedCategory) {
         case TemplateCategory.RECEIPT:
-          await updateReceiptTemplate(templateId, updateData);
+          settingsToUpdate.defaultReceiptTemplateId = templateId;
           break;
         case TemplateCategory.INVOICE:
-          await updateInvoiceTemplate(templateId, updateData);
+          settingsToUpdate.defaultInvoiceTemplateId = templateId;
           break;
         case TemplateCategory.QUOTE:
-          await updateQuoteTemplate(templateId, updateData);
+          settingsToUpdate.defaultQuoteTemplateId = templateId;
           break;
       }
+
+      // Preserve existing template IDs for other categories
+      if (printerSettings) {
+        if (selectedCategory !== TemplateCategory.RECEIPT && printerSettings.defaultReceiptTemplateId) {
+          settingsToUpdate.defaultReceiptTemplateId = printerSettings.defaultReceiptTemplateId;
+        }
+        if (selectedCategory !== TemplateCategory.INVOICE && printerSettings.defaultInvoiceTemplateId) {
+          settingsToUpdate.defaultInvoiceTemplateId = printerSettings.defaultInvoiceTemplateId;
+        }
+        if (selectedCategory !== TemplateCategory.QUOTE && printerSettings.defaultQuoteTemplateId) {
+          settingsToUpdate.defaultQuoteTemplateId = printerSettings.defaultQuoteTemplateId;
+        }
+      }
+
+      console.log('Sending printer settings to update:', settingsToUpdate);
+      await handlePrinterSettingsUpdate(settingsToUpdate);
 
       toast.success(`${selectedCategory} template set as default`);
     } catch (error) {
@@ -153,6 +250,26 @@ export function TemplatesTab({}: TemplatesTabProps) {
 
   const confirmDeleteTemplate = async () => {
     if (!organizationId || !deleteTemplateId) return;
+
+    // Check if trying to delete a static template
+    let isStaticTemplate = false;
+    switch (selectedCategory) {
+      case TemplateCategory.RECEIPT:
+        isStaticTemplate = STATIC_RECEIPT_TEMPLATE_IDS.includes(deleteTemplateId);
+        break;
+      case TemplateCategory.INVOICE:
+        isStaticTemplate = STATIC_INVOICE_TEMPLATE_IDS.includes(deleteTemplateId);
+        break;
+      case TemplateCategory.QUOTE:
+        isStaticTemplate = STATIC_QUOTE_TEMPLATE_IDS.includes(deleteTemplateId);
+        break;
+    }
+
+    if (isStaticTemplate) {
+      toast.info('Default templates cannot be deleted. Create a custom template if needed.');
+      setDeleteTemplateId(null);
+      return;
+    }
 
     try {
       switch (selectedCategory) {
@@ -285,36 +402,41 @@ export function TemplatesTab({}: TemplatesTabProps) {
             {templates.map((template) => (
               <div key={template.id} className="flex items-center justify-between p-3 border rounded">
                 <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-medium">{template.name}</h3>
-                    {template.isDefault && <Badge variant="default">Default</Badge>}
-                    <Badge variant="outline">{template.type}</Badge>
-                  </div>
+                   <div className="flex items-center gap-2">
+                     <h3 className="font-medium">{template.name}</h3>
+                     {isTemplateDefault(template.id) && <Badge variant="default">Default</Badge>}
+                     <Badge variant="outline">{template.type}</Badge>
+                   </div>
                   {template.description && (
                     <p className="text-sm text-muted-foreground">{template.description}</p>
                   )}
                 </div>
-                <div className="flex items-center gap-2">
-                  {!template.isDefault && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleSetDefaultTemplate(template.id)}
-                    >
-                      Set Default
-                    </Button>
-                  )}
-                  <AlertDialog open={deleteTemplateId === template.id} onOpenChange={(open) => !open && setDeleteTemplateId(null)}>
-                    <AlertDialogTrigger asChild>
+                  <div className="flex items-center gap-2">
+                    {!isTemplateDefault(template.id) && (
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
-                        onClick={() => handleDeleteTemplate(template.id)}
-                        className="text-destructive hover:text-destructive"
+                        onClick={() => handleSetDefaultTemplate(template.id)}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        Set Default
                       </Button>
-                    </AlertDialogTrigger>
+                    )}
+                   <AlertDialog open={deleteTemplateId === template.id} onOpenChange={(open) => !open && setDeleteTemplateId(null)}>
+                     <AlertDialogTrigger asChild>
+                       <Button
+                         variant="ghost"
+                         size="sm"
+                         onClick={() => handleDeleteTemplate(template.id)}
+                         disabled={
+                           selectedCategory === TemplateCategory.RECEIPT && STATIC_RECEIPT_TEMPLATE_IDS.includes(template.id) ||
+                           selectedCategory === TemplateCategory.INVOICE && STATIC_INVOICE_TEMPLATE_IDS.includes(template.id) ||
+                           selectedCategory === TemplateCategory.QUOTE && STATIC_QUOTE_TEMPLATE_IDS.includes(template.id)
+                         }
+                         className="text-destructive hover:text-destructive disabled:opacity-50"
+                       >
+                         <Trash2 className="h-4 w-4" />
+                       </Button>
+                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
                         <AlertDialogTitle>Are you sure?</AlertDialogTitle>

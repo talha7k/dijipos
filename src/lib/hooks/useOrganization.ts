@@ -71,7 +71,6 @@ export function useOrganizationManager() {
       return;
     }
 
-
     const fetchUserOrgs = async () => {
       setOrganizationsLoading(true);
       setError(null);
@@ -113,7 +112,6 @@ export function useOrganizationManager() {
           setError('Failed to load organizations: Unknown error');
         }
       } finally {
-
         setOrganizationsLoading(false);
       }
     };
@@ -122,16 +120,16 @@ export function useOrganizationManager() {
   }, [user?.uid, setUserOrganizations, setSelectedOrgId, setError, setOrganizationsLoading, setUserOrganizationAssociations]);
 
   // Effect to fetch the full details of the selected organization when the ID changes
-   useEffect(() => {
-     if (!selectedOrgId) {
-       console.log('No selectedOrgId');
-       setSelectedOrganization(null);
-       return;
-     }
+  useEffect(() => {
+    if (!selectedOrgId) {
+      console.log('No selectedOrgId');
+      setSelectedOrganization(null);
+      return;
+    }
 
-     console.log('Fetching organization for:', selectedOrgId);
+    console.log('Fetching organization for:', selectedOrgId);
 
-     const fetchOrgDetails = async () => {
+    const fetchOrgDetails = async () => {
       setOrganizationDetailsLoading(true);
       setError(null);
       try {
@@ -152,7 +150,6 @@ export function useOrganizationManager() {
           setError('Failed to fetch organization details: Unknown error');
         }
       } finally {
-
         setOrganizationDetailsLoading(false);
       }
     };

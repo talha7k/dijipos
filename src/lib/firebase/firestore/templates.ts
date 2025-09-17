@@ -63,11 +63,30 @@ export async function createReceiptTemplate(data: Omit<ReceiptTemplate, 'id' | '
   }
 }
 
+// Static template IDs that cannot be modified
+const STATIC_RECEIPT_TEMPLATE_IDS = ['default-thermal', 'arabic-thermal', 'default-a4', 'arabic-a4'];
+const STATIC_INVOICE_TEMPLATE_IDS = ['default-invoice', 'arabic-invoice'];
+const STATIC_QUOTE_TEMPLATE_IDS = ['default-quote', 'arabic-quote'];
+
 /**
  * Update a receipt template
  */
 export async function updateReceiptTemplate(templateId: string, updates: Partial<Omit<ReceiptTemplate, 'id' | 'createdAt'>>): Promise<void> {
   try {
+    // For static templates, only allow setting as default
+    if (STATIC_RECEIPT_TEMPLATE_IDS.includes(templateId)) {
+      // Only allow isDefault updates for static templates
+      if (Object.keys(updates).length === 1 && updates.isDefault !== undefined) {
+        console.log(`Allowing isDefault update for static template: ${templateId}`);
+        // Static templates don't exist in Firestore, so we don't need to update anything
+        // The frontend state will be updated by the useTemplates hook
+        return;
+      } else {
+        console.log(`Skipping non-isDefault update for static template: ${templateId}`);
+        return;
+      }
+    }
+
     const docRef = doc(receiptTemplatesRef, templateId);
     await updateDoc(docRef, {
       ...updates,
@@ -84,6 +103,12 @@ export async function updateReceiptTemplate(templateId: string, updates: Partial
  */
 export async function deleteReceiptTemplate(templateId: string): Promise<void> {
   try {
+    // Skip delete for static templates
+    if (STATIC_RECEIPT_TEMPLATE_IDS.includes(templateId)) {
+      console.log(`Skipping delete for static template: ${templateId}`);
+      return;
+    }
+
     await deleteDoc(doc(receiptTemplatesRef, templateId));
   } catch (error) {
     console.error('Error deleting receipt template:', error);
@@ -140,6 +165,20 @@ export async function createInvoiceTemplate(data: Omit<InvoiceTemplate, 'id' | '
  */
 export async function updateInvoiceTemplate(templateId: string, updates: Partial<Omit<InvoiceTemplate, 'id' | 'createdAt'>>): Promise<void> {
   try {
+    // For static templates, only allow setting as default
+    if (STATIC_INVOICE_TEMPLATE_IDS.includes(templateId)) {
+      // Only allow isDefault updates for static templates
+      if (Object.keys(updates).length === 1 && updates.isDefault !== undefined) {
+        console.log(`Allowing isDefault update for static template: ${templateId}`);
+        // Static templates don't exist in Firestore, so we don't need to update anything
+        // The frontend state will be updated by the useTemplates hook
+        return;
+      } else {
+        console.log(`Skipping non-isDefault update for static template: ${templateId}`);
+        return;
+      }
+    }
+
     const docRef = doc(invoiceTemplatesRef, templateId);
     await updateDoc(docRef, {
       ...updates,
@@ -156,6 +195,12 @@ export async function updateInvoiceTemplate(templateId: string, updates: Partial
  */
 export async function deleteInvoiceTemplate(templateId: string): Promise<void> {
   try {
+    // Skip delete for static templates
+    if (STATIC_INVOICE_TEMPLATE_IDS.includes(templateId)) {
+      console.log(`Skipping delete for static template: ${templateId}`);
+      return;
+    }
+
     await deleteDoc(doc(invoiceTemplatesRef, templateId));
   } catch (error) {
     console.error('Error deleting invoice template:', error);
@@ -212,6 +257,20 @@ export async function createQuoteTemplate(data: Omit<QuoteTemplate, 'id' | 'crea
  */
 export async function updateQuoteTemplate(templateId: string, updates: Partial<Omit<QuoteTemplate, 'id' | 'createdAt'>>): Promise<void> {
   try {
+    // For static templates, only allow setting as default
+    if (STATIC_QUOTE_TEMPLATE_IDS.includes(templateId)) {
+      // Only allow isDefault updates for static templates
+      if (Object.keys(updates).length === 1 && updates.isDefault !== undefined) {
+        console.log(`Allowing isDefault update for static template: ${templateId}`);
+        // Static templates don't exist in Firestore, so we don't need to update anything
+        // The frontend state will be updated by the useTemplates hook
+        return;
+      } else {
+        console.log(`Skipping non-isDefault update for static template: ${templateId}`);
+        return;
+      }
+    }
+
     const docRef = doc(quoteTemplatesRef, templateId);
     await updateDoc(docRef, {
       ...updates,
@@ -227,7 +286,14 @@ export async function updateQuoteTemplate(templateId: string, updates: Partial<O
  * Delete a quote template
  */
 export async function deleteQuoteTemplate(templateId: string): Promise<void> {
+
   try {
+    // Skip delete for static templates
+    if (STATIC_QUOTE_TEMPLATE_IDS.includes(templateId)) {
+      console.log(`Skipping delete for static template: ${templateId}`);
+      return;
+    }
+
     await deleteDoc(doc(quoteTemplatesRef, templateId));
   } catch (error) {
     console.error('Error deleting quote template:', error);
