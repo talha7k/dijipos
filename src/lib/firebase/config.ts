@@ -1,14 +1,9 @@
 import { initializeApp } from 'firebase/app';
-import { 
-  getAuth, 
-  GoogleAuthProvider, 
-  initializeAuth, 
-  indexedDBLocalPersistence 
+import {
+  getAuth,
+  GoogleAuthProvider
 } from 'firebase/auth';
-import { 
-  getFirestore, 
-  enableIndexedDbPersistence 
-} from 'firebase/firestore';
+import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
@@ -33,32 +28,11 @@ if (missingVars.length > 0) {
 // Initialize Firebase App
 const app = initializeApp(firebaseConfig);
 
-// --- ⬇️ PERSISTENCE ADDITIONS START HERE ⬇️ ---
+// Initialize Auth
+export const auth = getAuth(app);
 
-// 1. Initialize Auth with IndexedDB persistence
-// This keeps the user signed in across browser sessions.
-export const auth = initializeAuth(app, {
-  persistence: indexedDBLocalPersistence
-});
-
-// 2. Initialize and enable Firestore with IndexedDB persistence
-// This caches Firestore data for offline access.
+// Initialize Firestore
 export const db = getFirestore(app);
-try {
-  enableIndexedDbPersistence(db)
-    .then(() => console.log("Firestore persistence enabled."))
-    .catch((err) => {
-      if (err.code === 'failed-precondition') {
-        console.warn("Firestore persistence failed: can only be enabled in one tab at a time.");
-      } else if (err.code === 'unimplemented') {
-        console.log("Firestore persistence is not available in this browser.");
-      }
-    });
-} catch (error) {
-  console.error("Error enabling Firestore persistence:", error);
-}
-
-// --- ⬆️ PERSISTENCE ADDITIONS END HERE ⬆️ ---
 
 // Initialize other Firebase services
 export const storage = getStorage(app);

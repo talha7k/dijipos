@@ -1,32 +1,83 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useAtomValue } from 'jotai';
+import { useState } from "react";
+import { useAtomValue } from "jotai";
 
-import { selectedOrganizationAtom, organizationUsersAtom, organizationLoadingAtom } from '@/atoms/organizationAtoms';
-import { useInvitationCodesData, useInvitationCodesActions } from '@/lib/hooks/useInvitationCodes';
-import { updateOrganizationUser, updateUserStatus } from '@/lib/firebase/firestore/organizations';
-import { OrganizationUser, UserRole } from '@/types';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Users, Plus, Edit, Trash2, Shield, Settings, Copy, Link } from 'lucide-react';
-import { toast } from 'sonner';
+import {
+  selectedOrganizationAtom,
+  organizationUsersAtom,
+} from "@/atoms/organizationAtoms";
+import { organizationLoadingAtom } from "@/atoms";
+import {
+  useInvitationCodesData,
+  useInvitationCodesActions,
+} from "@/lib/hooks/useInvitationCodes";
+import {
+  updateOrganizationUser,
+  updateUserStatus,
+} from "@/lib/firebase/firestore/organizations";
+import { OrganizationUser, UserRole } from "@/types";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
+  Users,
+  Plus,
+  Edit,
+  Trash2,
+  Shield,
+  Settings,
+  Copy,
+  Link,
+} from "lucide-react";
+import { toast } from "sonner";
 
 function UsersContent() {
   const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const organizationUsers = useAtomValue(organizationUsersAtom);
   const orgLoading = useAtomValue(organizationLoadingAtom);
   const organizationId = selectedOrganization?.id;
-  const { invitationCodes, loading: codesLoading } = useInvitationCodesData(organizationId || undefined);
-  const { createInvitationCodeSimple, deleteInvitationCode } = useInvitationCodesActions(organizationId || undefined);
+  const { invitationCodes, loading: codesLoading } = useInvitationCodesData(
+    organizationId || undefined
+  );
+  const { createInvitationCodeSimple, deleteInvitationCode } =
+    useInvitationCodesActions(organizationId || undefined);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [invitationDialogOpen, setInvitationDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<OrganizationUser | null>(null);
@@ -42,8 +93,8 @@ function UsersContent() {
   const loading = orgLoading || codesLoading;
 
   const generateInvitationCode = () => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let code = '';
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let code = "";
     for (let i = 0; i < 8; i++) {
       code += chars.charAt(Math.floor(Math.random() * chars.length));
     }
@@ -54,7 +105,10 @@ function UsersContent() {
     if (!organizationId) return;
 
     try {
-      await createInvitationCodeSimple(invitationFormData.role, invitationFormData.expiresAt);
+      await createInvitationCodeSimple(
+        invitationFormData.role,
+        invitationFormData.expiresAt
+      );
 
       setInvitationDialogOpen(false);
       setInvitationFormData({
@@ -62,8 +116,8 @@ function UsersContent() {
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       });
     } catch (error) {
-      console.error('Error creating invitation code:', error);
-      toast.error('Failed to create invitation code. Please try again.');
+      console.error("Error creating invitation code:", error);
+      toast.error("Failed to create invitation code. Please try again.");
     }
   };
 
@@ -73,18 +127,18 @@ function UsersContent() {
     try {
       await deleteInvitationCode(codeId);
     } catch (error) {
-      console.error('Error deleting invitation code:', error);
-      toast.error('Failed to delete invitation code. Please try again.');
+      console.error("Error deleting invitation code:", error);
+      toast.error("Failed to delete invitation code. Please try again.");
     }
   };
 
   const handleCopyInvitationCode = async (code: string) => {
     try {
       await navigator.clipboard.writeText(code);
-      toast.success('Invitation code copied to clipboard!');
+      toast.success("Invitation code copied to clipboard!");
     } catch (error) {
-      console.error('Error copying code:', error);
-      toast.error('Failed to copy code to clipboard.');
+      console.error("Error copying code:", error);
+      toast.error("Failed to copy code to clipboard.");
     }
   };
 
@@ -101,19 +155,22 @@ function UsersContent() {
         isActive: true,
       });
     } catch (error) {
-      console.error('Error updating user:', error);
-      toast.error('Failed to update user. Please try again.');
+      console.error("Error updating user:", error);
+      toast.error("Failed to update user. Please try again.");
     }
   };
 
-  const handleToggleUserStatus = async (userId: string, currentStatus: boolean) => {
+  const handleToggleUserStatus = async (
+    userId: string,
+    currentStatus: boolean
+  ) => {
     if (!organizationId) return;
 
     try {
       await updateUserStatus(userId, !currentStatus);
     } catch (error) {
-      console.error('Error toggling user status:', error);
-      toast.error('Failed to update user status. Please try again.');
+      console.error("Error toggling user status:", error);
+      toast.error("Failed to update user status. Please try again.");
     }
   };
 
@@ -126,40 +183,48 @@ function UsersContent() {
     setDialogOpen(true);
   };
 
-  const getRoleBadgeColor = (role: OrganizationUser['role']) => {
+  const getRoleBadgeColor = (role: OrganizationUser["role"]) => {
     switch (role) {
-      case 'admin':
-        return 'default';
-      case 'manager':
-        return 'secondary';
-      case 'waiter':
-        return 'outline';
-      case 'cashier':
-        return 'outline';
+      case "admin":
+        return "default";
+      case "manager":
+        return "secondary";
+      case "waiter":
+        return "outline";
+      case "cashier":
+        return "outline";
       default:
-        return 'outline';
+        return "outline";
     }
   };
 
-  const getRoleIcon = (role: OrganizationUser['role']) => {
+  const getRoleIcon = (role: OrganizationUser["role"]) => {
     switch (role) {
-      case 'admin':
+      case "admin":
         return Shield;
-      case 'manager':
+      case "manager":
         return Settings;
       default:
         return Users;
     }
   };
 
-  if (loading) return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  if (loading)
+    return (
+      <div className="flex items-center justify-center h-screen">
+        Loading...
+      </div>
+    );
 
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Users</h1>
         <div className="flex space-x-2">
-          <Dialog open={invitationDialogOpen} onOpenChange={setInvitationDialogOpen}>
+          <Dialog
+            open={invitationDialogOpen}
+            onOpenChange={setInvitationDialogOpen}
+          >
             <DialogTrigger asChild>
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
@@ -173,7 +238,15 @@ function UsersContent() {
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="role">Role</Label>
-                   <Select value={invitationFormData.role} onValueChange={(value: string) => setInvitationFormData({ ...invitationFormData, role: value as UserRole })}>
+                  <Select
+                    value={invitationFormData.role}
+                    onValueChange={(value: string) =>
+                      setInvitationFormData({
+                        ...invitationFormData,
+                        role: value as UserRole,
+                      })
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select role" />
                     </SelectTrigger>
@@ -190,12 +263,22 @@ function UsersContent() {
                   <Input
                     id="expiresAt"
                     type="datetime-local"
-                    value={invitationFormData.expiresAt.toISOString().slice(0, 16)}
-                    onChange={(e) => setInvitationFormData({ ...invitationFormData, expiresAt: new Date(e.target.value) })}
+                    value={invitationFormData.expiresAt
+                      .toISOString()
+                      .slice(0, 16)}
+                    onChange={(e) =>
+                      setInvitationFormData({
+                        ...invitationFormData,
+                        expiresAt: new Date(e.target.value),
+                      })
+                    }
                   />
                 </div>
                 <div className="flex justify-end space-x-2 pt-4">
-                  <Button variant="outline" onClick={() => setInvitationDialogOpen(false)}>
+                  <Button
+                    variant="outline"
+                    onClick={() => setInvitationDialogOpen(false)}
+                  >
                     Cancel
                   </Button>
                   <Button onClick={handleCreateInvitationCode}>
@@ -228,34 +311,49 @@ function UsersContent() {
             <TableBody>
               {invitationCodes.map((invitationCode) => {
                 const RoleIcon = getRoleIcon(invitationCode.role);
-                
+
                 return (
                   <TableRow key={invitationCode.id}>
-                    <TableCell className="font-medium font-mono">{invitationCode.code}</TableCell>
+                    <TableCell className="font-medium font-mono">
+                      {invitationCode.code}
+                    </TableCell>
                     <TableCell>
-                      <Badge variant={getRoleBadgeColor(invitationCode.role)} className="capitalize">
+                      <Badge
+                        variant={getRoleBadgeColor(invitationCode.role)}
+                        className="capitalize"
+                      >
                         <RoleIcon className="h-3 w-3 mr-1" />
                         {invitationCode.role}
                       </Badge>
                     </TableCell>
-                    <TableCell>{invitationCode.expiresAt.toLocaleDateString()}</TableCell>
                     <TableCell>
-                      <Badge variant={invitationCode.isUsed ? 'secondary' : 'default'}>
-                        {invitationCode.isUsed ? 'Used' : 'Available'}
+                      {invitationCode.expiresAt.toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          invitationCode.isUsed ? "secondary" : "default"
+                        }
+                      >
+                        {invitationCode.isUsed ? "Used" : "Available"}
                       </Badge>
                     </TableCell>
-                    <TableCell>{invitationCode.createdAt.toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      {invitationCode.createdAt.toLocaleDateString()}
+                    </TableCell>
                     <TableCell>
                       <div className="flex items-center space-x-2">
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleCopyInvitationCode(invitationCode.code)}
+                          onClick={() =>
+                            handleCopyInvitationCode(invitationCode.code)
+                          }
                           disabled={invitationCode.isUsed}
                         >
                           <Copy className="h-4 w-4" />
                         </Button>
-                        
+
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button
@@ -268,14 +366,21 @@ function UsersContent() {
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
-                              <AlertDialogTitle>Delete Invitation Code</AlertDialogTitle>
+                              <AlertDialogTitle>
+                                Delete Invitation Code
+                              </AlertDialogTitle>
                               <AlertDialogDescription>
-                                Are you sure you want to delete this invitation code? This action cannot be undone.
+                                Are you sure you want to delete this invitation
+                                code? This action cannot be undone.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleDeleteInvitationCode(invitationCode.id)}>
+                              <AlertDialogAction
+                                onClick={() =>
+                                  handleDeleteInvitationCode(invitationCode.id)
+                                }
+                              >
                                 Delete
                               </AlertDialogAction>
                             </AlertDialogFooter>
@@ -288,10 +393,16 @@ function UsersContent() {
               })}
               {invitationCodes.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                  <TableCell
+                    colSpan={6}
+                    className="text-center py-12 text-muted-foreground"
+                  >
                     <div className="flex flex-col items-center">
                       <Link className="h-12 w-12 mb-4 text-gray-400" />
-                      <p>No invitation codes found. Generate your first invitation code to get started.</p>
+                      <p>
+                        No invitation codes found. Generate your first
+                        invitation code to get started.
+                      </p>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -320,22 +431,33 @@ function UsersContent() {
             <TableBody>
               {organizationUsers.map((organizationUser) => {
                 const RoleIcon = getRoleIcon(organizationUser.role);
-                
+
                 return (
                   <TableRow key={organizationUser.id}>
-                    <TableCell className="font-medium">{organizationUser.userId}</TableCell>
+                    <TableCell className="font-medium">
+                      {organizationUser.userId}
+                    </TableCell>
                     <TableCell>
-                      <Badge variant={getRoleBadgeColor(organizationUser.role)} className="capitalize">
+                      <Badge
+                        variant={getRoleBadgeColor(organizationUser.role)}
+                        className="capitalize"
+                      >
                         <RoleIcon className="h-3 w-3 mr-1" />
                         {organizationUser.role}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={organizationUser.isActive ? 'default' : 'secondary'}>
-                        {organizationUser.isActive ? 'Active' : 'Inactive'}
+                      <Badge
+                        variant={
+                          organizationUser.isActive ? "default" : "secondary"
+                        }
+                      >
+                        {organizationUser.isActive ? "Active" : "Inactive"}
                       </Badge>
                     </TableCell>
-                    <TableCell>{organizationUser.createdAt?.toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      {organizationUser.createdAt?.toLocaleDateString()}
+                    </TableCell>
                     <TableCell>
                       <div className="flex items-center space-x-2">
                         <Button
@@ -345,10 +467,15 @@ function UsersContent() {
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
-                        
+
                         <Switch
                           checked={organizationUser.isActive}
-                          onCheckedChange={() => handleToggleUserStatus(organizationUser.id, organizationUser.isActive)}
+                          onCheckedChange={() =>
+                            handleToggleUserStatus(
+                              organizationUser.id,
+                              organizationUser.isActive
+                            )
+                          }
                         />
                       </div>
                     </TableCell>
@@ -357,10 +484,16 @@ function UsersContent() {
               })}
               {organizationUsers.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
+                  <TableCell
+                    colSpan={5}
+                    className="text-center py-12 text-muted-foreground"
+                  >
                     <div className="flex flex-col items-center">
                       <Users className="h-12 w-12 mb-4 text-gray-400" />
-                      <p>No users found. Users will appear here when they join using invitation codes.</p>
+                      <p>
+                        No users found. Users will appear here when they join
+                        using invitation codes.
+                      </p>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -379,7 +512,12 @@ function UsersContent() {
           <div className="space-y-4">
             <div>
               <Label htmlFor="role">Role</Label>
-               <Select value={formData.role} onValueChange={(value: string) => setFormData({ ...formData, role: value as UserRole })}>
+              <Select
+                value={formData.role}
+                onValueChange={(value: string) =>
+                  setFormData({ ...formData, role: value as UserRole })
+                }
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select role" />
                 </SelectTrigger>
@@ -395,7 +533,9 @@ function UsersContent() {
               <Switch
                 id="isActive"
                 checked={formData.isActive}
-                onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
+                onCheckedChange={(checked) =>
+                  setFormData({ ...formData, isActive: checked })
+                }
               />
               <Label htmlFor="isActive">Active User</Label>
             </div>
@@ -403,9 +543,7 @@ function UsersContent() {
               <Button variant="outline" onClick={() => setDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleUpdateUser}>
-                Update User
-              </Button>
+              <Button onClick={handleUpdateUser}>Update User</Button>
             </div>
           </div>
         </DialogContent>

@@ -6,6 +6,7 @@ import { auth, db } from '@/lib/firebase/config';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { Organization, OrganizationUser } from '@/types';
+import { useOrganizationManager } from '@/lib/hooks/useOrganization';
 import {
   selectedOrganizationAtom,
   userOrganizationsAtom,
@@ -31,9 +32,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [organizationId, setOrganizationId] = useAtom(selectedOrganizationIdAtom);
   const [organizationUserRole, setOrganizationUserRole] = useAtom(organizationUserRoleAtom);
   const logout = useSetAtom(logoutAtom);
-  
+
+  // Initialize organization management - only once in the app lifecycle
+  useOrganizationManager();
+
   // Flag to prevent multiple simultaneous auth operations
   const authProcessingRef = useRef(false);
+
+  // Log when organizationLoading changes
+  useEffect(() => {
+    console.log('AuthProvider: organizationLoading changed to', organizationLoading);
+  }, [organizationLoading]);
 
   // Initialize IndexedDB auto-repair on component mount
   useEffect(() => {
@@ -54,7 +63,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     console.log('AuthProvider: Firebase auth object:', auth);
     console.log('AuthProvider: Firebase app initialized:', auth.app);
 
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       console.log('AuthProvider: Auth state changed, user:', user?.email || 'null');
       console.log('AuthProvider: User object:', user);
 
@@ -66,108 +75,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       authProcessingRef.current = true;
 
-      try {
-        if (user) {
-
-          // Set organizationLoading to true while we fetch organization data
-          setOrganizationLoading(true);
-
-          // Start organization fetch in background
-          const organizationFetchPromise = (async () => {
-            try {
-              console.log('AuthProvider: Starting organization fetch');
-              const orgStartTime = Date.now();
-
-              const organizationUsersQuery = query(
-                collection(db, 'organizationUsers'),
-                where('userId', '==', user.uid),
-                where('isActive', '==', true)
-              );
-              const organizationUsersSnapshot = await getDocs(organizationUsersQuery);
-              const organizationAssociations = organizationUsersSnapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data(),
-                createdAt: doc.data().createdAt?.toDate(),
-                updatedAt: doc.data().updatedAt?.toDate(),
-              })) as OrganizationUser[];
-
-              console.log('AuthProvider: Organization fetch completed in', Date.now() - orgStartTime, 'ms');
-              // Note: organizationAssociations contains OrganizationUser objects, but userOrganizations expects Organization objects
-              // We'll need to fetch the full organization details separately
-
-              // Handle organization selection logic
-              // Try to get organizationId from storage directly
-              let currentOrganizationId = organizationId;
-              if (!currentOrganizationId) {
-                try {
-                  currentOrganizationId = await indexedDBStorage.getItem('dijibill-organization-id');
-                } catch (storageError) {
-                  console.error('Error reading organizationId from storage:', storageError);
-                }
-              }
-
-              if (currentOrganizationId && organizationAssociations.some(ou => ou.organizationId === currentOrganizationId)) {
-                console.log('AuthProvider: Auto-selecting organization');
-                try {
-                  const organizationAssociation = organizationAssociations.find(ou => ou.organizationId === currentOrganizationId);
-                  if (organizationAssociation) {
-                    setOrganizationUserRole(organizationAssociation);
-
-                    // Fetch organization details from Firebase
-                    const organizationDoc = await getDoc(doc(db, 'organizations', currentOrganizationId));
-                    if (organizationDoc.exists()) {
-                      const organizationData = {
-                        id: organizationDoc.id,
-                        ...organizationDoc.data(),
-                        createdAt: organizationDoc.data()?.createdAt?.toDate(),
-                        updatedAt: organizationDoc.data()?.updatedAt?.toDate(),
-                      } as Organization;
-                      setSelectedOrganization(organizationData);
-                      // Also update the atom to ensure consistency
-                      setOrganizationId(currentOrganizationId);
-                    } else {
-                      // Organization doesn't exist, clear stored ID
-                      setOrganizationId(null);
-                      await indexedDBStorage.removeItem('dijibill-organization-id');
-                    }
-                  }
-                } catch (selectError) {
-                  console.error('Organization auto-selection error:', selectError);
-                  // Clear invalid organizationId
-                  setOrganizationId(null);
-                  await indexedDBStorage.removeItem('dijibill-organization-id');
-                }
-              } else if (currentOrganizationId && !organizationAssociations.some(ou => ou.organizationId === currentOrganizationId)) {
-                // organizationId exists but is not valid for this user, clear it
-                console.log('AuthProvider: Clearing invalid organizationId');
-                setOrganizationId(null);
-                await indexedDBStorage.removeItem('dijibill-organization-id');
-              }
-            } catch (orgError) {
-              console.error('Organization fetch error:', orgError);
-              setUserOrganizations([]);
-              setOrganizationError(orgError instanceof Error ? orgError.message : 'Failed to load organizations');
-            } finally {
-              setOrganizationLoading(false);
-              authProcessingRef.current = false;
-              console.log('AuthProvider: Organization loading complete, auth process finished');
-            }
-          })();
-
-          organizationFetchPromise.catch((error) => {
-              console.error('Organization fetch promise failed:', error);
-              // Ensure loading states are reset even if promise fails
-              setOrganizationLoading(false);
-            });
-        } else {
-          console.log('AuthProvider: No user, clearing state');
-          logout();
+      // Handle auth state change asynchronously
+      (async () => {
+        try {
+          if (user) {
+            // AuthProvider only handles authentication
+            // Organization loading is handled by useOrganizationManager
+            console.log('AuthProvider: User authenticated');
+          } else {
+            console.log('AuthProvider: No user, clearing state');
+            logout();
+          }
+          
+          // Auth processing is complete
+          authProcessingRef.current = false;
+          console.log('AuthProvider: Auth process finished');
+        } catch (err) {
+          console.error('Auth state change error:', err);
+          // Auth processing is complete
+          authProcessingRef.current = false;
         }
-      } catch (err) {
-        console.error('Auth state change error:', err);
-        setOrganizationError(err instanceof Error ? err.message : 'An unknown error occurred');
-        authProcessingRef.current = false;
-      }
+      })();
     });
 
     return () => {
@@ -175,22 +103,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       unsubscribe();
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-
-
-  // Add timeouts to prevent infinite loading
-
-  useEffect(() => {
-    const orgTimeout = setTimeout(() => {
-      if (organizationLoading) {
-        console.warn('AuthProvider: Organization loading timeout reached, forcing organizationLoading to false');
-        setOrganizationLoading(false);
-        setOrganizationError('Organization loading timeout - please check your connection and try again');
-      }
-    }, 9000);
-
-    return () => clearTimeout(orgTimeout);
-  }, [organizationLoading, setOrganizationError, setOrganizationLoading]);
 
   return <>{children}</>;
 }

@@ -3,10 +3,12 @@
 import { usePathname } from 'next/navigation';
 import { useAtomValue } from 'jotai';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { selectedOrganizationAtom, userOrganizationsAtom, organizationLoadingAtom } from '@/atoms/organizationAtoms';
+import { selectedOrganizationAtom, userOrganizationsAtom } from '@/atoms/organizationAtoms';
+import { organizationLoadingAtom } from '@/atoms';
 import { sidebarCollapsedAtom } from '@/atoms/uiAtoms';
 import { CollapsibleSidebar } from '@/components/sidebar/collapsible-sidebar';
 import { OrganizationManager } from '@/components/organization/OrganizationManager';
+
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -18,6 +20,8 @@ export function AppLayout({ children }: AppLayoutProps) {
   const currentOrganization = useAtomValue(selectedOrganizationAtom);
   const userOrganizations = useAtomValue(userOrganizationsAtom);
   const organizationLoading = useAtomValue(organizationLoadingAtom);
+
+
 
   const loading = authLoading;
   const isCollapsed = useAtomValue(sidebarCollapsedAtom);
@@ -37,7 +41,9 @@ export function AppLayout({ children }: AppLayoutProps) {
   // Check if we should show organization selector
   const storedOrganizationId = typeof window !== 'undefined' ? localStorage.getItem('selectedOrganizationId') : null;
   const hasStoredOrganization = storedOrganizationId && userOrganizations.some((ou) => ou.id === storedOrganizationId);
-  const shouldShowOrganizationSelector = !loading && !organizationLoading && user && userOrganizations.length > 0 && !currentOrganization && !hasStoredOrganization;
+  // Show organization manager when user is authenticated and no organization is selected
+  // We need to show it even during organization loading to allow useOrganizationManager to run
+  const shouldShowOrganizationSelector = !loading && user && !currentOrganization && !hasStoredOrganization;
 
   // For protected pages, check if organization is selected
   if (shouldShowOrganizationSelector) {

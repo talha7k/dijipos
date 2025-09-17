@@ -1,19 +1,41 @@
 // lib/hooks/useOrganization.ts
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAtom } from 'jotai';
 import {
   selectedOrganizationIdAtom,
   selectedOrganizationAtom,
   userOrganizationsAtom,
   userOrganizationAssociationsAtom,
-  organizationLoadingAtom,
   organizationErrorAtom,
   organizationUsersAtom
 } from '@/atoms/organizationAtoms';
+import { organizationsLoadingAtom, organizationDetailsLoadingAtom, organizationLoadingAtom } from '@/atoms';
 import { getOrganization, getOrganizationsForUser, getOrganizationUsers } from '../firebase/firestore/organizations';
 import { useAuth } from './useAuth';
 import { useRealtimeCollection } from './useRealtimeCollection';
 import { OrganizationUser } from '@/types';
+
+/**
+ * Helper function to add timeout to promises
+ */
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      reject(new Error('Operation timed out'));
+    }, timeoutMs);
+
+    promise.then(
+      (result) => {
+        clearTimeout(timeoutId);
+        resolve(result);
+      },
+      (error) => {
+        clearTimeout(timeoutId);
+        reject(error);
+      }
+    );
+  });
+}
 
 /**
  * Hook that orchestrates fetching organization data and syncing it with Jotai atoms.
@@ -26,7 +48,18 @@ export function useOrganizationManager() {
   const [, setUserOrganizations] = useAtom(userOrganizationsAtom);
   const [, setUserOrganizationAssociations] = useAtom(userOrganizationAssociationsAtom);
   const [, setLoading] = useAtom(organizationLoadingAtom);
+  const [, setOrganizationsLoading] = useAtom(organizationsLoadingAtom);
+  const [, setOrganizationDetailsLoading] = useAtom(organizationDetailsLoadingAtom);
   const [, setError] = useAtom(organizationErrorAtom);
+
+  // Get current loading states for the combined state
+  const [organizationsLoading] = useAtom(organizationsLoadingAtom);
+  const [organizationDetailsLoading] = useAtom(organizationDetailsLoadingAtom);
+
+  // Sync overall loading state
+  useEffect(() => {
+    setLoading(organizationsLoading || organizationDetailsLoading);
+  }, [organizationsLoading, organizationDetailsLoading, setLoading]);
 
   // Effect to fetch the user's list of organizations when they log in
   useEffect(() => {
@@ -36,17 +69,20 @@ export function useOrganizationManager() {
       return;
     }
 
+
     const fetchUserOrgs = async () => {
-      setLoading(true);
+      setOrganizationsLoading(true);
       setError(null);
       try {
-        const orgs = await getOrganizationsForUser(user.uid);
+        // Add timeout to prevent indefinite loading
+        const orgs = await withTimeout(getOrganizationsForUser(user.uid), 10000); // 10 second timeout
         setUserOrganizations(orgs);
 
         // Also fetch organization associations with roles
         const associations = [];
         for (const org of orgs) {
-          const users = await getOrganizationUsers(org.id);
+          // Add timeout for each organization user fetch
+          const users = await withTimeout(getOrganizationUsers(org.id), 5000); // 5 second timeout
           const userAssociation = users.find(u => u.userId === user.uid);
           if (userAssociation) {
             associations.push({
@@ -63,14 +99,24 @@ export function useOrganizationManager() {
           setSelectedOrgId(orgs[0].id);
         }
       } catch (err) {
-        setError('Failed to load organizations');
+        console.error('Error fetching organizations:', err);
+        if (err instanceof Error) {
+          if (err.message === 'Operation timed out') {
+            setError('Organization loading timed out. Please check your connection and try again.');
+          } else {
+            setError('Failed to load organizations: ' + err.message);
+          }
+        } else {
+          setError('Failed to load organizations: Unknown error');
+        }
       } finally {
-        setLoading(false);
+
+        setOrganizationsLoading(false);
       }
     };
 
     fetchUserOrgs();
-  }, [user?.uid, setUserOrganizations, selectedOrgId, setSelectedOrgId, setLoading, setError]);
+  }, [user?.uid, setUserOrganizations, setSelectedOrgId, setError]);
 
   // Effect to fetch the full details of the selected organization when the ID changes
   useEffect(() => {
@@ -79,21 +125,33 @@ export function useOrganizationManager() {
       return;
     }
 
+
     const fetchOrgDetails = async () => {
-      setLoading(true);
+      setOrganizationDetailsLoading(true);
       setError(null);
       try {
-        const organization = await getOrganization(selectedOrgId);
+        // Add timeout to prevent indefinite loading
+        const organization = await withTimeout(getOrganization(selectedOrgId), 10000); // 10 second timeout
         setSelectedOrganization(organization);
       } catch (err) {
-        setError('Failed to fetch organization details');
+        console.error('Error fetching organization details:', err);
+        if (err instanceof Error) {
+          if (err.message === 'Operation timed out') {
+            setError('Organization details loading timed out. Please check your connection and try again.');
+          } else {
+            setError('Failed to fetch organization details: ' + err.message);
+          }
+        } else {
+          setError('Failed to fetch organization details: Unknown error');
+        }
       } finally {
-        setLoading(false);
+
+        setOrganizationDetailsLoading(false);
       }
     };
 
     fetchOrgDetails();
-  }, [selectedOrgId, setSelectedOrganization, setLoading, setError]);
+  }, [selectedOrgId, setSelectedOrganization, setError]);
 
   // Use the real-time hook to listen to users of the selected organization
   // and sync the result directly to its atom.

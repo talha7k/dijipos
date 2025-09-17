@@ -4,6 +4,10 @@ import { Order, CartItem, Table, OrderType } from '@/types/order';
 import { Customer } from '@/types/customer-supplier';
 import { indexedDBStorage } from '@/lib/storage';
 
+// Tables state
+export const tablesAtom = atom<Table[]>([]);
+export const tablesLoadingAtom = atom<boolean>(false);
+
 // =====================
 // POS STATE ATOMS
 // =====================

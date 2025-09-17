@@ -4,8 +4,10 @@ import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAtomValue } from 'jotai';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { selectedOrganizationAtom, userOrganizationsAtom, organizationLoadingAtom, organizationErrorAtom } from '@/atoms/organizationAtoms';
+import { selectedOrganizationAtom, userOrganizationsAtom, organizationErrorAtom } from '@/atoms/organizationAtoms';
+import { organizationLoadingAtom } from '@/atoms';
 import { toast } from 'sonner';
+import { indexedDBStorage } from '@/lib/storage';
 
 interface RouteGuardProps {
   children: React.ReactNode;
@@ -17,6 +19,11 @@ export function RouteGuard({ children }: RouteGuardProps) {
   const userOrganizations = useAtomValue(userOrganizationsAtom);
   const organizationLoading = useAtomValue(organizationLoadingAtom);
   const organizationError = useAtomValue(organizationErrorAtom);
+
+  // Log when organizationLoading changes
+  useEffect(() => {
+    console.log('RouteGuard: organizationLoading changed to', organizationLoading);
+  }, [organizationLoading]);
 
   // Adapt legacy variables
   const loading = authLoading;
@@ -167,6 +174,14 @@ export function RouteGuard({ children }: RouteGuardProps) {
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
           <p className="mt-4">{loading ? 'Authenticating...' : 'Loading organizations...'}</p>
+          {(organizationLoading && !loading) && (
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-4 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md text-gray-800 transition-colors"
+            >
+              Retry Loading
+            </button>
+          )}
         </div>
       </div>
     );
@@ -183,20 +198,28 @@ export function RouteGuard({ children }: RouteGuardProps) {
             {isOrganizationError ? 'Organization Loading Error' : 'Authentication Error'}
           </h3>
           <p className="text-red-600 mt-2">{error}</p>
-          {isOrganizationError && (
+          <div className="mt-4 space-y-2">
             <button
               onClick={() => window.location.reload()}
-              className="mt-4 w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition-colors"
+              className="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition-colors"
             >
-              Retry Loading Organizations
+              {isOrganizationError ? 'Retry Loading Organizations' : 'Retry'}
             </button>
-          )}
-          <button
-            onClick={() => window.location.reload()}
-            className="mt-2 w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 transition-colors"
-          >
-            Refresh Page
-          </button>
+            <button
+              onClick={async () => {
+                // Clear any stored organization data and reload
+                try {
+                  await indexedDBStorage.removeItem('selectedOrgId');
+                } catch (err) {
+                  console.error('Error clearing cache:', err);
+                }
+                window.location.reload();
+              }}
+              className="w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 transition-colors"
+            >
+              Clear Cache and Retry
+            </button>
+          </div>
         </div>
       </div>
     );

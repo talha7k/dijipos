@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 
 import { useAtomValue } from 'jotai';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { selectedOrganizationAtom, organizationUsersAtom, organizationLoadingAtom } from '@/atoms/organizationAtoms';
+import { selectedOrganizationAtom, organizationUsersAtom,  } from '@/atoms/organizationAtoms';
+import { organizationLoadingAtom } from '@/atoms';
 import { useInvitationCodesData, useInvitationCodesActions } from '@/lib/hooks/useInvitationCodes';
 import { updateOrganization, updateOrganizationBranding, updateOrganizationUser, updateUserStatus } from '@/lib/firebase/firestore/organizations';
 import { Organization, OrganizationUser, InvitationCode } from '@/types';

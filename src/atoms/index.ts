@@ -8,13 +8,6 @@ import { indexedDBStorage } from '@/lib/storage';
 // Re-export atoms from more specific files
 export * from './posAtoms';
 export * from './uiAtoms';
-export * from './tableAtoms';
-
-// Organization & Session State Atoms: selectedOrganizationIdAtom, selectedOrganizationAtom, userOrganizationsAtom, organizationUserRoleAtom, organizationLoadingAtom, organizationErrorAtom
-// Derived Atoms: hasSelectedOrganizationAtom, isMemberOfAnyOrganizationAtom
-// Utility Atoms: logoutAtom
-
-// Organization & Session State Atoms: selectedOrganizationIdAtom, selectedOrganizationAtom, userOrganizationsAtom, organizationUserRoleAtom, organizationLoadingAtom, organizationErrorAtom
 
 // ==========================================
 // ORGANIZATION & SESSION STATE ATOMS
@@ -44,8 +37,10 @@ export const organizationUserRoleAtom = atom<OrganizationUser | null>(null);
 
 // --- STATUS ATOMS ---
 
-// A single atom to manage loading states for all organization-related data fetching.
-export const organizationLoadingAtom = atom<boolean>(true);
+// Separate loading states to prevent race conditions
+export const organizationsLoadingAtom = atom<boolean>(false); // Loading user's organizations list
+export const organizationDetailsLoadingAtom = atom<boolean>(false); // Loading selected organization details
+export const organizationLoadingAtom = atom<boolean>(false); // Combined loading state (for backward compatibility)
 export const organizationErrorAtom = atom<string | null>(null);
 
 

@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/lib/hooks/useAuth";
-import { useOrganizationManager, useOrganization } from "@/lib/hooks/useOrganization";
+import { useOrganization } from "@/lib/hooks/useOrganization";
 import { useAtom } from "jotai";
 import {
   selectedOrganizationIdAtom,
@@ -17,6 +17,7 @@ import {
   userOrganizationAssociationsAtom,
   organizationUsersAtom
 } from "@/atoms/organizationAtoms";
+import { organizationsLoadingAtom } from "@/atoms";
 import { themeAtom } from "@/atoms/uiAtoms";
 import {
   Building2,
@@ -50,11 +51,12 @@ import { toast } from "sonner";
 export function OrganizationManager() {
   const { user } = useAuth();
   const { selectedOrganization } = useOrganization();
-  useOrganizationManager(); // Initialize organization management
+
 
   const [organizationId, setOrganizationId] = useAtom(selectedOrganizationIdAtom);
   const [userOrganizations] = useAtom(userOrganizationsAtom);
   const [userOrganizationAssociations] = useAtom(userOrganizationAssociationsAtom);
+  const [organizationsLoading] = useAtom(organizationsLoadingAtom);
   const [theme, setTheme] = useAtom(themeAtom);
 
   const selectOrganization = (orgId: string) => {
@@ -245,6 +247,18 @@ export function OrganizationManager() {
 
   if (!user) {
     return null;
+  }
+
+  // Show loading state while organization data is loading
+  if (organizationsLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+          <p className="mt-4">Loading your organizations...</p>
+        </div>
+      </div>
+    );
   }
 
   return (

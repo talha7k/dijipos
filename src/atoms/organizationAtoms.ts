@@ -28,8 +28,5 @@ export const organizationUsersAtom = atom<OrganizationUser[]>([]);
 
 // --- Status Atoms ---
 
-// Manages the loading state for organization-related fetches
-export const organizationLoadingAtom = atom<boolean>(true);
-
 // Manages any potential errors
 export const organizationErrorAtom = atom<string | null>(null);
