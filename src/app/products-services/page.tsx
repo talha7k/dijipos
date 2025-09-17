@@ -354,7 +354,17 @@ export default function ProductsServicesPage() {
         </TabsContent>
 
         <TabsContent value="data" className="space-y-4">
-          <ExportImportProducts organizationId={organizationId || undefined} />
+          <ExportImportProducts
+            organizationId={organizationId || undefined}
+            categories={categories}
+            products={products}
+            onCreateCategory={async (data) => {
+              await createCategory(data);
+            }}
+            onCreateProduct={async (data) => {
+              await createProduct(data);
+            }}
+          />
         </TabsContent>
       </Tabs>
 

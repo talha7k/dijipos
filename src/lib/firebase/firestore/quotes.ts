@@ -98,8 +98,14 @@ export async function getQuote(quoteId: string): Promise<Quote | null> {
 export async function createQuote(data: Omit<Quote, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
   try {
     const now = Timestamp.now();
+
+    // Filter out undefined values to prevent Firestore errors
+    const filteredData = Object.fromEntries(
+      Object.entries(data).filter(([_, value]) => value !== undefined)
+    );
+
     const docRef = await addDoc(quotesRef, {
-      ...data,
+      ...filteredData,
       createdAt: now,
       updatedAt: now,
     });

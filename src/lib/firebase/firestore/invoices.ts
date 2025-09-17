@@ -137,8 +137,14 @@ export async function getInvoice(invoiceId: string): Promise<SalesInvoice | Purc
 export async function createSalesInvoice(data: Omit<SalesInvoice, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
   try {
     const now = Timestamp.now();
+
+    // Filter out undefined values to prevent Firestore errors
+    const filteredData = Object.fromEntries(
+      Object.entries(data).filter(([_, value]) => value !== undefined)
+    );
+
     const docRef = await addDoc(invoicesRef, {
-      ...data,
+      ...filteredData,
       createdAt: now,
       updatedAt: now,
     });

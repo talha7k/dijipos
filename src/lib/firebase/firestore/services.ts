@@ -70,8 +70,14 @@ export async function getService(serviceId: string): Promise<Service | null> {
 export async function createService(data: Omit<Service, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
   try {
     const now = Timestamp.now();
+
+    // Filter out undefined values to prevent Firestore errors
+    const filteredData = Object.fromEntries(
+      Object.entries(data).filter(([_, value]) => value !== undefined)
+    );
+
     const docRef = await addDoc(servicesRef, {
-      ...data,
+      ...filteredData,
       createdAt: now,
       updatedAt: now,
     });

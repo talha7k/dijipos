@@ -70,8 +70,14 @@ export async function getProduct(productId: string): Promise<Product | null> {
 export async function createProduct(data: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
   try {
     const now = Timestamp.now();
+
+    // Filter out undefined values to prevent Firestore errors
+    const filteredData = Object.fromEntries(
+      Object.entries(data).filter(([_, value]) => value !== undefined)
+    );
+
     const docRef = await addDoc(productsRef, {
-      ...data,
+      ...filteredData,
       createdAt: now,
       updatedAt: now,
     });

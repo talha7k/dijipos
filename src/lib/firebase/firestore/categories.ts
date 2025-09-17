@@ -95,8 +95,14 @@ export async function getCategory(categoryId: string): Promise<Category | null> 
 export async function createCategory(data: Omit<Category, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
   try {
     const now = Timestamp.now();
+
+    // Filter out undefined values to prevent Firestore errors
+    const filteredData = Object.fromEntries(
+      Object.entries(data).filter(([_, value]) => value !== undefined)
+    );
+
     const docRef = await addDoc(categoriesRef, {
-      ...data,
+      ...filteredData,
       createdAt: now,
       updatedAt: now,
     });
