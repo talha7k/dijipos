@@ -177,7 +177,7 @@ export function RouteGuard({ children }: RouteGuardProps) {
           {(organizationLoading && !loading) && (
             <button
               onClick={() => window.location.reload()}
-              className="mt-4 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md text-gray-800 transition-colors"
+              className="mt-4 px-4 py-2 bg-muted/10 hover:bg-muted rounded-md text-sm transition-colors"
             >
               Retry Loading
             </button>

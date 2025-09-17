@@ -28,10 +28,11 @@ export function OrganizationSelector({ children }: OrganizationSelectorProps) {
   const organizationId = selectedOrganization?.id;
   const setSelectedOrganizationId = useSetAtom(selectedOrganizationIdAtom);
 
-  // Simple functions to replace the hook functions
-  const selectOrganization = async (organizationId: string) => {
-    setSelectedOrganizationId(organizationId);
-  };
+   // Simple functions to replace the hook functions
+   const selectOrganization = async (organizationId: string) => {
+     console.log('Selecting organization:', organizationId);
+     setSelectedOrganizationId(organizationId);
+   };
 
   const refreshOrganizations = async () => {
     if (!user?.uid) return;
@@ -50,9 +51,10 @@ export function OrganizationSelector({ children }: OrganizationSelectorProps) {
   const [newOrganizationName, setNewOrganizationName] = useState('');
   const [newOrganizationEmail, setNewOrganizationEmail] = useState('');
   const [loading, setLoading] = useState(false);
-  const [joinError, setJoinError] = useState('');
+   const [joinError, setJoinError] = useState('');
+   const [switching, setSwitching] = useState(false);
 
-  const handleJoinOrganization = async () => {
+   const handleJoinOrganization = async () => {
     if (!joinCode || !user) return;
     
     setLoading(true);
@@ -169,10 +171,18 @@ export function OrganizationSelector({ children }: OrganizationSelectorProps) {
     }
   };
 
-  const handleSwitchOrganization = async (organizationUserId: string) => {
-    await selectOrganization(organizationUserId);
-    setIsOpen(false);
-  };
+   const handleSwitchOrganization = async (organizationId: string) => {
+     console.log('handleSwitchOrganization called with:', organizationId);
+     const org = userOrganizations.find(o => o.id === organizationId);
+     console.log('Found org:', org);
+     if (!org) return;
+
+     setSwitching(true);
+     await selectOrganization(organizationId);
+     toast.success(`Switched to ${org.name}`);
+     setSwitching(false);
+     setIsOpen(false);
+   };
 
   if (!user) {
     return <>{children}</>;
@@ -223,8 +233,8 @@ export function OrganizationSelector({ children }: OrganizationSelectorProps) {
                 {userOrganizations
                   .filter(org => org.id !== organizationId)
                   .map((org) => (
-                    <Card key={org.id} className="cursor-pointer hover:shadow-md transition-shadow">
-                      <CardContent className="p-4">
+                     <Card key={org.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleSwitchOrganization(org.id)}>
+                       <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <Building2 className="h-8 w-8 text-gray-400" />
@@ -234,15 +244,7 @@ export function OrganizationSelector({ children }: OrganizationSelectorProps) {
                                 {organizationUsers.find(ou => ou.organizationId === org.id)?.role || 'User'}
                               </Badge>
                             </div>
-                          </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleSwitchOrganization(org.id)}
-                          >
-                            Switch
-                            <ArrowRight className="h-4 w-4 ml-2" />
-                          </Button>
+                           </div>
                         </div>
                       </CardContent>
                     </Card>

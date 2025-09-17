@@ -119,19 +119,23 @@ export function useOrganizationManager() {
   }, [user?.uid, setUserOrganizations, setSelectedOrgId, setError]);
 
   // Effect to fetch the full details of the selected organization when the ID changes
-  useEffect(() => {
-    if (!selectedOrgId) {
-      setSelectedOrganization(null);
-      return;
-    }
+   useEffect(() => {
+     if (!selectedOrgId) {
+       console.log('No selectedOrgId');
+       setSelectedOrganization(null);
+       return;
+     }
 
+     console.log('Fetching organization for:', selectedOrgId);
 
-    const fetchOrgDetails = async () => {
+     const fetchOrgDetails = async () => {
       setOrganizationDetailsLoading(true);
       setError(null);
       try {
         // Add timeout to prevent indefinite loading
         const organization = await withTimeout(getOrganization(selectedOrgId), 10000); // 10 second timeout
+        console.log('Fetched organization:', organization);
+        console.log('Fetched organization:', organization);
         setSelectedOrganization(organization);
       } catch (err) {
         console.error('Error fetching organization details:', err);
