@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth } from '@/lib/hooks/useAuth';
-import { useOrganization } from '@/lib/hooks/useOrganization';
+import { useAtomValue } from 'jotai';
+
+import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
 import { usePurchaseInvoicesData, usePurchaseInvoiceActions } from '@/legacy_hooks/usePurchaseInvoices';
 import { Invoice, PurchaseInvoice, Organization, InvoiceStatus } from '@/types';
 import { InvoiceTemplateType } from '@/types/enums';
@@ -26,7 +27,7 @@ import InvoiceForm from '@/components/invoices_quotes/InvoiceForm';
 import { Receipt } from 'lucide-react';
 
 function InvoicesContent() {
-  const { selectedOrganization } = useOrganization();
+  const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
   const { invoices, organization, loading } = usePurchaseInvoicesData(organizationId || undefined);
   const { updateInvoiceStatus, createInvoice } = usePurchaseInvoiceActions(organizationId || undefined);

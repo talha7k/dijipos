@@ -1,14 +1,13 @@
 "use client";
 
 import React from "react";
-import { useOrganizationId } from "@/legacy_hooks/useAuthState";
+import { useOrganization } from "@/lib/hooks/useOrganization";
 import { CartItem, ItemType } from "@/types";
-import { useProductsData } from "@/legacy_hooks/products_services/useProducts";
-import { useServicesData } from "@/legacy_hooks/products_services/useServices";
-import { useCategoriesData } from "@/legacy_hooks/products_services/useCategories";
-import { useTablesData } from "@/legacy_hooks/tables/useTables";
-import { useCustomersData } from "@/legacy_hooks/useCustomerState";
-import { useOrders } from "@/legacy_hooks/orders/useOrders";
+import { useProducts } from "@/lib/hooks/useProducts";
+import { useServices } from "@/lib/hooks/useServices";
+import { useTables } from "@/lib/hooks/useTables";
+import { useCustomers } from "@/lib/hooks/useCustomers";
+import { useOrders } from "@/lib/hooks/useOrders";
 import { useOrderTypes } from "@/legacy_hooks/useOrderTypes";
 import { usePaymentTypes } from "@/legacy_hooks/uePaymentTypes";
 
@@ -38,30 +37,15 @@ import { PaymentSuccessDialog } from "@/components/PaymentSuccessDialog";
 import { CartItemModal } from "@/components/orders/CartItemModal";
 
 export default function SimplifiedPOSPage() {
-  const organizationId = useOrganizationId();
+  const { selectedOrganization } = useOrganization();
+  const organizationId = selectedOrganization?.id;
 
   // Data hooks
-  const { products = [], loading: productsLoading } = useProductsData(
-    organizationId || ""
-  );
-  const { services = [], loading: servicesLoading } = useServicesData(
-    organizationId || ""
-  );
-  const { categories = [], loading: categoriesLoading } = useCategoriesData(
-    organizationId || ""
-  );
-  const { tables = [], loading: tablesLoading } = useTablesData(
-    organizationId || ""
-  );
-  const { customers = [], loading: customersLoading } = useCustomersData(
-    organizationId || ""
-  );
-  const {
-    orders = [],
-    orderPayments = {},
-    loading: ordersLoading,
-    paymentsLoading: orderPaymentsLoading
-  } = useOrders(organizationId || undefined);
+  const { products, categories, loading: productsLoading } = useProducts();
+  const { services, loading: servicesLoading } = useServices();
+  const { tables, loading: tablesLoading } = useTables();
+  const { customers, loading: customersLoading } = useCustomers();
+  const { orders, loading: ordersLoading } = useOrders();
   const { orderTypes = [] } = useOrderTypes(organizationId || undefined);
   const { paymentTypes = [], loading: paymentTypesLoading } =
     usePaymentTypes(organizationId || undefined);
@@ -110,16 +94,14 @@ export default function SimplifiedPOSPage() {
     setShowPaymentSuccessDialog,
   } = usePOSLogic();
 
-  // Loading state - exclude ordersLoading and orderPaymentsLoading when viewing orders to prevent stuck loading
+  // Loading state - exclude ordersLoading when viewing orders to prevent stuck loading
   const loading =
     productsLoading ||
     servicesLoading ||
-    categoriesLoading ||
     tablesLoading ||
     customersLoading ||
     (currentView !== 'orders' ? ordersLoading : false) ||
-    paymentTypesLoading ||
-    (currentView !== 'orders' ? orderPaymentsLoading : false);
+    paymentTypesLoading;
 
   if (loading) {
     return (
@@ -171,7 +153,7 @@ export default function SimplifiedPOSPage() {
              tables={tables}
              customers={customers}
              orders={orders}
-             orderPayments={orderPayments}
+             orderPayments={{}}
              paymentTypes={paymentTypes}
              selectedOrder={selectedOrder}
              categoryPath={categoryPath}
@@ -198,7 +180,7 @@ export default function SimplifiedPOSPage() {
           cartTotal={cartTotal}
           onItemClick={(item) => {
             // Transform CartItem back to CartItem for state management
-            const CartItem: CartItem = {
+            const cartItem: CartItem = {
               id: item.id,
               type:
                 item.type === "product" ? ItemType.PRODUCT : ItemType.SERVICE,
@@ -207,7 +189,7 @@ export default function SimplifiedPOSPage() {
               unitPrice: item.price,
               total: item.total,
             };
-            setEditingCartItem(CartItem);
+            setEditingCartItem(cartItem);
             setShowCartItemModal(true);
           }}
           onPayOrder={handlePayOrder}

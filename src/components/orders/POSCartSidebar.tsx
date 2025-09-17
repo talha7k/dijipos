@@ -4,7 +4,8 @@ import { ClearOrderDialog } from '@/components/ui/clear-order-dialog';
 import { POSCartItem } from './POSCartItem';
 import { ReceiptPrintDialog } from '@/components/ReceiptPrintDialog';
 import { Order, OrderStatus, ItemType, OrderPayment } from '@/types';
-import { useAuthState } from '@/legacy_hooks/useAuthState';
+import { useAtomValue } from 'jotai';
+import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
 import { useOrderState } from '@/legacy_hooks/useOrderState';
 import { usePrinterSettingsData } from '@/legacy_hooks/organization/use-printer-settings-data';
 import { useReceiptTemplatesData } from '@/legacy_hooks/use-receipt-templates-data';
@@ -37,7 +38,7 @@ export function POSCartSidebar({
   onClearCart,
   onItemClick
 }: POSCartSidebarProps) {
-  const { selectedOrganization } = useAuthState();
+  const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const { selectedTable, selectedCustomer, selectedOrderType } = useOrderState();
   const organizationId = selectedOrganization?.id || '';
   const { printerSettings } = usePrinterSettingsData(selectedOrganization?.id || undefined);

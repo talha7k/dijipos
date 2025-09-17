@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth } from '@/lib/hooks/useAuth';
-import { useOrganization } from '@/lib/hooks/useOrganization';
+import { useAtomValue } from 'jotai';
+import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
 import { Customer } from '@/types';
 import { useCustomers } from '@/lib/hooks/useCustomers';
 import { useCustomersData } from '@/legacy_hooks/useCustomerState';
@@ -21,7 +21,7 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/lib/firebase/config';
 
 export default function CustomersPage() {
-  const { selectedOrganization } = useOrganization();
+  const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
   const { customers, loading: customersLoading } = useCustomers();
   const { createCustomer, updateCustomer, deleteCustomer } = useCustomersData(organizationId || undefined);

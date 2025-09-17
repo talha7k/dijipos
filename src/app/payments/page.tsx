@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth } from '@/lib/hooks/useAuth';
-import { useOrganization } from '@/lib/hooks/useOrganization';
+import { useAtomValue } from 'jotai';
+import { userAtom } from '@/store/atoms';
+import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
 import { usePayments } from '@/lib/hooks/usePayments';
 import { useInvoices } from '@/lib/hooks/useInvoices';
 import { usePaymentsActions } from '@/legacy_hooks/usePayments';
@@ -17,7 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { CreditCard } from 'lucide-react';
 
 function PaymentsContent() {
-  const { selectedOrganization } = useOrganization();
+  const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
   const { payments, loading: paymentsLoading } = usePayments();
   const { salesInvoices, purchaseInvoices, loading: invoicesLoading } = useInvoices();

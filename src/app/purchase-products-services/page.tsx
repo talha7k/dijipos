@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/lib/hooks/useAuth';
-import { useOrganization } from '@/lib/hooks/useOrganization';
+import { useAtomValue } from 'jotai';
+
+import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
 import { usePurchaseProductsData, usePurchaseServicesData, usePurchaseProductsActions, usePurchaseServicesActions } from '@/legacy_hooks/usePurchaseProductsServices';
 import { useCategoriesData } from '@/legacy_hooks/products_services/useCategories';
 import { Product, Service, Category } from '@/types';
@@ -16,7 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Package, Wrench } from 'lucide-react';
 function ProductsContent() {
-  const { selectedOrganization } = useOrganization();
+  const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
   const { products, loading: productsLoading } = usePurchaseProductsData(organizationId || undefined);
   const { services, loading: servicesLoading } = usePurchaseServicesData(organizationId || undefined);

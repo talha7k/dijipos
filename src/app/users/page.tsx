@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth } from '@/lib/hooks/useAuth';
-import { useOrganization } from '@/lib/hooks/useOrganization';
+import { useAtomValue } from 'jotai';
+
+import { selectedOrganizationAtom, organizationUsersAtom, organizationLoadingAtom } from '@/store/atoms/organizationAtoms';
 import { useInvitationCodesData } from '@/legacy_hooks/organization/use-invitation-codes-data';
 import { useOrganizationUsersActions } from '@/legacy_hooks/organization/use-organization-users-actions';
 import { useInvitationCodesActions } from '@/legacy_hooks/organization/use-invitation-codes-actions';
@@ -21,7 +22,9 @@ import { Users, Plus, Edit, Trash2, Shield, Settings, Copy, Link } from 'lucide-
 import { toast } from 'sonner';
 
 function UsersContent() {
-  const { selectedOrganization, organizationUsers, loading: orgLoading } = useOrganization();
+  const selectedOrganization = useAtomValue(selectedOrganizationAtom);
+  const organizationUsers = useAtomValue(organizationUsersAtom);
+  const orgLoading = useAtomValue(organizationLoadingAtom);
   const organizationId = selectedOrganization?.id;
   const { invitationCodes, loading: codesLoading } = useInvitationCodesData(organizationId || undefined);
   const { updateUser, toggleUserStatus } = useOrganizationUsersActions(organizationId || undefined);

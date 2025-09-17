@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAtomValue, useSetAtom } from 'jotai';
-import { userAtom } from '@/store/atoms';
+
 import { selectedOrganizationAtom, userOrganizationsAtom, organizationUsersAtom, selectedOrganizationIdAtom } from '@/store/atoms/organizationAtoms';
 import { getOrganizationsForUser } from '@/lib/firebase/firestore/organizations';
 import { Building2, Plus, Users, ArrowRight, Link } from 'lucide-react';

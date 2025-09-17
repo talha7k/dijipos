@@ -5,7 +5,8 @@ import { Table, Order, TableStatus } from '@/types';
 import { useTables } from '@/lib/hooks/useTables';
 import { useOrders } from '@/lib/hooks/useOrders';
 import { useTableManagement } from '@/legacy_hooks/tables/use-table-management';
-import { useOrganization } from '@/lib/hooks/useOrganization';
+import { useAtomValue } from 'jotai';
+import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
 import {
   Dialog,
   DialogContent,
@@ -25,7 +26,7 @@ interface TableActionsDialogProps {
 }
 
 export function TableActionsDialog({ table, children }: TableActionsDialogProps) {
-  const { selectedOrganization } = useOrganization();
+  const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
   const { tables } = useTables();
   const { orders } = useOrders();

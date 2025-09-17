@@ -4,7 +4,8 @@ import * as React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useThemeState } from "@/legacy_hooks/useThemeState";
-import { useAuthState, useUser, useOrganizationId } from "@/legacy_hooks/useAuthState";
+import { useAuth } from "@/lib/hooks/useAuth";
+import { useOrganization } from "@/lib/hooks/useOrganization";
 import { useSidebarState } from "@/legacy_hooks/useSidebarState";
 import { auth } from "@/lib/firebase/config";
 import { DesktopSidebar } from "./desktop-sidebar";
@@ -22,8 +23,9 @@ export function CollapsibleSidebar({ className }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { theme, toggleTheme } = useThemeState();
-  const user = useUser();
-  const organizationId = useOrganizationId();
+  const { user } = useAuth();
+  const { selectedOrganization } = useOrganization();
+  const organizationId = selectedOrganization?.id;
 
   const toggleSection = (title: string) => {
     setOpenSections((prev) => ({

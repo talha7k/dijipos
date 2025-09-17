@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useOrganization } from '@/lib/hooks/useOrganization';
+import { useAtomValue } from 'jotai';
+import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
 import { useOrderTypes } from '@/legacy_hooks/useOrderTypes';
 import { OrderType } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,7 +19,7 @@ interface OrderTypesTabProps {
 }
 
 export function OrderTypesTab({ orderTypes }: OrderTypesTabProps) {
-  const { selectedOrganization } = useOrganization();
+  const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
   const { createOrderType, deleteOrderType, loading } = useOrderTypes(organizationId || undefined);
   const [dialogOpen, setDialogOpen] = useState(false);

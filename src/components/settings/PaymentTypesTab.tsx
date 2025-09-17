@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useOrganization } from '@/lib/hooks/useOrganization';
+import { useAtomValue } from 'jotai';
+import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
 import { usePaymentTypes } from '@/legacy_hooks/uePaymentTypes';
 import { PaymentType } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,7 +19,7 @@ interface PaymentTypesTabProps {
 }
 
 export function PaymentTypesTab({ paymentTypes = [] }: PaymentTypesTabProps) {
-  const { selectedOrganization } = useOrganization();
+  const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
   const { createPaymentType, deletePaymentType, loading } = usePaymentTypes(organizationId || undefined);
   const [dialogOpen, setDialogOpen] = useState(false);

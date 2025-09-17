@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAtomValue } from 'jotai';
-import { userAtom } from '@/store/atoms';
+
 import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
 import { Button } from '@/components/ui/button';
 import { Building2, LogOut, ChevronDown, ChevronUp, User } from 'lucide-react';

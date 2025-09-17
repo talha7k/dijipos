@@ -1,14 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useOrganizationData } from '@/legacy_hooks/organization/use-organization-data';
-import { useOrganizationUsersData } from '@/legacy_hooks/organization/use-organization-users-data';
-import { useInvitationCodesData } from '@/legacy_hooks/organization/use-invitation-codes-data';
+
 import { useOrganizationActions } from '@/legacy_hooks/organization/use-organization-actions';
 import { useInvitationCodesActions } from '@/legacy_hooks/organization/use-invitation-codes-actions';
 import { useOrganizationUsersActions } from '@/legacy_hooks/organization/use-organization-users-actions';
+import { useAtomValue } from 'jotai';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { useOrganization } from '@/lib/hooks/useOrganization';
+import { selectedOrganizationAtom, organizationUsersAtom, organizationLoadingAtom } from '@/store/atoms/organizationAtoms';
+import { useInvitationCodesData } from '@/legacy_hooks/organization/use-invitation-codes-data';
 import { Organization, OrganizationUser, InvitationCode } from '@/types';
 import { UserRole } from '@/types/enums';
 import { Button } from '@/components/ui/button';
@@ -30,10 +30,11 @@ import { toast } from 'sonner';
 
 function CompanyContent() {
   const { user } = useAuth();
-  const { selectedOrganization } = useOrganization();
+  const selectedOrganization = useAtomValue(selectedOrganizationAtom);
+  const organizationUsers = useAtomValue(organizationUsersAtom);
+  const orgLoading = useAtomValue(organizationLoadingAtom);
   const organizationId = selectedOrganization?.id;
-  const { organization, loading: orgLoading, error: orgError } = useOrganizationData(organizationId || undefined);
-  const { organizationUsers, loading: usersLoading, error: usersError } = useOrganizationUsersData(organizationId || undefined);
+  const organization = selectedOrganization;
   const { invitationCodes, loading: codesLoading, error: codesError } = useInvitationCodesData(organizationId || undefined);
   const { updateOrganization, updateOrganizationBranding } = useOrganizationActions(organizationId || undefined);
   const { createInvitationCodeSimple, deleteInvitationCode } = useInvitationCodesActions(organizationId || undefined);
@@ -76,9 +77,9 @@ function CompanyContent() {
   }, [organization]);
 
   useEffect(() => {
-    const isLoading = orgLoading || usersLoading || codesLoading;
+    const isLoading = orgLoading || codesLoading;
     setLoading(isLoading);
-  }, [orgLoading, usersLoading, codesLoading]);
+  }, [orgLoading, codesLoading]);
 
   
 

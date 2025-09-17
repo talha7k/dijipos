@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth } from '@/lib/hooks/useAuth';
-import { useOrganization } from '@/lib/hooks/useOrganization';
+import { useAtomValue } from 'jotai';
+
+import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
 import { useProducts } from '@/lib/hooks/useProducts';
 import { useServices } from '@/lib/hooks/useServices';
 import { useCategoriesData } from '@/legacy_hooks/products_services/useCategories';
@@ -26,7 +27,7 @@ import { CategoryTree } from '@/components/products_services/CategoryTree';
 import { ExportImportProducts } from '@/components/ExportImportProducts';
 
 export default function ProductsServicesPage() {
-  const { selectedOrganization } = useOrganization();
+  const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
   const { products, loading: productsLoading } = useProducts();
   const { services, loading: servicesLoading } = useServices();

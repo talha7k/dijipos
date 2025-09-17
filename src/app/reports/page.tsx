@@ -10,8 +10,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Download, TrendingUp, Calculator } from 'lucide-react';
-import { useAuth } from '@/lib/hooks/useAuth';
-import { useOrganization } from '@/lib/hooks/useOrganization';
+import { useAtomValue } from 'jotai';
+
+import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
 import { useInvoices } from '@/lib/hooks/useInvoices';
 import { InvoiceType } from '@/types';
 
@@ -27,7 +28,7 @@ interface ReportData {
 }
 
 export default function ReportsPage() {
-  const { selectedOrganization } = useOrganization();
+  const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
   const { salesInvoices, purchaseInvoices, loading } = useInvoices();
   const invoices = [...salesInvoices, ...purchaseInvoices];

@@ -15,9 +15,9 @@ import {
 import { Order, OrderStatus, OrderPayment } from "@/types";
 import { OrderActionsDialog } from "./OrderStatusActionsDialog";
 import { ReceiptPrintDialog } from "@/components/ReceiptPrintDialog";
-import { useAuthState } from "@/legacy_hooks/useAuthState";
-import { usePrinterSettingsData } from "@/legacy_hooks/organization/use-printer-settings-data";
-import { useReceiptTemplatesData } from "@/legacy_hooks/use-receipt-templates-data";
+import { useOrganization } from "@/lib/hooks/useOrganization";
+import { useStoreSettings } from "@/lib/hooks/useStoreSettings";
+import { useTemplates } from "@/lib/hooks/useTemplates";
 
 interface OrderSummaryCardProps {
   order: Order;
@@ -51,13 +51,9 @@ export function OrderSummaryCard({
   onCompleteOrder,
   className = "",
 }: OrderSummaryCardProps) {
-  const { selectedOrganization } = useAuthState();
-  const { printerSettings } = usePrinterSettingsData(
-    selectedOrganization?.id || undefined
-  );
-  const { receiptTemplates = [] } = useReceiptTemplatesData(
-    selectedOrganization?.id || ""
-  );
+  const { selectedOrganization } = useOrganization();
+  const { storeSettings } = useStoreSettings();
+  const { receiptTemplates = [] } = useTemplates();
 
   // Calculate payment amounts for display, but use order.paid for status
   const calculatedTotalPaid =
@@ -159,7 +155,7 @@ export function OrderSummaryCard({
         </div>
 
         {/* Print Button */}
-        {selectedOrganization && (
+        {selectedOrganization && storeSettings && (
           <div className="flex justify-center mt-2">
             <ReceiptPrintDialog
               order={order}

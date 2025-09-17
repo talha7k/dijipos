@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useOrganizationId } from '@/legacy_hooks/useAuthState';
+import { useAtomValue } from 'jotai';
+import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
 import { ReceiptTemplate, TemplateCategory, UnifiedTemplate } from '@/types';
 import { useTemplatesData } from '@/legacy_hooks/use-templates-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,7 +22,8 @@ interface TemplatesTabProps {
 }
 
 export function TemplatesTab({ receiptTemplates }: TemplatesTabProps) {
-  const organizationId = useOrganizationId();
+  const selectedOrganization = useAtomValue(selectedOrganizationAtom);
+  const organizationId = selectedOrganization?.id;
   const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
   const [deleteTemplateId, setDeleteTemplateId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<TemplateCategory>(TemplateCategory.RECEIPT);

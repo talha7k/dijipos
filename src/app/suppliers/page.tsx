@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth } from '@/lib/hooks/useAuth';
-import { useOrganization } from '@/lib/hooks/useOrganization';
+import { useAtomValue } from 'jotai';
+import { userAtom } from '@/store/atoms';
+import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
 import { Supplier } from '@/types';
 import { useSuppliers } from '@/lib/hooks/useSuppliers';
 import { useSupplierActions } from '@/legacy_hooks/suppliers/useSuppliers';
@@ -20,7 +21,7 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/lib/firebase/config';
 
 export default function SuppliersPage() {
-  const { selectedOrganization } = useOrganization();
+  const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
   const { suppliers, loading } = useSuppliers();
   const { createSupplier, updateSupplier, deleteSupplier, updatingStatus } = useSupplierActions(organizationId);

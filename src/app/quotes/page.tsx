@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth } from '@/lib/hooks/useAuth';
-import { useOrganization } from '@/lib/hooks/useOrganization';
+import { useAtomValue } from 'jotai';
+
+import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
 import { Quote } from '@/types';
 import { QuoteTemplateType, QuoteStatus, InvoiceStatus } from '@/types/enums';
 import { useQuotes } from '@/lib/hooks/useQuotes';
@@ -20,7 +21,7 @@ import { QuoteActionsDialog } from '@/components/invoices_quotes/QuoteActionsDia
 import { QuotePrintDialog } from '@/components/invoices_quotes/QuotePrintDialog';
 
 function QuotesContent() {
-  const { selectedOrganization } = useOrganization();
+  const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
   const { quotes, loading: quotesLoading } = useQuotes();
   const { customers, loading: customersLoading } = useCustomers();

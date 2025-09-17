@@ -2,7 +2,7 @@
 import { atom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
 import { Organization, OrganizationUser } from '@/types'; //
-import { indexedDBStorage } from '@/lib/jotai/storage'; // Using the IndexedDB storage we created
+import { indexedDBStorage } from '@/lib/storage'; // Using the IndexedDB storage we created
 
 // --- Core State Atoms ---
 

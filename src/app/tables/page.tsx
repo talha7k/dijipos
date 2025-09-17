@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/lib/hooks/useAuth';
-import { useOrganization } from '@/lib/hooks/useOrganization';
+import { useAtomValue } from 'jotai';
+import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
 import { useTables } from '@/lib/hooks/useTables';
 import { useTableActions } from '@/legacy_hooks/tables/useTables';
 import { TableStatus } from '@/types/enums';
@@ -25,7 +25,7 @@ import { AddTableDialog } from '@/components/AddTableDialog';
 import { TableActionsDialog } from '@/components/tables/TableActionsDialog';
 
 export default function TablesPage() {
-  const { selectedOrganization } = useOrganization();
+  const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
   const { tables, loading: tablesLoading } = useTables();
   const { createTable, deleteTable } = useTableActions(organizationId || undefined);
