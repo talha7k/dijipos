@@ -58,7 +58,7 @@ export default function SimplifiedPOSPage() {
   const { services, loading: servicesLoading } = useServices();
   const { tables, loading: tablesLoading } = useTables();
   const { customers, loading: customersLoading } = useCustomers();
-  const { orders, loading: ordersLoading } = useOrders();
+  const { orders, loading: ordersLoading, createNewOrder, updateExistingOrder } = useOrders();
   const { orderTypes = [] } = useOrderTypes();
   const { paymentTypes = [], loading: paymentTypesLoading } =
     usePaymentTypes();
@@ -160,9 +160,55 @@ export default function SimplifiedPOSPage() {
   const handleSaveOrder = useCallback(async () => {
     if (!organizationId || (cartItems || []).length === 0) return;
 
-    // This would need to be implemented with Firebase operations
-    console.log('Save order functionality to be implemented');
-  }, [organizationId, cartItems]);
+    try {
+      const taxRate = 15; // Could be made configurable
+      const subtotal = cartTotal;
+      const taxAmount = (subtotal * taxRate) / 100;
+      const total = subtotal + taxAmount;
+
+      const orderData = {
+        organizationId,
+        orderNumber: selectedOrder?.orderNumber || `ORD-${Date.now()}`,
+        queueNumber: selectedOrder?.queueNumber || nextQueueNumber.toString(),
+        items: cartItems,
+        subtotal,
+        taxRate,
+        taxAmount,
+        total,
+        status: OrderStatus.OPEN,
+        paid: false,
+        orderType: selectedOrderType?.name || 'dine-in',
+        customerName: selectedCustomer?.name,
+        customerPhone: selectedCustomer?.phone,
+        customerEmail: selectedCustomer?.email,
+        tableId: selectedTable?.id,
+        tableName: selectedTable?.name,
+        createdById: user?.uid || 'unknown',
+        createdByName: user?.displayName || user?.email || 'Unknown User',
+        createdAt: selectedOrder?.createdAt || new Date(),
+        updatedAt: new Date(),
+      };
+
+      if (selectedOrder) {
+        // Update existing order
+        await updateExistingOrder(selectedOrder.id, orderData);
+        console.log('Order updated successfully');
+      } else {
+        // Create new order
+        const orderId = await createNewOrder(orderData);
+        console.log('Order created successfully:', orderId);
+        
+        // Update the selected order to reference the newly created order
+        const newOrder = { ...orderData, id: orderId } as Order;
+        setSelectedOrder(newOrder);
+        
+        // Increment queue number for new orders
+        setNextQueueNumber(nextQueueNumber + 1);
+      }
+    } catch (error) {
+      console.error('Error saving order:', error);
+    }
+  }, [organizationId, cartItems, cartTotal, selectedOrder, selectedOrderType, selectedCustomer, selectedTable, user, nextQueueNumber, createNewOrder, updateExistingOrder, setSelectedOrder, setNextQueueNumber]);
 
   const handlePaymentProcessed = useCallback(async (payments: OrderPayment[]) => {
     setPaymentSuccessData({ totalPaid: payments.reduce((sum, payment) => sum + payment.amount, 0) });
