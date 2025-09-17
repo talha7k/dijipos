@@ -28,7 +28,7 @@ export function useRealtimeCollection<T extends { id: string }>(
   collectionName: string,
   organizationId: string | null,
   additionalConstraints: QueryConstraint[] = [],
-  orderByField: string = 'createdAt',
+  orderByField: string | null = 'createdAt',
   orderDirection: 'asc' | 'desc' = 'desc'
 ): RealtimeCollectionState<T> {
   const [data, setData] = useState<T[]>([]);
@@ -48,9 +48,13 @@ export function useRealtimeCollection<T extends { id: string }>(
     // Build query constraints
     const constraints: QueryConstraint[] = [
       where('organizationId', '==', organizationId),
-      orderBy(orderByField, orderDirection),
       ...additionalConstraints,
     ];
+    
+    // Only add orderBy if a field is specified
+    if (orderByField) {
+      constraints.push(orderBy(orderByField, orderDirection));
+    }
 
     const collectionRef = collection(db, collectionName);
     const q = query(collectionRef, ...constraints);

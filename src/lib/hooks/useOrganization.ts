@@ -94,8 +94,9 @@ export function useOrganizationManager() {
         }
         setUserOrganizationAssociations(associations);
 
-        // If no org is selected, or the selected one is not in the list, select the first one.
-        if (orgs.length > 0 && (!selectedOrgId || !orgs.find(o => o.id === selectedOrgId))) {
+        // If no org is selected, select the first one.
+        // Only reset selection if selectedOrgId is explicitly null/undefined, not if it's just not in the current list
+        if (orgs.length > 0 && !selectedOrgId) {
           setSelectedOrgId(orgs[0].id);
         }
       } catch (err) {
@@ -169,7 +170,9 @@ function useRealtimeUsersSyncer(organizationId: string | null) {
     const [, setOrganizationUsers] = useAtom(organizationUsersAtom);
     const { data: users, loading, error } = useRealtimeCollection<OrganizationUser>(
         'organizationUsers',
-        organizationId
+        organizationId,
+        [],
+        null // Disable orderBy to avoid index issues
     );
 
     useEffect(() => {

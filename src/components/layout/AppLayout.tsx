@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import { useAtomValue } from 'jotai';
 import { useAuth } from '@/lib/hooks/useAuth';
+
 import { selectedOrganizationAtom, userOrganizationsAtom } from '@/atoms/organizationAtoms';
 import { organizationLoadingAtom } from '@/atoms';
 import { sidebarCollapsedAtom } from '@/atoms/uiAtoms';
