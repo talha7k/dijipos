@@ -49,6 +49,7 @@ export async function createInvitationCode(
  */
 export async function validateInvitationCode(code: string): Promise<InvitationCode | null> {
   try {
+    // NOTE: This query requires a composite index on (code, isUsed)
     const invitationQuery = query(
       invitationsRef,
       where('code', '==', code),

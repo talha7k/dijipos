@@ -24,6 +24,8 @@ const organizationUsersRef = collection(db, 'organizationUsers');
 export async function getOrganizationsForUser(userId: string): Promise<Organization[]> {
   try {
     // First get organization user associations
+    // NOTE: This query requires a composite index on (userId, isActive)
+    // Create it at: https://console.firebase.google.com/v1/r/project/dijipos-27e3a/firestore/indexes
     const orgUsersQuery = query(
       organizationUsersRef,
       where('userId', '==', userId),
@@ -171,6 +173,7 @@ export async function addUserToOrganization(
 ): Promise<string> {
   try {
     // Check if user is already in organization
+    // NOTE: This query requires a composite index on (organizationId, userId)
     const existingQuery = query(
       organizationUsersRef,
       where('organizationId', '==', organizationId),
