@@ -22,8 +22,8 @@ interface InvoicesState {
 
 interface InvoicesActions {
   getInvoiceById: (invoiceId: string) => Promise<SalesInvoice | PurchaseInvoice | null>;
-  createSalesInvoice: (invoiceData: Omit<SalesInvoice, 'id' | 'createdAt' | 'updatedAt'>) => Promise<string>;
-  createPurchaseInvoice: (invoiceData: Omit<PurchaseInvoice, 'id' | 'createdAt' | 'updatedAt'>) => Promise<string>;
+  createSalesInvoice: (invoiceData: Omit<SalesInvoice, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => Promise<string>;
+  createPurchaseInvoice: (invoiceData: Omit<PurchaseInvoice, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => Promise<string>;
   updateExistingInvoice: (invoiceId: string, updates: Partial<Omit<SalesInvoice | PurchaseInvoice, 'id' | 'createdAt'>>) => Promise<void>;
   deleteExistingInvoice: (invoiceId: string) => Promise<void>;
   getPaymentsForInvoice: (invoiceId: string) => Promise<Payment[]>;
@@ -64,9 +64,17 @@ export function useInvoices(): InvoicesState & InvoicesActions {
     }
   };
 
-  const createNewSalesInvoice = async (invoiceData: Omit<SalesInvoice, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
+  const createNewSalesInvoice = async (invoiceData: Omit<SalesInvoice, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>): Promise<string> => {
+    if (!selectedOrganization?.id) {
+      throw new Error('No organization selected');
+    }
+
     try {
-      const invoiceId = await createSalesInvoice(invoiceData);
+      const fullInvoiceData = {
+        ...invoiceData,
+        organizationId: selectedOrganization.id,
+      };
+      const invoiceId = await createSalesInvoice(fullInvoiceData);
       // Real-time listener will automatically update the invoices list
       return invoiceId;
     } catch (err) {
@@ -75,9 +83,17 @@ export function useInvoices(): InvoicesState & InvoicesActions {
     }
   };
 
-  const createNewPurchaseInvoice = async (invoiceData: Omit<PurchaseInvoice, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
+  const createNewPurchaseInvoice = async (invoiceData: Omit<PurchaseInvoice, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>): Promise<string> => {
+    if (!selectedOrganization?.id) {
+      throw new Error('No organization selected');
+    }
+
     try {
-      const invoiceId = await createPurchaseInvoice(invoiceData);
+      const fullInvoiceData = {
+        ...invoiceData,
+        organizationId: selectedOrganization.id,
+      };
+      const invoiceId = await createPurchaseInvoice(fullInvoiceData);
       // Real-time listener will automatically update the invoices list
       return invoiceId;
     } catch (err) {

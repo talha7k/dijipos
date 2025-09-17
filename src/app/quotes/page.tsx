@@ -45,8 +45,6 @@ function QuotesContent() {
   };
 
   const handleConvertToInvoice = async (quote: Quote) => {
-    if (!organizationId || !createQuote || !createInvoice) return;
-
     // Update quote status to converted
     await updateQuote(quote.id, { status: QuoteStatus.CONVERTED });
 
@@ -76,7 +74,7 @@ function QuotesContent() {
       quoteId: quote.id,
     };
 
-    await createInvoice(invoiceData);
+    await createSalesInvoice(invoiceData);
   };
 
   const handleQuoteClick = (quote: Quote) => {

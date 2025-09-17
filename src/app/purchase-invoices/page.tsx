@@ -1,10 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useAtomValue } from 'jotai';
-
-import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
-import { getPurchaseInvoices, createPurchaseInvoice, updateInvoice } from '@/lib/firebase/firestore/invoices';
+import { useState } from 'react';
+import { useInvoices } from '@/lib/hooks/useInvoices';
 import { useOrganization } from '@/lib/hooks/useOrganization';
 import { Invoice, PurchaseInvoice, Organization, InvoiceStatus } from '@/types';
 import { InvoiceTemplateType, PurchaseInvoiceStatus } from '@/types/enums';
@@ -28,46 +25,17 @@ import InvoiceForm from '@/components/invoices_quotes/InvoiceForm';
 import { Receipt } from 'lucide-react';
 
 function InvoicesContent() {
-  const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const { selectedOrganization: organization } = useOrganization();
-  const organizationId = selectedOrganization?.id;
-  const [invoices, setInvoices] = useState<PurchaseInvoice[]>([]);
-  const [loading, setLoading] = useState(true);
+  const organizationId = organization?.id;
+  const { purchaseInvoices: invoices, loading, createPurchaseInvoice, updateExistingInvoice } = useInvoices();
   const [selectedInvoice, setSelectedInvoice] = useState<PurchaseInvoice | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-
-  // Load invoices on component mount and when organization changes
-  useEffect(() => {
-    if (!organizationId) {
-      setInvoices([]);
-      setLoading(false);
-      return;
-    }
-
-    const loadInvoices = async () => {
-      setLoading(true);
-      try {
-        const fetchedInvoices = await getPurchaseInvoices(organizationId);
-        setInvoices(fetchedInvoices);
-      } catch (error) {
-        console.error('Error loading purchase invoices:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadInvoices();
-  }, [organizationId]);
 
 
 
   const updateInvoiceStatus = async (invoiceId: string, status: PurchaseInvoice['status']) => {
     try {
-      await updateInvoice(invoiceId, { status });
-      // Update local state
-      setInvoices(prev => prev.map(inv =>
-        inv.id === invoiceId ? { ...inv, status: status as PurchaseInvoiceStatus } : inv
-      ));
+      await updateExistingInvoice(invoiceId, { status });
     } catch (error) {
       console.error('Error updating invoice status:', error);
       throw error;
@@ -75,20 +43,12 @@ function InvoicesContent() {
   };
 
   const createInvoice = async (invoiceData: Omit<Invoice, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => {
-    if (!organizationId) throw new Error('No organization selected');
-
     try {
-      const invoiceWithOrg = {
+      const invoiceWithType = {
         ...invoiceData,
-        organizationId,
         type: 'purchase' as const
       };
-      const invoiceId = await createPurchaseInvoice(invoiceWithOrg as Omit<PurchaseInvoice, 'id' | 'createdAt' | 'updatedAt'>);
-
-      // Reload invoices to get the new one
-      const fetchedInvoices = await getPurchaseInvoices(organizationId);
-      setInvoices(fetchedInvoices);
-
+      const invoiceId = await createPurchaseInvoice(invoiceWithType as Omit<PurchaseInvoice, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>);
       return invoiceId;
     } catch (error) {
       console.error('Error creating invoice:', error);

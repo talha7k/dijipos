@@ -1,11 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useAtomValue } from 'jotai';
-import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
 import { usePayments } from '@/lib/hooks/usePayments';
 import { useInvoices } from '@/lib/hooks/useInvoices';
-import { createPayment as createPaymentFn } from '@/lib/firebase/firestore/payments';
 import { Payment } from '@/types';
 
 import { Button } from '@/components/ui/button';
@@ -18,16 +15,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { CreditCard } from 'lucide-react';
 
 function PaymentsContent() {
-  const selectedOrganization = useAtomValue(selectedOrganizationAtom);
-  const organizationId = selectedOrganization?.id;
-  const { payments, loading: paymentsLoading } = usePayments();
+  const { payments, loading: paymentsLoading, createPayment } = usePayments();
   const { salesInvoices, purchaseInvoices, loading: invoicesLoading } = useInvoices();
   const invoices = [...salesInvoices, ...purchaseInvoices];
-  // Create payment function
-  const createPayment = async (data: Omit<Payment, 'id' | 'organizationId' | 'createdAt'>) => {
-    if (!organizationId) return;
-    await createPaymentFn({ ...data, organizationId });
-  };
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedInvoiceId, setSelectedInvoiceId] = useState('');
   const [amount, setAmount] = useState('');
@@ -38,7 +28,7 @@ function PaymentsContent() {
 
   const handleAddPayment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!organizationId || !selectedInvoiceId) return;
+    if (!selectedInvoiceId) return;
 
     try {
       await createPayment({
