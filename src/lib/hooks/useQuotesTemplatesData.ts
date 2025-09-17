@@ -1,77 +1,70 @@
 "use client";
 
 import { useState, useMemo } from 'react';
-import { InvoiceTemplate, QuoteTemplate, TemplateCategory } from '@/types/template';
-import { InvoiceTemplateType, QuoteTemplateType } from '@/types/enums';
+import { QuoteTemplate } from '@/types/template';
+import { QuoteTemplateType } from '@/types/enums';
 
-import { defaultInvoiceEnglish } from '@/components/templates/invoice/default-invoice-english';
-import { defaultInvoiceArabic } from '@/components/templates/invoice/default-invoice-arabic';
 import { defaultQuoteEnglish } from '@/components/templates/quotes/default-quote-english';
 import { defaultQuoteArabic } from '@/components/templates/quotes/default-quote-arabic';
 
-export function useTemplatesData(organizationId: string | undefined, category: TemplateCategory) {
-  const [templates, setTemplates] = useState<(InvoiceTemplate | QuoteTemplate)[]>([]);
+export function useQuotesTemplatesData(organizationId: string | undefined) {
+  const [templates, setTemplates] = useState<QuoteTemplate[]>([]);
 
-  // Static templates data based on category
+  // Static templates data
   const staticTemplates = useMemo(() => {
     if (!organizationId) return [];
 
-    const baseTemplates = [];
+    const baseTemplates: QuoteTemplate[] = [];
 
-    if (category === TemplateCategory.INVOICE) {
-      baseTemplates.push(
-        {
-          id: 'default-invoice',
-          name: 'Default Invoice',
-          description: 'Default invoice template in English',
-          type: InvoiceTemplateType.ENGLISH,
-          content: defaultInvoiceEnglish,
-          isDefault: true,
-          organizationId,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        } as InvoiceTemplate,
-        {
-          id: 'arabic-invoice',
-          name: 'Arabic Invoice',
-          description: 'Arabic invoice template',
-          type: InvoiceTemplateType.ARABIC,
-          content: defaultInvoiceArabic,
-          isDefault: false,
-          organizationId,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        } as InvoiceTemplate
-      );
-    } else if (category === TemplateCategory.QUOTE) {
-      baseTemplates.push(
-        {
-          id: 'default-quote',
-          name: 'Default Quote',
-          description: 'Default quote template in English',
-          type: QuoteTemplateType.ENGLISH,
-          content: defaultQuoteEnglish,
-          isDefault: true,
-          organizationId,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        } as QuoteTemplate,
-        {
-          id: 'arabic-quote',
-          name: 'Arabic Quote',
-          description: 'Arabic quote template',
-          type: QuoteTemplateType.ARABIC,
-          content: defaultQuoteArabic,
-          isDefault: false,
-          organizationId,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        } as QuoteTemplate
-      );
-    }
+    baseTemplates.push(
+      {
+        id: 'default-quote',
+        name: 'Default Quote',
+        description: 'Default quote template in English',
+        type: QuoteTemplateType.ENGLISH,
+        content: defaultQuoteEnglish,
+        isDefault: true,
+        organizationId,
+        fields: [],
+        style: {
+          primaryColor: '#007bff',
+          secondaryColor: '#6c757d',
+          backgroundColor: '#ffffff',
+          textColor: '#000000',
+          fontFamily: 'Arial, sans-serif',
+          fontSize: 12,
+          showLogo: true,
+          showWatermark: false,
+        },
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: 'arabic-quote',
+        name: 'Arabic Quote',
+        description: 'Arabic quote template',
+        type: QuoteTemplateType.ARABIC,
+        content: defaultQuoteArabic,
+        isDefault: false,
+        organizationId,
+        fields: [],
+        style: {
+          primaryColor: '#007bff',
+          secondaryColor: '#6c757d',
+          backgroundColor: '#ffffff',
+          textColor: '#000000',
+          fontFamily: 'Arial, sans-serif',
+          fontSize: 12,
+          showLogo: true,
+          showWatermark: false,
+        },
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+    );
 
     return baseTemplates;
-  }, [organizationId, category]);
+  }, [organizationId]);
 
   // Update state with static templates
   useMemo(() => {
@@ -79,7 +72,7 @@ export function useTemplatesData(organizationId: string | undefined, category: T
   }, [staticTemplates]);
 
   // Mock mutations that update local state
-  const addTemplate = async (template: Omit<InvoiceTemplate | QuoteTemplate, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const addTemplate = async (template: Omit<QuoteTemplate, 'id' | 'createdAt' | 'updatedAt'>) => {
     if (!organizationId) throw new Error('No organization selected');
 
     const newTemplate = {
@@ -94,7 +87,7 @@ export function useTemplatesData(organizationId: string | undefined, category: T
     return newTemplate;
   };
 
-  const updateTemplate = async (id: string, updates: Partial<InvoiceTemplate | QuoteTemplate>) => {
+  const updateTemplate = async (id: string, updates: Partial<QuoteTemplate>) => {
     if (!organizationId) throw new Error('No organization selected');
 
     // Update in templates state
