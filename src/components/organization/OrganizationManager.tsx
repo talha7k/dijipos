@@ -121,7 +121,7 @@ export function OrganizationManager() {
     if (userOrganizationData.length > 0) {
       fetchOrganizations();
     }
-  }, [userOrganizations]);
+  }, [userOrganizations, userOrganizationData]);
 
   const handleJoinOrganization = async () => {
     if (!joinCode || !user) return;

@@ -117,7 +117,7 @@ export function useOrganizationManager() {
     };
 
     fetchUserOrgs();
-  }, [user?.uid, setUserOrganizations, setSelectedOrgId, setError]);
+  }, [user?.uid, setUserOrganizations, setSelectedOrgId, setError, setOrganizationsLoading, setUserOrganizationAssociations]);
 
   // Effect to fetch the full details of the selected organization when the ID changes
    useEffect(() => {
@@ -156,7 +156,7 @@ export function useOrganizationManager() {
     };
 
     fetchOrgDetails();
-  }, [selectedOrgId, setSelectedOrganization, setError]);
+  }, [selectedOrgId, setSelectedOrganization, setError, setOrganizationDetailsLoading]);
 
   // Use the real-time hook to listen to users of the selected organization
   // and sync the result directly to its atom.

@@ -1,11 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
+
 import { Card, CardContent } from '@/components/ui/card';
 import { Upload, X, Image as ImageIcon } from 'lucide-react';
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/lib/firebase/config';
 import { toast } from 'sonner';
 
@@ -136,9 +137,11 @@ export function ImageUpload({
         <Card className="relative">
           <CardContent className="p-4">
             <div className="relative group">
-              <img
+              <Image
                 src={value}
                 alt="Uploaded"
+                width={400}
+                height={192}
                 className="w-full h-48 object-cover rounded-lg"
               />
               <Button
