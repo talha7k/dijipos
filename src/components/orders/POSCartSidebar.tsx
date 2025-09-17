@@ -9,6 +9,7 @@ import { selectedOrganizationAtom } from '@/atoms';
 import { selectedTableAtom, selectedCustomerAtom, selectedOrderTypeAtom, currentQueueNumberAtom } from '@/atoms/posAtoms';
 import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
 import { useTemplates } from '@/lib/hooks/useTemplates';
+import { usePrinterSettings } from '@/lib/hooks/usePrinterSettings';
 
 interface CartItem {
   id: string;
@@ -46,6 +47,7 @@ export function POSCartSidebar({
   const organizationId = selectedOrganization?.id || '';
 
   const { receiptTemplates = [] } = useTemplates();
+  const { printerSettings } = usePrinterSettings();
 
   const handleClearConfirm = () => {
     if (onClearCart) onClearCart();
@@ -147,23 +149,24 @@ export function POSCartSidebar({
               <Save className="h-5 w-5" />
             </Button>
           )}
-           {selectedOrganization && cartItems.length > 0 && (
-              <ReceiptPrintDialog
-                order={createTempOrderForPayment()!}
-                organization={selectedOrganization}
-                receiptTemplates={receiptTemplates}
-                payments={[
-                 {
-                   id: 'temp-payment',
-                   organizationId: organizationId || '',
-                   orderId: 'temp-checkout',
-                   paymentMethod: 'Cash',
-                   amount: createTempOrderForPayment()!.total,
-                   paymentDate: new Date(),
-                   createdAt: new Date(),
-                 }
-               ]}
-             >
+            {selectedOrganization && cartItems.length > 0 && (
+               <ReceiptPrintDialog
+                 order={createTempOrderForPayment()!}
+                 organization={selectedOrganization}
+                 receiptTemplates={receiptTemplates}
+                 printerSettings={printerSettings}
+                 payments={[
+                  {
+                    id: 'temp-payment',
+                    organizationId: organizationId || '',
+                    orderId: 'temp-checkout',
+                    paymentMethod: 'Cash',
+                    amount: createTempOrderForPayment()!.total,
+                    paymentDate: new Date(),
+                    createdAt: new Date(),
+                  }
+                ]}
+              >
               <Button
                 variant="outline"
                 className="flex-1 h-12 text-sm font-medium"

@@ -12,6 +12,7 @@ import { InvoicePrintDialog } from '@/components/invoices_quotes/InvoicePrintDia
 import { Button } from '@/components/ui/button';
 import { Plus, Printer } from 'lucide-react';
 import { useTemplates } from '@/lib/hooks/useTemplates';
+import { usePrinterSettings } from '@/lib/hooks/usePrinterSettings';
 import {
   Dialog,
   DialogContent,
@@ -40,6 +41,7 @@ export default function InvoicesPage() {
   const { suppliers, loading: suppliersLoading } = useSuppliers();
   const { data: payments, loading: paymentsLoading } = useRealtimeCollection<Payment>('payments', organizationId || null);
   const { invoiceTemplates, loading: templatesLoading } = useTemplates();
+  const { printerSettings } = usePrinterSettings();
   const loading = invoicesLoading || customersLoading || suppliersLoading || paymentsLoading || templatesLoading;
 
   const groupedPayments = useMemo(() => {
@@ -200,6 +202,7 @@ export default function InvoicesPage() {
           invoiceTemplates={invoiceTemplates}
           customer={selectedInvoice.type === 'sales' && selectedInvoice.clientName ? customers.find(c => c.name === selectedInvoice.clientName) : undefined}
           supplier={selectedInvoice.type === 'purchase' && selectedInvoice.supplierId ? suppliers.find(s => s.id === selectedInvoice.supplierId) : undefined}
+          printerSettings={printerSettings}
           open={showPrint}
           onOpenChange={setShowPrint}
         >

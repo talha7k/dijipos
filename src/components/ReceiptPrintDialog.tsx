@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Printer } from 'lucide-react';
-import { Order, ReceiptTemplate, Organization, OrderPayment } from '@/types';
+import { Order, ReceiptTemplate, Organization, OrderPayment, PrinterSettings } from '@/types';
 import { renderReceiptTemplate } from '@/lib/template-renderer';
 import { toast } from 'sonner';
 import { useAtomValue } from 'jotai';
@@ -17,6 +17,7 @@ interface ReceiptPrintDialogProps {
    organization: Organization | null;
    receiptTemplates: ReceiptTemplate[];
    payments?: OrderPayment[];
+   printerSettings?: PrinterSettings | null;
    children: React.ReactNode;
 }
 
@@ -25,12 +26,14 @@ export function ReceiptPrintDialog({
    organization,
    receiptTemplates,
    payments = [],
+   printerSettings,
    children
  }: ReceiptPrintDialogProps) {
    const [open, setOpen] = useState(false);
    const [selectedTemplate, setSelectedTemplate] = useState<string>('');
    const [isGenerating, setIsGenerating] = useState(false);
-   const printerSettings = useAtomValue(printerSettingsAtom);
+    const atomPrinterSettings = useAtomValue(printerSettingsAtom);
+    const effectivePrinterSettings = printerSettings || atomPrinterSettings;
 
   // Set default template on open
   const handleOpenChange = (newOpen: boolean) => {
@@ -49,7 +52,7 @@ export function ReceiptPrintDialog({
 
     try {
       // Render the receipt using template
-      const renderedContent = await renderReceiptTemplate(template, order, organization, payments, printerSettings ? { paperWidth: printerSettings.paperWidth } : undefined);
+      const renderedContent = await renderReceiptTemplate(template, order, organization, payments, effectivePrinterSettings ? { paperWidth: effectivePrinterSettings.paperWidth } : undefined);
 
       console.log('=== RECEIPT PRINT DEBUG ===');
       console.log('Template ID:', template.id);
@@ -82,15 +85,27 @@ export function ReceiptPrintDialog({
       }
 
       // Write the receipt content to the new window
+      const marginTop = effectivePrinterSettings?.marginTop || 0;
+      const marginBottom = effectivePrinterSettings?.marginBottom || 0;
+      const marginLeft = effectivePrinterSettings?.marginLeft || 0;
+      const marginRight = effectivePrinterSettings?.marginRight || 0;
+
       const fullHtmlContent = `
         <!DOCTYPE html>
         <html>
           <head>
             <title>Receipt - ${order.orderNumber}</title>
             <style>
-              body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+              body {
+                margin: 0;
+                padding: ${marginTop}mm ${marginRight}mm ${marginBottom}mm ${marginLeft}mm;
+                font-family: Arial, sans-serif;
+              }
               @media print {
-                body { margin: 0; }
+                body {
+                  margin: ${marginTop}mm ${marginRight}mm ${marginBottom}mm ${marginLeft}mm;
+                  padding: 0;
+                }
               }
             </style>
           </head>

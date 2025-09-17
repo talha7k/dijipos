@@ -12,6 +12,10 @@ export interface PrinterSettings {
   fontSize?: FontSize; // Font size for printing
   characterPerLine?: number; // Characters per line
   characterSet?: CharacterSet; // Character set for printing
+  marginTop?: number; // Top margin in mm
+  marginBottom?: number; // Bottom margin in mm
+  marginLeft?: number; // Left margin in mm
+  marginRight?: number; // Right margin in mm
   organizationId: string;
   createdAt: Date;
   updatedAt: Date;

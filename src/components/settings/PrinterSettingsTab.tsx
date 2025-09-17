@@ -111,6 +111,34 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
             placeholder="Enter width in mm"
           />
           <EditableSetting
+            label="Top Margin (mm)"
+            value={printerSettings?.marginTop?.toString() || '0'}
+            type="number"
+            onSave={(value) => handleUpdateSettings('marginTop', parseInt(value))}
+            placeholder="Enter top margin in mm"
+          />
+          <EditableSetting
+            label="Bottom Margin (mm)"
+            value={printerSettings?.marginBottom?.toString() || '0'}
+            type="number"
+            onSave={(value) => handleUpdateSettings('marginBottom', parseInt(value))}
+            placeholder="Enter bottom margin in mm"
+          />
+          <EditableSetting
+            label="Left Margin (mm)"
+            value={printerSettings?.marginLeft?.toString() || '0'}
+            type="number"
+            onSave={(value) => handleUpdateSettings('marginLeft', parseInt(value))}
+            placeholder="Enter left margin in mm"
+          />
+          <EditableSetting
+            label="Right Margin (mm)"
+            value={printerSettings?.marginRight?.toString() || '0'}
+            type="number"
+            onSave={(value) => handleUpdateSettings('marginRight', parseInt(value))}
+            placeholder="Enter right margin in mm"
+          />
+          <EditableSetting
             label="Include ZATCA QR Code"
             value={printerSettings?.includeQRCode ?? true}
             type="switch"

@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Printer } from 'lucide-react';
-import { Quote, Organization, Customer, QuoteTemplate } from '@/types';
+import { Quote, Organization, Customer, QuoteTemplate, PrinterSettings } from '@/types';
 import { renderQuoteTemplate } from '@/lib/template-renderer';
 import { toast } from 'sonner';
 
@@ -17,6 +17,7 @@ interface QuotePrintDialogProps {
   organization: Organization | null;
   quoteTemplates: QuoteTemplate[];
   customer?: Customer;
+  printerSettings?: PrinterSettings | null;
   children: React.ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -27,6 +28,7 @@ export function QuotePrintDialog({
   organization,
   quoteTemplates,
   customer,
+  printerSettings,
   children,
   open: controlledOpen,
   onOpenChange: controlledOnOpenChange
@@ -64,15 +66,27 @@ export function QuotePrintDialog({
       }
 
       // Write the quote content to the new window
+      const marginTop = printerSettings?.marginTop || 0;
+      const marginBottom = printerSettings?.marginBottom || 0;
+      const marginLeft = printerSettings?.marginLeft || 0;
+      const marginRight = printerSettings?.marginRight || 0;
+
       printWindow.document.write(`
         <!DOCTYPE html>
         <html>
           <head>
             <title>Quote - ${quote.id}</title>
             <style>
-              body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+              body {
+                margin: 0;
+                padding: ${marginTop}mm ${marginRight}mm ${marginBottom}mm ${marginLeft}mm;
+                font-family: Arial, sans-serif;
+              }
               @media print {
-                body { margin: 0; }
+                body {
+                  margin: ${marginTop}mm ${marginRight}mm ${marginBottom}mm ${marginLeft}mm;
+                  padding: 0;
+                }
               }
             </style>
           </head>

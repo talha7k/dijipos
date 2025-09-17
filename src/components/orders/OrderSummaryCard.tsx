@@ -16,14 +16,15 @@ import { Order, OrderStatus, OrderPayment } from "@/types";
 import {
   ORDER_STATUS_COLORS,
   ORDER_STATUS_BUTTON_VARIANTS,
-  getOrderStatusColor
+  getOrderStatusColor,
 } from "@/types/enums";
 import { OrderActionsDialog } from "./OrderStatusActionsDialog";
 import { ReceiptPrintDialog } from "@/components/ReceiptPrintDialog";
-import { useAtom } from 'jotai';
-import { selectedOrganizationAtom } from '@/atoms';
+import { useAtom } from "jotai";
+import { selectedOrganizationAtom } from "@/atoms";
 import { useStoreSettings } from "@/lib/hooks/useStoreSettings";
 import { useTemplates } from "@/lib/hooks/useTemplates";
+import { usePrinterSettings } from "@/lib/hooks/usePrinterSettings";
 
 interface OrderSummaryCardProps {
   order: Order;
@@ -60,6 +61,7 @@ export function OrderSummaryCard({
   const [selectedOrganization] = useAtom(selectedOrganizationAtom);
   const { storeSettings } = useStoreSettings();
   const { receiptTemplates = [] } = useTemplates();
+  const { printerSettings } = usePrinterSettings();
 
   // Calculate payment amounts for display, but use order.paid for status
   const calculatedTotalPaid =
@@ -71,18 +73,25 @@ export function OrderSummaryCard({
 
   // Get color for UI indicators using the new status color system
   const statusColor = getOrderStatusColor(order.status as OrderStatus);
-  const statusButtonVariant = ORDER_STATUS_BUTTON_VARIANTS[order.status as OrderStatus] || 'secondary';
+  const statusButtonVariant =
+    ORDER_STATUS_BUTTON_VARIANTS[order.status as OrderStatus] || "secondary";
 
   // Get background color class for badges
   const getStatusBgColor = (status: OrderStatus) => {
     const color = getOrderStatusColor(status);
     switch (color) {
-      case 'yellow': return 'bg-yellow-500';
-      case 'orange': return 'bg-orange-500';
-      case 'green': return 'bg-green-500';
-      case 'red': return 'bg-red-500';
-      case 'gray': return 'bg-gray-500';
-      default: return 'bg-muted-foreground';
+      case "yellow":
+        return "bg-yellow-500";
+      case "orange":
+        return "bg-orange-500";
+      case "green":
+        return "bg-green-500";
+      case "red":
+        return "bg-red-500";
+      case "gray":
+        return "bg-gray-500";
+      default:
+        return "bg-muted-foreground";
     }
   };
 
@@ -123,7 +132,7 @@ export function OrderSummaryCard({
             >
               <Badge
                 className={`${getStatusBgColor(
-                  order.status as OrderStatus
+                  order.status as OrderStatus,
                 )} text-white w-full justify-center py-2 cursor-pointer hover:opacity-80 transition-opacity`}
               >
                 {getStatusIcon(order.status)}
@@ -164,6 +173,7 @@ export function OrderSummaryCard({
               organization={selectedOrganization}
               receiptTemplates={receiptTemplates}
               payments={payments}
+              printerSettings={printerSettings}
             >
               <Button variant="outline" size="sm" className="w-full">
                 <Printer className="h-4 w-4 mr-2" />
@@ -172,22 +182,6 @@ export function OrderSummaryCard({
             </ReceiptPrintDialog>
           </div>
         )}
-
-        {/* Status Color Demo - Shows how the new color system works */}
-        <div className="flex justify-center gap-2 mt-4">
-          <Button
-            variant={statusButtonVariant}
-            size="sm"
-            className="text-xs"
-          >
-            {order.status.replace("_", " ")}
-          </Button>
-          <div
-            className={`px-3 py-1 rounded-full text-xs font-medium text-white bg-${statusColor}-500`}
-          >
-            {statusColor}
-          </div>
-        </div>
 
         <div
           onClick={onClick ? () => onClick(order) : undefined}
@@ -200,12 +194,12 @@ export function OrderSummaryCard({
               </div>
             )}
             <span className="font-bold">{order.orderNumber}</span>
-            <br/>
+            <br />
             {showCreatedDate && (
-                    <span className="text-xs text-muted-foreground">
-                      {order.createdAt.toLocaleString()}
-                    </span>
-               )}
+              <span className="text-xs text-muted-foreground">
+                {order.createdAt.toLocaleString()}
+              </span>
+            )}
           </div>
 
           <div className="flex justify-between">
@@ -264,8 +258,6 @@ export function OrderSummaryCard({
                 <span>Order Type:</span>
                 <span className="capitalize">{order.orderType}</span>
               </div>
-
-              
 
               {showItemCount && (
                 <div className="flex justify-between">
