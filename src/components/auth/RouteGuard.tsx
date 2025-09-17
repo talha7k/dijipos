@@ -166,14 +166,18 @@ export function RouteGuard({ children }: RouteGuardProps) {
     router
   ]);
 
-  // Show loading state
-  if (loading || organizationLoading) {
-    console.log('RouteGuard: Showing loading - authLoading:', loading, 'organizationLoading:', organizationLoading);
+  // Show loading state - be more defensive about organization loading
+  if (loading || organizationLoading || !currentOrganization) {
+    console.log('RouteGuard: Showing loading - authLoading:', loading, 'organizationLoading:', organizationLoading, 'currentOrganization:', currentOrganization);
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
-          <p className="mt-4">{loading ? 'Authenticating...' : 'Loading organizations...'}</p>
+          <p className="mt-4">
+            {loading ? 'Authenticating...' :
+             organizationLoading ? 'Loading organizations...' :
+             'Setting up organization...'}
+          </p>
           {(organizationLoading && !loading) && (
             <button
               onClick={() => window.location.reload()}

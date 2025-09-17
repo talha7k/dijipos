@@ -32,12 +32,23 @@ service cloud.firestore {
       allow read, write: if isAuthenticated();
     }
 
+    // Invitation codes collection - authenticated users can read/write
+    match /invitationCodes/{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Used invitation codes collection - authenticated users can read/write
+    match /usedInvitationCodes/{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+
     // Business data collections - authenticated users can access organization-scoped data
     match /{collectionName}/{document=**} {
       allow read, write: if isAuthenticated() &&
         collectionName in [
           'categories', 'products', 'services', 'customers', 'suppliers',
           'orders', 'invoices', 'quotes', 'payments',
+          'salesInvoices', 'purchaseInvoices', 'orderPayments',
           'purchaseProducts', 'purchaseServices',
           'storeSettings', 'vatSettings', 'currencySettings',
           'orderTypes', 'paymentTypes', 'printerSettings',

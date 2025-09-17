@@ -14,6 +14,8 @@ import { getOrganization, getOrganizationsForUser, getOrganizationUsers } from '
 import { useAuth } from './useAuth';
 import { useRealtimeCollection } from './useRealtimeCollection';
 import { OrganizationUser } from '@/types';
+import { collection, query, where, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../firebase/config';
 
 /**
  * Helper function to add timeout to promises
@@ -188,4 +190,155 @@ function useRealtimeUsersSyncer(organizationId: string | null) {
 export function useOrganization() {
   const selectedOrganization = useAtom(selectedOrganizationAtom)[0];
   return { selectedOrganization };
+}
+
+/**
+ * Hook for organization management operations (create, join, switch)
+ */
+export function useOrganizationActions() {
+  const { user } = useAuth();
+  const [, setSelectedOrganizationId] = useAtom(selectedOrganizationIdAtom);
+  const [, setUserOrganizations] = useAtom(userOrganizationsAtom);
+  const [, setUserOrganizationAssociations] = useAtom(userOrganizationAssociationsAtom);
+  const [, setError] = useAtom(organizationErrorAtom);
+
+  const selectOrganization = async (organizationId: string) => {
+    console.log('Selecting organization:', organizationId);
+    setSelectedOrganizationId(organizationId);
+  };
+
+  const refreshOrganizations = async () => {
+    if (!user?.uid) return;
+    try {
+      const orgs = await getOrganizationsForUser(user.uid);
+      setUserOrganizations(orgs);
+
+      // Also fetch organization associations with roles
+      const associations = [];
+      for (const org of orgs) {
+        const users = await getOrganizationUsers(org.id);
+        const userAssociation = users.find(u => u.userId === user.uid);
+        if (userAssociation) {
+          associations.push({
+            organizationId: org.id,
+            role: userAssociation.role,
+            isActive: userAssociation.isActive
+          });
+        }
+      }
+      setUserOrganizationAssociations(associations);
+    } catch (error) {
+      console.error('Error refreshing organizations:', error);
+      setError('Failed to refresh organizations');
+    }
+  };
+
+  const joinOrganization = async (invitationCode: string) => {
+    if (!invitationCode || !user) {
+      throw new Error('Invalid invitation code or user not authenticated');
+    }
+
+    try {
+      // Find the invitation code
+      const codesQuery = query(
+        collection(db, 'invitationCodes'),
+        where('code', '==', invitationCode.toUpperCase()),
+        where('isUsed', '==', false)
+      );
+      const codesSnapshot = await getDocs(codesQuery);
+
+      if (codesSnapshot.empty) {
+        throw new Error('Invalid or expired invitation code');
+      }
+
+      const invitationCodeData = codesSnapshot.docs[0].data();
+      const codeId = codesSnapshot.docs[0].id;
+
+      // Check if code is expired
+      if (invitationCodeData.expiresAt.toDate() < new Date()) {
+        throw new Error('Invitation code has expired');
+      }
+
+      // Check if user is already a member
+      const existingMembershipQuery = query(
+        collection(db, 'organizationUsers'),
+        where('userId', '==', user.uid),
+        where('organizationId', '==', invitationCodeData.organizationId)
+      );
+      const existingMembershipSnapshot = await getDocs(existingMembershipQuery);
+
+      if (!existingMembershipSnapshot.empty) {
+        throw new Error('You are already a member of this organization');
+      }
+
+      // Add user to organization
+      await addDoc(collection(db, 'organizationUsers'), {
+        userId: user.uid,
+        organizationId: invitationCodeData.organizationId,
+        role: invitationCodeData.role,
+        isActive: true,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+
+      // Mark invitation code as used
+      await addDoc(collection(db, 'usedInvitationCodes'), {
+        codeId,
+        userId: user.uid,
+        usedAt: serverTimestamp(),
+      });
+
+      // Refresh organizations and switch to the new one
+      await refreshOrganizations();
+      await selectOrganization(invitationCodeData.organizationId);
+
+      return { success: true, organizationId: invitationCodeData.organizationId };
+    } catch (error) {
+      console.error('Error joining organization:', error);
+      throw error;
+    }
+  };
+
+  const createOrganization = async (name: string, email: string) => {
+    if (!name || !email || !user) {
+      throw new Error('Organization name, email, and user authentication required');
+    }
+
+    try {
+      // Create new organization
+      const organizationRef = await addDoc(collection(db, 'organizations'), {
+        name,
+        email,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        subscriptionStatus: 'trial',
+      });
+
+      // Add creator as admin
+      await addDoc(collection(db, 'organizationUsers'), {
+        userId: user.uid,
+        organizationId: organizationRef.id,
+        role: 'admin',
+        isActive: true,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+
+      // Refresh organizations and switch to the new one
+      await refreshOrganizations();
+      await selectOrganization(organizationRef.id);
+
+      return { success: true, organizationId: organizationRef.id };
+    } catch (error) {
+      console.error('Error creating organization:', error);
+      throw error;
+    }
+  };
+
+  return {
+    selectOrganization,
+    refreshOrganizations,
+    joinOrganization,
+    createOrganization,
+  };
 }

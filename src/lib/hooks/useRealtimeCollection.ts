@@ -36,67 +36,105 @@ export function useRealtimeCollection<T extends { id: string }>(
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!organizationId) {
+    // More defensive check for organizationId
+    if (!organizationId || organizationId === null || organizationId === undefined || organizationId === '') {
+      console.log(`useRealtimeCollection: Skipping query for ${collectionName} - no organizationId (${organizationId})`);
       setData([]);
       setLoading(false);
+      setError(null);
       return;
     }
+
+    console.log(`useRealtimeCollection: Setting up listener for ${collectionName} with organizationId: ${organizationId}`);
 
     setLoading(true);
     setError(null);
 
-    // Build query constraints
-    const constraints: QueryConstraint[] = [
-      where('organizationId', '==', organizationId),
-      ...additionalConstraints,
-    ];
-    
-    // Only add orderBy if a field is specified
-    if (orderByField) {
-      constraints.push(orderBy(orderByField, orderDirection));
-    }
+    let isMounted = true; // Track if component is still mounted
 
-    const collectionRef = collection(db, collectionName);
-    const q = query(collectionRef, ...constraints);
+    // Add a small delay to ensure organization is fully loaded
+    const setupTimeout = setTimeout(() => {
+      if (!isMounted) return; // Don't proceed if component unmounted
 
-    // Set up real-time listener
-    const unsubscribe: Unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        try {
-          const documents = snapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-            // Convert Firestore Timestamps to Date objects
-            ...(doc.data().createdAt && {
-              createdAt: doc.data().createdAt.toDate(),
-            }),
-            ...(doc.data().updatedAt && {
-              updatedAt: doc.data().updatedAt.toDate(),
-            }),
-          })) as T[];
+      try {
+        // Build query constraints - use useMemo-like approach to stabilize constraints
+        const baseConstraints: QueryConstraint[] = [
+          where('organizationId', '==', organizationId),
+        ];
 
-          setData(documents);
-          setLoading(false);
-          setError(null);
-        } catch (err) {
-          console.error(`Error processing ${collectionName} snapshot:`, err);
-          setError(`Failed to process ${collectionName} data`);
+        // Add additional constraints
+        const allConstraints = [...baseConstraints, ...additionalConstraints];
+
+        // Only add orderBy if a field is specified
+        if (orderByField) {
+          allConstraints.push(orderBy(orderByField, orderDirection));
+        }
+
+        const collectionRef = collection(db, collectionName);
+        const q = query(collectionRef, ...allConstraints);
+
+        console.log(`useRealtimeCollection: Executing query for ${collectionName}`);
+
+        // Set up real-time listener
+        const unsubscribe: Unsubscribe = onSnapshot(
+          q,
+          (snapshot) => {
+            if (!isMounted) return; // Don't update state if component unmounted
+
+            try {
+              console.log(`useRealtimeCollection: Received snapshot for ${collectionName} with ${snapshot.docs.length} documents`);
+              const documents = snapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+                // Convert Firestore Timestamps to Date objects
+                ...(doc.data().createdAt && {
+                  createdAt: doc.data().createdAt.toDate(),
+                }),
+                ...(doc.data().updatedAt && {
+                  updatedAt: doc.data().updatedAt.toDate(),
+                }),
+              })) as T[];
+
+              setData(documents);
+              setLoading(false);
+              setError(null);
+            } catch (err) {
+              console.error(`Error processing ${collectionName} snapshot:`, err);
+              if (isMounted) {
+                setError(`Failed to process ${collectionName} data`);
+                setLoading(false);
+              }
+            }
+          },
+          (err) => {
+            console.error(`Error listening to ${collectionName}:`, err);
+            if (isMounted) {
+              setError(err.message || `Failed to listen to ${collectionName}`);
+              setLoading(false);
+            }
+          }
+        );
+
+        // Cleanup listener on unmount or dependency change
+        return () => {
+          console.log(`useRealtimeCollection: Cleaning up listener for ${collectionName}`);
+          isMounted = false;
+          unsubscribe();
+        };
+      } catch (err) {
+        console.error(`Error setting up ${collectionName} listener:`, err);
+        if (isMounted) {
+          setError(`Failed to set up ${collectionName} listener`);
           setLoading(false);
         }
-      },
-      (err) => {
-        console.error(`Error listening to ${collectionName}:`, err);
-        setError(err.message || `Failed to listen to ${collectionName}`);
-        setLoading(false);
       }
-    );
+    }, 100); // Small delay to ensure organization is fully loaded
 
-    // Cleanup listener on unmount or dependency change
     return () => {
-      unsubscribe();
+      isMounted = false;
+      clearTimeout(setupTimeout);
     };
-  }, [collectionName, organizationId, orderByField, orderDirection, additionalConstraints.length, additionalConstraints]);
+  }, [collectionName, organizationId, orderByField, orderDirection, JSON.stringify(additionalConstraints)]);
 
   return {
     data,
