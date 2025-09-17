@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useAtom } from 'jotai';
 import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
 import { Order, OrderPayment, OrderStatus } from '@/types';
@@ -13,8 +13,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { ArrowLeft, Receipt, CreditCard, Users, LayoutGrid, ShoppingBag, Calendar, DollarSign, User, CheckCircle, Save, Settings } from 'lucide-react';
-import { toast } from 'sonner';
+import { Receipt, User, CheckCircle, Save, Settings } from 'lucide-react';
+
 import { OrderActionsDialog } from '@/components/orders/OrderStatusActionsDialog';
 
 
@@ -55,9 +55,7 @@ function OrdersContent() {
     return orderPaymentsForOrder.reduce((sum: number, payment: OrderPayment) => sum + payment.amount, 0);
   };
 
-  const isOrderPaid = (order: Order) => {
-    return order.paid;
-  };
+
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {

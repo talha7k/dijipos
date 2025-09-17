@@ -32,7 +32,9 @@ import {
   selectedCartOrderAtom,
   currentViewAtom,
   categoryPathAtom,
-  resetPOSStateAtom
+  resetPOSStateAtom,
+  nextQueueNumberAtom,
+  currentQueueNumberAtom
 } from '@/atoms/posAtoms';
 
 import {
@@ -72,6 +74,8 @@ export default function SimplifiedPOSPage() {
   const [currentView, setCurrentView] = useAtom(currentViewAtom);
   const [categoryPath, setCategoryPath] = useAtom(categoryPathAtom);
   const resetPOSState = useSetAtom(resetPOSStateAtom);
+  const [nextQueueNumber, setNextQueueNumber] = useAtom(nextQueueNumberAtom);
+  const [currentQueueNumber, setCurrentQueueNumber] = useAtom(currentQueueNumberAtom);
 
   // Local state for UI
   const [showOrderConfirmationDialog, setShowOrderConfirmationDialog] = useState(false);
@@ -213,11 +217,20 @@ export default function SimplifiedPOSPage() {
   const handlePayOrder = useCallback(() => {
     if (cartItems.length === 0) return;
 
+    // Assign queue number for new orders
+    const queueNumber = selectedOrder?.queueNumber || nextQueueNumber.toString();
+
+    // If this is a new order (not reopening existing), increment the queue counter
+    if (!selectedOrder) {
+      setCurrentQueueNumber(nextQueueNumber);
+      setNextQueueNumber(nextQueueNumber + 1);
+    }
+
     const orderToPay = selectedOrder || {
       id: 'temp-checkout',
       organizationId: organizationId || '',
       orderNumber: `TEMP-${Date.now()}`,
-      queueNumber: '1',
+      queueNumber: queueNumber,
       items: cartItems,
       subtotal: cartTotal,
       taxRate: 15,
@@ -234,7 +247,7 @@ export default function SimplifiedPOSPage() {
 
     setSelectedOrder(orderToPay);
     setCurrentView('payment');
-  }, [cartItems, cartTotal, selectedOrder, selectedOrderType, organizationId, user, setSelectedOrder, setCurrentView]);
+  }, [cartItems, cartTotal, selectedOrder, selectedOrderType, organizationId, user, setSelectedOrder, setCurrentView, nextQueueNumber, setNextQueueNumber, setCurrentQueueNumber]);
 
   const updateCartItem = useCallback((itemId: string, type: string, updates: Partial<CartItem>) => {
     const updatedCart = cartItems.map(item =>

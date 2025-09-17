@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Quote, SalesInvoice } from '@/types';
+import { Quote } from '@/types';
 import { QuoteTemplateType, QuoteStatus, InvoiceStatus } from '@/types/enums';
 import { useQuotes } from '@/lib/hooks/useQuotes';
 import { useInvoices } from '@/lib/hooks/useInvoices';

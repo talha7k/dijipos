@@ -24,7 +24,7 @@ import { ExportImportProducts } from '@/components/ExportImportProducts';
 export default function ProductsServicesPage() {
   const { selectedOrganization } = useOrganization();
   const organizationId = selectedOrganization?.id;
-  const { products, categories, loading: productsLoading, createProduct, updateProduct, deleteProduct, createCategory, updateCategory, deleteCategory } = useProducts();
+  const { products, categories, loading: productsLoading, createProduct, deleteProduct, createCategory, deleteCategory } = useProducts();
   const { services, loading: servicesLoading, createNewService, deleteExistingService } = useServices();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');

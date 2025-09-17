@@ -6,7 +6,7 @@ import { ReceiptPrintDialog } from '@/components/ReceiptPrintDialog';
 import { Order, OrderStatus, ItemType, OrderPayment } from '@/types';
 import { useAtomValue } from 'jotai';
 import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
-import { selectedTableAtom, selectedCustomerAtom, selectedOrderTypeAtom } from '@/atoms/posAtoms';
+import { selectedTableAtom, selectedCustomerAtom, selectedOrderTypeAtom, currentQueueNumberAtom } from '@/atoms/posAtoms';
 import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
 import { useTemplates } from '@/lib/hooks/useTemplates';
 
@@ -42,6 +42,7 @@ export function POSCartSidebar({
   const selectedTable = useAtomValue(selectedTableAtom);
   const selectedCustomer = useAtomValue(selectedCustomerAtom);
   const selectedOrderType = useAtomValue(selectedOrderTypeAtom);
+  const currentQueueNumber = useAtomValue(currentQueueNumberAtom);
   const organizationId = selectedOrganization?.id || '';
   const { storeSettings } = useStoreSettings();
   const { receiptTemplates = [] } = useTemplates();
@@ -59,8 +60,8 @@ export function POSCartSidebar({
     const taxAmount = (subtotal * taxRate) / 100;
     const total = subtotal + taxAmount;
 
-    // Generate queue number for preview
-    const queueNumber = Math.floor(Math.random() * 1000) + 1;
+    // Use current queue number for preview
+    const queueNumber = currentQueueNumber || 1;
 
     return {
       id: 'temp-checkout',
@@ -118,6 +119,12 @@ export function POSCartSidebar({
       </div>
 
       <div className="border-t p-4 bg-card">
+        {cartItems.length > 0 && currentQueueNumber && (
+          <div className="flex justify-between mb-2">
+            <span className="font-medium text-sm text-muted-foreground">Queue #:</span>
+            <span className="font-medium text-sm text-primary">{currentQueueNumber}</span>
+          </div>
+        )}
         <div className="flex justify-between mb-2">
           <span className="font-medium text-sm text-muted-foreground">Items:</span>
           <span className="font-medium text-sm text-muted-foreground">{cartItems.reduce((sum, item) => sum + item.quantity, 0)}</span>

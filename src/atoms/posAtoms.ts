@@ -28,6 +28,10 @@ export const selectedCartOrderAtom = atom<Order | null>(null);
 export const currentViewAtom = atom<'items' | 'tables' | 'customers' | 'orders' | 'payment'>('items');
 export const categoryPathAtom = atom<string[]>([]);
 
+// Queue management state
+export const nextQueueNumberAtom = atomWithStorage<number>('dijibill-next-queue-number', 1, indexedDBStorage);
+export const currentQueueNumberAtom = atom<number | null>(null);
+
 // =====================
 // DERIVED ATOMS
 // =====================

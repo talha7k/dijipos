@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, Suspense } from 'react';
 import { signInWithEmailAndPassword, sendPasswordResetEmail, signInWithPopup, sendEmailVerification } from 'firebase/auth';
 import { auth, googleProvider } from '@/lib/firebase/config';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -17,7 +17,7 @@ function LoginContent() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isResetMode, setIsResetMode] = useState(false);
-  const [verificationSent, setVerificationSent] = useState(false);
+
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isResendLoading, setIsResendLoading] = useState(false);
@@ -150,7 +150,6 @@ function LoginContent() {
       // Sign out the user
       await auth.signOut();
       
-      setVerificationSent(true);
       setSuccess('Verification email sent! Please check your inbox.');
       toast.success('Verification Email Sent!', {
         description: 'Please check your email inbox for the verification link.',
@@ -198,8 +197,7 @@ function LoginContent() {
     setError('');
     setIsGoogleLoading(true);
     try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const user = result.user;
+      await signInWithPopup(auth, googleProvider);
 
       router.push('/select-organization');
     } catch (err: unknown) {

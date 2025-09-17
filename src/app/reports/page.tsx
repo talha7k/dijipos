@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -8,11 +8,9 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Calendar, Download, TrendingUp, Calculator } from 'lucide-react';
-import { useAtomValue } from 'jotai';
 
-import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
+import { Calendar, Download, TrendingUp, Calculator } from 'lucide-react';
+
 import { useInvoices } from '@/lib/hooks/useInvoices';
 import { InvoiceType } from '@/types';
 
@@ -28,10 +26,10 @@ interface ReportData {
 }
 
 export default function ReportsPage() {
-  const selectedOrganization = useAtomValue(selectedOrganizationAtom);
-  const organizationId = selectedOrganization?.id;
   const { salesInvoices, purchaseInvoices, loading } = useInvoices();
-  const invoices = [...salesInvoices, ...purchaseInvoices];
+
+  // Memoize invoices array to prevent unnecessary re-renders
+  const invoices = useMemo(() => [...salesInvoices, ...purchaseInvoices], [salesInvoices, purchaseInvoices]);
   const [reportData, setReportData] = useState<ReportData | null>(null);
   const [dateRange, setDateRange] = useState({
     startDate: '',
@@ -78,12 +76,28 @@ export default function ReportsPage() {
     
     const netVATPayable = totalVATCollected - totalVATPaid;
     
-    // Calculate profit
-    const salesSubtotal = salesInvoices.reduce((sum, inv) => sum + inv.subtotal, 0);
-    const purchaseSubtotal = purchaseInvoices.reduce((sum, inv) => sum + inv.subtotal, 0);
-    
+    // Calculate profit using consistent methodology
+    // Handle edge cases where invoices might have missing or invalid data
+    const salesSubtotal = salesInvoices.reduce((sum, inv) => {
+      const subtotal = inv.subtotal || 0;
+      return sum + (isNaN(subtotal) ? 0 : subtotal);
+    }, 0);
+
+    const purchaseSubtotal = purchaseInvoices.reduce((sum, inv) => {
+      const subtotal = inv.subtotal || 0;
+      return sum + (isNaN(subtotal) ? 0 : subtotal);
+    }, 0);
+
+    // Gross Profit = Sales Revenue - Cost of Goods Sold (both before tax)
+    // This shows the profit from core business operations before taxes
     const grossProfit = salesSubtotal - purchaseSubtotal;
+
+    // Net Profit = Total Sales - Total Purchases (both after tax for true bottom-line)
+    // This represents the actual profit after all costs including taxes
     const netProfit = totalSales - totalPurchases;
+
+    // Profit Margin = Net Profit / Total Sales (using after-tax figures for accurate margin)
+    // Shows what percentage of revenue remains as profit after all expenses
     const profitMargin = totalSales > 0 ? (netProfit / totalSales) * 100 : 0;
     
     setReportData({
@@ -102,7 +116,7 @@ export default function ReportsPage() {
     if (invoices.length > 0) {
       calculateReportData();
     }
-  }, [invoices, dateRange, reportType, calculateReportData]);
+  }, [calculateReportData, invoices.length]);
 
   const handleDateRangeChange = (field: 'startDate' | 'endDate', value: string) => {
     setDateRange(prev => ({

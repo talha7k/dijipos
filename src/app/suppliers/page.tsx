@@ -8,9 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
-import { Plus, Trash2, Edit, Search, Users, X, Upload } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+
+import { Plus, Trash2, Edit, Users, X, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { ActionButtons } from '@/components/ui/action-buttons';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -22,7 +22,7 @@ export default function SuppliersPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
-  const [saving, setSaving] = useState(false);
+
   const [formData, setFormData] = useState({
     name: '',
     nameAr: '',

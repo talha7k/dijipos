@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 
 import { useAtomValue } from 'jotai';
 import { useAuth } from '@/lib/hooks/useAuth';
@@ -8,7 +9,7 @@ import { selectedOrganizationAtom, organizationUsersAtom,  } from '@/atoms/organ
 import { organizationLoadingAtom } from '@/atoms';
 import { useInvitationCodesData, useInvitationCodesActions } from '@/lib/hooks/useInvitationCodes';
 import { updateOrganization, updateOrganizationBranding, updateOrganizationUser, updateUserStatus } from '@/lib/firebase/firestore/organizations';
-import { Organization, OrganizationUser, InvitationCode } from '@/types';
+import { OrganizationUser } from '@/types';
 import { UserRole } from '@/types/enums';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,7 +35,7 @@ function CompanyContent() {
   const orgLoading = useAtomValue(organizationLoadingAtom);
   const organizationId = selectedOrganization?.id;
   const organization = selectedOrganization;
-  const { invitationCodes, loading: codesLoading, error: codesError } = useInvitationCodesData(organizationId || undefined);
+  const { invitationCodes, loading: codesLoading } = useInvitationCodesData(organizationId || undefined);
   const { createInvitationCodeSimple, deleteInvitationCode } = useInvitationCodesActions(organizationId || undefined);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -129,15 +130,7 @@ function CompanyContent() {
     }
   };
 
-  // Team management functions
-  const generateInvitationCode = () => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let code = '';
-    for (let i = 0; i < 8; i++) {
-      code += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return code;
-  };
+
 
   const handleCreateInvitationCode = async () => {
     if (!organizationId) return;
@@ -351,9 +344,11 @@ function CompanyContent() {
                 <div className="flex items-center space-x-4">
                   {logoUrl ? (
                     <div className="relative">
-                      <img 
-                        src={logoUrl} 
-                        alt="Company Logo" 
+                      <Image
+                        src={logoUrl}
+                        alt="Company Logo"
+                        width={96}
+                        height={96}
                         className="w-24 h-24 object-contain border rounded"
                       />
                       <Button 
@@ -385,9 +380,11 @@ function CompanyContent() {
                 <div className="flex items-center space-x-4">
                   {stampUrl ? (
                     <div className="relative">
-                      <img 
-                        src={stampUrl} 
-                        alt="Company Stamp" 
+                      <Image
+                        src={stampUrl}
+                        alt="Company Stamp"
+                        width={96}
+                        height={96}
                         className="w-24 h-24 object-contain border rounded"
                       />
                       <Button 

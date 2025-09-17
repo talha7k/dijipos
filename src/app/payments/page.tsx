@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { usePayments } from '@/lib/hooks/usePayments';
 import { useInvoices } from '@/lib/hooks/useInvoices';
-import { Payment } from '@/types';
+
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

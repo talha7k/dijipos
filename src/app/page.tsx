@@ -15,9 +15,7 @@ import { toast } from 'sonner';
 function HomeContent() {
   const { user, loading: authLoading } = useAuth();
   const [selectedOrganization] = useAtom(selectedOrganizationAtom);
-  const [userOrganizations] = useAtom(userOrganizationsAtom);
-  const organizationId = selectedOrganization?.id;
-  const emailVerified = user?.emailVerified || false;
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isProcessing, setIsProcessing] = useState(false);

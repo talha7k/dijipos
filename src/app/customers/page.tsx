@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { Customer } from '@/types';
 import { useCustomers } from '@/lib/hooks/useCustomers';
 
@@ -9,12 +10,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
-import { Plus, Trash2, Edit, Search, Phone, Mail, MapPin, Users, X, Upload } from 'lucide-react';
+
+import { Plus, Trash2, Edit, Users, X, Upload } from 'lucide-react';
 import { toast } from 'sonner';
-import { ActionButtons } from '@/components/ui/action-buttons';
+
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/lib/firebase/config';
 
@@ -61,14 +62,13 @@ export default function CustomersPage() {
     setIsDialogOpen(true);
   };
 
-  const [deleteCustomerId, setDeleteCustomerId] = useState<string | null>(null);
+
 
   const handleDeleteCustomer = async (id: string) => {
     try {
       await deleteCustomer(id);
       toast.success('Customer deleted successfully');
-      setDeleteCustomerId(null);
-    } catch (error) {
+    } catch {
       toast.error('Failed to delete customer');
     }
   };
@@ -114,7 +114,7 @@ export default function CustomersPage() {
         vatNumber: '',
         logoUrl: '',
       });
-    } catch (error) {
+    } catch {
       // Error handling is done in the hook
     }
   };
@@ -277,9 +277,11 @@ export default function CustomersPage() {
               <div className="flex items-center space-x-4">
                 {formData.logoUrl ? (
                   <div className="relative">
-                    <img 
-                      src={formData.logoUrl} 
-                      alt="Customer Logo" 
+                    <Image
+                      src={formData.logoUrl}
+                      alt="Customer Logo"
+                      width={96}
+                      height={96}
                       className="w-24 h-24 object-contain border rounded"
                     />
                     <Button 

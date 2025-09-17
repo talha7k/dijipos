@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useAtom } from 'jotai';
 import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
@@ -10,7 +10,7 @@ import { useTemplates } from '@/lib/hooks/useTemplates';
 import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
 import { useOrderTypes } from '@/lib/hooks/useOrderTypes';
 import { usePaymentTypes } from '@/lib/hooks/usePaymentTypes';
-import { TemplateCategory, VATSettings, PrinterSettings } from '@/types';
+import { VATSettings, PrinterSettings } from '@/types';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SettingsHeader } from '@/components/settings/SettingsHeader';
@@ -22,7 +22,7 @@ import { TemplatesTab } from '@/components/settings/TemplatesTab';
 import { TablesTab } from '@/components/settings/TablesTab';
 
 function SettingsContent() {
-  const { user } = useAuth();
+  const {} = useAuth();
   const [selectedOrganization] = useAtom(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
   const { paymentTypes, loading: paymentTypesLoading } = usePaymentTypes();

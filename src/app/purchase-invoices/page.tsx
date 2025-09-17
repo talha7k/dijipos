@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useInvoices } from '@/lib/hooks/useInvoices';
 import { useOrganization } from '@/lib/hooks/useOrganization';
-import { Invoice, PurchaseInvoice, Organization, InvoiceStatus } from '@/types';
+import { Invoice, PurchaseInvoice, Organization } from '@/types';
 import { InvoiceTemplateType, PurchaseInvoiceStatus } from '@/types/enums';
 
 // Type guard to check if invoice is a PurchaseInvoice
@@ -20,13 +20,13 @@ import { Label } from '@/components/ui/label';
 import { Printer } from 'lucide-react';
 
 import { defaultInvoiceEnglish } from '@/components/templates/invoice/default-invoice-english';
-import { defaultInvoiceArabic } from '@/components/templates/invoice/default-invoice-arabic';
+
 import InvoiceForm from '@/components/invoices_quotes/InvoiceForm';
 import { Receipt } from 'lucide-react';
 
 function InvoicesContent() {
   const { selectedOrganization: organization } = useOrganization();
-  const organizationId = organization?.id;
+
   const { purchaseInvoices: invoices, loading, createPurchaseInvoice, updateExistingInvoice } = useInvoices();
   const [selectedInvoice, setSelectedInvoice] = useState<PurchaseInvoice | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);

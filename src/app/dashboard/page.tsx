@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAtomValue } from 'jotai';
 import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,7 +18,7 @@ import { useTables } from '@/lib/hooks/useTables';
 import { TableStatus, Payment } from '@/types';
 
 function DashboardContent() {
-  const selectedOrganization = useAtomValue(selectedOrganizationAtom);
+
   const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
