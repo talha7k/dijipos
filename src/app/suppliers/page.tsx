@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { Supplier } from '@/types';
 import { useSuppliers } from '@/lib/hooks/useSuppliers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -64,13 +65,13 @@ export default function SuppliersPage() {
     setIsDialogOpen(true);
   };
 
-  const handleDeleteSupplier = async (id: string) => {
-    try {
-      await deleteSupplier(id);
-    } catch (error) {
-      // Error handling is done in the hook
-    }
-  };
+   const handleDeleteSupplier = async (id: string) => {
+     try {
+       await deleteSupplier(id);
+     } catch {
+       // Error handling is done in the hook
+     }
+   };
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !e.target.files[0]) return;
@@ -97,7 +98,6 @@ export default function SuppliersPage() {
   };
 
   const handleSaveSupplier = async () => {
-    setSaving(true);
     try {
       if (editingSupplier) {
         // Update existing supplier
@@ -117,10 +117,10 @@ export default function SuppliersPage() {
         contactPerson: '',
         logoUrl: '',
       });
-    } catch (error) {
+    } catch {
       // Error handling is done in the hook
     } finally {
-      setSaving(false);
+      // No saving state to update
     }
   };
 
@@ -266,9 +266,11 @@ export default function SuppliersPage() {
               <div className="flex items-center space-x-4">
                 {formData.logoUrl ? (
                   <div className="relative">
-                    <img 
-                      src={formData.logoUrl} 
-                      alt="Supplier Logo" 
+                    <Image
+                      src={formData.logoUrl}
+                      alt="Supplier Logo"
+                      width={96}
+                      height={96}
                       className="w-24 h-24 object-contain border rounded"
                     />
                     <Button 

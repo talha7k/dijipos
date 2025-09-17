@@ -96,7 +96,7 @@ export function useRealtimeCollection<T extends { id: string }>(
     return () => {
       unsubscribe();
     };
-  }, [collectionName, organizationId, orderByField, orderDirection, additionalConstraints.length]);
+  }, [collectionName, organizationId, orderByField, orderDirection, additionalConstraints.length, additionalConstraints]);
 
   return {
     data,

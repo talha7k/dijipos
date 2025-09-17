@@ -34,7 +34,7 @@ function VerifyEmailContent() {
         }
 
         // Check the action code
-        const info = await checkActionCode(auth, actionCode);
+        await checkActionCode(auth, actionCode);
 
         // Apply the action code (verify email)
         await applyActionCode(auth, actionCode);

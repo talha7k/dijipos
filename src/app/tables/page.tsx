@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useTables } from '@/lib/hooks/useTables';
-import { TableStatus } from '@/types/enums';
+
 import { Table as TableType } from '@/types';
 
 
@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Search, Users } from 'lucide-react';
 import { TableList } from '@/components/TableList';
 import { AddTableDialog } from '@/components/AddTableDialog';
-import { TableActionsDialog } from '@/components/tables/TableActionsDialog';
+
 
 export default function TablesPage() {
   const { tables, loading, createTable, deleteTable } = useTables();

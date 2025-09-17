@@ -10,7 +10,6 @@ import {
   exportProductsAndCategories,
   parseImportFile,
   importProductsAndCategories,
-  ImportOptions,
   ImportResult
 } from '@/lib/export-import-utils';
 import { useAuth } from '@/lib/hooks/useAuth';
@@ -85,9 +84,7 @@ export function ExportImportProducts({
     }
   };
 
-  const handleImportClick = async () => {
-    await handleImport();
-  };
+
 
   const clearFileSelection = () => {
     setSelectedFile(null);
