@@ -156,7 +156,7 @@ export function DesktopSidebar({
   const [organizationId] = useAtom(selectedOrganizationIdAtom);
   const [organizationUserRole] = useAtom(organizationUserRoleAtom);
 
-  const userRole = organizationUserRole?.role || 'waiter'; // Default to waiter if no role found
+  const userRole = (organizationUserRole?.role as string) || 'waiter'; // Default to waiter if no role found
   const navigationItems = getNavigationItems(userRole);
   return (
     <div
