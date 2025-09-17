@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { useAtomValue } from 'jotai';
 import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
-import { ReceiptTemplate, TemplateCategory, UnifiedTemplate } from '@/types';
+import { ReceiptTemplate, InvoiceTemplate, QuoteTemplate, TemplateCategory, UnifiedTemplate } from '@/types';
+import { ReceiptTemplateType, InvoiceTemplateType, QuoteTemplateType } from '@/types/enums';
 import { useTemplates } from '@/lib/hooks/useTemplates';
 import {
   createReceiptTemplate,
@@ -28,6 +29,7 @@ import { FileText, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { defaultEnglishReceiptTemplate } from '@/components/templates/receipt/default-receipt-thermal-english';
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface TemplatesTabProps {
   // No longer need receiptTemplates prop since we use the hook
 }
@@ -72,7 +74,7 @@ export function TemplatesTab({}: TemplatesTabProps) {
       const templateData = {
         name: newTemplate.name,
         description: newTemplate.description,
-        type: newTemplate.type as any,
+        type: newTemplate.type as unknown as ReceiptTemplateType,
         content: newTemplate.content || defaultEnglishReceiptTemplate,
         customHeader: newTemplate.customHeader,
         customFooter: newTemplate.customFooter,
@@ -82,13 +84,13 @@ export function TemplatesTab({}: TemplatesTabProps) {
 
       switch (selectedCategory) {
         case TemplateCategory.RECEIPT:
-          await createReceiptTemplate(templateData);
+          await createReceiptTemplate(templateData as Omit<ReceiptTemplate, 'id' | 'createdAt' | 'updatedAt'>);
           break;
         case TemplateCategory.INVOICE:
-          await createInvoiceTemplate(templateData as any);
+          await createInvoiceTemplate(templateData as unknown as Omit<InvoiceTemplate, 'id' | 'createdAt' | 'updatedAt'>);
           break;
         case TemplateCategory.QUOTE:
-          await createQuoteTemplate(templateData as any);
+          await createQuoteTemplate(templateData as unknown as Omit<QuoteTemplate, 'id' | 'createdAt' | 'updatedAt'>);
           break;
       }
 

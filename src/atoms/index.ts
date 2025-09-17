@@ -8,6 +8,13 @@ import { indexedDBStorage } from '@/lib/storage';
 // Re-export atoms from more specific files
 export * from './posAtoms';
 export * from './uiAtoms';
+export * from './tableAtoms';
+
+// Organization & Session State Atoms: selectedOrganizationIdAtom, selectedOrganizationAtom, userOrganizationsAtom, organizationUserRoleAtom, organizationLoadingAtom, organizationErrorAtom
+// Derived Atoms: hasSelectedOrganizationAtom, isMemberOfAnyOrganizationAtom
+// Utility Atoms: logoutAtom
+
+// Organization & Session State Atoms: selectedOrganizationIdAtom, selectedOrganizationAtom, userOrganizationsAtom, organizationUserRoleAtom, organizationLoadingAtom, organizationErrorAtom
 
 // ==========================================
 // ORGANIZATION & SESSION STATE ATOMS

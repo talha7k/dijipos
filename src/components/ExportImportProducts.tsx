@@ -14,13 +14,14 @@ import {
   ImportResult
 } from '@/lib/export-import-utils';
 import { useAuth } from '@/lib/hooks/useAuth';
+import { Category, Product } from '@/types';
 
 interface ExportImportProductsProps {
   organizationId?: string;
-  categories?: any[];
-  products?: any[];
-  onCreateCategory?: (data: any) => Promise<void>;
-  onCreateProduct?: (data: any) => Promise<void>;
+  categories?: Category[];
+  products?: Product[];
+  onCreateCategory?: (data: Omit<Category, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  onCreateProduct?: (data: Omit<Product, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => Promise<void>;
 }
 
 export function ExportImportProducts({

@@ -87,7 +87,7 @@ export async function createPayment(data: Omit<Payment, 'id' | 'createdAt'>): Pr
  */
 export async function updatePayment(paymentId: string, updates: Partial<Omit<Payment, 'id' | 'createdAt'>>): Promise<void> {
   try {
-    const updateData: any = { ...updates };
+    const updateData: Record<string, unknown> = { ...updates };
     if (updates.paymentDate) {
       updateData.paymentDate = Timestamp.fromDate(updates.paymentDate);
     }

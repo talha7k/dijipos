@@ -33,7 +33,7 @@ function InvoicesContent() {
   const organizationId = selectedOrganization?.id;
   const [invoices, setInvoices] = useState<PurchaseInvoice[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [selectedInvoice, setSelectedInvoice] = useState<PurchaseInvoice | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
   // Load invoices on component mount and when organization changes
@@ -58,6 +58,8 @@ function InvoicesContent() {
 
     loadInvoices();
   }, [organizationId]);
+
+
 
   const updateInvoiceStatus = async (invoiceId: string, status: PurchaseInvoice['status']) => {
     try {
@@ -376,14 +378,9 @@ function InvoicesContent() {
                               <div className="flex gap-4 mb-4 items-center">
                                 <Button
                                   variant={InvoiceTemplateType.ENGLISH === InvoiceTemplateType.ENGLISH ? 'default' : 'outline'}
-                                  onClick={async () => {
+                                  onClick={() => {
                                     const updatedInvoice = { ...selectedInvoice, template: InvoiceTemplateType.ENGLISH };
                                     setSelectedInvoice(updatedInvoice);
-                                    try {
-                                      await updateInvoiceStatus(selectedInvoice.id, selectedInvoice.status);
-                                    } catch (error) {
-                                      console.error('Error updating invoice template:', error);
-                                    }
                                   }}
                                 >
                                   English Template

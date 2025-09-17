@@ -26,12 +26,12 @@ export default function CustomersPage() {
   const organizationId = selectedOrganization?.id;
   const { customers, loading: customersLoading } = useCustomers();
   // Customer CRUD functions
-  const createCustomer = async (data: any) => {
+  const createCustomer = async (data: Omit<Customer, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => {
     if (!organizationId) return;
     await createCustomerFn({ ...data, organizationId });
   };
 
-  const updateCustomer = async (id: string, data: any) => {
+  const updateCustomer = async (id: string, data: Partial<Omit<Customer, 'id' | 'createdAt'>>) => {
     await updateCustomerFn(id, data);
   };
 

@@ -58,9 +58,9 @@ export default function SimplifiedPOSPage() {
   const { tables, loading: tablesLoading } = useTables();
   const { customers, loading: customersLoading } = useCustomers();
   const { orders, loading: ordersLoading } = useOrders();
-  const { orderTypes = [] } = useOrderTypes(organizationId || undefined);
+  const { orderTypes = [] } = useOrderTypes();
   const { paymentTypes = [], loading: paymentTypesLoading } =
-    usePaymentTypes(organizationId || undefined);
+    usePaymentTypes();
 
   // Use POS atoms directly
   const [cartItems, setCartItems] = useAtom(cartItemsAtom);

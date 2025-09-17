@@ -6,6 +6,7 @@ import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
 import { usePayments } from '@/lib/hooks/usePayments';
 import { useInvoices } from '@/lib/hooks/useInvoices';
 import { createPayment as createPaymentFn } from '@/lib/firebase/firestore/payments';
+import { Payment } from '@/types';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,7 +24,7 @@ function PaymentsContent() {
   const { salesInvoices, purchaseInvoices, loading: invoicesLoading } = useInvoices();
   const invoices = [...salesInvoices, ...purchaseInvoices];
   // Create payment function
-  const createPayment = async (data: any) => {
+  const createPayment = async (data: Omit<Payment, 'id' | 'organizationId' | 'createdAt'>) => {
     if (!organizationId) return;
     await createPaymentFn({ ...data, organizationId });
   };

@@ -10,7 +10,7 @@ import {
   Timestamp
 } from 'firebase/firestore';
 import { db } from '../config';
-import { User, OrganizationUser } from '@/types';
+import { User, OrganizationUser, Organization } from '@/types';
 
 // Collection references
 const usersRef = collection(db, 'users');
@@ -153,7 +153,7 @@ export async function getUsersInOrganization(organizationId: string): Promise<(U
 /**
  * Get all organizations for a user (with roles)
  */
-export async function getUserOrganizations(userId: string): Promise<(OrganizationUser & { organization?: any })[]> {
+export async function getUserOrganizations(userId: string): Promise<(OrganizationUser & { organization?: Organization })[]> {
   try {
     const orgUsersQuery = query(
       organizationUsersRef,
@@ -163,13 +163,14 @@ export async function getUserOrganizations(userId: string): Promise<(Organizatio
     const snapshot = await getDocs(orgUsersQuery);
 
     const organizationUsers = snapshot.docs.map(doc => {
-      const data = doc.data();
+      const data = doc.data() as OrganizationUser;
+      const { id, ...dataWithoutId } = data;
       return {
         id: doc.id,
-        ...data,
-        createdAt: data.createdAt?.toDate() || new Date(),
-        updatedAt: data.updatedAt?.toDate() || new Date(),
-      } as OrganizationUser;
+        ...dataWithoutId,
+        createdAt: data.createdAt instanceof Date ? data.createdAt : new Date(),
+        updatedAt: data.updatedAt instanceof Date ? data.updatedAt : new Date(),
+      };
     });
 
     // Optionally fetch organization details

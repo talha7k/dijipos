@@ -15,7 +15,7 @@ import { usePayments } from '@/lib/hooks/usePayments';
 import { useProducts } from '@/lib/hooks/useProducts';
 import { useServices } from '@/lib/hooks/useServices';
 import { useTables } from '@/lib/hooks/useTables';
-import { TableStatus } from '@/types';
+import { TableStatus, Payment } from '@/types';
 
 function DashboardContent() {
   const selectedOrganization = useAtomValue(selectedOrganizationAtom);
@@ -88,7 +88,7 @@ function DashboardContent() {
               <CardDescription>Total Received</CardDescription>
             </CardHeader>
             <CardContent>
-               <div className="text-2xl font-bold">${payments.reduce((sum: number, p: any) => sum + p.amount, 0).toFixed(2)}</div>
+                <div className="text-2xl font-bold">${payments.reduce((sum: number, p: Payment) => sum + p.amount, 0).toFixed(2)}</div>
               <p className="text-sm text-muted-foreground">
                 Revenue collected
               </p>

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useAtomValue } from 'jotai';
 
 import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
-import { Quote } from '@/types';
+import { Quote, SalesInvoice } from '@/types';
 import { QuoteTemplateType, QuoteStatus, InvoiceStatus } from '@/types/enums';
 import { useQuotes } from '@/lib/hooks/useQuotes';
 import { useInvoices } from '@/lib/hooks/useInvoices';
@@ -28,7 +28,7 @@ function QuotesContent() {
   const { templates: quoteTemplates, loading: templatesLoading } = useQuotesTemplatesData(organizationId || undefined);
 
   // Quote action functions
-  const createQuote = async (quoteData: any) => {
+  const createQuote = async (quoteData: Omit<Quote, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => {
     if (!organizationId) return;
     return await createQuoteFirebase({
       ...quoteData,
@@ -36,11 +36,11 @@ function QuotesContent() {
     });
   };
 
-  const updateQuote = async (quoteId: string, updates: any) => {
+  const updateQuote = async (quoteId: string, updates: Partial<Omit<Quote, 'id' | 'createdAt'>>) => {
     return await updateQuoteFirebase(quoteId, updates);
   };
 
-  const createInvoice = async (invoiceData: any) => {
+  const createInvoice = async (invoiceData: Omit<SalesInvoice, 'id' | 'createdAt' | 'updatedAt' | 'organizationId'>) => {
     if (!organizationId) return;
     return await createSalesInvoice({
       ...invoiceData,
@@ -88,6 +88,7 @@ function QuotesContent() {
       status: InvoiceStatus.DRAFT,
       dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
       notes: quote.notes || undefined,
+      payments: [],
       template: QuoteTemplateType.ENGLISH, // default template
       includeQR: false, // default no QR
       quoteId: quote.id,

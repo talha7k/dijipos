@@ -8,7 +8,7 @@ import { Table } from '@/types';
 import {
   tablesAtom,
   tablesLoadingAtom,
-  organizationIdAtom
+  selectedOrganizationIdAtom
 } from '../atoms';
 import { ReactNode } from 'react';
 
@@ -17,7 +17,7 @@ interface TablesProviderProps {
 }
 
 export function TablesProvider({ children }: TablesProviderProps) {
-  const [organizationId] = useAtom(organizationIdAtom);
+  const [organizationId] = useAtom(selectedOrganizationIdAtom);
   const setTables = useSetAtom(tablesAtom);
   const setTablesLoading = useSetAtom(tablesLoadingAtom);
 

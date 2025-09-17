@@ -10,7 +10,7 @@ import { useTemplates } from '@/lib/hooks/useTemplates';
 import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
 import { useOrderTypes } from '@/lib/hooks/useOrderTypes';
 import { usePaymentTypes } from '@/lib/hooks/usePaymentTypes';
-import { TemplateCategory } from '@/types/template';
+import { TemplateCategory, VATSettings, PrinterSettings } from '@/types';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SettingsHeader } from '@/components/settings/SettingsHeader';
@@ -36,12 +36,12 @@ function SettingsContent() {
 
   // Extract data from storeSettings
   const vatSettings = storeSettings?.vatSettings || null;
-  const handleVatSettingsUpdate = (settings: any) => {
+  const handleVatSettingsUpdate = (settings: VATSettings) => {
     // TODO: implement update
     console.log('Update VAT settings:', settings);
   };
   const printerSettings = null; // TODO: get from separate hook
-  const handlePrinterSettingsUpdate = (settings: any) => {
+  const handlePrinterSettingsUpdate = (settings: PrinterSettings) => {
     // TODO: implement update
     console.log('Update printer settings:', settings);
   };
@@ -108,9 +108,7 @@ function SettingsContent() {
         </TabsContent>
 
         <TabsContent value="templates" className="space-y-4">
-          <TemplatesTab
-            receiptTemplates={receiptTemplates as any || []}
-          />
+          <TemplatesTab />
         </TabsContent>
       </Tabs>
     </div>

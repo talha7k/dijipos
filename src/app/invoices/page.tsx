@@ -42,6 +42,16 @@ export default function InvoicesPage() {
   const { invoiceTemplates, loading: templatesLoading } = useTemplates();
   const loading = invoicesLoading || customersLoading || suppliersLoading || paymentsLoading || templatesLoading;
 
+  const groupedPayments = useMemo(() => {
+    return payments.reduce((acc, payment) => {
+      if (!acc[payment.invoiceId]) {
+        acc[payment.invoiceId] = [];
+      }
+      acc[payment.invoiceId].push(payment);
+      return acc;
+    }, {} as { [invoiceId: string]: Payment[] });
+  }, [payments]);
+
   const handleStatusChange = async (invoiceId: string, newStatus: Invoice['status']) => {
     try {
       await updateExistingInvoice(invoiceId, { status: newStatus });
@@ -78,7 +88,7 @@ export default function InvoicesPage() {
 
 
   const getPaymentsForInvoice = (invoiceId: string) => {
-    return payments[invoiceId] || [];
+    return groupedPayments[invoiceId] || [];
   };
 
   if (loading) {
@@ -113,7 +123,7 @@ export default function InvoicesPage() {
         invoices={getFilteredInvoices()}
         customers={customers}
         suppliers={suppliers}
-        payments={payments}
+        payments={groupedPayments}
         onInvoiceClick={handleInvoiceClick}
         onViewDetails={handleInvoiceClick}
         onStatusChange={handleStatusChange}
