@@ -7,7 +7,7 @@ import { useInvitationCodesActions } from '@/legacy_hooks/organization/use-invit
 import { useOrganizationUsersActions } from '@/legacy_hooks/organization/use-organization-users-actions';
 import { useAtomValue } from 'jotai';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { selectedOrganizationAtom, organizationUsersAtom, organizationLoadingAtom } from '@/store/atoms/organizationAtoms';
+import { selectedOrganizationAtom, organizationUsersAtom, organizationLoadingAtom } from '@/atoms/organizationAtoms';
 import { useInvitationCodesData } from '@/legacy_hooks/organization/use-invitation-codes-data';
 import { Organization, OrganizationUser, InvitationCode } from '@/types';
 import { UserRole } from '@/types/enums';

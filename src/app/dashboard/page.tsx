@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAtomValue } from 'jotai';
-import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
+import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';

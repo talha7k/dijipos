@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAtomValue } from 'jotai';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
+import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
 import { Button } from '@/components/ui/button';
 import { Building2, LogOut, ChevronDown, ChevronUp, User } from 'lucide-react';
 

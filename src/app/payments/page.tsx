@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useAtomValue } from 'jotai';
-import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
+import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
 import { usePayments } from '@/lib/hooks/usePayments';
 import { useInvoices } from '@/lib/hooks/useInvoices';
 import { usePaymentsActions } from '@/legacy_hooks/usePayments';

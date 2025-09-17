@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useAtomValue } from 'jotai';
-import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
+import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
 import { ReceiptTemplate, TemplateCategory, UnifiedTemplate } from '@/types';
 import { useTemplatesData } from '@/legacy_hooks/use-templates-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

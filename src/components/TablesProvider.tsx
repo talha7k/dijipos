@@ -9,7 +9,7 @@ import {
   tablesAtom,
   tablesLoadingAtom,
   organizationIdAtom
-} from '@/store/atoms';
+} from '../atoms';
 import { ReactNode } from 'react';
 
 interface TablesProviderProps {

@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar, Download, TrendingUp, Calculator } from 'lucide-react';
 import { useAtomValue } from 'jotai';
 
-import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
+import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
 import { useInvoices } from '@/lib/hooks/useInvoices';
 import { InvoiceType } from '@/types';
 

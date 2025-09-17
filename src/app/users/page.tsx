@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useAtomValue } from 'jotai';
 
-import { selectedOrganizationAtom, organizationUsersAtom, organizationLoadingAtom } from '@/store/atoms/organizationAtoms';
+import { selectedOrganizationAtom, organizationUsersAtom, organizationLoadingAtom } from '@/atoms/organizationAtoms';
 import { useInvitationCodesData } from '@/legacy_hooks/organization/use-invitation-codes-data';
 import { useOrganizationUsersActions } from '@/legacy_hooks/organization/use-organization-users-actions';
 import { useInvitationCodesActions } from '@/legacy_hooks/organization/use-invitation-codes-actions';

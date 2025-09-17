@@ -1,15 +1,15 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
-import { useOrganization } from "@/lib/hooks/useOrganization";
+import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
 import { CartItem, ItemType, Order, OrderStatus, Product, Service, Table, Customer, OrderType, OrderPayment } from "@/types";
 import { useProducts } from "@/lib/hooks/useProducts";
 import { useServices } from "@/lib/hooks/useServices";
 import { useTables } from "@/lib/hooks/useTables";
 import { useCustomers } from "@/lib/hooks/useCustomers";
 import { useOrders } from "@/lib/hooks/useOrders";
-import { useOrderTypes } from "@/legacy_hooks/useOrderTypes";
-import { usePaymentTypes } from "@/legacy_hooks/uePaymentTypes";
+import { useOrderTypes } from "@/lib/hooks/useOrderTypes";
+import { usePaymentTypes } from "@/lib/hooks/usePaymentTypes";
 import { useAuth } from "@/lib/hooks/useAuth";
 
 import {
@@ -33,7 +33,7 @@ import {
   currentViewAtom,
   categoryPathAtom,
   resetPOSStateAtom
-} from '@/store/atoms/posAtoms';
+} from '@/atoms/posAtoms';
 
 import {
   AlertDialog,
@@ -49,7 +49,7 @@ import { PaymentSuccessDialog } from "@/components/PaymentSuccessDialog";
 import { CartItemModal } from "@/components/orders/CartItemModal";
 
 export default function SimplifiedPOSPage() {
-  const { selectedOrganization } = useOrganization();
+  const [selectedOrganization] = useAtom(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
 
   // Data hooks

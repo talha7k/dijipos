@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useAtomValue } from 'jotai';
-import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
+import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
 import { useOrderTypes } from '@/lib/hooks/useOrderTypes';
 import { OrderType } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

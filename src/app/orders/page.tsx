@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { useOrganization } from '@/lib/hooks/useOrganization';
+import { useAtom } from 'jotai';
+import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
 import { Order, OrderPayment, OrderStatus } from '@/types';
 import { useOrders } from '@/lib/hooks/useOrders';
 import { useRealtimeCollection } from '@/lib/hooks/useRealtimeCollection';
@@ -18,7 +19,7 @@ import { OrderActionsDialog } from '@/components/orders/OrderStatusActionsDialog
 
 
 function OrdersContent() {
-  const { selectedOrganization } = useOrganization();
+  const [selectedOrganization] = useAtom(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id || '';
   const { orders: fetchedOrders, loading: ordersLoading, updateExistingOrder } = useOrders();
   const { data: paymentsData, loading: paymentsLoading } = useRealtimeCollection<OrderPayment>('orderPayments', organizationId);

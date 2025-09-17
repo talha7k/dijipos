@@ -1,7 +1,8 @@
 'use client';
 
 import { useAuth } from '@/lib/hooks/useAuth';
-import { useOrganization } from '@/lib/hooks/useOrganization';
+import { useAtom } from 'jotai';
+import { selectedOrganizationAtom, userOrganizationsAtom } from '@/atoms/organizationAtoms';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,7 +14,8 @@ import { toast } from 'sonner';
 
 function HomeContent() {
   const { user, loading: authLoading } = useAuth();
-  const { selectedOrganization, userOrganizations } = useOrganization();
+  const [selectedOrganization] = useAtom(selectedOrganizationAtom);
+  const [userOrganizations] = useAtom(userOrganizationsAtom);
   const organizationId = selectedOrganization?.id;
   const emailVerified = user?.emailVerified || false;
   const router = useRouter();

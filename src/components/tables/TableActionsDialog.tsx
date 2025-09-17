@@ -5,7 +5,7 @@ import { Table, Order, TableStatus } from '@/types';
 import { useTables } from '@/lib/hooks/useTables';
 import { useOrders } from '@/lib/hooks/useOrders';
 import { useAtomValue } from 'jotai';
-import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
+import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
 import { doc, runTransaction } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { toast } from 'sonner';

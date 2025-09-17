@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAtomValue } from 'jotai';
 
-import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
+import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
 import { usePurchaseProductsData, usePurchaseServicesData, usePurchaseProductsActions, usePurchaseServicesActions } from '@/legacy_hooks/usePurchaseProductsServices';
 import { useCategoriesData } from '@/legacy_hooks/products_services/useCategories';
 import { Product, Service, Category } from '@/types';

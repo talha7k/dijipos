@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAtomValue } from 'jotai';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { selectedOrganizationAtom, userOrganizationsAtom, organizationLoadingAtom, organizationErrorAtom } from '@/store/atoms/organizationAtoms';
+import { selectedOrganizationAtom, userOrganizationsAtom, organizationLoadingAtom, organizationErrorAtom } from '@/atoms/organizationAtoms';
 import { toast } from 'sonner';
 
 interface RouteGuardProps {

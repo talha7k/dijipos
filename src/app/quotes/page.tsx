@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useAtomValue } from 'jotai';
 
-import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
+import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
 import { Quote } from '@/types';
 import { QuoteTemplateType, QuoteStatus, InvoiceStatus } from '@/types/enums';
 import { useQuotes } from '@/lib/hooks/useQuotes';

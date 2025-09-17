@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useAtomValue } from 'jotai';
 
-import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
+import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
 import { usePurchaseInvoicesData, usePurchaseInvoiceActions } from '@/legacy_hooks/usePurchaseInvoices';
 import { Invoice, PurchaseInvoice, Organization, InvoiceStatus } from '@/types';
 import { InvoiceTemplateType } from '@/types/enums';

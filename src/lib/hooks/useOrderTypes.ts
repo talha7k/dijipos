@@ -1,7 +1,7 @@
 import { OrderType } from '@/types';
 import { useRealtimeCollection } from './useRealtimeCollection';
 import { useAtomValue } from 'jotai';
-import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
+import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
 import { createOrderType, updateOrderType, deleteOrderType } from '../firebase/firestore/settings/store';
 
 interface OrderTypesState {
@@ -20,7 +20,7 @@ interface OrderTypesActions {
  * Hook that provides real-time order types for the selected organization with CRUD operations
  */
 export function useOrderTypes(): OrderTypesState & OrderTypesActions {
-  const { selectedOrganization } = useOrganization();
+  const selectedOrganization = useAtomValue(selectedOrganizationAtom);
 
   const { data: orderTypes, loading, error } = useRealtimeCollection<OrderType>(
     'orderTypes',

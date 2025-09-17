@@ -1,7 +1,7 @@
 'use client';
 
 import { useAtomValue } from 'jotai';
-import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
+import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
 import { useSettingsData } from '@/legacy_hooks/organization/use-settings-data';
 import { PrinterSettings } from '@/types';
 import { useReceiptTemplatesData } from '@/lib/hooks/useReceiptTemplatesData';

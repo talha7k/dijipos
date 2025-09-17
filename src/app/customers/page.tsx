@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useAtomValue } from 'jotai';
-import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
+import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
 import { Customer } from '@/types';
 import { useCustomers } from '@/lib/hooks/useCustomers';
 import { useCustomersData } from '@/legacy_hooks/useCustomerState';

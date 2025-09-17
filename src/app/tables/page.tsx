@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAtomValue } from 'jotai';
-import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
+import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
 import { useTables } from '@/lib/hooks/useTables';
 import { TableStatus } from '@/types/enums';
 import { Table as TableType } from '@/types';

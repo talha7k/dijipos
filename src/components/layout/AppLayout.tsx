@@ -3,8 +3,8 @@
 import { usePathname } from 'next/navigation';
 import { useAtomValue } from 'jotai';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { selectedOrganizationAtom, userOrganizationsAtom, organizationLoadingAtom } from '@/store/atoms/organizationAtoms';
-import { sidebarCollapsedAtom } from '@/store/atoms/uiAtoms';
+import { selectedOrganizationAtom, userOrganizationsAtom, organizationLoadingAtom } from '@/atoms/organizationAtoms';
+import { sidebarCollapsedAtom } from '@/atoms/uiAtoms';
 import { CollapsibleSidebar } from '@/components/sidebar/collapsible-sidebar';
 import { OrganizationManager } from '@/components/organization/OrganizationManager';
 

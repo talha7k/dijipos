@@ -18,7 +18,7 @@ import {
   organizationIdAtom,
   resetAuthStateAtom,
 
-} from '@/store/atoms';
+} from '@/atoms';
 import { ReactNode } from 'react';
 import { autoRepairIndexedDB } from '@/lib/debug-indexeddb';
 import { indexedDBStorage } from '@/lib/storage';

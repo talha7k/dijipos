@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useAtomValue } from 'jotai';
-import { selectedOrganizationAtom } from '@/store/atoms/organizationAtoms';
+import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
 import { Supplier } from '@/types';
 import { useSuppliers } from '@/lib/hooks/useSuppliers';
 import { useSupplierActions } from '@/legacy_hooks/suppliers/useSuppliers';

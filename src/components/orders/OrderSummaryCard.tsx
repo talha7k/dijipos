@@ -15,7 +15,8 @@ import {
 import { Order, OrderStatus, OrderPayment } from "@/types";
 import { OrderActionsDialog } from "./OrderStatusActionsDialog";
 import { ReceiptPrintDialog } from "@/components/ReceiptPrintDialog";
-import { useOrganization } from "@/lib/hooks/useOrganization";
+import { useAtom } from 'jotai';
+import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
 import { useStoreSettings } from "@/lib/hooks/useStoreSettings";
 import { useTemplates } from "@/lib/hooks/useTemplates";
 
@@ -51,7 +52,7 @@ export function OrderSummaryCard({
   onCompleteOrder,
   className = "",
 }: OrderSummaryCardProps) {
-  const { selectedOrganization } = useOrganization();
+  const [selectedOrganization] = useAtom(selectedOrganizationAtom);
   const { storeSettings } = useStoreSettings();
   const { receiptTemplates = [] } = useTemplates();
 
