@@ -24,13 +24,7 @@ function QuotesContent() {
   const organizationId = selectedOrganization?.id;
   const { templates: quoteTemplates, loading: templatesLoading } = useQuotesTemplatesData(organizationId || undefined);
 
-  const createInvoice = async (invoiceData: Omit<SalesInvoice, 'id' | 'createdAt' | 'updatedAt' | 'organizationId'>) => {
-    if (!organizationId) return;
-    return await createSalesInvoice({
-      ...invoiceData,
-      organizationId,
-    });
-  };
+
 
   const loading = quotesLoading || customersLoading || templatesLoading;
   const [dialogOpen, setDialogOpen] = useState(false);
