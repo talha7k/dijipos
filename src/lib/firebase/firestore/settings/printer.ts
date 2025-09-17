@@ -4,7 +4,7 @@ import {
   getDoc,
   getDocs,
   addDoc,
-  updateDoc,
+  setDoc,
   query,
   where,
   Timestamp
@@ -93,7 +93,7 @@ export async function updatePrinterSettings(printerSettingsId: string, updates: 
     console.log('Updating printer settings:', printerSettingsId, 'with data:', updateData);
 
     const docRef = doc(printerSettingsRef, printerSettingsId);
-    await updateDoc(docRef, updateData);
+    await setDoc(docRef, updateData, { merge: true });
   } catch (error) {
     console.error('Error updating printer settings:', error);
     console.error('Update data that caused error:', updates);

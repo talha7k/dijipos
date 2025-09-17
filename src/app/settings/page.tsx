@@ -10,7 +10,8 @@ import { useTemplates } from '@/lib/hooks/useTemplates';
 import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
 import { useOrderTypes } from '@/lib/hooks/useOrderTypes';
 import { usePaymentTypes } from '@/lib/hooks/usePaymentTypes';
-import { VATSettings, PrinterSettings } from '@/types';
+import { usePrinterSettings } from '@/lib/hooks/usePrinterSettings';
+import { VATSettings } from '@/types';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SettingsHeader } from '@/components/settings/SettingsHeader';
@@ -29,6 +30,7 @@ function SettingsContent() {
   const { loading: receiptTemplatesLoading } = useTemplates();
   const { orderTypes, loading: orderTypesLoading } = useOrderTypes();
   const { tables, loading: tablesLoading } = useTables();
+  const { printerSettings, handlePrinterSettingsUpdate } = usePrinterSettings();
   const {
     storeSettings,
     loading: settingsLoading
@@ -40,11 +42,7 @@ function SettingsContent() {
     // The actual update is handled in the StoreSettingsTab component
     console.log('VAT settings updated:', settings);
   };
-  const printerSettings = null; // TODO: get from separate hook
-  const handlePrinterSettingsUpdate = (settings: PrinterSettings) => {
-    // TODO: implement update
-    console.log('Update printer settings:', settings);
-  };
+
 
   // Debug logging
   console.log('SettingsPage Debug:', {
