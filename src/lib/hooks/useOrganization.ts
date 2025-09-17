@@ -6,6 +6,7 @@ import {
   selectedOrganizationAtom,
   userOrganizationsAtom,
   userOrganizationAssociationsAtom,
+  organizationUserRoleAtom,
   organizationErrorAtom,
   organizationUsersAtom
 } from '@/atoms';
@@ -49,6 +50,7 @@ export function useOrganizationManager() {
   const [, setSelectedOrganization] = useAtom(selectedOrganizationAtom);
   const [, setUserOrganizations] = useAtom(userOrganizationsAtom);
   const [, setUserOrganizationAssociations] = useAtom(userOrganizationAssociationsAtom);
+  const [, setOrganizationUserRole] = useAtom(organizationUserRoleAtom);
   const [, setLoading] = useAtom(organizationLoadingAtom);
   const [, setOrganizationsLoading] = useAtom(organizationsLoadingAtom);
   const [, setOrganizationDetailsLoading] = useAtom(organizationDetailsLoadingAtom);
@@ -91,6 +93,11 @@ export function useOrganizationManager() {
               role: userAssociation.role,
               isActive: userAssociation.isActive
             });
+            
+            // If this is the currently selected organization, set the user role
+            if (org.id === selectedOrgId) {
+              setOrganizationUserRole(userAssociation);
+            }
           }
         }
         setUserOrganizationAssociations(associations);
@@ -124,6 +131,7 @@ export function useOrganizationManager() {
     if (!selectedOrgId) {
       console.log('No selectedOrgId');
       setSelectedOrganization(null);
+      setOrganizationUserRole(null);
       return;
     }
 
@@ -138,6 +146,14 @@ export function useOrganizationManager() {
         console.log('Fetched organization:', organization);
         console.log('Fetched organization:', organization);
         setSelectedOrganization(organization);
+
+        // Also fetch and set the user's role for this organization
+        if (user?.uid) {
+          const users = await withTimeout(getOrganizationUsers(selectedOrgId), 5000); // 5 second timeout
+          const userRole = users.find(u => u.userId === user.uid);
+          setOrganizationUserRole(userRole || null);
+          console.log('Set user role:', userRole);
+        }
       } catch (err) {
         console.error('Error fetching organization details:', err);
         if (err instanceof Error) {
@@ -155,7 +171,7 @@ export function useOrganizationManager() {
     };
 
     fetchOrgDetails();
-  }, [selectedOrgId, setSelectedOrganization, setError, setOrganizationDetailsLoading]);
+  }, [selectedOrgId, setSelectedOrganization, setOrganizationUserRole, setError, setOrganizationDetailsLoading, user?.uid]);
 
   // Use the real-time hook to listen to users of the selected organization
   // and sync the result directly to its atom.

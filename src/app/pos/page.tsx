@@ -26,6 +26,7 @@ import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import {
   safeCartItemsAtom,
   cartTotalAtom,
+  cartSubtotalAtom,
   selectedTableAtom,
   selectedCustomerAtom,
   selectedOrderTypeAtom,
@@ -66,6 +67,7 @@ export default function SimplifiedPOSPage() {
   // Use POS atoms directly
   const [cartItems, setCartItems] = useAtom(safeCartItemsAtom);
   const cartTotal = useAtomValue(cartTotalAtom);
+  const cartSubtotal = useAtomValue(cartSubtotalAtom);
   const [selectedTable, setSelectedTable] = useAtom(selectedTableAtom);
   const [selectedCustomer, setSelectedCustomer] = useAtom(selectedCustomerAtom);
   const [selectedOrderType, setSelectedOrderType] = useAtom(selectedOrderTypeAtom);
@@ -138,9 +140,7 @@ export default function SimplifiedPOSPage() {
   const proceedWithOrderReopen = useCallback(() => {
     if (!pendingOrderToReopen) return;
 
-    // Clear existing cart and load order items
-    setCartItems([]);
-
+    // Load order items directly into cart
     const newCartItems = pendingOrderToReopen.items.map((item: CartItem) => ({
       id: item.productId || item.serviceId || item.id,
       type: item.type === 'product' ? ItemType.PRODUCT : ItemType.SERVICE,
@@ -152,24 +152,54 @@ export default function SimplifiedPOSPage() {
 
     setCartItems(newCartItems);
     setSelectedOrder(pendingOrderToReopen);
+
+    // Restore customer from order data
+    if (pendingOrderToReopen.customerName && customers.length > 0) {
+      const matchingCustomer = customers.find(customer => 
+        customer.name === pendingOrderToReopen.customerName && 
+        customer.phone === pendingOrderToReopen.customerPhone
+      );
+      if (matchingCustomer) {
+        setSelectedCustomer(matchingCustomer);
+      }
+    }
+
+    // Restore table from order data
+    if (pendingOrderToReopen.tableId && tables.length > 0) {
+      const matchingTable = tables.find(table => table.id === pendingOrderToReopen.tableId);
+      if (matchingTable) {
+        setSelectedTable(matchingTable);
+      }
+    }
+
+    // Restore order type from order data
+    if (pendingOrderToReopen.orderType && orderTypes.length > 0) {
+      const matchingOrderType = orderTypes.find(orderType => 
+        orderType.name.toLowerCase() === pendingOrderToReopen.orderType.toLowerCase()
+      );
+      if (matchingOrderType) {
+        setSelectedOrderType(matchingOrderType);
+      }
+    }
+
     setShowOrderConfirmationDialog(false);
     setPendingOrderToReopen(null);
     setCurrentView('items');
-  }, [pendingOrderToReopen, setCartItems, setSelectedOrder, setCurrentView]);
+  }, [pendingOrderToReopen, setCartItems, setSelectedOrder, setSelectedCustomer, setSelectedTable, setSelectedOrderType, setCurrentView, customers, tables, orderTypes]);
 
   const handleSaveOrder = useCallback(async () => {
     if (!organizationId || (cartItems || []).length === 0) return;
 
     try {
       const taxRate = 15; // Could be made configurable
-      const subtotal = cartTotal;
+      const subtotal = cartSubtotal;
       const taxAmount = (subtotal * taxRate) / 100;
       const total = subtotal + taxAmount;
 
       const orderData = {
         organizationId,
         orderNumber: selectedOrder?.orderNumber || `ORD-${Date.now()}`,
-        queueNumber: selectedOrder?.queueNumber || nextQueueNumber.toString(),
+        queueNumber: selectedOrder?.queueNumber || (nextQueueNumber?.toString() || '1'),
         items: cartItems,
         subtotal,
         taxRate,
@@ -178,11 +208,11 @@ export default function SimplifiedPOSPage() {
         status: OrderStatus.OPEN,
         paid: false,
         orderType: selectedOrderType?.name || 'dine-in',
-        customerName: selectedCustomer?.name,
-        customerPhone: selectedCustomer?.phone,
-        customerEmail: selectedCustomer?.email,
-        tableId: selectedTable?.id,
-        tableName: selectedTable?.name,
+        ...(selectedCustomer?.name && { customerName: selectedCustomer.name }),
+        ...(selectedCustomer?.phone && { customerPhone: selectedCustomer.phone }),
+        ...(selectedCustomer?.email && { customerEmail: selectedCustomer.email }),
+        ...(selectedTable?.id && { tableId: selectedTable.id }),
+        ...(selectedTable?.name && { tableName: selectedTable.name }),
         createdById: user?.uid || 'unknown',
         createdByName: user?.displayName || user?.email || 'Unknown User',
         createdAt: selectedOrder?.createdAt || new Date(),
@@ -193,22 +223,24 @@ export default function SimplifiedPOSPage() {
         // Update existing order
         await updateExistingOrder(selectedOrder.id, orderData);
         console.log('Order updated successfully');
+        
+        // Reset POS state after updating order (clears cart, table, customer, selectedOrder, but preserves order type)
+        resetPOSState();
       } else {
         // Create new order
         const orderId = await createNewOrder(orderData);
         console.log('Order created successfully:', orderId);
-        
-        // Update the selected order to reference the newly created order
-        const newOrder = { ...orderData, id: orderId } as Order;
-        setSelectedOrder(newOrder);
-        
+
+        // Reset POS state for new order (clears cart, table, customer, selectedOrder, but preserves order type)
+        resetPOSState();
+
         // Increment queue number for new orders
         setNextQueueNumber(nextQueueNumber + 1);
       }
     } catch (error) {
       console.error('Error saving order:', error);
     }
-  }, [organizationId, cartItems, cartTotal, selectedOrder, selectedOrderType, selectedCustomer, selectedTable, user, nextQueueNumber, createNewOrder, updateExistingOrder, setSelectedOrder, setNextQueueNumber]);
+  }, [organizationId, cartItems, cartSubtotal, selectedOrder, selectedOrderType, selectedCustomer, selectedTable, user, nextQueueNumber, createNewOrder, updateExistingOrder, resetPOSState, setNextQueueNumber]);
 
   const handlePaymentProcessed = useCallback(async (payments: OrderPayment[]) => {
     setPaymentSuccessData({ totalPaid: payments.reduce((sum, payment) => sum + payment.amount, 0) });
@@ -277,10 +309,10 @@ export default function SimplifiedPOSPage() {
       orderNumber: `TEMP-${Date.now()}`,
       queueNumber: queueNumber,
       items: cartItems,
-      subtotal: cartTotal,
+      subtotal: cartSubtotal,
       taxRate: 15,
-      taxAmount: cartTotal * 0.15,
-      total: cartTotal * 1.15,
+      taxAmount: cartSubtotal * 0.15,
+      total: cartTotal,
       status: OrderStatus.OPEN,
       paid: false,
       orderType: selectedOrderType?.name || 'dine-in',
@@ -292,7 +324,7 @@ export default function SimplifiedPOSPage() {
 
     setSelectedOrder(orderToPay);
     setCurrentView('payment');
-  }, [cartItems, cartTotal, selectedOrder, selectedOrderType, organizationId, user, setSelectedOrder, setCurrentView, nextQueueNumber, setNextQueueNumber]);
+  }, [cartItems, cartTotal, cartSubtotal, selectedOrder, selectedOrderType, organizationId, user, setSelectedOrder, setCurrentView, nextQueueNumber, setNextQueueNumber]);
 
   const updateCartItem = useCallback((itemId: string, type: string, updates: Partial<CartItem>) => {
     const updatedCart = cartItems.map(item =>
@@ -392,6 +424,7 @@ export default function SimplifiedPOSPage() {
         <POSCartSidebar
           cartItems={cartForComponents}
           cartTotal={cartTotal}
+          cartSubtotal={cartSubtotal}
           onItemClick={(item) => {
             // Transform CartItem back to CartItem for state management
             const cartItem: CartItem = {

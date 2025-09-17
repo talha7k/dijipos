@@ -25,6 +25,16 @@ export const safeCartItemsAtom = atom(
 );
 export const cartTotalAtom = atom(async (get) => {
   const cartItems = await get(cartItemsAtom);
+  const subtotal = (cartItems || []).reduce((sum: number, item: CartItem) => sum + item.total, 0);
+  // TODO: Default tax rate is 15% (can be overridden by store settings)
+  const taxRate = 15;
+  const taxAmount = (subtotal * taxRate) / 100;
+  return subtotal + taxAmount;
+});
+
+// Subtotal atom (without tax) for components that need it
+export const cartSubtotalAtom = atom(async (get) => {
+  const cartItems = await get(cartItemsAtom);
   return (cartItems || []).reduce((sum: number, item: CartItem) => sum + item.total, 0);
 });
 export const cartLoadingAtom = atom<boolean>(false);

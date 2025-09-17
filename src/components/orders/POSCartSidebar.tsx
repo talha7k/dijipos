@@ -22,6 +22,7 @@ interface CartItem {
 interface POSCartSidebarProps {
   cartItems: CartItem[];
   cartTotal: number;
+  cartSubtotal?: number;
   onPayOrder?: () => void;
   onSaveOrder?: () => void;
   onClearCart?: () => void;
@@ -31,6 +32,7 @@ interface POSCartSidebarProps {
 export function POSCartSidebar({
   cartItems,
   cartTotal,
+  cartSubtotal,
   onPayOrder,
   onSaveOrder,
   onClearCart,
@@ -48,6 +50,8 @@ export function POSCartSidebar({
   const handleClearConfirm = () => {
     if (onClearCart) onClearCart();
   };
+
+  const total = cartTotal;
 
   const createTempOrderForPayment = () => {
     if (cartItems.length === 0) return null;
@@ -127,9 +131,10 @@ export function POSCartSidebar({
           <span className="font-medium text-sm text-muted-foreground">Items:</span>
           <span className="font-medium text-sm text-muted-foreground">{cartItems.reduce((sum, item) => sum + item.quantity, 0)}</span>
         </div>
+        
         <div className="flex justify-between mb-4">
           <span className="font-medium text-lg text-foreground">Total:</span>
-          <span className="font-bold text-xl text-foreground">${cartTotal.toFixed(2)}</span>
+          <span className="font-bold text-xl text-foreground">${total.toFixed(2)}</span>
         </div>
         <div className="flex gap-2 mb-2">
           {onSaveOrder && (
