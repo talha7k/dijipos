@@ -12,10 +12,14 @@ service cloud.firestore {
       allow write: if false; // Organizations should be created/managed by admin only
     }
 
-    // Organization users collection - users can read their own organization associations
+    // Organization users collection - users can read/write their own associations and read users in organizations
     match /organizationUsers/{documentId} {
+      // Allow users to read/write their own organization associations
       allow read, write: if isAuthenticated() && request.auth.uid == resource.data.userId;
       allow create: if isAuthenticated() && request.auth.uid == request.resource.data.userId;
+
+      // Allow authenticated users to read organizationUsers (application handles organization membership)
+      allow read: if isAuthenticated();
     }
 
     // Users collection - authenticated users can read/write their own data

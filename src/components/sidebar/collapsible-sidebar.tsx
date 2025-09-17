@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { cn } from "@/lib/utils";
+
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useAtom } from 'jotai';
 import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';

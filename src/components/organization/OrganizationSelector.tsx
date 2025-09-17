@@ -177,10 +177,8 @@ export function OrganizationSelector({ children }: OrganizationSelectorProps) {
      console.log('Found org:', org);
      if (!org) return;
 
-     setSwitching(true);
-     await selectOrganization(organizationId);
-     toast.success(`Switched to ${org.name}`);
-     setSwitching(false);
+      await selectOrganization(organizationId);
+      toast.success(`Switched to ${org.name}`);
      setIsOpen(false);
    };
 

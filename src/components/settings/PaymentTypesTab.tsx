@@ -21,7 +21,7 @@ interface PaymentTypesTabProps {
 export function PaymentTypesTab({ paymentTypes: propPaymentTypes = [] }: PaymentTypesTabProps) {
   const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
-  const { paymentTypes, createNewPaymentType, deleteExistingPaymentType, loading } = usePaymentTypes();
+  const { paymentTypes, createNewPaymentType, deleteExistingPaymentType } = usePaymentTypes();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deletePaymentTypeId, setDeletePaymentTypeId] = useState<string | null>(null);
   const [newPaymentType, setNewPaymentType] = useState({ name: '', description: '' });

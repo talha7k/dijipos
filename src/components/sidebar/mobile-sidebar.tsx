@@ -118,8 +118,7 @@ export function MobileSidebar({
   onThemeToggle,
   theme = "light",
   pathname = "",
-  user,
-  onLogout,
+
   onSectionToggle,
   openSections = {},
 }: SidebarProps) {

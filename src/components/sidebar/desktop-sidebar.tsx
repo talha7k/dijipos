@@ -7,7 +7,7 @@ import { SidebarNavSection } from "./sidebar-nav-section";
 import { SidebarNavItem } from "./sidebar-nav-item";
 import { UserProfileWithOrganization } from "../layout/UserProfileWithOrganization";
 import { SidebarProps, NavigationItem } from "./sidebar-types";
-import { useAuth } from "@/lib/hooks/useAuth";
+
 import { useOrganization } from "@/lib/hooks/useOrganization";
 import { useAtom } from "jotai";
 import { selectedOrganizationIdAtom, userOrganizationAssociationsAtom } from "@/atoms/organizationAtoms";
@@ -147,13 +147,12 @@ export function DesktopSidebar({
   onThemeToggle,
   theme = "light",
   pathname = "",
-  user,
-  onLogout,
+
   onSectionToggle,
   onExpandSidebar,
   openSections = {},
 }: SidebarProps) {
-  const { selectedOrganization } = useOrganization();
+
   const [organizationId] = useAtom(selectedOrganizationIdAtom);
   const [userOrganizationAssociations] = useAtom(userOrganizationAssociationsAtom);
 
@@ -220,13 +219,11 @@ export function DesktopSidebar({
         </div>
 
         {/* Footer - Fixed */}
-        {user && (
-          <div className="flex-shrink-0">
-            <UserProfileWithOrganization
-              isCollapsed={isCollapsed}
-            />
-          </div>
-        )}
+        <div className="flex-shrink-0">
+          <UserProfileWithOrganization
+            isCollapsed={isCollapsed}
+          />
+        </div>
       </div>
     </div>
   );
