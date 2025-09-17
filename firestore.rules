@@ -17,6 +17,29 @@ service cloud.firestore {
       allow read, write: if isAuthenticated() && request.auth.uid == userId;
     }
 
+    // Users collection - authenticated users can read/write their own data
+    match /users/{userId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Invitations collection - authenticated users can read/write
+    match /invitations/{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Business data collections - authenticated users can access organization-scoped data
+    match /{collectionName}/{document=**} {
+      allow read, write: if isAuthenticated() &&
+        collectionName in [
+          'categories', 'products', 'services', 'customers', 'suppliers',
+          'orders', 'invoices', 'quotes', 'payments',
+          'purchaseProducts', 'purchaseServices',
+          'storeSettings', 'vatSettings', 'currencySettings',
+          'orderTypes', 'paymentTypes', 'printerSettings',
+          'receiptTemplates', 'invoiceTemplates', 'quoteTemplates'
+        ];
+    }
+
     // Subcollections under organizations - authenticated users can access
     match /organizations/{organizationId}/{collection=**} {
       allow read, write: if isAuthenticated();
