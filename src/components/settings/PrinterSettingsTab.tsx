@@ -106,12 +106,9 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
           <EditableSetting
             label="Paper Width (mm)"
             value={printerSettings?.paperWidth?.toString() || PaperWidth.MM_80.toString()}
-            type="select"
-            options={Object.values(PaperWidth).map(width => ({
-              value: width.toString(),
-              label: `${width}mm`
-            }))}
+            type="number"
             onSave={(value) => handleUpdateSettings('paperWidth', parseInt(value))}
+            placeholder="Enter width in mm"
           />
           <EditableSetting
             label="Include ZATCA QR Code"
