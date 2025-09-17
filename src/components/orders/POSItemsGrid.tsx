@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+
 import { ItemCard } from '@/components/orders/ItemCard';
 import { SubcategoryCard } from '@/components/orders/SubcategoryCard';
 import { Category, Product, Service } from '@/types';

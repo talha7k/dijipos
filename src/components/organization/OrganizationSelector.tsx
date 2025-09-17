@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,7 +11,7 @@ import { useAtomValue, useSetAtom } from 'jotai';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { selectedOrganizationAtom, userOrganizationsAtom, organizationUsersAtom, selectedOrganizationIdAtom } from '@/atoms/organizationAtoms';
 import { getOrganizationsForUser } from '@/lib/firebase/firestore/organizations';
-import { Building2, Plus, Users, ArrowRight, Link } from 'lucide-react';
+import { Building2, Plus, Users } from 'lucide-react';
 import { collection, query, where, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { toast } from 'sonner';
@@ -37,7 +37,7 @@ export function OrganizationSelector({ children }: OrganizationSelectorProps) {
   const refreshOrganizations = async () => {
     if (!user?.uid) return;
     try {
-      const orgs = await getOrganizationsForUser(user.uid);
+      await getOrganizationsForUser(user.uid);
       // The organizations will be updated via the useOrganizationManager hook
       // which listens to changes in the atoms
     } catch (error) {
@@ -52,7 +52,7 @@ export function OrganizationSelector({ children }: OrganizationSelectorProps) {
   const [newOrganizationEmail, setNewOrganizationEmail] = useState('');
   const [loading, setLoading] = useState(false);
    const [joinError, setJoinError] = useState('');
-   const [switching, setSwitching] = useState(false);
+
 
    const handleJoinOrganization = async () => {
     if (!joinCode || !user) return;

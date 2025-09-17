@@ -3,7 +3,7 @@ import { ShoppingCart, Save, Printer, RotateCcw } from 'lucide-react';
 import { ClearOrderDialog } from '@/components/ui/clear-order-dialog';
 import { POSCartItem } from './POSCartItem';
 import { ReceiptPrintDialog } from '@/components/ReceiptPrintDialog';
-import { Order, OrderStatus, ItemType, OrderPayment } from '@/types';
+import { Order, OrderStatus, ItemType } from '@/types';
 import { useAtomValue } from 'jotai';
 import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
 import { selectedTableAtom, selectedCustomerAtom, selectedOrderTypeAtom, currentQueueNumberAtom } from '@/atoms/posAtoms';
@@ -24,7 +24,6 @@ interface POSCartSidebarProps {
   cartTotal: number;
   onPayOrder?: () => void;
   onSaveOrder?: () => void;
-  onPrintReceipt?: () => void;
   onClearCart?: () => void;
   onItemClick?: (item: CartItem) => void;
 }
@@ -34,7 +33,6 @@ export function POSCartSidebar({
   cartTotal,
   onPayOrder,
   onSaveOrder,
-  onPrintReceipt,
   onClearCart,
   onItemClick
 }: POSCartSidebarProps) {
@@ -44,7 +42,7 @@ export function POSCartSidebar({
   const selectedOrderType = useAtomValue(selectedOrderTypeAtom);
   const currentQueueNumber = useAtomValue(currentQueueNumberAtom);
   const organizationId = selectedOrganization?.id || '';
-  const { storeSettings } = useStoreSettings();
+
   const { receiptTemplates = [] } = useTemplates();
 
   const handleClearConfirm = () => {

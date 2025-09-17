@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Quote } from '@/types';
-import { Printer, Eye, MoreHorizontal, FileText } from 'lucide-react';
+import { Printer, Eye, MoreHorizontal } from 'lucide-react';
 import { QuoteActionsDialog } from './QuoteActionsDialog';
 
 interface QuoteActionsProps {

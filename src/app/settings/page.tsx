@@ -26,7 +26,7 @@ function SettingsContent() {
   const [selectedOrganization] = useAtom(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
   const { paymentTypes, loading: paymentTypesLoading } = usePaymentTypes();
-  const { receiptTemplates, loading: receiptTemplatesLoading } = useTemplates();
+  const { loading: receiptTemplatesLoading } = useTemplates();
   const { orderTypes, loading: orderTypesLoading } = useOrderTypes();
   const { tables, loading: tablesLoading } = useTables();
   const {

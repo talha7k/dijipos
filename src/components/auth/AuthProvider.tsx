@@ -2,10 +2,10 @@
 
 import { useEffect, useRef } from 'react';
 import { useAtom, useSetAtom } from 'jotai';
-import { auth, db } from '@/lib/firebase/config';
+import { auth } from '@/lib/firebase/config';
 import { onAuthStateChanged } from 'firebase/auth';
-import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
-import { Organization, OrganizationUser } from '@/types';
+
+
 import { useOrganizationManager } from '@/lib/hooks/useOrganization';
 import {
   selectedOrganizationAtom,
@@ -18,7 +18,7 @@ import {
 } from '@/atoms';
 import { ReactNode } from 'react';
 import { autoRepairIndexedDB } from '@/lib/debug-indexeddb';
-import { indexedDBStorage } from '@/lib/storage';
+
 
 interface AuthProviderProps {
   children: ReactNode;

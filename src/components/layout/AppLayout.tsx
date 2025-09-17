@@ -20,7 +20,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const { user, loading: authLoading } = useAuth();
   const currentOrganization = useAtomValue(selectedOrganizationAtom);
   const userOrganizations = useAtomValue(userOrganizationsAtom);
-  const organizationLoading = useAtomValue(organizationLoadingAtom);
+
 
 
 

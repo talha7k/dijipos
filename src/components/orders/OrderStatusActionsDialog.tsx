@@ -21,7 +21,6 @@ interface OrderActionsDialogProps {
   updatingStatus?: boolean;
   children: React.ReactNode;
   onMarkAsPaid?: (orderId: string) => Promise<void>;
-  onCompleteOrder?: (orderId: string) => Promise<void>;
   onUpdateStatus?: (orderId: string, status: OrderStatus) => Promise<void>;
 }
 
@@ -31,7 +30,6 @@ export function OrderActionsDialog({
   updatingStatus = false,
   children,
   onMarkAsPaid,
-  onCompleteOrder,
   onUpdateStatus
 }: OrderActionsDialogProps) {
   const [open, setOpen] = useState(false);

@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useAtom } from 'jotai';
-import { selectedOrganizationAtom, userOrganizationsAtom } from '@/atoms/organizationAtoms';
+import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,7 +13,7 @@ import { Suspense } from 'react';
 import { toast } from 'sonner';
 
 function HomeContent() {
-  const { user, loading: authLoading } = useAuth();
+  const { loading: authLoading } = useAuth();
   const [selectedOrganization] = useAtom(selectedOrganizationAtom);
 
   const router = useRouter();

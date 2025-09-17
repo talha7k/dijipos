@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, CreditCard, CheckCircle } from 'lucide-react';
+
+import { ArrowLeft, CreditCard } from 'lucide-react';
 import { Order, OrderPayment, PaymentType } from '@/types';
 import { toast } from 'sonner';
 import { OrderSummaryCard } from './OrderSummaryCard';

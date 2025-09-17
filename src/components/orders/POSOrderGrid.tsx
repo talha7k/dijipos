@@ -1,5 +1,5 @@
 import { Order, OrderPayment, OrderStatus } from "@/types";
-import { OrderList } from "@/components/orders/OrderList";
+
 import { OrderDetailView } from "@/components/orders/OrderDetailView";
 import { useOrders } from "@/lib/hooks/useOrders";
 import { useState } from "react";
@@ -11,7 +11,6 @@ import { OrderSummaryCard } from "./OrderSummaryCard";
 interface POSOrderGridProps {
   orders: Order[];
   payments: { [orderId: string]: OrderPayment[] };
-  organizationId: string | undefined;
   onOrderSelect: (order: Order) => void;
   onPayOrder: (order: Order) => void;
   onBack: () => void;
@@ -21,7 +20,6 @@ interface POSOrderGridProps {
 export function POSOrderGrid({
   orders,
   payments,
-  organizationId,
   onOrderSelect,
   onPayOrder,
   onBack,
@@ -102,7 +100,7 @@ export function POSOrderGrid({
     return handleMarkAsPaid(orderId);
   };
 
-  const wrapCompleteOrder = (orderId: string) => {
+  const wrapCompleteOrder = () => {
     return handleCompleteOrder();
   };
 

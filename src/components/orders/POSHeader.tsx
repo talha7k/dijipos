@@ -1,19 +1,10 @@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ClearOrderDialog } from '@/components/ui/clear-order-dialog';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+
 import { Table, Customer, OrderType, Order } from '@/types';
 import { Currency, CurrencyLocale } from '@/types/enums';
-import { Users, LayoutGrid, FileText, ShoppingBag, Plus, RotateCcw, PlusCircle } from 'lucide-react';
+import { Users, LayoutGrid, FileText, ShoppingBag, RotateCcw, PlusCircle } from 'lucide-react';
 import { OrderTypeSelectionDialog } from './OrderTypeSelectionDialog';
 import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
 

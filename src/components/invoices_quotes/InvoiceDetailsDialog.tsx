@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Invoice, Payment, Organization, Customer, Supplier } from '@/types';
 import { CreditCard, Printer, Eye } from 'lucide-react';
 
@@ -17,7 +17,6 @@ function isPurchaseInvoice(invoice: Invoice): invoice is Invoice & { type: 'purc
 
 interface InvoiceDetailsDialogProps {
   invoice: Invoice | null;
-  organization: Organization | null;
   customers: Customer[];
   suppliers: Supplier[];
   payments: { [invoiceId: string]: Payment[] };
@@ -28,7 +27,6 @@ interface InvoiceDetailsDialogProps {
 
 export function InvoiceDetailsDialog({
   invoice,
-  organization,
   customers,
   suppliers,
   payments,

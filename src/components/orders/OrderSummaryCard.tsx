@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -61,10 +61,7 @@ export function OrderSummaryCard({
     totalPaid !== undefined
       ? totalPaid
       : payments.reduce((sum, payment) => sum + payment.amount, 0);
-  const calculatedRemainingAmount =
-    remainingAmount !== undefined
-      ? remainingAmount
-      : order.total - calculatedTotalPaid;
+
   const isActuallyPaid = order.paid;
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -117,7 +114,6 @@ export function OrderSummaryCard({
               order={order}
               payments={payments}
               onMarkAsPaid={onMarkAsPaid}
-              onCompleteOrder={onCompleteOrder}
               onUpdateStatus={onStatusChange}
             >
               <Badge

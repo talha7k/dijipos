@@ -45,10 +45,7 @@ export function POSCategoriesGrid({
     return getChildCategories(categoryId).length;
   };
 
-  // Get category name by ID
-  const getCategoryName = (categoryId: string) => {
-    return categories.find(c => c.id === categoryId)?.name || '';
-  };
+
 
   // Get hierarchy level for styling
   const getCategoryHierarchyLevel = (categoryId: string) => {

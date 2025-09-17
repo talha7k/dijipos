@@ -75,7 +75,7 @@ export default function SimplifiedPOSPage() {
   const [categoryPath, setCategoryPath] = useAtom(categoryPathAtom);
   const resetPOSState = useSetAtom(resetPOSStateAtom);
   const [nextQueueNumber, setNextQueueNumber] = useAtom(nextQueueNumberAtom);
-  const [currentQueueNumber, setCurrentQueueNumber] = useAtom(currentQueueNumberAtom);
+
 
   // Local state for UI
   const [showOrderConfirmationDialog, setShowOrderConfirmationDialog] = useState(false);
@@ -222,7 +222,6 @@ export default function SimplifiedPOSPage() {
 
     // If this is a new order (not reopening existing), increment the queue counter
     if (!selectedOrder) {
-      setCurrentQueueNumber(nextQueueNumber);
       setNextQueueNumber(nextQueueNumber + 1);
     }
 
@@ -247,7 +246,7 @@ export default function SimplifiedPOSPage() {
 
     setSelectedOrder(orderToPay);
     setCurrentView('payment');
-  }, [cartItems, cartTotal, selectedOrder, selectedOrderType, organizationId, user, setSelectedOrder, setCurrentView, nextQueueNumber, setNextQueueNumber, setCurrentQueueNumber]);
+  }, [cartItems, cartTotal, selectedOrder, selectedOrderType, organizationId, user, setSelectedOrder, setCurrentView, nextQueueNumber, setNextQueueNumber]);
 
   const updateCartItem = useCallback((itemId: string, type: string, updates: Partial<CartItem>) => {
     const updatedCart = cartItems.map(item =>

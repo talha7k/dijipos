@@ -1,11 +1,11 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Invoice, Customer, Supplier, Payment } from '@/types';
 import { Receipt } from 'lucide-react';
-import { InvoiceStatusToggle } from './InvoiceStatusToggle';
+
 import { InvoiceActions } from './InvoiceActions';
 
 // Type guard to check if invoice is a PurchaseInvoice

@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Printer } from 'lucide-react';
-import { Invoice, Payment, Organization, Customer, Supplier, InvoiceTemplate, InvoiceTemplateType, ItemType, OrderStatus } from '@/types';
+import { Invoice, Payment, Organization, Customer, Supplier, InvoiceTemplate } from '@/types';
 import { renderInvoiceTemplate } from '@/lib/template-renderer';
 import { toast } from 'sonner';
 
@@ -23,7 +23,6 @@ interface InvoicePrintDialogProps {
   invoiceTemplates: InvoiceTemplate[];
   customer?: Customer;
   supplier?: Supplier;
-  payments?: Payment[];
   children: React.ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -35,7 +34,6 @@ export function InvoicePrintDialog({
   invoiceTemplates,
   customer,
   supplier,
-  payments = [],
   children,
   open: controlledOpen,
   onOpenChange: controlledOnOpenChange

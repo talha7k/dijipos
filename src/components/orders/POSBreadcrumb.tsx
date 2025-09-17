@@ -6,14 +6,12 @@ import { Category } from '@/types';
 interface POSBreadcrumbProps {
   categoryPath: string[];
   categories: Category[];
-  onNavigateToRoot: () => void;
   onNavigateToPath: (path: string[]) => void;
 }
 
 export function POSBreadcrumb({
   categoryPath,
   categories,
-  onNavigateToRoot,
   onNavigateToPath
 }: POSBreadcrumbProps) {
   const getCategoryName = (categoryId: string) => {

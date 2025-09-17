@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
-import { Plus, Trash2, Edit, Users, X, Upload } from 'lucide-react';
+import { Plus, Users, X, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { ActionButtons } from '@/components/ui/action-buttons';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';

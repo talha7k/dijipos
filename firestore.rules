@@ -13,8 +13,9 @@ service cloud.firestore {
     }
 
     // Organization users collection - users can read their own organization associations
-    match /organizationUsers/{userId} {
-      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    match /organizationUsers/{documentId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == resource.data.userId;
+      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.userId;
     }
 
     // Users collection - authenticated users can read/write their own data
