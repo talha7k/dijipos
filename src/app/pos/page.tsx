@@ -24,7 +24,7 @@ import { POSViewsManager } from "./components/POSViewsManager";
 import { POSCartSidebar } from "@/components/orders/POSCartSidebar";
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import {
-  cartItemsAtom,
+  safeCartItemsAtom,
   cartTotalAtom,
   selectedTableAtom,
   selectedCustomerAtom,
@@ -33,8 +33,7 @@ import {
   currentViewAtom,
   categoryPathAtom,
   resetPOSStateAtom,
-  nextQueueNumberAtom,
-  currentQueueNumberAtom
+  nextQueueNumberAtom
 } from '@/atoms/posAtoms';
 
 import {
@@ -65,10 +64,7 @@ export default function SimplifiedPOSPage() {
     usePaymentTypes();
 
   // Use POS atoms directly
-  const [cartItems, setCartItems] = useAtom(cartItemsAtom);
-
-  // Ensure cartItems is always an array
-  const safeCartItems = cartItems || [];
+  const [cartItems, setCartItems] = useAtom(safeCartItemsAtom);
   const cartTotal = useAtomValue(cartTotalAtom);
   const [selectedTable, setSelectedTable] = useAtom(selectedTableAtom);
   const [selectedCustomer, setSelectedCustomer] = useAtom(selectedCustomerAtom);
@@ -93,23 +89,19 @@ export default function SimplifiedPOSPage() {
 
   // Handler functions
   const handleAddToCart = useCallback((item: Product | Service, type: 'product' | 'service') => {
-    console.log('handleAddToCart called:', item.name, type);
-    if (!item || !cartItems) {
-      console.log('handleAddToCart: item or cartItems is null/undefined', { item, cartItems });
-      return;
-    }
+    if (!item) return;
 
-    const existingItem = cartItems.find(
+    const currentCartItems = cartItems || [];
+    const existingItem = currentCartItems.find(
       (cartItem: CartItem) => cartItem.id === item.id && cartItem.type === (type === 'product' ? ItemType.PRODUCT : ItemType.SERVICE)
     );
 
     if (existingItem) {
-      const updatedCart = cartItems.map(cartItem =>
+      const updatedCart = currentCartItems.map(cartItem =>
         cartItem.id === item.id && cartItem.type === (type === 'product' ? ItemType.PRODUCT : ItemType.SERVICE)
           ? { ...cartItem, quantity: (cartItem.quantity || 1) + 1, total: ((cartItem.quantity || 1) + 1) * item.price }
           : cartItem
       );
-      console.log('Updating existing item:', existingItem);
       setCartItems(updatedCart);
     } else {
       const newItem: CartItem = {
@@ -120,8 +112,7 @@ export default function SimplifiedPOSPage() {
         quantity: 1,
         total: item.price
       };
-      console.log('Adding new item to cart:', newItem);
-      setCartItems([...cartItems, newItem]);
+      setCartItems([...currentCartItems, newItem]);
     }
   }, [cartItems, setCartItems]);
 
@@ -167,7 +158,7 @@ export default function SimplifiedPOSPage() {
   }, [pendingOrderToReopen, setCartItems, setSelectedOrder, setCurrentView]);
 
   const handleSaveOrder = useCallback(async () => {
-    if (!organizationId || cartItems.length === 0) return;
+    if (!organizationId || (cartItems || []).length === 0) return;
 
     // This would need to be implemented with Firebase operations
     console.log('Save order functionality to be implemented');

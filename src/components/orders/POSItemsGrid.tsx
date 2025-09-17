@@ -21,14 +21,6 @@ export function POSItemsGrid({
   onCategoryClick,
   onItemClick
 }: POSItemsGridProps) {
-  console.log('POSItemsGrid Debug:', {
-    categoriesCount: categories.length,
-    productsCount: products.length,
-    servicesCount: services.length,
-    categoryPath,
-    totalItems: products.length + services.length
-  });
-
   // Get child categories for a given parent category
   const getChildCategories = (parentId: string) => {
     return categories.filter(c => c.parentId === parentId);
@@ -108,13 +100,6 @@ export function POSItemsGrid({
      ...services.filter((s: Service) => !s.categoryId)
    ];
 
-   console.log('POSItemsGrid filteredItems:', {
-     isViewingUncategorized,
-     currentCategoryId,
-     filteredItemsCount: filteredItems.length,
-     filteredItems: filteredItems.map(item => ({ id: item.id, name: item.name, categoryId: item.categoryId }))
-   });
-
   return (
     <div className="space-y-8">
       {/* Subcategories Section */}
@@ -157,11 +142,6 @@ export function POSItemsGrid({
                onClick={onItemClick}
              />
            ))}
-           {filteredItems.length === 0 && (
-             <div className="col-span-full text-center py-4 text-muted-foreground">
-               Debug: No items to display (filteredItems.length = 0)
-             </div>
-           )}
         </div>
 
         {filteredItems.length === 0 && currentCategoryId && !isViewingUncategorized && (

@@ -12,7 +12,6 @@ export function ItemCard({ item, onClick, className = '' }: ItemCardProps) {
   const price = isProduct ? item.price : (item as Service).price;
 
   const handleClick = () => {
-    console.log('ItemCard clicked:', item.name, isProduct ? 'product' : 'service');
     onClick(item, isProduct ? 'product' : 'service');
   };
 

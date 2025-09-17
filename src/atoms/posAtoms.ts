@@ -12,6 +12,17 @@ import { indexedDBStorage } from '@/lib/storage';
 
 // Cart state
 export const cartItemsAtom = atomWithStorage<CartItem[]>('dijibill-cart-items', [], indexedDBStorage);
+
+// Wrapper atom to ensure cartItems is never null
+export const safeCartItemsAtom = atom(
+  async (get) => {
+    const cartItems = await get(cartItemsAtom);
+    return cartItems || [];
+  },
+  (get, set, newCartItems: CartItem[]) => {
+    set(cartItemsAtom, newCartItems);
+  }
+);
 export const cartTotalAtom = atom(async (get) => {
   const cartItems = await get(cartItemsAtom);
   return (cartItems || []).reduce((sum: number, item: CartItem) => sum + item.total, 0);
@@ -39,11 +50,11 @@ export const currentQueueNumberAtom = atom<number | null>(null);
 // Cart derived atoms
 export const hasItemsInCartAtom = atom(async (get) => {
   const cartItems = await get(cartItemsAtom);
-  return cartItems && cartItems.length > 0;
+  return (cartItems || []).length > 0;
 });
 export const cartItemCountAtom = atom(async (get) => {
   const cartItems = await get(cartItemsAtom);
-  return cartItems ? cartItems.reduce((count, item) => count + (item.quantity || 1), 0) : 0;
+  return (cartItems || []).reduce((count, item) => count + (item.quantity || 1), 0);
 });
 
 // =====================
