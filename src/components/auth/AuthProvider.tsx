@@ -7,17 +7,13 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { Organization, OrganizationUser } from '@/types';
 import {
-  authErrorAtom,
-  authInitializedAtom,
-  emailVerifiedAtom,
   selectedOrganizationAtom,
-  organizationUserAtom,
   userOrganizationsAtom,
   organizationLoadingAtom,
   organizationErrorAtom,
-  organizationIdAtom,
-  resetAuthStateAtom,
-
+  selectedOrganizationIdAtom,
+  organizationUserRoleAtom,
+  logoutAtom,
 } from '@/atoms';
 import { ReactNode } from 'react';
 import { autoRepairIndexedDB } from '@/lib/debug-indexeddb';
@@ -28,16 +24,13 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [authError, setAuthError] = useAtom(authErrorAtom); // eslint-disable-line @typescript-eslint/no-unused-vars
-  const [authInitialized, setAuthInitialized] = useAtom(authInitializedAtom);
-  const [emailVerified, setEmailVerified] = useAtom(emailVerifiedAtom); // eslint-disable-line @typescript-eslint/no-unused-vars
-  const [selectedOrganization, setSelectedOrganization] = useAtom(selectedOrganizationAtom); // eslint-disable-line @typescript-eslint/no-unused-vars
-  const [organizationUser, setOrganizationUser] = useAtom(organizationUserAtom); // eslint-disable-line @typescript-eslint/no-unused-vars
-  const [userOrganizations, setUserOrganizations] = useAtom(userOrganizationsAtom); // eslint-disable-line @typescript-eslint/no-unused-vars
+  const [selectedOrganization, setSelectedOrganization] = useAtom(selectedOrganizationAtom);
+  const [userOrganizations, setUserOrganizations] = useAtom(userOrganizationsAtom);
   const [organizationLoading, setOrganizationLoading] = useAtom(organizationLoadingAtom);
-  const [organizationError, setOrganizationError] = useAtom(organizationErrorAtom); // eslint-disable-line @typescript-eslint/no-unused-vars
-  const [organizationId, setOrganizationId] = useAtom(organizationIdAtom);
-  const resetAuthState = useSetAtom(resetAuthStateAtom);
+  const [organizationError, setOrganizationError] = useAtom(organizationErrorAtom);
+  const [organizationId, setOrganizationId] = useAtom(selectedOrganizationIdAtom);
+  const [organizationUserRole, setOrganizationUserRole] = useAtom(organizationUserRoleAtom);
+  const logout = useSetAtom(logoutAtom);
   
   // Flag to prevent multiple simultaneous auth operations
   const authProcessingRef = useRef(false);
@@ -73,14 +66,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       authProcessingRef.current = true;
 
-      // Mark auth as initialized on first call
-      if (!authInitialized) {
-        setAuthInitialized(true);
-      }
-
       try {
         if (user) {
-          setEmailVerified(user.emailVerified || false);
 
           // Set organizationLoading to true while we fetch organization data
           setOrganizationLoading(true);
@@ -105,7 +92,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
               })) as OrganizationUser[];
 
               console.log('AuthProvider: Organization fetch completed in', Date.now() - orgStartTime, 'ms');
-              setUserOrganizations(organizationAssociations);
+              // Note: organizationAssociations contains OrganizationUser objects, but userOrganizations expects Organization objects
+              // We'll need to fetch the full organization details separately
 
               // Handle organization selection logic
               // Try to get organizationId from storage directly
@@ -123,7 +111,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 try {
                   const organizationAssociation = organizationAssociations.find(ou => ou.organizationId === currentOrganizationId);
                   if (organizationAssociation) {
-                    setOrganizationUser(organizationAssociation);
+                    setOrganizationUserRole(organizationAssociation);
 
                     // Fetch organization details from Firebase
                     const organizationDoc = await getDoc(doc(db, 'organizations', currentOrganizationId));
@@ -173,11 +161,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
             });
         } else {
           console.log('AuthProvider: No user, clearing state');
-          resetAuthState();
+          logout();
         }
       } catch (err) {
         console.error('Auth state change error:', err);
-        setAuthError(err instanceof Error ? err.message : 'An unknown error occurred');
+        setOrganizationError(err instanceof Error ? err.message : 'An unknown error occurred');
         authProcessingRef.current = false;
       }
     });

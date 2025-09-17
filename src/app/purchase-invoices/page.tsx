@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAtomValue } from 'jotai';
 
 import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
 import { getPurchaseInvoices, createPurchaseInvoice, updateInvoice } from '@/lib/firebase/firestore/invoices';
 import { useOrganization } from '@/lib/hooks/useOrganization';
 import { Invoice, PurchaseInvoice, Organization, InvoiceStatus } from '@/types';
-import { InvoiceTemplateType } from '@/types/enums';
+import { InvoiceTemplateType, PurchaseInvoiceStatus } from '@/types/enums';
 
 // Type guard to check if invoice is a PurchaseInvoice
 function isPurchaseInvoice(invoice: Invoice): invoice is PurchaseInvoice {
@@ -22,20 +22,79 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Printer } from 'lucide-react';
 
-import { defaultEnglishInvoiceTemplate } from '@/components/templates/invoice/default-invoice-english';
-import { defaultArabicInvoiceTemplate } from '@/components/templates/invoice/default-invoice-arabic';
+import { defaultInvoiceEnglish } from '@/components/templates/invoice/default-invoice-english';
+import { defaultInvoiceArabic } from '@/components/templates/invoice/default-invoice-arabic';
 import InvoiceForm from '@/components/invoices_quotes/InvoiceForm';
 import { Receipt } from 'lucide-react';
 
 function InvoicesContent() {
   const selectedOrganization = useAtomValue(selectedOrganizationAtom);
+  const { selectedOrganization: organization } = useOrganization();
   const organizationId = selectedOrganization?.id;
-  const { invoices, organization, loading } = usePurchaseInvoicesData(organizationId || undefined);
-  const { updateInvoiceStatus, createInvoice } = usePurchaseInvoiceActions(organizationId || undefined);
+  const [invoices, setInvoices] = useState<PurchaseInvoice[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const handleStatusChange = async (invoiceId: string, status: Invoice['status']) => {
+  // Load invoices on component mount and when organization changes
+  useEffect(() => {
+    if (!organizationId) {
+      setInvoices([]);
+      setLoading(false);
+      return;
+    }
+
+    const loadInvoices = async () => {
+      setLoading(true);
+      try {
+        const fetchedInvoices = await getPurchaseInvoices(organizationId);
+        setInvoices(fetchedInvoices);
+      } catch (error) {
+        console.error('Error loading purchase invoices:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadInvoices();
+  }, [organizationId]);
+
+  const updateInvoiceStatus = async (invoiceId: string, status: PurchaseInvoice['status']) => {
+    try {
+      await updateInvoice(invoiceId, { status });
+      // Update local state
+      setInvoices(prev => prev.map(inv =>
+        inv.id === invoiceId ? { ...inv, status: status as PurchaseInvoiceStatus } : inv
+      ));
+    } catch (error) {
+      console.error('Error updating invoice status:', error);
+      throw error;
+    }
+  };
+
+  const createInvoice = async (invoiceData: Omit<Invoice, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => {
+    if (!organizationId) throw new Error('No organization selected');
+
+    try {
+      const invoiceWithOrg = {
+        ...invoiceData,
+        organizationId,
+        type: 'purchase' as const
+      };
+      const invoiceId = await createPurchaseInvoice(invoiceWithOrg as Omit<PurchaseInvoice, 'id' | 'createdAt' | 'updatedAt'>);
+
+      // Reload invoices to get the new one
+      const fetchedInvoices = await getPurchaseInvoices(organizationId);
+      setInvoices(fetchedInvoices);
+
+      return invoiceId;
+    } catch (error) {
+      console.error('Error creating invoice:', error);
+      throw error;
+    }
+  };
+
+  const handleStatusChange = async (invoiceId: string, status: PurchaseInvoiceStatus) => {
     try {
       await updateInvoiceStatus(invoiceId, status);
     } catch (error) {
@@ -96,7 +155,7 @@ function InvoicesContent() {
     };
 
     // Choose template based on invoice template type
-    const template = defaultEnglishInvoiceTemplate;
+    const template = defaultInvoiceEnglish;
 
     // Replace placeholders in template
     let htmlContent = template;
@@ -290,15 +349,15 @@ function InvoicesContent() {
                 <TableRow key={invoice.id}>
                   <TableCell>{isPurchaseInvoice(invoice) ? invoice.supplierName : ''}</TableCell>
                   <TableCell>${invoice.total.toFixed(2)}</TableCell>
-                  <TableCell>
-                    <Badge variant={
-                      invoice.status === 'paid' ? 'default' :
-                      invoice.status === 'overdue' ? 'destructive' :
-                      'secondary'
-                    }>
-                      {invoice.status}
-                    </Badge>
-                  </TableCell>
+                   <TableCell>
+                     <Badge variant={
+                       invoice.status === PurchaseInvoiceStatus.PAID ? 'default' :
+                       invoice.status === PurchaseInvoiceStatus.CANCELLED ? 'destructive' :
+                       'secondary'
+                     }>
+                       {invoice.status}
+                     </Badge>
+                   </TableCell>
                   <TableCell>{invoice.dueDate?.toLocaleDateString()}</TableCell>
                   <TableCell>
                     <div className="flex gap-2">
@@ -373,24 +432,24 @@ function InvoicesContent() {
                           )}
                         </DialogContent>
                       </Dialog>
-                       {invoice.status === InvoiceStatus.DRAFT && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleStatusChange(invoice.id, InvoiceStatus.SENT)}
-                        >
-                          Mark as Sent
-                        </Button>
-                      )}
-                       {invoice.status === InvoiceStatus.SENT && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleStatusChange(invoice.id, InvoiceStatus.PAID)}
-                        >
-                          Mark as Paid
-                        </Button>
-                      )}
+                        {invoice.status === PurchaseInvoiceStatus.DRAFT && (
+                         <Button
+                           variant="outline"
+                           size="sm"
+                           onClick={() => handleStatusChange(invoice.id, PurchaseInvoiceStatus.SENT)}
+                         >
+                           Mark as Sent
+                         </Button>
+                       )}
+                        {invoice.status === PurchaseInvoiceStatus.SENT && (
+                         <Button
+                           variant="outline"
+                           size="sm"
+                           onClick={() => handleStatusChange(invoice.id, PurchaseInvoiceStatus.PAID)}
+                         >
+                           Mark as Paid
+                         </Button>
+                       )}
                     </div>
                   </TableCell>
                 </TableRow>

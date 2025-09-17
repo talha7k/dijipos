@@ -17,8 +17,8 @@ import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
 import { InvoiceTemplate, TemplateField, TemplateStyle, TemplateFieldType } from '@/types';
 import { InvoiceTemplateType } from '@/types/enums';
 import { Plus, Edit, Trash2, Copy, Eye } from 'lucide-react';
-import { defaultEnglishInvoiceTemplate } from '@/components/templates/invoice/default-invoice-english';
-import { defaultArabicInvoiceTemplate } from '@/components/templates/invoice/default-invoice-arabic';
+import { defaultInvoiceEnglish } from '@/components/templates/invoice/default-invoice-english';
+import { defaultInvoiceArabic } from '@/components/templates/invoice/default-invoice-arabic';
 
 const defaultFields: TemplateField[] = [
   {
@@ -115,7 +115,7 @@ function TemplatesContent() {
           isDefault: true,
           fields: defaultFields,
           style: defaultStyle,
-          content: defaultEnglishInvoiceTemplate,
+          content: defaultInvoiceEnglish,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -128,7 +128,7 @@ function TemplatesContent() {
           isDefault: false,
           fields: defaultFields,
           style: { ...defaultStyle, fontFamily: 'Amiri, serif' },
-          content: defaultArabicInvoiceTemplate,
+          content: defaultInvoiceArabic,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -160,7 +160,7 @@ function TemplatesContent() {
         isDefault: newTemplate.isDefault,
         fields: newTemplate.fields,
         style: newTemplate.style,
-        content: newTemplate.type === InvoiceTemplateType.ARABIC ? defaultArabicInvoiceTemplate : defaultEnglishInvoiceTemplate,
+        content: newTemplate.type === InvoiceTemplateType.ARABIC ? defaultInvoiceArabic : defaultInvoiceEnglish,
         createdAt: new Date(),
         updatedAt: new Date(),
       };

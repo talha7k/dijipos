@@ -4,10 +4,10 @@ import { defaultEnglishReceiptTemplate } from '@/components/templates/receipt/de
 import { defaultReceiptA4Template } from '@/components/templates/receipt/default-receipt-a4-english';
 import { defaultArabicReceiptTemplate } from '@/components/templates/receipt/default-receipt-thermal-arabic';
 import { defaultArabicReceiptA4Template } from '@/components/templates/receipt/default-receipt-a4-arabic';
-import { defaultEnglishInvoiceTemplate } from '@/components/templates/invoice/default-invoice-english';
-import { defaultArabicInvoiceTemplate } from '@/components/templates/invoice/default-invoice-arabic';
-import { defaultEnglishQuoteTemplate } from '@/components/templates/quotes/default-quote-english';
-import { defaultArabicQuoteTemplate } from '@/components/templates/quotes/default-quote-arabic';
+import { defaultInvoiceEnglish } from '@/components/templates/invoice/default-invoice-english';
+import { defaultInvoiceArabic } from '@/components/templates/invoice/default-invoice-arabic';
+import { defaultQuoteEnglish } from '@/components/templates/quotes/default-quote-english';
+import { defaultQuoteArabic } from '@/components/templates/quotes/default-quote-arabic';
 import { createReceiptQRData, generateZatcaQRCode } from '@/lib/zatca-qr';
 import { ReceiptTemplateData, InvoiceTemplateData, QuoteTemplateData, TemplateData } from '@/types/template';
 
@@ -374,9 +374,9 @@ function renderInvoiceTemplateContent(template: string, data: InvoiceTemplateDat
 
 function getDefaultInvoiceTemplate(templateType: string = 'english'): string {
   if (templateType === 'arabic') {
-    return defaultArabicInvoiceTemplate;
+    return defaultInvoiceArabic;
   }
-  return defaultEnglishInvoiceTemplate;
+  return defaultInvoiceEnglish;
 }
 
 async function generateInvoiceQR(invoice: Invoice, organization: Organization | null): Promise<string> {
@@ -515,9 +515,9 @@ function renderQuoteTemplateContent(template: string, data: QuoteTemplateData): 
 
 function getDefaultQuoteTemplate(templateType: string = 'english'): string {
   if (templateType === 'arabic') {
-    return defaultArabicQuoteTemplate;
+    return defaultQuoteArabic;
   }
-  return defaultEnglishQuoteTemplate;
+  return defaultQuoteEnglish;
 }
 
 async function generateQuoteQR(quote: Quote, organization: Organization | null): Promise<string> {

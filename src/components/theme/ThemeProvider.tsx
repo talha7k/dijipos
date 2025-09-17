@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect } from "react";
-import { useTheme } from "@/legacy_hooks/useThemeState";
+import { useAtom } from 'jotai';
+import { themeAtom } from '@/atoms/uiAtoms';
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const theme = useTheme();
+  const [theme] = useAtom(themeAtom);
 
   useEffect(() => {
     const root = window.document.documentElement;

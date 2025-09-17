@@ -3,18 +3,18 @@
 import * as React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { useThemeState } from "@/legacy_hooks/useThemeState";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useAtom } from 'jotai';
 import { selectedOrganizationAtom } from '@/atoms/organizationAtoms';
-import { useSidebarState } from "@/legacy_hooks/useSidebarState";
+import { themeAtom, sidebarCollapsedAtom } from '@/atoms/uiAtoms';
 import { auth } from "@/lib/firebase/config";
 import { DesktopSidebar } from "./desktop-sidebar";
 import { MobileSidebar } from "./mobile-sidebar";
 import { SidebarProps } from "./sidebar-types";
 
 export function CollapsibleSidebar({ className }: SidebarProps) {
-  const { sidebarCollapsed: isCollapsed, toggleSidebar: toggleCollapse } = useSidebarState();
+  const [isCollapsed, setIsCollapsed] = useAtom(sidebarCollapsedAtom);
+  const [theme, setTheme] = useAtom(themeAtom);
   const [openSections, setOpenSections] = React.useState<{
     [key: string]: boolean;
   }>({
@@ -23,10 +23,12 @@ export function CollapsibleSidebar({ className }: SidebarProps) {
   });
   const pathname = usePathname();
   const router = useRouter();
-  const { theme, toggleTheme } = useThemeState();
   const { user } = useAuth();
   const [selectedOrganization] = useAtom(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
+
+  const toggleCollapse = () => setIsCollapsed(!isCollapsed);
+  const toggleTheme = () => setTheme(theme === 'light' ? 'dark' : 'light');
 
   const toggleSection = (title: string) => {
     setOpenSections((prev) => ({
