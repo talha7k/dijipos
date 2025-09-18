@@ -32,24 +32,35 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
   const { templates: quoteTemplates } = useQuotesTemplatesData(organizationId || undefined);
   const { storeSettings, loading: storeSettingsLoading, refreshStoreSettings } = useStoreSettings();
 
-  console.log('[PrinterSettingsTab] Templates loaded:', {
-    receiptTemplates: receiptTemplates.length,
-    invoiceTemplates: invoiceTemplates.length,
-    quoteTemplates: quoteTemplates.length,
-    templatesLoading,
-    organizationId,
-    storeSettings: !!storeSettings,
-    storeSettingsLoading
-  });
-
-
-
   // Use store settings printer settings, fallback to prop
   const printerSettings = storeSettings?.printerSettings || propPrinterSettings;
 
+  console.log('[PrinterSettingsTab] === COMPONENT RENDER ===');
+  console.log('[PrinterSettingsTab] Current data:', {
+    organizationId,
+    storeSettingsLoading,
+    hasStoreSettings: !!storeSettings,
+    hasPrinterSettings: !!printerSettings,
+    printerSettingsId: printerSettings?.id,
+    receiptDefaultTemplate: printerSettings?.receipts?.defaultTemplateId,
+    invoiceDefaultTemplate: printerSettings?.invoices?.defaultTemplateId,
+    quoteDefaultTemplate: printerSettings?.quotes?.defaultTemplateId,
+    receiptTemplates: receiptTemplates.length,
+    invoiceTemplates: invoiceTemplates.length,
+    quoteTemplates: quoteTemplates.length
+  });
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleUpdateSettings = async (field: string, value: string | number | boolean) => {
-    console.log('[PrinterSettingsTab] handleUpdateSettings called:', { field, value, organizationId: !!organizationId, storeSettings: !!storeSettings, storeSettingsLoading });
+    console.log('[PrinterSettingsTab] === SAVING START ===');
+    console.log('[PrinterSettingsTab] handleUpdateSettings called:', { 
+      field, 
+      value, 
+      organizationId: !!organizationId, 
+      storeSettings: !!storeSettings, 
+      storeSettingsLoading,
+      currentPrinterSettings: printerSettings
+    });
 
     if (!organizationId) {
       console.error('[PrinterSettingsTab] Missing organizationId');
@@ -69,7 +80,7 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
     try {
       let updatedSettings: PrinterSettings;
 
-      if (printerSettings) {
+      if (printerSettings && printerSettings.id) {
         // Update existing settings
         updatedSettings = {
           ...printerSettings,
@@ -150,25 +161,41 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
       // Update or create the printer settings in Firestore
       const { updatePrinterSettings, createPrinterSettings } = await import('@/lib/firebase/firestore/settings/storeSettings');
 
+      // The hook should always ensure printer settings exist, so we can always update
       if (printerSettings && printerSettings.id) {
-        // Update existing printer settings
         const { id, organizationId: _, createdAt, ...updateData } = updatedSettings;
+        console.log('[PrinterSettingsTab] About to update printer settings:', {
+          printerSettingsId: printerSettings.id,
+          updateData,
+          fullUpdatedSettings: updatedSettings,
+          receiptsDefaultTemplate: updatedSettings.receipts?.defaultTemplateId
+        });
         await updatePrinterSettings(printerSettings.id, updateData);
-        console.log('Updated existing printer settings with ID:', printerSettings.id);
+        console.log('[PrinterSettingsTab] Updated printer settings with ID:', printerSettings.id);
       } else {
-        // Create new printer settings if they don't exist or ID is missing
-        const { id, createdAt, updatedAt, ...createData } = updatedSettings;
-        const newId = await createPrinterSettings(createData);
-        updatedSettings.id = newId;
-        console.log('Created new printer settings with ID:', newId);
+        // Fallback: This should not happen if the hook is working correctly
+        console.error('[PrinterSettingsTab] Printer settings not available - this should not happen');
+        throw new Error('Printer settings not available');
       }
 
+      console.log('[PrinterSettingsTab] About to refresh store settings...');
+      // Add a small delay to ensure Firestore update is complete
+      await new Promise(resolve => setTimeout(resolve, 1000));
       // Refresh store settings to ensure UI updates
       await refreshStoreSettings();
+      console.log('[PrinterSettingsTab] Store settings refreshed');
+      
+      // Verify the update was applied correctly
+      console.log('[PrinterSettingsTab] Verification - updatedSettings.receipts.defaultTemplateId:', updatedSettings.receipts?.defaultTemplateId);
+      console.log('[PrinterSettingsTab] Verification - printerSettings.receipts.defaultTemplateId after refresh:', printerSettings?.receipts?.defaultTemplateId);
+
+      console.log('[PrinterSettingsTab] === SAVING COMPLETE ===');
+      console.log('[PrinterSettingsTab] Final updated settings:', updatedSettings);
 
       onPrinterSettingsUpdate?.(updatedSettings);
       toast.success('Settings updated successfully!');
     } catch (error) {
+      console.error('[PrinterSettingsTab] === SAVING ERROR ===');
       console.error('Error updating printer settings:', error);
       console.error('Field:', field, 'Value:', value);
       console.error('Printer settings state:', printerSettings);
@@ -178,7 +205,7 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
   };
 
   return (
-    <Card>
+    <Card key={printerSettings?.id || 'printer-settings'}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Settings className="h-5 w-5" />
@@ -220,14 +247,26 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
               {!templatesLoading && (
                <>
                     <EditableSetting
+                      key={`receipt-template-${printerSettings?.receipts?.defaultTemplateId || 'none'}`}
                       label="Default Receipt Template"
-                      value={printerSettings?.receipts?.defaultTemplateId || ''}
+                      value={(() => {
+                        const val = printerSettings?.receipts?.defaultTemplateId || '';
+                        console.log('[PrinterSettingsTab] Rendering EditableSetting with value:', val);
+                        return val;
+                      })()}
                       type="select"
-                      options={receiptTemplates.map(t => ({
-                        value: t.id,
-                        label: t.name
-                      }))}
-                      onSave={(value) => handleUpdateSettings('receipts.defaultTemplateId', value)}
+                      options={(() => {
+                        const opts = receiptTemplates.map(t => ({
+                          value: t.id,
+                          label: t.name
+                        }));
+                        console.log('[PrinterSettingsTab] Available options:', opts);
+                        return opts;
+                      })()}
+                      onSave={async (value) => {
+                        console.log('[PrinterSettingsTab] onSave called with value:', value);
+                        await handleUpdateSettings('receipts.defaultTemplateId', value);
+                      }}
                       placeholder="Select template"
                       disabled={storeSettingsLoading}
                     />
@@ -236,31 +275,33 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
                       Available: {receiptTemplates.map(t => t.name).join(', ')}
                     </div>
 
-                   <EditableSetting
-                      label="Default Invoice Template"
-                      value={printerSettings?.invoices?.defaultTemplateId || ''}
-                      type="select"
-                      options={invoiceTemplates.map(t => ({
-                        value: t.id,
-                        label: t.name
-                      }))}
-                       onSave={(value) => handleUpdateSettings('invoices.defaultTemplateId', value)}
-                      placeholder="Select template"
-                      disabled={storeSettingsLoading}
-                    />
+<EditableSetting
+                       key={`invoice-template-${printerSettings?.invoices?.defaultTemplateId || 'none'}`}
+                       label="Default Invoice Template"
+                       value={printerSettings?.invoices?.defaultTemplateId || ''}
+                       type="select"
+                       options={invoiceTemplates.map(t => ({
+                         value: t.id,
+                         label: t.name
+                       }))}
+                        onSave={(value) => handleUpdateSettings('invoices.defaultTemplateId', value)}
+                       placeholder="Select template"
+                       disabled={storeSettingsLoading}
+                     />
 
-                    <EditableSetting
-                      label="Default Quote Template"
-                      value={printerSettings?.quotes?.defaultTemplateId || ''}
-                      type="select"
-                      options={quoteTemplates.map(t => ({
-                        value: t.id,
-                        label: t.name
-                      }))}
-                       onSave={(value) => handleUpdateSettings('quotes.defaultTemplateId', value)}
-                      placeholder="Select template"
-                      disabled={storeSettingsLoading}
-                    />
+<EditableSetting
+                       key={`quote-template-${printerSettings?.quotes?.defaultTemplateId || 'none'}`}
+                       label="Default Quote Template"
+                       value={printerSettings?.quotes?.defaultTemplateId || ''}
+                       type="select"
+                       options={quoteTemplates.map(t => ({
+                         value: t.id,
+                         label: t.name
+                       }))}
+                        onSave={(value) => handleUpdateSettings('quotes.defaultTemplateId', value)}
+                       placeholder="Select template"
+                       disabled={storeSettingsLoading}
+                     />
 
                 </>
               )}

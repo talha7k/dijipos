@@ -32,7 +32,7 @@ const printerSettingsRef = collection(db, 'printerSettings');
  */
 export async function getStoreSettings(organizationId: string): Promise<StoreSettings | null> {
   try {
-    // Get store settings document
+    // Get store settings document - force fresh read from server
     const storeSettingsQuery = query(storeSettingsRef, where('organizationId', '==', organizationId));
     const storeSettingsSnapshot = await getDocs(storeSettingsQuery);
 
@@ -503,6 +503,9 @@ export async function updatePrinterSettings(printerSettingsId: string, updates: 
 
     const docRef = doc(printerSettingsRef, printerSettingsId);
     await setDoc(docRef, updateData, { merge: true });
+    
+    // Wait for the write to be fully committed to server
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
     console.log('Successfully updated printer settings:', printerSettingsId);
   } catch (error) {

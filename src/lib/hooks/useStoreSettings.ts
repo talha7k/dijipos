@@ -183,6 +183,7 @@ export function useStoreSettings(): StoreSettingsState & StoreSettingsActions {
       const completeSettings = await getStoreSettings(selectedOrganizationId);
       console.log('[useStoreSettings] Retrieved store settings:', completeSettings);
       console.log('[useStoreSettings] Printer settings:', completeSettings?.printerSettings);
+      console.log('[useStoreSettings] Receipts default template:', completeSettings?.printerSettings?.receipts?.defaultTemplateId);
       // Ensure we create a new object reference to trigger re-renders
       setStoreSettings(completeSettings ? { ...completeSettings } : null);
       console.log('[useStoreSettings] Store settings updated');
