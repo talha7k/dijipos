@@ -44,7 +44,7 @@ const getNavigationItems = (role: string): NavigationItem[] => {
       children: [
         {
           title: "Orders",
-          href: "/orders",
+          href: "/pos-orders",
           icon: Receipt,
         },
         {
@@ -127,13 +127,13 @@ const getNavigationItems = (role: string): NavigationItem[] => {
   ];
 
   switch (role) {
-    case 'admin':
+    case "admin":
       return [...baseItems, ...salesItems, ...purchaseItems, ...adminItems];
-    case 'manager':
+    case "manager":
       return [...baseItems, ...salesItems, ...purchaseItems, ...managerItems];
-    case 'cashier':
+    case "cashier":
       return [...baseItems, ...salesItems];
-    case 'waiter':
+    case "waiter":
       return [...baseItems, ...salesItems];
     default:
       return baseItems;
@@ -152,18 +152,17 @@ export function DesktopSidebar({
   onExpandSidebar,
   openSections = {},
 }: SidebarProps) {
-
   const [organizationId] = useAtom(selectedOrganizationIdAtom);
   const [organizationUserRole] = useAtom(organizationUserRoleAtom);
 
-  const userRole = (organizationUserRole?.role as string) || 'waiter'; // Default to waiter if no role found
+  const userRole = (organizationUserRole?.role as string) || "waiter"; // Default to waiter if no role found
   const navigationItems = getNavigationItems(userRole);
   return (
     <div
       className={cn(
         "hidden md:flex md:flex-col md:fixed md:inset-y-0 md:z-50 transition-all duration-300 ease-in-out",
         isCollapsed ? "md:w-16" : "md:w-64",
-        className
+        className,
       )}
     >
       <div className="flex flex-col h-full border-r bg-background">
@@ -183,20 +182,22 @@ export function DesktopSidebar({
                 if (item.children) {
                   const isSectionOpen = openSections[item.title];
                   const hasActiveChild = item.children.some(
-                    (child) => pathname === child.href
+                    (child) => pathname === child.href,
                   );
-                   return (
-                     <SidebarNavSection
-                       key={item.title}
-                       item={item}
-                       isSectionOpen={isSectionOpen}
-                       isCollapsed={isCollapsed}
-                       hasActiveChild={hasActiveChild}
-                       pathname={pathname}
-                       onToggle={() => onSectionToggle && onSectionToggle(item.title)}
-                       onExpandSidebar={onExpandSidebar}
-                     />
-                   );
+                  return (
+                    <SidebarNavSection
+                      key={item.title}
+                      item={item}
+                      isSectionOpen={isSectionOpen}
+                      isCollapsed={isCollapsed}
+                      hasActiveChild={hasActiveChild}
+                      pathname={pathname}
+                      onToggle={() =>
+                        onSectionToggle && onSectionToggle(item.title)
+                      }
+                      onExpandSidebar={onExpandSidebar}
+                    />
+                  );
                 } else {
                   const isActive = pathname === item.href;
                   return (
@@ -215,9 +216,7 @@ export function DesktopSidebar({
 
         {/* Footer - Fixed */}
         <div className="flex-shrink-0">
-          <UserProfileWithOrganization
-            isCollapsed={isCollapsed}
-          />
+          <UserProfileWithOrganization isCollapsed={isCollapsed} />
         </div>
       </div>
     </div>

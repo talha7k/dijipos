@@ -1,7 +1,13 @@
 "use client";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sheet, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+  SheetClose,
+} from "@/components/ui/sheet";
 import { SheetContent } from "@/components/ui/sheet-no-close";
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
@@ -46,7 +52,7 @@ const navigationItems: NavigationItem[] = [
     children: [
       {
         title: "Orders",
-        href: "/orders",
+        href: "/pos-orders",
         icon: Receipt,
       },
       {
@@ -137,12 +143,15 @@ export function MobileSidebar({
         <SheetHeader className="sr-only">
           <SheetTitle>Navigation Menu</SheetTitle>
         </SheetHeader>
-        <SheetClose className="sr-only" ref={(node) => {
-          if (node) {
-            // Store a reference to the close button
-            window.mobileSheetClose = node;
-          }
-        }} />
+        <SheetClose
+          className="sr-only"
+          ref={(node) => {
+            if (node) {
+              // Store a reference to the close button
+              window.mobileSheetClose = node;
+            }
+          }}
+        />
         <div className="flex flex-col h-full">
           <SidebarHeader
             onThemeToggle={onThemeToggle}
@@ -158,36 +167,38 @@ export function MobileSidebar({
 
           <div className="flex-1 overflow-hidden">
             <ScrollArea className="h-full px-3 py-4">
-            <nav className="space-y-2">
-              {navigationItems.map((item) => {
-                if (item.children) {
-                  const isSectionOpen = openSections[item.title];
-                  const hasActiveChild = item.children.some(
-                    (child) => pathname === child.href
-                  );
-                  return (
-                    <SidebarNavSection
-                      key={item.title}
-                      item={item}
-                      isSectionOpen={isSectionOpen}
-                      hasActiveChild={hasActiveChild}
-                      pathname={pathname}
-                      onToggle={() => onSectionToggle && onSectionToggle(item.title)}
-                    />
-                  );
-                } else {
-                  const isActive = pathname === item.href;
-                  return (
-                    <SidebarNavItem
-                      key={item.href}
-                      item={item}
-                      isActive={isActive}
-                    />
-                  );
-                }
-              })}
-            </nav>
-          </ScrollArea>
+              <nav className="space-y-2">
+                {navigationItems.map((item) => {
+                  if (item.children) {
+                    const isSectionOpen = openSections[item.title];
+                    const hasActiveChild = item.children.some(
+                      (child) => pathname === child.href,
+                    );
+                    return (
+                      <SidebarNavSection
+                        key={item.title}
+                        item={item}
+                        isSectionOpen={isSectionOpen}
+                        hasActiveChild={hasActiveChild}
+                        pathname={pathname}
+                        onToggle={() =>
+                          onSectionToggle && onSectionToggle(item.title)
+                        }
+                      />
+                    );
+                  } else {
+                    const isActive = pathname === item.href;
+                    return (
+                      <SidebarNavItem
+                        key={item.href}
+                        item={item}
+                        isActive={isActive}
+                      />
+                    );
+                  }
+                })}
+              </nav>
+            </ScrollArea>
           </div>
 
           {/* Footer - Fixed */}

@@ -114,8 +114,8 @@ export function getQuoteStatusColor(status: string) {
 
 // Centralized display length constants
 export const CHAR_DISPLAY_LENGTHS = {
-  SHORT: 25, // For compact displays (cards, lists)
-  MEDIUM: 50, // For moderate displays (tables, forms)
+  SHORT: 20, // For indentifying legth of text isLongName
+  MEDIUM: 60, // For moderate displays (tables, forms) for truncating.
   LONG: 100, // For detailed displays (descriptions, notes)
   XL: 200, // For very long text (full content)
 } as const;
