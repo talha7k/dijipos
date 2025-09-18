@@ -1,13 +1,15 @@
 // atoms/index.ts
 
-import { atom } from 'jotai';
-import { atomWithStorage } from 'jotai/utils';
-import { Organization, OrganizationUser, UserRole } from '@/types';
-import { indexedDBStorage } from '@/lib/storage';
+import { atom } from "jotai";
+import { atomWithStorage } from "jotai/utils";
+import { Organization, OrganizationUser, UserRole } from "@/types";
+import { indexedDBStorage } from "@/lib/storage";
+import { signOut } from "firebase/auth";
+import { auth } from "@/lib/firebase/config";
 
 // Re-export atoms from more specific files
-export * from './posAtoms';
-export * from './uiAtoms';
+export * from "./posAtoms";
+export * from "./uiAtoms";
 
 // ==========================================
 // ORGANIZATION & SESSION STATE ATOMS
@@ -18,9 +20,9 @@ export * from './uiAtoms';
 // This is the SINGLE SOURCE OF TRUTH for which organization is active.
 // It is persisted to IndexedDB to remember the user's choice across sessions.
 export const selectedOrganizationIdAtom = atomWithStorage<string | null>(
-  'selectedOrgId', 
-  null, 
-  indexedDBStorage
+  "selectedOrgId",
+  null,
+  indexedDBStorage,
 );
 
 // This atom holds the full object for the selected organization.
@@ -35,11 +37,12 @@ export const userOrganizationsAtom = atom<Organization[]>([]);
 export const organizationUserRoleAtom = atom<OrganizationUser | null>(null);
 
 // This atom holds the user's associations with organizations (roles, etc.)
-export const userOrganizationAssociationsAtom = atom<{ organizationId: string; role: UserRole; isActive: boolean }[]>([]);
+export const userOrganizationAssociationsAtom = atom<
+  { organizationId: string; role: UserRole; isActive: boolean }[]
+>([]);
 
 // This atom holds the users in the currently selected organization
 export const organizationUsersAtom = atom<OrganizationUser[]>([]);
-
 
 // --- STATUS ATOMS ---
 
@@ -49,18 +52,20 @@ export const organizationDetailsLoadingAtom = atom<boolean>(false); // Loading s
 export const organizationLoadingAtom = atom<boolean>(false); // Combined loading state (for backward compatibility)
 export const organizationErrorAtom = atom<string | null>(null);
 
-
 // ==========================================
 // DERIVED ATOMS
 // ==========================================
 // These atoms derive their value from other atoms. They are very efficient.
 
 // Checks if an organization has been selected by the user.
-export const hasSelectedOrganizationAtom = atom((get) => get(selectedOrganizationIdAtom) !== null);
+export const hasSelectedOrganizationAtom = atom(
+  (get) => get(selectedOrganizationIdAtom) !== null,
+);
 
 // Checks if the user is a member of any organizations at all.
-export const isMemberOfAnyOrganizationAtom = atom((get) => get(userOrganizationsAtom).length > 0);
-
+export const isMemberOfAnyOrganizationAtom = atom(
+  (get) => get(userOrganizationsAtom).length > 0,
+);
 
 // ==========================================
 // UTILITY ATOMS
@@ -68,10 +73,12 @@ export const isMemberOfAnyOrganizationAtom = atom((get) => get(userOrganizations
 
 // A write-only atom to handle the "logout" action, clearing all session state.
 export const logoutAtom = atom(null, (get, set) => {
-  // We don't touch the Firebase user here, we just clear our app's session state.
-  // The useAuth hook will reflect the change when Firebase confirms the logout.
-  set(selectedOrganizationIdAtom, null);
+  // Clear all session-related state
   set(selectedOrganizationAtom, null);
   set(userOrganizationsAtom, []);
+  set(selectedOrganizationIdAtom, null);
   set(organizationUserRoleAtom, null);
+
+  // Sign the user out from Firebase
+  signOut(auth).catch((error) => console.error("Sign out error", error));
 });
