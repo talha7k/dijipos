@@ -40,14 +40,11 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
       let updatedSettings: PrinterSettings;
 
       if (printerSettings) {
-        // Update existing settings - exclude legacy root-level default template fields
-        const printerSettingsRecord = printerSettings as unknown as Record<string, unknown>;
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { defaultReceiptTemplateId: _, defaultInvoiceTemplateId: __, defaultQuoteTemplateId: ___, ...cleanPrinterSettings } = printerSettingsRecord;
+        // Update existing settings
         updatedSettings = {
-          ...cleanPrinterSettings,
+          ...printerSettings,
           updatedAt: new Date(),
-        } as PrinterSettings;
+        };
 
         // Handle nested document-specific settings
         if (field.includes('.')) {
@@ -121,7 +118,7 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
       }
 
       // Update or create the printer settings in Firestore
-      const { updatePrinterSettings, createPrinterSettings } = await import('@/lib/firebase/firestore/settings/printer');
+      const { updatePrinterSettings, createPrinterSettings } = await import('@/lib/firebase/firestore/settings/storeSettings');
 
       if (printerSettings && printerSettings.id) {
         // Update existing printer settings

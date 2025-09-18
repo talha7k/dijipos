@@ -2,7 +2,7 @@ import { PaymentType } from '@/types';
 import { useRealtimeCollection } from './useRealtimeCollection';
 import { useAtomValue } from 'jotai';
 import { selectedOrganizationAtom } from '@/atoms';
-import { createPaymentType, updatePaymentType, deletePaymentType } from '../firebase/firestore/settings/store';
+import { createPaymentType, updatePaymentType, deletePaymentType } from '../firebase/firestore/settings/storeSettings';
 
 interface PaymentTypesState {
   paymentTypes: PaymentType[];

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { StoreSettings } from '@/types';
-import { getStoreSettings, createDefaultStoreSettings } from '../firebase/firestore/settings/store';
+import { getStoreSettings, createDefaultStoreSettings } from '../firebase/firestore/settings/storeSettings';
 import { useRealtimeCollection } from './useRealtimeCollection';
 import { useOrganization } from './useOrganization';
 import { onSnapshot, doc } from 'firebase/firestore';

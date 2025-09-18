@@ -2,7 +2,7 @@ import { OrderType } from '@/types';
 import { useRealtimeCollection } from './useRealtimeCollection';
 import { useAtomValue } from 'jotai';
 import { selectedOrganizationAtom } from '@/atoms';
-import { createOrderType, updateOrderType, deleteOrderType } from '../firebase/firestore/settings/store';
+import { createOrderType, updateOrderType, deleteOrderType } from '../firebase/firestore/settings/storeSettings';
 
 interface OrderTypesState {
   orderTypes: OrderType[];

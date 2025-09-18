@@ -262,7 +262,7 @@ export function TemplatesTab({}: TemplatesTabProps) {
     if (!printerSettings) {
       console.log('[TemplatesTab] Printer settings not found, creating them...');
       try {
-        const { createPrinterSettings } = await import("@/lib/firebase/firestore/settings/printer");
+        const { createPrinterSettings } = await import("@/lib/firebase/firestore/settings/storeSettings");
         const newPrinterSettingsId = await createPrinterSettings({
           organizationId,
           receipts: {
@@ -292,7 +292,7 @@ export function TemplatesTab({}: TemplatesTabProps) {
         });
         
         // Get the newly created settings
-        const { getPrinterSettings } = await import("@/lib/firebase/firestore/settings/printer");
+        const { getPrinterSettings } = await import("@/lib/firebase/firestore/settings/storeSettings");
         effectivePrinterSettings = await getPrinterSettings(organizationId);
         
         if (!effectivePrinterSettings) {
@@ -378,7 +378,7 @@ export function TemplatesTab({}: TemplatesTabProps) {
       console.log("Sending printer settings to update:", settingsToUpdate);
       // Update printer settings directly in Firestore
       const { updatePrinterSettings } = await import(
-        "@/lib/firebase/firestore/settings/printer"
+        "@/lib/firebase/firestore/settings/storeSettings"
       );
       const updateData = settingsToUpdate as Partial<PrinterSettings>;
       if (!effectivePrinterSettings) {

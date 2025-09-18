@@ -10,7 +10,7 @@ import { EditableSetting } from '@/components/ui/editable-setting';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Percent, FileText, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
-import { updateVATSettings, updateCurrencySettings, createVATSettings, createCurrencySettings } from '@/lib/firebase/firestore/settings/store';
+import { updateVATSettings, updateCurrencySettings, createVATSettings, createCurrencySettings } from '@/lib/firebase/firestore/settings/storeSettings';
 
 interface StoreSettingsTabProps {
   vatSettings: VATSettings | null;
