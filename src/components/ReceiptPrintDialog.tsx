@@ -50,8 +50,46 @@ export function ReceiptPrintDialog({
   // Set default template on open
   const handleOpenChange = (newOpen: boolean) => {
     if (newOpen) {
-      const defaultTemplate = receiptTemplates.find((t) => t.isDefault);
-      setSelectedTemplate(defaultTemplate?.id || receiptTemplates[0]?.id || "");
+      console.log(`[ReceiptPrintDialog] Opening dialog with:`, {
+        templatesCount: receiptTemplates.length,
+        printerSettings: effectivePrinterSettings ? {
+          receipts: effectivePrinterSettings.receipts?.defaultTemplateId,
+          invoices: effectivePrinterSettings.invoices?.defaultTemplateId,
+          quotes: effectivePrinterSettings.quotes?.defaultTemplateId,
+        } : null,
+        templates: receiptTemplates.map(t => ({ id: t.id, name: t.name, isDefault: t.isDefault }))
+      });
+
+      // First try to get default template from printer settings
+      const printerDefaultId = effectivePrinterSettings?.receipts?.defaultTemplateId;
+      let selectedId = "";
+      
+      if (printerDefaultId) {
+        const printerDefaultTemplate = receiptTemplates.find((t) => t.id === printerDefaultId);
+        if (printerDefaultTemplate) {
+          selectedId = printerDefaultTemplate.id;
+          console.log(`[ReceiptPrintDialog] Using printer default template: ${printerDefaultTemplate.name}`);
+        } else {
+          console.log(`[ReceiptPrintDialog] Printer default template not found: ${printerDefaultId}`);
+        }
+      }
+      
+      // Fallback to template's isDefault flag
+      if (!selectedId) {
+        const defaultTemplate = receiptTemplates.find((t) => t.isDefault);
+        if (defaultTemplate) {
+          selectedId = defaultTemplate.id;
+          console.log(`[ReceiptPrintDialog] Using fallback default template: ${defaultTemplate.name}`);
+        }
+      }
+      
+      // Final fallback to first template
+      if (!selectedId && receiptTemplates.length > 0) {
+        selectedId = receiptTemplates[0].id;
+        console.log(`[ReceiptPrintDialog] Using first template as fallback: ${receiptTemplates[0].name}`);
+      }
+      
+      setSelectedTemplate(selectedId);
     }
     setOpen(newOpen);
   };

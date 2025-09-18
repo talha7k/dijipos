@@ -35,6 +35,18 @@ export function TemplateSelector({
   printerSettings,
   templateType,
 }: TemplateSelectorProps) {
+  // Debug logging
+  console.log(`[TemplateSelector] Props:`, {
+    templateType,
+    selectedTemplate,
+    templatesCount: templates.length,
+    printerSettings: printerSettings ? {
+      receipts: printerSettings.receipts?.defaultTemplateId,
+      invoices: printerSettings.invoices?.defaultTemplateId,
+      quotes: printerSettings.quotes?.defaultTemplateId,
+    } : null,
+    templates: templates.map(t => ({ id: t.id, name: t.name, isDefault: t.isDefault }))
+  });
   // Get the default template ID from printer settings
   const getDefaultTemplateId = () => {
     if (!printerSettings || !templateType) return null;
@@ -49,11 +61,20 @@ export function TemplateSelector({
     
     if (printerDefaultId) {
       const printerDefaultTemplate = templates.find(t => t.id === printerDefaultId);
-      if (printerDefaultTemplate) return printerDefaultTemplate;
+      if (printerDefaultTemplate) {
+        console.log(`[TemplateSelector] Using printer default template: ${printerDefaultTemplate.name} (${printerDefaultTemplate.id})`);
+        return printerDefaultTemplate;
+      } else {
+        console.log(`[TemplateSelector] Printer default template not found: ${printerDefaultId}`);
+      }
     }
     
     // Fallback to template's isDefault flag
-    return templates.find(t => t.isDefault);
+    const fallbackDefault = templates.find(t => t.isDefault);
+    if (fallbackDefault) {
+      console.log(`[TemplateSelector] Using fallback default template: ${fallbackDefault.name} (${fallbackDefault.id})`);
+    }
+    return fallbackDefault;
   };
 
   const renderTemplateInfo = (template: TemplateType) => {

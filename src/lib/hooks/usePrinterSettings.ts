@@ -46,6 +46,17 @@ export function usePrinterSettings(): PrinterSettingsState & PrinterSettingsActi
   // Update global state when realtime data changes
   React.useEffect(() => {
     const newSettings = printerSettingsList.length > 0 ? printerSettingsList[0] : null;
+    console.log(`[usePrinterSettings] Updating settings:`, {
+      hasSettings: !!newSettings,
+      settings: newSettings ? {
+        receipts: newSettings.receipts?.defaultTemplateId,
+        invoices: newSettings.invoices?.defaultTemplateId,
+        quotes: newSettings.quotes?.defaultTemplateId,
+      } : null,
+      listLength: printerSettingsList.length,
+      loading: realtimeLoading,
+      error: realtimeError
+    });
     setPrinterSettings(newSettings);
     setLoading(realtimeLoading);
     setError(realtimeError);

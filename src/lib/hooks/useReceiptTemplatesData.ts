@@ -22,7 +22,6 @@ export function useReceiptTemplatesData(organizationId: string | undefined) {
         description: 'Default thermal printer receipt template in English',
         type: ReceiptTemplateType.ENGLISH_THERMAL,
         content: defaultEnglishReceiptTemplate,
-        isDefault: true,
         organizationId,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -33,7 +32,6 @@ export function useReceiptTemplatesData(organizationId: string | undefined) {
         description: 'Arabic thermal printer receipt template',
         type: ReceiptTemplateType.ARABIC_THERMAL,
         content: defaultArabicReceiptTemplate,
-        isDefault: false,
         organizationId,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -44,7 +42,6 @@ export function useReceiptTemplatesData(organizationId: string | undefined) {
         description: 'Default A4 paper receipt template',
         type: ReceiptTemplateType.ENGLISH_A4,
         content: defaultReceiptA4Template,
-        isDefault: false,
         organizationId,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -55,7 +52,6 @@ export function useReceiptTemplatesData(organizationId: string | undefined) {
         description: 'Arabic A4 paper receipt template',
         type: ReceiptTemplateType.ARABIC_A4,
         content: defaultArabicReceiptA4Template,
-        isDefault: false,
         organizationId,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -65,6 +61,11 @@ export function useReceiptTemplatesData(organizationId: string | undefined) {
 
   // Update state with static templates
   useMemo(() => {
+    console.log(`[useReceiptTemplatesData] Setting templates:`, {
+      organizationId,
+      templatesCount: staticTemplates.length,
+      templates: staticTemplates.map(t => ({ id: t.id, name: t.name }))
+    });
     setReceiptTemplates(staticTemplates);
   }, [staticTemplates]);
 
@@ -102,19 +103,11 @@ export function useReceiptTemplatesData(organizationId: string | undefined) {
     setReceiptTemplates(prev => prev.filter(template => template.id !== id));
   };
 
-  const setDefaultTemplate = async (id: string) => {
-    if (!organizationId) throw new Error('No organization selected');
-
-    // First, unset all default templates
-    setReceiptTemplates(prev => prev.map(template => ({ ...template, isDefault: false })));
-
-    // Then set the new default
-    setReceiptTemplates(prev => prev.map(template =>
-      template.id === id
-        ? { ...template, isDefault: true }
-        : template
-    ));
-  };
+  // setDefaultTemplate is no longer needed - defaults are managed in printer settings
+  // const setDefaultTemplate = async (id: string) => {
+  //   if (!organizationId) throw new Error('No organization selected');
+  //   // This functionality is now handled by printer settings
+  // };
 
   // Return empty data when no organizationId
   if (!organizationId) {
@@ -125,7 +118,7 @@ export function useReceiptTemplatesData(organizationId: string | undefined) {
       addTemplate: async () => { throw new Error('No organization selected'); },
       updateTemplate: async () => { throw new Error('No organization selected'); },
       deleteTemplate: async () => { throw new Error('No organization selected'); },
-      setDefaultTemplate: async () => { throw new Error('No organization selected'); },
+      // setDefaultTemplate is no longer needed - defaults are managed in printer settings
     };
   }
 
@@ -136,6 +129,6 @@ export function useReceiptTemplatesData(organizationId: string | undefined) {
     addTemplate,
     updateTemplate,
     deleteTemplate,
-    setDefaultTemplate,
+    // setDefaultTemplate is no longer needed - defaults are managed in printer settings
   };
 }

@@ -23,7 +23,6 @@ export function useQuotesTemplatesData(organizationId: string | undefined) {
         description: 'Default quote template in English',
         type: QuoteTemplateType.ENGLISH,
         content: defaultQuoteEnglish,
-        isDefault: true,
         organizationId,
         fields: [],
         style: {
@@ -45,7 +44,6 @@ export function useQuotesTemplatesData(organizationId: string | undefined) {
         description: 'Arabic quote template',
         type: QuoteTemplateType.ARABIC,
         content: defaultQuoteArabic,
-        isDefault: false,
         organizationId,
         fields: [],
         style: {
@@ -68,6 +66,11 @@ export function useQuotesTemplatesData(organizationId: string | undefined) {
 
   // Update state with static templates
   useMemo(() => {
+    console.log(`[useQuotesTemplatesData] Setting templates:`, {
+      organizationId,
+      templatesCount: staticTemplates.length,
+      templates: staticTemplates.map(t => ({ id: t.id, name: t.name }))
+    });
     setTemplates(staticTemplates);
   }, [staticTemplates]);
 
@@ -105,19 +108,11 @@ export function useQuotesTemplatesData(organizationId: string | undefined) {
     setTemplates(prev => prev.filter(template => template.id !== id));
   };
 
-  const setDefaultTemplate = async (id: string) => {
-    if (!organizationId) throw new Error('No organization selected');
-
-    // First, unset all default templates
-    setTemplates(prev => prev.map(template => ({ ...template, isDefault: false })));
-
-    // Then set the new default
-    setTemplates(prev => prev.map(template =>
-      template.id === id
-        ? { ...template, isDefault: true }
-        : template
-    ));
-  };
+  // setDefaultTemplate is no longer needed - defaults are managed in printer settings
+  // const setDefaultTemplate = async (id: string) => {
+  //   if (!organizationId) throw new Error('No organization selected');
+  //   // This functionality is now handled by printer settings
+  // };
 
   // Return empty data when no organizationId
   if (!organizationId) {
@@ -128,7 +123,7 @@ export function useQuotesTemplatesData(organizationId: string | undefined) {
       addTemplate: async () => { throw new Error('No organization selected'); },
       updateTemplate: async () => { throw new Error('No organization selected'); },
       deleteTemplate: async () => { throw new Error('No organization selected'); },
-      setDefaultTemplate: async () => { throw new Error('No organization selected'); },
+      // setDefaultTemplate is no longer needed - defaults are managed in printer settings
     };
   }
 
@@ -139,6 +134,6 @@ export function useQuotesTemplatesData(organizationId: string | undefined) {
     addTemplate,
     updateTemplate,
     deleteTemplate,
-    setDefaultTemplate,
+    // setDefaultTemplate is no longer needed - defaults are managed in printer settings
   };
 }

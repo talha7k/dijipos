@@ -24,9 +24,9 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
   const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
   const [selectedTab, setSelectedTab] = useState('general');
-  const { receiptTemplates, loading: templatesLoading, setDefaultTemplate: setReceiptDefaultTemplate } = useReceiptTemplatesData(organizationId || undefined);
-  const { setDefaultTemplate: setInvoiceDefaultTemplate } = useInvoicesTemplatesData(organizationId || undefined);
-  const { setDefaultTemplate: setQuoteDefaultTemplate } = useQuotesTemplatesData(organizationId || undefined);
+  const { receiptTemplates, loading: templatesLoading } = useReceiptTemplatesData(organizationId || undefined);
+  const { templates: invoiceTemplates } = useInvoicesTemplatesData(organizationId || undefined);
+  const { templates: quoteTemplates } = useQuotesTemplatesData(organizationId || undefined);
   const { printerSettings: globalPrinterSettings, handlePrinterSettingsUpdate } = usePrinterSettings();
 
   // Use global state if available, fallback to prop
@@ -210,28 +210,28 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
                     onSave={(value) => handleUpdateSettings('receipts.defaultTemplateId', value)}
                     placeholder="Select template"
                   />
-                 <EditableSetting
-                   label="Default Invoice Template"
-                   value={printerSettings?.invoices?.defaultTemplateId || ''}
-                   type="select"
-                   options={receiptTemplates.filter(t => t.type.toString().includes('a4')).map(t => ({
-                     value: t.id,
-                     label: t.name
-                   }))}
-                   onSave={(value) => handleUpdateSettings('invoices.defaultTemplateId', value)}
-                   placeholder="Select template"
-                 />
-                 <EditableSetting
-                   label="Default Quote Template"
-                   value={printerSettings?.quotes?.defaultTemplateId || ''}
-                   type="select"
-                   options={receiptTemplates.filter(t => t.type.toString().includes('a4')).map(t => ({
-                     value: t.id,
-                     label: t.name
-                   }))}
-                   onSave={(value) => handleUpdateSettings('quotes.defaultTemplateId', value)}
-                   placeholder="Select template"
-                 />
+<EditableSetting
+                    label="Default Invoice Template"
+                    value={printerSettings?.invoices?.defaultTemplateId || ''}
+                    type="select"
+                    options={invoiceTemplates.map(t => ({
+                      value: t.id,
+                      label: t.name
+                    }))}
+                    onSave={(value) => handleUpdateSettings('invoices.defaultTemplateId', value)}
+                    placeholder="Select template"
+                  />
+                  <EditableSetting
+                    label="Default Quote Template"
+                    value={printerSettings?.quotes?.defaultTemplateId || ''}
+                    type="select"
+                    options={quoteTemplates.map(t => ({
+                      value: t.id,
+                      label: t.name
+                    }))}
+                    onSave={(value) => handleUpdateSettings('quotes.defaultTemplateId', value)}
+                    placeholder="Select template"
+                  />
                </>
              )}
 

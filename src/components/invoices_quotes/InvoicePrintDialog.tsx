@@ -49,8 +49,46 @@ export function InvoicePrintDialog({
   // Set default template on open
   const handleOpenChange = (newOpen: boolean) => {
     if (newOpen) {
-      const defaultTemplate = invoiceTemplates.find(t => t.isDefault);
-      setSelectedTemplate(defaultTemplate?.id || invoiceTemplates[0]?.id || '');
+      console.log(`[InvoicePrintDialog] Opening dialog with:`, {
+        templatesCount: invoiceTemplates.length,
+        printerSettings: printerSettings ? {
+          receipts: printerSettings.receipts?.defaultTemplateId,
+          invoices: printerSettings.invoices?.defaultTemplateId,
+          quotes: printerSettings.quotes?.defaultTemplateId,
+        } : null,
+        templates: invoiceTemplates.map(t => ({ id: t.id, name: t.name, isDefault: t.isDefault }))
+      });
+
+      // First try to get default template from printer settings
+      const printerDefaultId = printerSettings?.invoices?.defaultTemplateId;
+      let selectedId = "";
+      
+      if (printerDefaultId) {
+        const printerDefaultTemplate = invoiceTemplates.find((t) => t.id === printerDefaultId);
+        if (printerDefaultTemplate) {
+          selectedId = printerDefaultTemplate.id;
+          console.log(`[InvoicePrintDialog] Using printer default template: ${printerDefaultTemplate.name}`);
+        } else {
+          console.log(`[InvoicePrintDialog] Printer default template not found: ${printerDefaultId}`);
+        }
+      }
+      
+      // Fallback to template's isDefault flag
+      if (!selectedId) {
+        const defaultTemplate = invoiceTemplates.find((t) => t.isDefault);
+        if (defaultTemplate) {
+          selectedId = defaultTemplate.id;
+          console.log(`[InvoicePrintDialog] Using fallback default template: ${defaultTemplate.name}`);
+        }
+      }
+      
+      // Final fallback to first template
+      if (!selectedId && invoiceTemplates.length > 0) {
+        selectedId = invoiceTemplates[0].id;
+        console.log(`[InvoicePrintDialog] Using first template as fallback: ${invoiceTemplates[0].name}`);
+      }
+      
+      setSelectedTemplate(selectedId);
     }
     setOpen(newOpen);
   };

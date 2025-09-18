@@ -43,8 +43,46 @@ export function QuotePrintDialog({
   // Set default template on open
   const handleOpenChange = (newOpen: boolean) => {
     if (newOpen) {
-      const defaultTemplate = quoteTemplates.find(t => t.isDefault);
-      setSelectedTemplate(defaultTemplate?.id || quoteTemplates[0]?.id || '');
+      console.log(`[QuotePrintDialog] Opening dialog with:`, {
+        templatesCount: quoteTemplates.length,
+        printerSettings: printerSettings ? {
+          receipts: printerSettings.receipts?.defaultTemplateId,
+          invoices: printerSettings.invoices?.defaultTemplateId,
+          quotes: printerSettings.quotes?.defaultTemplateId,
+        } : null,
+        templates: quoteTemplates.map(t => ({ id: t.id, name: t.name, isDefault: t.isDefault }))
+      });
+
+      // First try to get default template from printer settings
+      const printerDefaultId = printerSettings?.quotes?.defaultTemplateId;
+      let selectedId = "";
+      
+      if (printerDefaultId) {
+        const printerDefaultTemplate = quoteTemplates.find((t) => t.id === printerDefaultId);
+        if (printerDefaultTemplate) {
+          selectedId = printerDefaultTemplate.id;
+          console.log(`[QuotePrintDialog] Using printer default template: ${printerDefaultTemplate.name}`);
+        } else {
+          console.log(`[QuotePrintDialog] Printer default template not found: ${printerDefaultId}`);
+        }
+      }
+      
+      // Fallback to template's isDefault flag
+      if (!selectedId) {
+        const defaultTemplate = quoteTemplates.find((t) => t.isDefault);
+        if (defaultTemplate) {
+          selectedId = defaultTemplate.id;
+          console.log(`[QuotePrintDialog] Using fallback default template: ${defaultTemplate.name}`);
+        }
+      }
+      
+      // Final fallback to first template
+      if (!selectedId && quoteTemplates.length > 0) {
+        selectedId = quoteTemplates[0].id;
+        console.log(`[QuotePrintDialog] Using first template as fallback: ${quoteTemplates[0].name}`);
+      }
+      
+      setSelectedTemplate(selectedId);
     }
     setOpen(newOpen);
   };

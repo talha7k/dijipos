@@ -1,7 +1,12 @@
 // Import enums from the main enums file
-import { QuoteTemplateType, InvoiceTemplateType, ReceiptTemplateType, TemplateFieldType, PrinterFormat, FontSize } from './enums';
-
-
+import {
+  QuoteTemplateType,
+  InvoiceTemplateType,
+  ReceiptTemplateType,
+  TemplateFieldType,
+  PrinterFormat,
+  FontSize,
+} from "./enums";
 
 export interface TemplateField {
   id: string;
@@ -33,11 +38,11 @@ export interface InvoiceTemplate {
   name: string;
   description?: string;
   type: InvoiceTemplateType;
-  isDefault: boolean;
   fields: TemplateField[];
   style: TemplateStyle;
   customCSS?: string;
   content: string;
+  isDefault?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -48,11 +53,11 @@ export interface QuoteTemplate {
   name: string;
   description?: string;
   type: QuoteTemplateType;
-  isDefault: boolean;
   fields: TemplateField[];
   style: TemplateStyle;
   customCSS?: string;
   content: string;
+  isDefault?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -65,7 +70,6 @@ export interface ReceiptTemplate {
   content: string; // HTML template content
   customHeader?: string;
   customFooter?: string;
-  isDefault: boolean;
   organizationId: string;
   createdAt: Date;
   updatedAt: Date;
@@ -90,24 +94,24 @@ export interface ReceiptTemplateData {
   vatRate: string;
   vatAmount: string;
   total: string;
-   customHeader?: string;
-   customFooter?: string;
-   totalQty: number;
-   paperWidth?: number; // Paper width in mm for dynamic layout
-   marginTop?: number; // Top margin in mm
-   marginBottom?: number; // Bottom margin in mm
-   marginLeft?: number; // Left margin in mm
-   marginRight?: number; // Right margin in mm
-    paddingTop?: number; // Top padding in mm
-    paddingBottom?: number; // Bottom padding in mm
-    paddingLeft?: number; // Left padding in mm
-    paddingRight?: number; // Right padding in mm
-    fontSize?: FontSize; // Font size setting
-    headingFont?: string; // Font family for headings
-    bodyFont?: string; // Font family for body text
-    lineSpacing?: number; // Line spacing (receipts only)
-    autoPrint?: boolean; // Auto-open print dialog (receipts only)
-   items: Array<{
+  customHeader?: string;
+  customFooter?: string;
+  totalQty: number;
+  paperWidth?: number; // Paper width in mm for dynamic layout
+  marginTop?: number; // Top margin in mm
+  marginBottom?: number; // Bottom margin in mm
+  marginLeft?: number; // Left margin in mm
+  marginRight?: number; // Right margin in mm
+  paddingTop?: number; // Top padding in mm
+  paddingBottom?: number; // Bottom padding in mm
+  paddingLeft?: number; // Left padding in mm
+  paddingRight?: number; // Right padding in mm
+  fontSize?: FontSize; // Font size setting
+  headingFont?: string; // Font family for headings
+  bodyFont?: string; // Font family for body text
+  lineSpacing?: number; // Line spacing (receipts only)
+  autoPrint?: boolean; // Auto-open print dialog (receipts only)
+  items: Array<{
     name: string;
     quantity: number;
     total: string;
@@ -121,111 +125,114 @@ export interface ReceiptTemplateData {
 }
 
 export interface InvoiceTemplateData {
-    invoiceId: string;
-    invoiceDate: string;
-    dueDate: string;
-    status: string;
-    companyName: string;
-    companyNameAr: string;
-    companyAddress: string;
-    companyEmail: string;
-    companyPhone: string;
-    companyVat: string;
-    companyLogo: string;
-    companyStamp: string;
-    clientName: string;
-    customerNameAr: string;
-    clientAddress: string;
-    clientEmail: string;
-    clientVat: string;
-    customerLogo: string;
-    supplierName: string;
-    supplierNameAr: string;
-    supplierAddress: string;
-    supplierEmail: string;
-    supplierVat: string;
-    supplierLogo: string;
-    subtotal: string;
-    taxRate: string;
-    taxAmount: string;
+  invoiceId: string;
+  invoiceDate: string;
+  dueDate: string;
+  status: string;
+  companyName: string;
+  companyNameAr: string;
+  companyAddress: string;
+  companyEmail: string;
+  companyPhone: string;
+  companyVat: string;
+  companyLogo: string;
+  companyStamp: string;
+  clientName: string;
+  customerNameAr: string;
+  clientAddress: string;
+  clientEmail: string;
+  clientVat: string;
+  customerLogo: string;
+  supplierName: string;
+  supplierNameAr: string;
+  supplierAddress: string;
+  supplierEmail: string;
+  supplierVat: string;
+  supplierLogo: string;
+  subtotal: string;
+  taxRate: string;
+  taxAmount: string;
+  total: string;
+  notes: string;
+  includeQR: boolean;
+  qrCodeUrl?: string;
+  paperWidth?: number; // Paper width in mm for dynamic layout
+  marginTop?: number; // Top margin in mm
+  marginBottom?: number; // Bottom margin in mm
+  marginLeft?: number; // Left margin in mm
+  marginRight?: number; // Right margin in mm
+  paddingTop?: number; // Top padding in mm
+  paddingBottom?: number; // Bottom padding in mm
+  paddingLeft?: number; // Left padding in mm
+  paddingRight?: number; // Right padding in mm
+  fontSize?: FontSize; // Font size setting
+  headingFont?: string; // Font family for headings
+  bodyFont?: string; // Font family for body text
+  items: Array<{
+    name: string;
+    description: string;
+    quantity: number;
+    unitPrice: string;
     total: string;
-    notes: string;
-    includeQR: boolean;
-    qrCodeUrl?: string;
-    paperWidth?: number; // Paper width in mm for dynamic layout
-    marginTop?: number; // Top margin in mm
-    marginBottom?: number; // Bottom margin in mm
-    marginLeft?: number; // Left margin in mm
-    marginRight?: number; // Right margin in mm
-    paddingTop?: number; // Top padding in mm
-    paddingBottom?: number; // Bottom padding in mm
-    paddingLeft?: number; // Left padding in mm
-    paddingRight?: number; // Right padding in mm
-    fontSize?: FontSize; // Font size setting
-    headingFont?: string; // Font family for headings
-    bodyFont?: string; // Font family for body text
-    items: Array<{
-      name: string;
-      description: string;
-      quantity: number;
-      unitPrice: string;
-      total: string;
-    }>;
-  }
+  }>;
+}
 
 export interface QuoteTemplateData {
-    quoteId: string;
-    quoteDate: string;
-    validUntil: string;
-    status: string;
-    companyName: string;
-    companyNameAr: string;
-    companyAddress: string;
-    companyEmail: string;
-    companyPhone: string;
-    companyVat: string;
-    companyLogo: string;
-    clientName: string;
-    customerNameAr: string;
-    clientAddress: string;
-    clientEmail: string;
-    clientVat: string;
-    customerLogo: string;
-    subtotal: string;
-    taxRate: string;
-    taxAmount: string;
+  quoteId: string;
+  quoteDate: string;
+  validUntil: string;
+  status: string;
+  companyName: string;
+  companyNameAr: string;
+  companyAddress: string;
+  companyEmail: string;
+  companyPhone: string;
+  companyVat: string;
+  companyLogo: string;
+  clientName: string;
+  customerNameAr: string;
+  clientAddress: string;
+  clientEmail: string;
+  clientVat: string;
+  customerLogo: string;
+  subtotal: string;
+  taxRate: string;
+  taxAmount: string;
+  total: string;
+  notes: string;
+  includeQR: boolean;
+  qrCodeUrl?: string;
+  paperWidth?: number; // Paper width in mm for dynamic layout
+  marginTop?: number; // Top margin in mm
+  marginBottom?: number; // Bottom margin in mm
+  marginLeft?: number; // Left margin in mm
+  marginRight?: number; // Right margin in mm
+  paddingTop?: number; // Top padding in mm
+  paddingBottom?: number; // Bottom padding in mm
+  paddingLeft?: number; // Left padding in mm
+  paddingRight?: number; // Right padding in mm
+  fontSize?: FontSize; // Font size setting
+  headingFont?: string; // Font family for headings
+  bodyFont?: string; // Font family for body text
+  items: Array<{
+    name: string;
+    description: string;
+    quantity: number;
+    unitPrice: string;
     total: string;
-    notes: string;
-    includeQR: boolean;
-    qrCodeUrl?: string;
-    paperWidth?: number; // Paper width in mm for dynamic layout
-    marginTop?: number; // Top margin in mm
-    marginBottom?: number; // Bottom margin in mm
-    marginLeft?: number; // Left margin in mm
-    marginRight?: number; // Right margin in mm
-    paddingTop?: number; // Top padding in mm
-    paddingBottom?: number; // Bottom padding in mm
-    paddingLeft?: number; // Left padding in mm
-    paddingRight?: number; // Right padding in mm
-    fontSize?: FontSize; // Font size setting
-    headingFont?: string; // Font family for headings
-    bodyFont?: string; // Font family for body text
-    items: Array<{
-      name: string;
-      description: string;
-      quantity: number;
-      unitPrice: string;
-      total: string;
-    }>;
-  }
+  }>;
+}
 
-export type TemplateData = ReceiptTemplateData | InvoiceTemplateData | QuoteTemplateData;
+export type TemplateData =
+  | ReceiptTemplateData
+  | InvoiceTemplateData
+  | QuoteTemplateData;
 
 // Template categories
 export enum TemplateCategory {
-  RECEIPT = 'receipt',
-  INVOICE = 'invoice',
-  QUOTE = 'quote'
+  RECEIPT = "receipt",
+  INVOICE = "invoice",
+  QUOTE = "quote",
 }
 
 // Unified template interface
