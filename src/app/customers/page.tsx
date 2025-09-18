@@ -1,68 +1,32 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import { Customer } from '@/types';
 import { useCustomers } from '@/lib/hooks/useCustomers';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
-import { Plus, Trash2, Edit, Users, X, Upload } from 'lucide-react';
+import { Plus, Trash2, Edit, Users } from 'lucide-react';
 import { toast } from 'sonner';
-
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { storage } from '@/lib/firebase/config';
+import { AddCustomerDialog } from '@/components/orders/AddCustomerDialog';
 
 export default function CustomersPage() {
-  const { customers, loading: customersLoading, createCustomer, updateCustomer, deleteCustomer } = useCustomers();
+  const { customers, loading: customersLoading, deleteCustomer } = useCustomers();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
-  const [uploadingLogo, setUploadingLogo] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    nameAr: '',
-    email: '',
-    address: '',
-    phone: '',
-    vatNumber: '',
-    logoUrl: '',
-  });
 
   const handleAddCustomer = () => {
     setEditingCustomer(null);
-    setFormData({
-      name: '',
-      nameAr: '',
-      email: '',
-      address: '',
-      phone: '',
-      vatNumber: '',
-      logoUrl: '',
-    });
     setIsDialogOpen(true);
   };
 
   const handleEditCustomer = (customer: Customer) => {
     setEditingCustomer(customer);
-    setFormData({
-      name: customer.name,
-      nameAr: customer.nameAr || '',
-      email: customer.email,
-      address: customer.address || '',
-      phone: customer.phone || '',
-      vatNumber: customer.vatNumber || '',
-      logoUrl: customer.logoUrl || '',
-    });
     setIsDialogOpen(true);
   };
-
-
 
   const handleDeleteCustomer = async (id: string) => {
     try {
@@ -70,52 +34,6 @@ export default function CustomersPage() {
       toast.success('Customer deleted successfully');
     } catch {
       toast.error('Failed to delete customer');
-    }
-  };
-
-  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || !e.target.files[0]) return;
-    
-    const file = e.target.files[0];
-    setUploadingLogo(true);
-    
-    try {
-      const storageRef = ref(storage, `customers/${Date.now()}_logo`);
-      await uploadBytes(storageRef, file);
-      const downloadUrl = await getDownloadURL(storageRef);
-      
-      setFormData(prev => ({ ...prev, logoUrl: downloadUrl }));
-    } catch (error) {
-      console.error('Error uploading logo:', error);
-      toast.error('Failed to upload logo.');
-    } finally {
-      setUploadingLogo(false);
-    }
-  };
-
-  const handleRemoveLogo = () => {
-    setFormData(prev => ({ ...prev, logoUrl: '' }));
-  };
-
-  const handleSaveCustomer = async () => {
-    try {
-      if (editingCustomer) {
-        await updateCustomer(editingCustomer.id, formData);
-      } else {
-        await createCustomer(formData);
-      }
-      setIsDialogOpen(false);
-      setFormData({
-        name: '',
-        nameAr: '',
-        email: '',
-        address: '',
-        phone: '',
-        vatNumber: '',
-        logoUrl: '',
-      });
-    } catch {
-      // Error handling is done in the hook
     }
   };
 
@@ -206,129 +124,11 @@ export default function CustomersPage() {
         </CardContent>
       </Card>
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>
-              {editingCustomer ? 'Edit Customer' : 'Add New Customer'}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="name">Name (English) *</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Customer name in English"
-                />
-              </div>
-              <div>
-                <Label htmlFor="nameAr">Name (Arabic)</Label>
-                <Input
-                  id="nameAr"
-                  value={formData.nameAr}
-                  onChange={(e) => setFormData({ ...formData, nameAr: e.target.value })}
-                  placeholder="Customer name in Arabic"
-                  dir="rtl"
-                />
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="email">Email *</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="customer@example.com"
-              />
-            </div>
-            <div>
-              <Label htmlFor="phone">Phone</Label>
-              <Input
-                id="phone"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                placeholder="+1-234-567-8900"
-              />
-            </div>
-            <div>
-              <Label htmlFor="address">Address</Label>
-              <Input
-                id="address"
-                value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                placeholder="Street address, city, country"
-              />
-            </div>
-            <div>
-              <Label htmlFor="vatNumber">VAT Number</Label>
-              <Input
-                id="vatNumber"
-                value={formData.vatNumber}
-                onChange={(e) => setFormData({ ...formData, vatNumber: e.target.value })}
-                placeholder="VAT number"
-              />
-            </div>
-            <div className="space-y-4">
-              <Label>Customer Logo</Label>
-              <div className="flex items-center space-x-4">
-                {formData.logoUrl ? (
-                  <div className="relative">
-                    <Image
-                      src={formData.logoUrl}
-                      alt="Customer Logo"
-                      width={96}
-                      height={96}
-                      className="w-24 h-24 object-contain border rounded"
-                    />
-                    <Button 
-                      variant="destructive" 
-                      size="icon" 
-                      className="absolute -top-2 -right-2 h-6 w-6"
-                      onClick={handleRemoveLogo}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="w-24 h-24 border-2 border-dashed border-gray-300 rounded flex items-center justify-center">
-                    <span className="text-gray-400 text-xs">No Logo</span>
-                  </div>
-                )}
-                <div>
-                  <Label htmlFor="logo-upload" className="cursor-pointer">
-                    <Button variant="outline" loading={uploadingLogo}>
-                      <Upload className="h-4 w-4 mr-2" />
-                      Upload Logo
-                    </Button>
-                  </Label>
-                  <Input
-                    id="logo-upload"
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleLogoUpload}
-                  />
-                  <p className="text-sm text-gray-500 mt-2">
-                    Recommended: Square image, max 2MB
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="flex justify-end space-x-2 pt-4">
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleSaveCustomer}>
-                {editingCustomer ? 'Update' : 'Add'} Customer
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <AddCustomerDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        editingCustomer={editingCustomer}
+      />
     </div>
   );
 }
