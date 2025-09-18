@@ -256,6 +256,13 @@ export function TemplatesTab({}: TemplatesTabProps) {
 
   const handleSetDefaultTemplate = async (templateId: string) => {
     if (!organizationId) return;
+    
+    // Check if printer settings exist
+    if (!printerSettings) {
+      console.error('[TemplatesTab] Printer settings not available');
+      toast.error('Printer settings not available. Please refresh and try again.');
+      return;
+    }
 
     try {
       // Validate that the template exists in our combined templates
@@ -331,7 +338,7 @@ export function TemplatesTab({}: TemplatesTabProps) {
         "@/lib/firebase/firestore/settings/printer"
       );
       const updateData = settingsToUpdate as Partial<PrinterSettings>;
-      await updatePrinterSettings(printerSettings!.id, updateData);
+      await updatePrinterSettings(printerSettings.id, updateData);
 
       // Force refresh store settings to ensure UI updates immediately
       console.log('[TemplatesTab] Calling refreshStoreSettings...');
