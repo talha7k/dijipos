@@ -10,7 +10,8 @@ import {
   deleteOrderType,
   createPaymentType,
   updatePaymentType,
-  deletePaymentType
+  deletePaymentType,
+  updatePrinterSettings
 } from '../firebase/firestore/settings/storeSettings';
 import { useRealtimeCollection } from './useRealtimeCollection';
 import { useOrganization } from './useOrganization';
@@ -78,7 +79,15 @@ export function useStoreSettings(): StoreSettingsState & StoreSettingsActions {
     const loadCompleteStoreSettings = async () => {
       try {
         setLoading(true);
-        const completeSettings = await getStoreSettings(selectedOrganizationId);
+        let completeSettings = await getStoreSettings(selectedOrganizationId);
+
+        // If no store settings exist, create default ones
+        if (!completeSettings) {
+          console.log('[useStoreSettings] No store settings found, creating defaults...');
+          completeSettings = await createDefaultStoreSettings(selectedOrganizationId);
+          console.log('[useStoreSettings] Default store settings created:', completeSettings);
+        }
+
         setStoreSettings(completeSettings);
       } catch (err) {
         console.error('Error loading store settings:', err);

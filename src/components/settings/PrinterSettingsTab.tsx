@@ -30,7 +30,17 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
   const { receiptTemplates, loading: templatesLoading } = useReceiptTemplatesData(organizationId || undefined);
   const { templates: invoiceTemplates } = useInvoicesTemplatesData(organizationId || undefined);
   const { templates: quoteTemplates } = useQuotesTemplatesData(organizationId || undefined);
-  const { storeSettings, refreshStoreSettings } = useStoreSettings();
+  const { storeSettings, loading: storeSettingsLoading, refreshStoreSettings } = useStoreSettings();
+
+  console.log('[PrinterSettingsTab] Templates loaded:', {
+    receiptTemplates: receiptTemplates.length,
+    invoiceTemplates: invoiceTemplates.length,
+    quoteTemplates: quoteTemplates.length,
+    templatesLoading,
+    organizationId,
+    storeSettings: !!storeSettings,
+    storeSettingsLoading
+  });
 
 
 
@@ -39,7 +49,20 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleUpdateSettings = async (field: string, value: string | number | boolean) => {
-    if (!organizationId || !storeSettings) {
+    console.log('[PrinterSettingsTab] handleUpdateSettings called:', { field, value, organizationId: !!organizationId, storeSettings: !!storeSettings, storeSettingsLoading });
+
+    if (!organizationId) {
+      console.error('[PrinterSettingsTab] Missing organizationId');
+      return;
+    }
+
+    if (storeSettingsLoading) {
+      console.log('[PrinterSettingsTab] Store settings still loading, waiting...');
+      return;
+    }
+
+    if (!storeSettings) {
+      console.error('[PrinterSettingsTab] Store settings not available');
       return;
     }
 
@@ -162,9 +185,9 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
           Template & Print Settings
           <span className="text-sm text-muted-foreground">(Double-click to edit)</span>
         </CardTitle>
-        {!printerSettings && (
+        {(storeSettingsLoading || !printerSettings) && (
           <p className="text-sm text-muted-foreground mt-2">
-            Settings will be created automatically when you make your first change.
+            {storeSettingsLoading ? 'Loading settings...' : 'Settings will be created automatically when you make your first change.'}
           </p>
         )}
       </CardHeader>
@@ -196,41 +219,48 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
             <div className="space-y-4">
               {!templatesLoading && (
                <>
-                   <EditableSetting
-                     label="Default Receipt Template"
-                     value={printerSettings?.receipts?.defaultTemplateId || ''}
-                     type="select"
-                     options={receiptTemplates.map(t => ({
-                       value: t.id,
-                       label: t.name
-                     }))}
-                     onSave={(value) => handleUpdateSettings('receipts.defaultTemplateId', value)}
-                     placeholder="Select template"
-                   />
+                    <EditableSetting
+                      label="Default Receipt Template"
+                      value={printerSettings?.receipts?.defaultTemplateId || ''}
+                      type="select"
+                      options={receiptTemplates.map(t => ({
+                        value: t.id,
+                        label: t.name
+                      }))}
+                      onSave={(value) => handleUpdateSettings('receipts.defaultTemplateId', value)}
+                      placeholder="Select template"
+                      disabled={storeSettingsLoading}
+                    />
+                    <div className="text-xs text-muted-foreground">
+                      Current: {printerSettings?.receipts?.defaultTemplateId || 'None'} |
+                      Available: {receiptTemplates.map(t => t.name).join(', ')}
+                    </div>
 
                    <EditableSetting
-                     label="Default Invoice Template"
-                     value={printerSettings?.invoices?.defaultTemplateId || ''}
-                     type="select"
-                     options={invoiceTemplates.map(t => ({
-                       value: t.id,
-                       label: t.name
-                     }))}
-                     onSave={(value) => handleUpdateSettings('invoices.defaultTemplateId', value)}
-                     placeholder="Select template"
-                   />
+                      label="Default Invoice Template"
+                      value={printerSettings?.invoices?.defaultTemplateId || ''}
+                      type="select"
+                      options={invoiceTemplates.map(t => ({
+                        value: t.id,
+                        label: t.name
+                      }))}
+                       onSave={(value) => handleUpdateSettings('invoices.defaultTemplateId', value)}
+                      placeholder="Select template"
+                      disabled={storeSettingsLoading}
+                    />
 
-                   <EditableSetting
-                     label="Default Quote Template"
-                     value={printerSettings?.quotes?.defaultTemplateId || ''}
-                     type="select"
-                     options={quoteTemplates.map(t => ({
-                       value: t.id,
-                       label: t.name
-                     }))}
-                     onSave={(value) => handleUpdateSettings('quotes.defaultTemplateId', value)}
-                     placeholder="Select template"
-                   />
+                    <EditableSetting
+                      label="Default Quote Template"
+                      value={printerSettings?.quotes?.defaultTemplateId || ''}
+                      type="select"
+                      options={quoteTemplates.map(t => ({
+                        value: t.id,
+                        label: t.name
+                      }))}
+                       onSave={(value) => handleUpdateSettings('quotes.defaultTemplateId', value)}
+                      placeholder="Select template"
+                      disabled={storeSettingsLoading}
+                    />
 
                 </>
               )}

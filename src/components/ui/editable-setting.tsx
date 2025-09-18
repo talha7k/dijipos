@@ -55,10 +55,13 @@ export function EditableSetting<T extends string | number | boolean>({
   const handleSave = async () => {
     setIsSaving(true);
     try {
+      console.log('[EditableSetting] Saving value:', editValue);
       await onSave(editValue);
+      console.log('[EditableSetting] Save successful');
       setIsEditing(false);
     } catch (error) {
       console.error('Failed to save setting:', error);
+      // Don't exit edit mode on error so user can try again
     } finally {
       setIsSaving(false);
     }
@@ -94,52 +97,72 @@ export function EditableSetting<T extends string | number | boolean>({
     switch (type) {
       case 'text':
         return (
-          <Input
-            type="text"
-            value={String(editValue)}
-            onChange={(e) => setEditValue(e.target.value as T)}
-            onKeyDown={handleKeyDown}
-            placeholder={placeholder}
-            autoFocus
-            disabled={isSaving}
-            className="h-8"
-          />
+          <div className="flex items-center gap-2">
+            <Input
+              type="text"
+              value={String(editValue)}
+              onChange={(e) => setEditValue(e.target.value as T)}
+              onKeyDown={handleKeyDown}
+              placeholder={placeholder}
+              autoFocus
+              disabled={isSaving}
+              className="h-8"
+            />
+            {isSaving && <span className="text-xs text-muted-foreground">Saving...</span>}
+          </div>
         );
       case 'number':
         return (
-          <Input
-            type="number"
-            value={Number(editValue)}
-            onChange={(e) => setEditValue(Number(e.target.value) as T)}
-            onKeyDown={handleKeyDown}
-            placeholder={placeholder}
-            autoFocus
-            disabled={isSaving}
-            className="h-8"
-          />
+          <div className="flex items-center gap-2">
+            <Input
+              type="number"
+              value={Number(editValue)}
+              onChange={(e) => setEditValue(Number(e.target.value) as T)}
+              onKeyDown={handleKeyDown}
+              placeholder={placeholder}
+              autoFocus
+              disabled={isSaving}
+              className="h-8"
+            />
+            {isSaving && <span className="text-xs text-muted-foreground">Saving...</span>}
+          </div>
         );
       case 'switch':
         return (
-          <Switch
-            checked={editValue as boolean}
-            onCheckedChange={(checked) => setEditValue(checked as T)}
-            disabled={isSaving}
-          />
+          <div className="flex items-center gap-2">
+            <Switch
+              checked={editValue as boolean}
+              onCheckedChange={(checked) => setEditValue(checked as T)}
+              disabled={isSaving}
+            />
+            {isSaving && <span className="text-xs text-muted-foreground">Saving...</span>}
+          </div>
         );
       case 'select':
         return (
-          <Select value={String(editValue) || ''} onValueChange={(val) => setEditValue(val as T)} disabled={isSaving}>
-            <SelectTrigger className="h-8">
-              <SelectValue placeholder={placeholder || 'Select option'} />
-            </SelectTrigger>
-            <SelectContent>
-              {options.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-2">
+            <Select
+              value={String(editValue) || ''}
+              onValueChange={(val) => {
+                setEditValue(val as T);
+                // Auto-save for select type
+                setTimeout(() => handleSave(), 100);
+              }}
+              disabled={isSaving}
+            >
+              <SelectTrigger className="h-8">
+                <SelectValue placeholder={placeholder || 'Select option'} />
+              </SelectTrigger>
+              <SelectContent>
+                {options.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {isSaving && <span className="text-xs text-muted-foreground">Saving...</span>}
+          </div>
         );
       default:
         return null;
