@@ -1,4 +1,5 @@
 import { Order, OrderPayment } from '@/types';
+import { OrderStatus, TableStatus } from '@/types/enums';
 import {
   getOrder,
   createOrder,
@@ -11,6 +12,7 @@ import {
 } from '../firebase/firestore/orders';
 import { useRealtimeCollection } from './useRealtimeCollection';
 import { useOrganization } from './useOrganization';
+import { useTables } from './useTables';
 
 interface OrdersState {
   orders: Order[];
@@ -34,6 +36,7 @@ interface OrdersActions {
  */
 export function useOrders(): OrdersState & OrdersActions {
   const { selectedOrganization } = useOrganization();
+  const { updateTable } = useTables();
 
   const { data: orders, loading, error } = useRealtimeCollection<Order>(
     'orders',
@@ -41,6 +44,21 @@ export function useOrders(): OrdersState & OrdersActions {
     [], // additional constraints remove this line later for indexes to be used.
     null // disable orderBy to prevent index issues remove this line later for indexes to be used.
   );
+
+  const handleTableStatusUpdate = async (order: Order) => {
+    if (!order.tableId) return;
+
+    try {
+      if (order.status === OrderStatus.OPEN) {
+        await updateTable(order.tableId, { status: TableStatus.OCCUPIED });
+      } else if (order.status === OrderStatus.COMPLETED || order.status === OrderStatus.CANCELLED) {
+        await updateTable(order.tableId, { status: TableStatus.AVAILABLE });
+      }
+    } catch (error) {
+      console.error('Error updating table status:', error);
+      // Don't throw error here to avoid breaking order operations
+    }
+  };
 
   const getOrderById = async (orderId: string): Promise<Order | null> => {
     try {
@@ -55,6 +73,13 @@ export function useOrders(): OrdersState & OrdersActions {
     try {
       const orderId = await createOrder(orderData);
       // Real-time listener will automatically update the orders list
+
+      // Update table status if order has a table assigned
+      if (orderData.tableId) {
+        const order = { ...orderData, id: orderId, createdAt: new Date(), updatedAt: new Date() } as Order;
+        await handleTableStatusUpdate(order);
+      }
+
       return orderId;
     } catch (err) {
       console.error('Error creating order:', err);
@@ -66,6 +91,15 @@ export function useOrders(): OrdersState & OrdersActions {
     try {
       await updateOrder(orderId, updates);
       // Real-time listener will automatically update the orders list
+
+      // Update table status if order status or table assignment changed
+      if (updates.status || updates.tableId) {
+        // Get the updated order to check its current state
+        const updatedOrder = await getOrder(orderId);
+        if (updatedOrder) {
+          await handleTableStatusUpdate(updatedOrder);
+        }
+      }
     } catch (err) {
       console.error('Error updating order:', err);
       throw err;

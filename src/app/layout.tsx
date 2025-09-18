@@ -6,6 +6,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
+import FirestoreProvider from "@/components/FirestoreProvider";
 
 export default function RootLayout({
   children,
@@ -15,16 +16,18 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <JotaiProvider>
-          <ThemeProvider>
-            <AuthProvider>
-              <AuthGuard>
-                <AppLayout>{children}</AppLayout>
-              </AuthGuard>
-              <Toaster />
-            </AuthProvider>
-          </ThemeProvider>
-        </JotaiProvider>
+        <FirestoreProvider>
+          <JotaiProvider>
+            <ThemeProvider>
+              <AuthProvider>
+                <AuthGuard>
+                  <AppLayout>{children}</AppLayout>
+                </AuthGuard>
+                <Toaster />
+              </AuthProvider>
+            </ThemeProvider>
+          </JotaiProvider>
+        </FirestoreProvider>
       </body>
     </html>
   );

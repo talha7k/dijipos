@@ -3,7 +3,11 @@ import {
   getAuth,
   GoogleAuthProvider
 } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import {
+  getFirestore,
+  enableIndexedDbPersistence,
+  CACHE_SIZE_UNLIMITED,
+} from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
@@ -33,6 +37,25 @@ export const auth = getAuth(app);
 
 // Initialize Firestore
 export const db = getFirestore(app);
+
+/**
+ * Enables Firestore offline persistence.
+ * This function should only be called on the client side.
+ */
+export const enablePersistence = async () => {
+  try {
+    await enableIndexedDbPersistence(db);
+    console.log("Firestore persistence enabled successfully.");
+  } catch (error: any) {
+    if (error.code === 'failed-precondition') {
+      console.warn('Firestore persistence failed: Multiple tabs open. Persistence can only be enabled in one tab at a time.');
+    } else if (error.code === 'unimplemented') {
+      console.error('Firestore persistence failed: The current browser does not support all of the features required.');
+    } else {
+      console.error('An error occurred while enabling Firestore persistence:', error);
+    }
+  }
+};
 
 // Initialize other Firebase services
 export const storage = getStorage(app);

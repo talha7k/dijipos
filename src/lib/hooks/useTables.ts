@@ -1,7 +1,7 @@
 import { Table } from '@/types';
 import { useRealtimeCollection } from './useRealtimeCollection';
 import { useOrganization } from './useOrganization';
-import { createTable as firestoreCreateTable, deleteTable as firestoreDeleteTable } from '@/lib/firebase/firestore/tables';
+import { createTable as firestoreCreateTable, updateTable as firestoreUpdateTable, deleteTable as firestoreDeleteTable } from '@/lib/firebase/firestore/tables';
 import { TableStatus } from '@/types/enums';
 import { toast } from 'sonner';
 
@@ -13,6 +13,7 @@ interface TablesState {
 
 interface TableActions {
   createTable: (tableData: { name: string; capacity: number; status: TableStatus }) => Promise<string>;
+  updateTable: (tableId: string, updates: Partial<Omit<Table, 'id'>>) => Promise<void>;
   deleteTable: (tableId: string) => Promise<void>;
 }
 
@@ -50,6 +51,20 @@ export function useTables(): TablesState & TableActions {
     }
   };
 
+  const updateTable = async (tableId: string, updates: Partial<Omit<Table, 'id'>>) => {
+    if (!organizationId) {
+      throw new Error('No organization selected');
+    }
+    try {
+      await firestoreUpdateTable(organizationId, tableId, updates);
+      toast.success('Table updated successfully');
+    } catch (error) {
+      console.error('Error updating table:', error);
+      toast.error('Failed to update table');
+      throw error;
+    }
+  };
+
   const deleteTable = async (tableId: string) => {
     if (!organizationId) {
       throw new Error('No organization selected');
@@ -70,6 +85,7 @@ export function useTables(): TablesState & TableActions {
     loading,
     error,
     createTable,
+    updateTable,
     deleteTable,
   };
 }
