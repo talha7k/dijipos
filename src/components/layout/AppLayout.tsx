@@ -1,12 +1,13 @@
 // components/layout/AppLayout.jsx
 "use client";
 
+import React from "react";
 import { usePathname } from "next/navigation";
 import { useAtomValue } from "jotai";
 import { sidebarCollapsedAtom } from "@/atoms/uiAtoms";
 import { CollapsibleSidebar } from "@/components/sidebar/collapsible-sidebar";
 
-export function AppLayout({ children }) {
+export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isCollapsed = useAtomValue(sidebarCollapsedAtom);
 
@@ -19,7 +20,7 @@ export function AppLayout({ children }) {
     "/reset-password",
     "/select-organization",
   ];
-  if (noLayoutRoutes.includes(pathname) || pathname.startsWith("/auth")) {
+  if (pathname && (noLayoutRoutes.includes(pathname) || pathname.startsWith("/auth"))) {
     return <>{children}</>;
   }
 

@@ -3,12 +3,18 @@ export const defaultReceiptA4Template = `<!DOCTYPE html>
 <head>
   <meta charset="utf-8">
   <title>Receipt</title>
-  <style>
+   <style>
+    :root {
+      --heading-font: {{headingFont}};
+      --body-font: {{bodyFont}};
+      --line-spacing: {{lineSpacing}};
+    }
     body {
-      font-family: system-ui, -apple-system, sans-serif;
+      font-family: var(--body-font), system-ui, -apple-system, sans-serif;
       margin: 0;
       padding: 0;
       background: white;
+      line-height: var(--line-spacing);
     }
      .receipt-container {
        max-width: 800px;
@@ -29,6 +35,7 @@ export const defaultReceiptA4Template = `<!DOCTYPE html>
       color: #1f2937;
       font-size: 1.5rem;
       font-weight: bold;
+      font-family: var(--heading-font), system-ui, -apple-system, sans-serif;
     }
     .company-info p {
       margin: 5px 0;

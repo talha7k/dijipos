@@ -1,12 +1,11 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
-import { useAtom, useSetAtom } from 'jotai';
-import { auth } from '@/lib/firebase/config';
-import { onAuthStateChanged } from 'firebase/auth';
+import { useEffect, useRef } from "react";
+import { useAtom, useSetAtom } from "jotai";
+import { auth } from "@/lib/firebase/config";
+import { onAuthStateChanged } from "firebase/auth";
 
-
-import { useOrganizationManager } from '@/lib/hooks/useOrganization';
+import { useOrganizationManager } from "@/lib/hooks/useOrganization";
 import {
   selectedOrganizationAtom,
   userOrganizationsAtom,
@@ -15,22 +14,33 @@ import {
   selectedOrganizationIdAtom,
   organizationUserRoleAtom,
   logoutAtom,
-} from '@/atoms';
-import { ReactNode } from 'react';
-import { autoRepairIndexedDB } from '@/lib/debug-indexeddb';
-
+} from "@/atoms";
+import { ReactNode } from "react";
+import { autoRepairIndexedDB } from "@/lib/debug-indexeddb";
 
 interface AuthProviderProps {
   children: ReactNode;
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [selectedOrganization, setSelectedOrganization] = useAtom(selectedOrganizationAtom);
-  const [userOrganizations, setUserOrganizations] = useAtom(userOrganizationsAtom);
-  const [organizationLoading, setOrganizationLoading] = useAtom(organizationLoadingAtom);
-  const [organizationError, setOrganizationError] = useAtom(organizationErrorAtom);
-  const [organizationId, setOrganizationId] = useAtom(selectedOrganizationIdAtom);
-  const [organizationUserRole, setOrganizationUserRole] = useAtom(organizationUserRoleAtom);
+  const [selectedOrganization, setSelectedOrganization] = useAtom(
+    selectedOrganizationAtom,
+  );
+  const [userOrganizations, setUserOrganizations] = useAtom(
+    userOrganizationsAtom,
+  );
+  const [organizationLoading, setOrganizationLoading] = useAtom(
+    organizationLoadingAtom,
+  );
+  const [organizationError, setOrganizationError] = useAtom(
+    organizationErrorAtom,
+  );
+  const [organizationId, setOrganizationId] = useAtom(
+    selectedOrganizationIdAtom,
+  );
+  const [organizationUserRole, setOrganizationUserRole] = useAtom(
+    organizationUserRoleAtom,
+  );
   const logout = useSetAtom(logoutAtom);
 
   // Initialize organization management - only once in the app lifecycle
@@ -41,7 +51,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Log when organizationLoading changes
   useEffect(() => {
-    console.log('AuthProvider: organizationLoading changed to', organizationLoading);
+    console.log(
+      "AuthProvider: organizationLoading changed to",
+      organizationLoading,
+    );
   }, [organizationLoading]);
 
   // Initialize IndexedDB auto-repair on component mount
@@ -50,7 +63,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       try {
         await autoRepairIndexedDB();
       } catch (error) {
-        console.error('IndexedDB auto-repair failed:', error);
+        console.error("IndexedDB auto-repair failed:", error);
       }
     };
 
@@ -59,17 +72,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Initialize auth state listener - only once
   useEffect(() => {
-    console.log('AuthProvider: Setting up auth state listener');
-    console.log('AuthProvider: Firebase auth object:', auth);
-    console.log('AuthProvider: Firebase app initialized:', auth.app);
+    console.log("AuthProvider: Setting up auth state listener");
+    console.log("AuthProvider: Firebase auth object:", auth);
+    console.log("AuthProvider: Firebase app initialized:", auth.app);
 
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      console.log('AuthProvider: Auth state changed, user:', user?.email || 'null');
-      console.log('AuthProvider: User object:', user);
+      console.log(
+        "AuthProvider: Auth state changed, user:",
+        user?.email || "null",
+      );
+      console.log("AuthProvider: User object:", user);
 
       // Prevent multiple simultaneous auth operations
       if (authProcessingRef.current) {
-        console.log('AuthProvider: Auth already processing, skipping duplicate call');
+        console.log(
+          "AuthProvider: Auth already processing, skipping duplicate call",
+        );
         return;
       }
 
@@ -81,17 +99,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
           if (user) {
             // AuthProvider only handles authentication
             // Organization loading is handled by useOrganizationManager
-            console.log('AuthProvider: User authenticated');
+            console.log("AuthProvider: User authenticated");
           } else {
-            console.log('AuthProvider: No user, clearing state');
+            console.log("AuthProvider: No user, clearing state");
             logout();
           }
-          
+
           // Auth processing is complete
           authProcessingRef.current = false;
-          console.log('AuthProvider: Auth process finished');
+          console.log("AuthProvider: Auth process finished");
         } catch (err) {
-          console.error('Auth state change error:', err);
+          console.error("Auth state change error:", err);
           // Auth processing is complete
           authProcessingRef.current = false;
         }
@@ -99,7 +117,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     });
 
     return () => {
-      console.log('AuthProvider: Cleaning up auth state listener');
+      console.log("AuthProvider: Cleaning up auth state listener");
       unsubscribe();
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps

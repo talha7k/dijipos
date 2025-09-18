@@ -1,25 +1,26 @@
 // components/layout/AuthGuard.jsx
 "use client";
 
+import React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAtomValue } from "jotai";
 import { useAuth } from "@/lib/hooks/useAuth";
-import { selectedOrganizationIdAtom } from "@/atoms";
+import { selectedOrganizationIdAtom, organizationLoadingAtom } from "@/atoms";
 import { OrganizationManager } from "@/components/organization/OrganizationManager";
 import FullPageLoader from "@/components/ui/FullPageLoader"; // Assuming you have a loader
 
-export function AuthGuard({ children }) {
+export function AuthGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
 
   const { user, loading: authLoading } = useAuth();
   const selectedOrgId = useAtomValue(selectedOrganizationIdAtom);
-  const orgLoading = useAtomValue(organizationLoadingAtom); // Assuming you have this atom
+  const orgLoading = useAtomValue(organizationLoadingAtom);
 
   const isPublicRoute =
-    ["/login", "/register", "/verify-email", "/reset-password"].includes(
+    pathname && ["/login", "/register", "/verify-email", "/reset-password"].includes(
       pathname,
-    ) || pathname.startsWith("/auth");
+    ) || (pathname && pathname.startsWith("/auth"));
 
   // 1. Show a loader during initial auth and organization checks
   if (authLoading || (!isPublicRoute && user && orgLoading)) {

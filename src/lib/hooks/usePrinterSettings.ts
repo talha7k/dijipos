@@ -1,5 +1,6 @@
 import React from 'react';
 import { PrinterSettings } from '@/types';
+import { FontSize } from '@/types/enums';
 import {
   getPrinterSettings,
   createPrinterSettings,
@@ -63,14 +64,31 @@ export function usePrinterSettings(): PrinterSettingsState & PrinterSettingsActi
         // This is a partial update - merge with existing settings
         if (!printerSettings) {
           // No existing settings, create new ones with the partial data
-           const newSettings: Omit<PrinterSettings, 'id' | 'createdAt' | 'updatedAt'> = {
-             organizationId: selectedOrganization.id,
-             includeQRCode: true, // default value
-             receipts: {},
-             invoices: {},
-             quotes: {},
-             ...settings,
-           };
+            const newSettings: Omit<PrinterSettings, 'id' | 'createdAt' | 'updatedAt'> = {
+              organizationId: selectedOrganization.id,
+              receipts: {
+                includeQRCode: true,
+                paperWidth: 80,
+                fontSize: FontSize.MEDIUM,
+                headingFont: 'Arial',
+                bodyFont: 'Helvetica',
+                lineSpacing: 1.2,
+                autoPrint: false,
+              },
+              invoices: {
+                paperWidth: 210,
+                fontSize: FontSize.MEDIUM,
+                headingFont: 'Arial',
+                bodyFont: 'Helvetica',
+              },
+              quotes: {
+                paperWidth: 210,
+                fontSize: FontSize.MEDIUM,
+                headingFont: 'Arial',
+                bodyFont: 'Helvetica',
+              },
+              ...settings,
+            };
 
           const createdId = await createPrinterSettings(newSettings);
           // Fetch the created settings to update global state

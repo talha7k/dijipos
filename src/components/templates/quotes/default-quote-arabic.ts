@@ -3,12 +3,16 @@
 <head>
   <meta charset="utf-8">
   <title>عرض سعر</title>
-  <style>
-    body { font-family: 'Amiri', serif; margin: 0; padding: 0; background: white; }
+   <style>
+    :root {
+      --heading-font: {{headingFont}};
+      --body-font: {{bodyFont}};
+    }
+    body { font-family: var(--body-font), 'Amiri', serif; margin: 0; padding: 0; background: white; }
      .container { max-width: 1000px; margin: {{marginTop}}mm auto {{marginBottom}}mm auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: {{paddingTop}}mm {{paddingRight}}mm {{paddingBottom}}mm {{paddingLeft}}mm; }
     .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; }
     .logo-section { position: relative; width: 192px; height: 80px; margin-left: auto; }
-    .quote-title { font-size: 2rem; font-weight: bold; color: #1f2937; }
+    .quote-title { font-size: 2rem; font-weight: bold; color: #1f2937; font-family: var(--heading-font), 'Amiri', serif; }
     .quote-number { color: #6b7280; }
     .company-info { text-align: left; }
     .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 40px; }
@@ -16,7 +20,7 @@
     .customer-logo { position: relative; width: 128px; height: 64px; margin-bottom: 10px; }
     .dates-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
     .table { width: 100%; margin-bottom: 40px; border-collapse: collapse; border: 1px solid #d1d5db; }
-    .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 12px; text-align: right; }
+    .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 12px; text-align: right; font-family: var(--heading-font), 'Amiri', serif; }
     .table td { border: 1px solid #d1d5db; padding: 12px; text-align: right; }
     .totals { display: flex; justify-content: flex-start; margin-bottom: 40px; }
     .totals div { width: 256px; }

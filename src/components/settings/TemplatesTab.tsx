@@ -204,9 +204,7 @@ export function TemplatesTab({}: TemplatesTabProps) {
 
       // Update printer settings to persist the default template choice
       // For updates, we only send the fields that can actually change
-      const settingsToUpdate: Partial<PrinterSettings> = {
-        includeQRCode: printerSettings?.includeQRCode ?? true,
-      };
+      const settingsToUpdate: Partial<PrinterSettings> = {};
 
       // Set the appropriate template ID based on category
       switch (selectedCategory) {

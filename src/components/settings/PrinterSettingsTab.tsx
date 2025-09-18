@@ -10,7 +10,7 @@ import { EditableSetting } from '@/components/ui/editable-setting';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Settings, Receipt, FileText, Quote } from 'lucide-react';
 import { toast } from 'sonner';
-import { PaperWidth } from '@/types/enums';
+import { PaperWidth, FontSize } from '@/types/enums';
 
 interface PrinterSettingsTabProps {
   printerSettings: PrinterSettings | null;
@@ -67,11 +67,27 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
         updatedSettings = {
           id: '',
           organizationId,
-          includeQRCode: true,
-          paperWidth: 80,
-          receipts: {},
-          invoices: {},
-          quotes: {},
+          receipts: {
+            includeQRCode: true,
+            paperWidth: 80,
+            fontSize: FontSize.MEDIUM,
+            headingFont: 'Arial',
+            bodyFont: 'Helvetica',
+            lineSpacing: 1.2,
+            autoPrint: false,
+          },
+          invoices: {
+            paperWidth: 210, // A4 width
+            fontSize: FontSize.MEDIUM,
+            headingFont: 'Arial',
+            bodyFont: 'Helvetica',
+          },
+          quotes: {
+            paperWidth: 210, // A4 width
+            fontSize: FontSize.MEDIUM,
+            headingFont: 'Arial',
+            bodyFont: 'Helvetica',
+          },
           createdAt: new Date(),
           updatedAt: new Date(),
         };
@@ -171,19 +187,7 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
                  />
                </>
              )}
-             <EditableSetting
-               label="Paper Width (mm)"
-               value={printerSettings?.paperWidth?.toString() || PaperWidth.MM_80.toString()}
-               type="number"
-               onSave={(value) => handleUpdateSettings('paperWidth', parseInt(value))}
-               placeholder="Enter width in mm"
-             />
-             <EditableSetting
-               label="Include ZATCA QR Code"
-               value={printerSettings?.includeQRCode ?? true}
-               type="switch"
-               onSave={(value) => handleUpdateSettings('includeQRCode', value)}
-             />
+
            </TabsContent>
 
            <TabsContent value="receipts" className="space-y-4 mt-4">
@@ -251,6 +255,76 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
                      type="number"
                      onSave={(value) => handleUpdateSettings('receipts.paddingRight', parseInt(value))}
                      placeholder="Enter right padding in mm"
+                   />
+                 </div>
+               </div>
+               <div>
+                 <h4 className="text-sm font-medium mb-3">Printer Settings</h4>
+                 <div className="grid grid-cols-2 gap-4">
+                   <EditableSetting
+                     label="Include ZATCA QR Code"
+                     value={printerSettings?.receipts?.includeQRCode ?? true}
+                     type="switch"
+                     onSave={(value) => handleUpdateSettings('receipts.includeQRCode', value)}
+                   />
+                   <EditableSetting
+                     label="Paper Width (mm)"
+                     value={printerSettings?.receipts?.paperWidth?.toString() || '80'}
+                     type="number"
+                     onSave={(value) => handleUpdateSettings('receipts.paperWidth', parseInt(value))}
+                     placeholder="Enter width in mm"
+                   />
+                   <EditableSetting
+                     label="Font Size"
+                     value={printerSettings?.receipts?.fontSize || FontSize.MEDIUM}
+                     type="select"
+                     options={[
+                       { value: FontSize.SMALL, label: 'Small' },
+                       { value: FontSize.MEDIUM, label: 'Medium' },
+                       { value: FontSize.LARGE, label: 'Large' },
+                     ]}
+                     onSave={(value) => handleUpdateSettings('receipts.fontSize', value)}
+                   />
+                   <EditableSetting
+                     label="Heading Font"
+                     value={printerSettings?.receipts?.headingFont || 'Arial'}
+                     type="select"
+                     options={[
+                       { value: 'Arial', label: 'Arial' },
+                       { value: 'Helvetica', label: 'Helvetica' },
+                       { value: 'Times New Roman', label: 'Times New Roman' },
+                       { value: 'Georgia', label: 'Georgia' },
+                       { value: 'Verdana', label: 'Verdana' },
+                       { value: 'Courier New', label: 'Courier New' },
+                     ]}
+                     onSave={(value) => handleUpdateSettings('receipts.headingFont', value)}
+                   />
+                   <EditableSetting
+                     label="Body Font"
+                     value={printerSettings?.receipts?.bodyFont || 'Helvetica'}
+                     type="select"
+                     options={[
+                       { value: 'Arial', label: 'Arial' },
+                       { value: 'Helvetica', label: 'Helvetica' },
+                       { value: 'Times New Roman', label: 'Times New Roman' },
+                       { value: 'Georgia', label: 'Georgia' },
+                       { value: 'Verdana', label: 'Verdana' },
+                       { value: 'Courier New', label: 'Courier New' },
+                     ]}
+                     onSave={(value) => handleUpdateSettings('receipts.bodyFont', value)}
+                   />
+                   <EditableSetting
+                     label="Line Spacing"
+                     value={printerSettings?.receipts?.lineSpacing?.toString() || '1.2'}
+                     type="number"
+                     onSave={(value) => handleUpdateSettings('receipts.lineSpacing', parseFloat(value))}
+                     placeholder="Enter line spacing (e.g., 1.2)"
+                   />
+                   <EditableSetting
+                     label="Auto Print"
+                     value={printerSettings?.receipts?.autoPrint ?? false}
+                     type="switch"
+                     onSave={(value) => handleUpdateSettings('receipts.autoPrint', value)}
                    />
                  </div>
                </div>
@@ -325,6 +399,57 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
                    />
                  </div>
                </div>
+               <div>
+                 <h4 className="text-sm font-medium mb-3">Printer Settings</h4>
+                 <div className="grid grid-cols-2 gap-4">
+                   <EditableSetting
+                     label="Paper Width (mm)"
+                     value={printerSettings?.invoices?.paperWidth?.toString() || '210'}
+                     type="number"
+                     onSave={(value) => handleUpdateSettings('invoices.paperWidth', parseInt(value))}
+                     placeholder="Enter width in mm"
+                   />
+                   <EditableSetting
+                     label="Font Size"
+                     value={printerSettings?.invoices?.fontSize || FontSize.MEDIUM}
+                     type="select"
+                     options={[
+                       { value: FontSize.SMALL, label: 'Small' },
+                       { value: FontSize.MEDIUM, label: 'Medium' },
+                       { value: FontSize.LARGE, label: 'Large' },
+                     ]}
+                     onSave={(value) => handleUpdateSettings('invoices.fontSize', value)}
+                   />
+                   <EditableSetting
+                     label="Heading Font"
+                     value={printerSettings?.invoices?.headingFont || 'Arial'}
+                     type="select"
+                     options={[
+                       { value: 'Arial', label: 'Arial' },
+                       { value: 'Helvetica', label: 'Helvetica' },
+                       { value: 'Times New Roman', label: 'Times New Roman' },
+                       { value: 'Georgia', label: 'Georgia' },
+                       { value: 'Verdana', label: 'Verdana' },
+                       { value: 'Courier New', label: 'Courier New' },
+                     ]}
+                     onSave={(value) => handleUpdateSettings('invoices.headingFont', value)}
+                   />
+                   <EditableSetting
+                     label="Body Font"
+                     value={printerSettings?.invoices?.bodyFont || 'Helvetica'}
+                     type="select"
+                     options={[
+                       { value: 'Arial', label: 'Arial' },
+                       { value: 'Helvetica', label: 'Helvetica' },
+                       { value: 'Times New Roman', label: 'Times New Roman' },
+                       { value: 'Georgia', label: 'Georgia' },
+                       { value: 'Verdana', label: 'Verdana' },
+                       { value: 'Courier New', label: 'Courier New' },
+                     ]}
+                     onSave={(value) => handleUpdateSettings('invoices.bodyFont', value)}
+                   />
+                 </div>
+               </div>
              </div>
            </TabsContent>
 
@@ -393,6 +518,57 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
                      type="number"
                      onSave={(value) => handleUpdateSettings('quotes.paddingRight', parseInt(value))}
                      placeholder="Enter right padding in mm"
+                   />
+                 </div>
+               </div>
+               <div>
+                 <h4 className="text-sm font-medium mb-3">Printer Settings</h4>
+                 <div className="grid grid-cols-2 gap-4">
+                   <EditableSetting
+                     label="Paper Width (mm)"
+                     value={printerSettings?.quotes?.paperWidth?.toString() || '210'}
+                     type="number"
+                     onSave={(value) => handleUpdateSettings('quotes.paperWidth', parseInt(value))}
+                     placeholder="Enter width in mm"
+                   />
+                   <EditableSetting
+                     label="Font Size"
+                     value={printerSettings?.quotes?.fontSize || FontSize.MEDIUM}
+                     type="select"
+                     options={[
+                       { value: FontSize.SMALL, label: 'Small' },
+                       { value: FontSize.MEDIUM, label: 'Medium' },
+                       { value: FontSize.LARGE, label: 'Large' },
+                     ]}
+                     onSave={(value) => handleUpdateSettings('quotes.fontSize', value)}
+                   />
+                   <EditableSetting
+                     label="Heading Font"
+                     value={printerSettings?.quotes?.headingFont || 'Arial'}
+                     type="select"
+                     options={[
+                       { value: 'Arial', label: 'Arial' },
+                       { value: 'Helvetica', label: 'Helvetica' },
+                       { value: 'Times New Roman', label: 'Times New Roman' },
+                       { value: 'Georgia', label: 'Georgia' },
+                       { value: 'Verdana', label: 'Verdana' },
+                       { value: 'Courier New', label: 'Courier New' },
+                     ]}
+                     onSave={(value) => handleUpdateSettings('quotes.headingFont', value)}
+                   />
+                   <EditableSetting
+                     label="Body Font"
+                     value={printerSettings?.quotes?.bodyFont || 'Helvetica'}
+                     type="select"
+                     options={[
+                       { value: 'Arial', label: 'Arial' },
+                       { value: 'Helvetica', label: 'Helvetica' },
+                       { value: 'Times New Roman', label: 'Times New Roman' },
+                       { value: 'Georgia', label: 'Georgia' },
+                       { value: 'Verdana', label: 'Verdana' },
+                       { value: 'Courier New', label: 'Courier New' },
+                     ]}
+                     onSave={(value) => handleUpdateSettings('quotes.bodyFont', value)}
                    />
                  </div>
                </div>

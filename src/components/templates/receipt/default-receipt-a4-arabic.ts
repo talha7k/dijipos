@@ -3,12 +3,18 @@ export const defaultArabicReceiptA4Template = `<!DOCTYPE html>
 <head>
   <meta charset="utf-8">
   <title>إيصال</title>
-  <style>
+   <style>
+    :root {
+      --heading-font: {{headingFont}};
+      --body-font: {{bodyFont}};
+      --line-spacing: {{lineSpacing}};
+    }
     body {
-      font-family: 'Amiri', serif;
+      font-family: var(--body-font), 'Amiri', serif;
       margin: 0;
       padding: 0;
       background: white;
+      line-height: var(--line-spacing);
     }
      .receipt-container {
        max-width: 800px;
@@ -27,6 +33,7 @@ export const defaultArabicReceiptA4Template = `<!DOCTYPE html>
       margin: 0 0 10px 0;
       color: #1f2937;
       font-size: 1.5rem;
+      font-family: var(--heading-font), 'Amiri', serif;
       font-weight: bold;
     }
     .company-info p {

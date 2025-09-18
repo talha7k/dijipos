@@ -4,18 +4,24 @@ export const defaultEnglishReceiptTemplate = `<!DOCTYPE html>
   <meta charset="utf-8">
   <title>Receipt</title>
     <style>
-     body { font-family: monospace; margin: {{marginTop}}mm {{marginRight}}mm {{marginBottom}}mm {{marginLeft}}mm; padding: {{paddingTop}}mm {{paddingRight}}mm {{paddingBottom}}mm {{paddingLeft}}mm; font-size: 12px; max-width: {{paperWidth}}px; }
+     :root {
+       --heading-font: {{headingFont}};
+       --body-font: {{bodyFont}};
+       --line-spacing: {{lineSpacing}};
+     }
+     body { font-family: var(--body-font), monospace; margin: {{marginTop}}mm {{marginRight}}mm {{marginBottom}}mm {{marginLeft}}mm; padding: {{paddingTop}}mm {{paddingRight}}mm {{paddingBottom}}mm {{paddingLeft}}mm; font-size: 12px; max-width: {{paperWidth}}px; line-height: var(--line-spacing); }
     .header { text-align: center; margin-bottom: 10px; }
-    .custom-header { text-align: center; margin-bottom: 10px; font-weight: bold; }
+    .header h2 { font-family: var(--heading-font), monospace; }
+    .custom-header { text-align: center; margin-bottom: 10px; font-weight: bold; font-family: var(--heading-font), monospace; }
     .content { margin-bottom: 10px; }
     .footer { text-align: center; margin-top: 10px; }
-    .custom-footer { text-align: center; margin-bottom: 10px; font-style: italic; }
+    .custom-footer { text-align: center; margin-bottom: 10px; font-style: italic; font-family: var(--heading-font), monospace; }
     .line { display: flex; justify-content: space-between; }
     .total { font-weight: bold; border-top: 1px solid #000; padding-top: 5px; margin-top: 10px; }
     .total-amount { font-weight: bold; font-size: 14px; border-top: 2px solid #000; padding-top: 5px; margin-top: 5px; }
     table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
     th, td { text-align: left; padding: 2px 0; }
-    th { font-weight: bold; border-bottom: 1px solid #000; }
+    th { font-weight: bold; border-bottom: 1px solid #000; font-family: var(--heading-font), monospace; }
     .amount-col { text-align: right; }
     .qty-col { text-align: center; width: 60px; }
     .item-col { width: calc({{paperWidth}}px - 120px); }
