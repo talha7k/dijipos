@@ -9,6 +9,8 @@ import { selectedOrganizationAtom, organizationUsersAtom,  } from '@/atoms';
 import { organizationLoadingAtom } from '@/atoms';
 import { useInvitationCodesData, useInvitationCodesActions } from '@/lib/hooks/useInvitationCodes';
 import { updateOrganization, updateOrganizationBranding, updateOrganizationUser, updateUserStatus } from '@/lib/firebase/firestore/organizations';
+import { useAtom } from 'jotai';
+import { selectedOrganizationIdAtom } from '@/atoms';
 import { OrganizationUser } from '@/types';
 import { UserRole } from '@/types/enums';
 import { Button } from '@/components/ui/button';
@@ -33,6 +35,7 @@ function CompanyContent() {
   const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const organizationUsers = useAtomValue(organizationUsersAtom);
   const orgLoading = useAtomValue(organizationLoadingAtom);
+  const [selectedOrganizationId, setSelectedOrganizationId] = useAtom(selectedOrganizationIdAtom);
   const organizationId = selectedOrganization?.id;
   const organization = selectedOrganization;
   const { invitationCodes, loading: codesLoading } = useInvitationCodesData(organizationId || undefined);
@@ -87,6 +90,9 @@ function CompanyContent() {
     try {
       await updateOrganizationBranding(organizationId, '', stampUrl);
       setLogoUrl('');
+      // Refresh organization data
+      setSelectedOrganizationId(null);
+      setTimeout(() => setSelectedOrganizationId(organizationId), 100);
     } catch (error) {
       console.error('Error removing logo:', error);
       toast.error('Failed to remove logo.');
@@ -99,6 +105,9 @@ function CompanyContent() {
     try {
       await updateOrganizationBranding(organizationId, logoUrl, '');
       setStampUrl('');
+      // Refresh organization data
+      setSelectedOrganizationId(null);
+      setTimeout(() => setSelectedOrganizationId(organizationId), 100);
     } catch (error) {
       console.error('Error removing stamp:', error);
       toast.error('Failed to remove stamp.');
@@ -120,6 +129,10 @@ function CompanyContent() {
         logoUrl: logoUrl,
         stampUrl: stampUrl,
       });
+
+      // Refresh organization data to reflect changes
+      setSelectedOrganizationId(null);
+      setTimeout(() => setSelectedOrganizationId(organizationId), 100);
 
       toast.success('Company information updated successfully!');
     } catch (error) {

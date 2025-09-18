@@ -10,6 +10,14 @@ const nextConfig = (phase: string) => {
     reactStrictMode: true,
     poweredByHeader: false,
     typedRoutes: true,
+    images: {
+      remotePatterns: [
+        {
+          protocol: 'https',
+          hostname: 'firebasestorage.googleapis.com',
+        },
+      ],
+    },
     async headers() {
       return [
         {
