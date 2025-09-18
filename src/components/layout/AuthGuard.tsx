@@ -1,17 +1,18 @@
 // components/layout/AuthGuard.jsx
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAtomValue } from "jotai";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { selectedOrganizationIdAtom, organizationLoadingAtom } from "@/atoms";
-import { OrganizationManager } from "@/components/organization/OrganizationManager";
+
 import FullPageLoader from "@/components/ui/FullPageLoader"; // Assuming you have a loader
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   const { user, loading: authLoading } = useAuth();
   const selectedOrgId = useAtomValue(selectedOrganizationIdAtom);
@@ -22,8 +23,21 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       pathname,
     ) || (pathname && pathname.startsWith("/auth"));
 
-  // 1. Show a loader during initial auth and organization checks
-  if (authLoading || (!isPublicRoute && user && orgLoading)) {
+  // Handle redirects in useEffect to avoid setState during render
+  useEffect(() => {
+    if (!authLoading && !isPublicRoute && !user) {
+      setIsRedirecting(true);
+      router.replace("/login");
+    } else if (!authLoading && !isPublicRoute && user && !selectedOrgId && !orgLoading && pathname !== "/select-organization") {
+      setIsRedirecting(true);
+      router.replace("/select-organization");
+    } else {
+      setIsRedirecting(false);
+    }
+  }, [authLoading, isPublicRoute, user, selectedOrgId, orgLoading, pathname, router]);
+
+  // 1. Show a loader during initial auth and organization checks or while redirecting
+  if (authLoading || (!isPublicRoute && user && orgLoading) || isRedirecting) {
     return <FullPageLoader />;
   }
 
@@ -34,10 +48,9 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
   // --- From here on, we are on a protected route ---
 
-  // 3. If no user, redirect to login
+  // 3. If no user, show loader (redirect handled in useEffect)
   if (!user) {
-    router.replace("/login"); // Use replace to avoid adding to history
-    return <FullPageLoader />; // Show loader while redirecting
+    return <FullPageLoader />;
   }
 
   // 4. If user is logged in but has no organization selected, show the manager
@@ -47,8 +60,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     if (pathname === "/select-organization") {
       return <>{children}</>;
     }
-    // For any other page, redirect to the selection screen
-    router.replace("/select-organization");
+    // For any other page, show loader (redirect handled in useEffect)
     return <FullPageLoader />;
   }
 
