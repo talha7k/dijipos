@@ -16,7 +16,7 @@ import {
   InvoiceTemplateType,
   QuoteTemplateType,
 } from "@/types/enums";
-import { useTemplates } from "@/lib/hooks/useTemplates";
+
 import { useStoreSettings } from "@/lib/hooks/useStoreSettings";
 import {
   useSeparatedTemplates,
@@ -90,8 +90,8 @@ export function TemplatesTab({}: TemplatesTabProps) {
     customFooter: "",
   });
 
-  const { receiptTemplates, invoiceTemplates, quoteTemplates, loading } =
-    useTemplates();
+  const { allReceiptTemplates: receiptTemplates, allInvoiceTemplates: invoiceTemplates, allQuoteTemplates: quoteTemplates, loading } =
+    useSeparatedTemplates();
   const { storeSettings } = useStoreSettings();
   const printerSettings = storeSettings?.printerSettings;
   const { allReceiptTemplates, allInvoiceTemplates, allQuoteTemplates } =

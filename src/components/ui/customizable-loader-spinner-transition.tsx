@@ -7,7 +7,7 @@ export const Component = () => {
   const [isPaused, setIsPaused] = useState(false);
   const [squareCount, setSquareCount] = useState(12);
   const [speed, setSpeed] = useState(0.35);
-  const [showControls, setShowControls] = useState(true);
+  const [showControls, setShowControls] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -196,19 +196,21 @@ export const Component = () => {
               key={square.id}
               className="nested-square"
               // eslint-disable-next-line react/jsx-key
-              style={{
-                position: "absolute",
-                boxSizing: "content-box",
-                padding: `${square.padding}px`,
-                top: `${square.offset}px`,
-                left: `${square.offset}px`,
-                border: `1px solid ${square.color}`,
-                boxShadow: `0 0 3px ${square.color}, inset 0 0 3px rgba(255, 255, 255, 0.1)`,
-                borderRadius: "2px",
-                "--delay": `${square.delay}s`,
-                "--speed": speed,
-                "--play-state": isPaused ? "paused" : "running",
-              } as React.CSSProperties}
+              style={
+                {
+                  position: "absolute",
+                  boxSizing: "content-box",
+                  padding: `${square.padding}px`,
+                  top: `${square.offset}px`,
+                  left: `${square.offset}px`,
+                  border: `1px solid ${square.color}`,
+                  boxShadow: `0 0 3px ${square.color}, inset 0 0 3px rgba(255, 255, 255, 0.1)`,
+                  borderRadius: "2px",
+                  "--delay": `${square.delay}s`,
+                  "--speed": speed,
+                  "--play-state": isPaused ? "paused" : "running",
+                } as React.CSSProperties
+              }
               onMouseEnter={(e) => {
                 e.currentTarget.style.borderColor = "#ffffff";
                 e.currentTarget.style.boxShadow =

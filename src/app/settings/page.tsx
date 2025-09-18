@@ -6,7 +6,7 @@ import { useAtom } from 'jotai';
 import { selectedOrganizationAtom } from '@/atoms';
 
 import { useTables } from '@/lib/hooks/useTables';
-import { useTemplates } from '@/lib/hooks/useTemplates';
+import { useSeparatedTemplates } from '@/lib/hooks/useSeparatedTemplates';
 import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
 import { useOrderTypes } from '@/lib/hooks/useOrderTypes';
 import { usePaymentTypes } from '@/lib/hooks/usePaymentTypes';
@@ -27,7 +27,7 @@ function SettingsContent() {
   const [selectedOrganization] = useAtom(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
   const { paymentTypes, loading: paymentTypesLoading } = usePaymentTypes();
-  const { loading: receiptTemplatesLoading } = useTemplates();
+  const { loading: receiptTemplatesLoading } = useSeparatedTemplates();
   const { orderTypes, loading: orderTypesLoading } = useOrderTypes();
   const { tables, loading: tablesLoading } = useTables();
 

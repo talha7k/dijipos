@@ -24,8 +24,7 @@ import { ReceiptPrintDialog } from "@/components/ReceiptPrintDialog";
 import { useAtom } from "jotai";
 import { selectedOrganizationAtom } from "@/atoms";
 import { useStoreSettings } from "@/lib/hooks/useStoreSettings";
-import { useTemplates } from "@/lib/hooks/useTemplates";
-import { usePrinterSettings } from "@/lib/hooks/usePrinterSettings";
+import { useSeparatedTemplates } from "@/lib/hooks/useSeparatedTemplates";
 
 interface OrderSummaryCardProps {
   order: Order;
@@ -61,7 +60,7 @@ export function OrderSummaryCard({
 }: OrderSummaryCardProps) {
   const [selectedOrganization] = useAtom(selectedOrganizationAtom);
   const { storeSettings } = useStoreSettings();
-  const { receiptTemplates = [] } = useTemplates();
+  const { allReceiptTemplates: receiptTemplates = [] } = useSeparatedTemplates();
   const printerSettings = storeSettings?.printerSettings;
   const { formatCurrency } = useCurrency();
 

@@ -14,7 +14,7 @@ import {
   selectedOrderTypeAtom,
   currentQueueNumberAtom,
 } from "@/atoms/posAtoms";
-import { useTemplates } from "@/lib/hooks/useTemplates";
+import { useSeparatedTemplates } from "@/lib/hooks/useSeparatedTemplates";
 import { useStoreSettings } from "@/lib/hooks/useStoreSettings";
 import { useCurrency } from "@/lib/hooks/useCurrency";
 
@@ -53,7 +53,7 @@ export function POSCartSidebar({
   const currentQueueNumber = useAtomValue(currentQueueNumberAtom);
   const organizationId = selectedOrganization?.id || "";
 
-  const { receiptTemplates = [] } = useTemplates();
+  const { allReceiptTemplates: receiptTemplates = [] } = useSeparatedTemplates();
   const { storeSettings } = useStoreSettings();
   const printerSettings = storeSettings?.printerSettings;
   const { formatCurrency } = useCurrency();
