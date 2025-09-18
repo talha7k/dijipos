@@ -8,7 +8,6 @@ import {
   InvoiceTemplate,
   QuoteTemplate,
   TemplateCategory,
-  UnifiedTemplate,
   PrinterSettings,
 } from "@/types";
 import {
@@ -19,11 +18,11 @@ import {
 
 import { useStoreSettings } from "@/lib/hooks/useStoreSettings";
 import {
-  useSeparatedTemplates,
   STATIC_RECEIPT_TEMPLATE_IDS,
   STATIC_INVOICE_TEMPLATE_IDS,
   STATIC_QUOTE_TEMPLATE_IDS,
-} from "@/lib/hooks/useSeparatedTemplates";
+} from "@/types";
+import { useSeparatedTemplates } from "@/lib/hooks/useSeparatedTemplates";
 import {
   createReceiptTemplate,
   createInvoiceTemplate,
@@ -90,12 +89,14 @@ export function TemplatesTab({}: TemplatesTabProps) {
     customFooter: "",
   });
 
-  const { allReceiptTemplates: receiptTemplates, allInvoiceTemplates: invoiceTemplates, allQuoteTemplates: quoteTemplates, loading } =
-    useSeparatedTemplates();
-  const { storeSettings } = useStoreSettings();
+  const {
+    allReceiptTemplates,
+    allInvoiceTemplates,
+    allQuoteTemplates,
+    loading,
+  } = useSeparatedTemplates();
+  const { storeSettings, refreshStoreSettings } = useStoreSettings();
   const printerSettings = storeSettings?.printerSettings;
-  const { allReceiptTemplates, allInvoiceTemplates, allQuoteTemplates } =
-    useSeparatedTemplates();
 
   // Local state for default template IDs to ensure immediate UI updates
   const [localDefaults, setLocalDefaults] = useState({
@@ -115,16 +116,27 @@ export function TemplatesTab({}: TemplatesTabProps) {
 
   // Helper function to check if a template is the current default
   const isTemplateDefault = (templateId: string): boolean => {
+    let isDefault = false;
     switch (selectedCategory) {
       case TemplateCategory.RECEIPT:
-        return localDefaults.receipt === templateId;
+        isDefault = localDefaults.receipt === templateId;
+        break;
       case TemplateCategory.INVOICE:
-        return localDefaults.invoice === templateId;
+        isDefault = localDefaults.invoice === templateId;
+        break;
       case TemplateCategory.QUOTE:
-        return localDefaults.quote === templateId;
+        isDefault = localDefaults.quote === templateId;
+        break;
       default:
-        return false;
+        isDefault = false;
     }
+    console.log(
+      `[TemplatesTab] isTemplateDefault(${templateId}) for ${selectedCategory}:`,
+      isDefault,
+      "localDefaults:",
+      localDefaults,
+    );
+    return isDefault;
   };
 
   // Get templates based on selected category and view
@@ -132,13 +144,13 @@ export function TemplatesTab({}: TemplatesTabProps) {
     let templates;
     switch (selectedCategory) {
       case TemplateCategory.RECEIPT:
-        templates = allReceiptTemplates || receiptTemplates;
+        templates = allReceiptTemplates;
         break;
       case TemplateCategory.INVOICE:
-        templates = allInvoiceTemplates || invoiceTemplates;
+        templates = allInvoiceTemplates;
         break;
       case TemplateCategory.QUOTE:
-        templates = allQuoteTemplates || quoteTemplates;
+        templates = allQuoteTemplates;
         break;
       default:
         return [];
@@ -230,6 +242,19 @@ export function TemplatesTab({}: TemplatesTabProps) {
     if (!organizationId) return;
 
     try {
+      // Validate that the template exists in our combined templates
+      const templateExists = templates.some(
+        (template) => template.id === templateId,
+      );
+      if (!templateExists) {
+        console.error(
+          `[TemplatesTab] Template ${templateId} not found in available templates. Available templates:`,
+          templates.map((t) => t.id),
+        );
+        toast.error(`Template not found. Please refresh and try again.`);
+        return;
+      }
+
       // Check if this is a static template
       const isStaticTemplate =
         (selectedCategory === TemplateCategory.RECEIPT &&
@@ -239,72 +264,61 @@ export function TemplatesTab({}: TemplatesTabProps) {
         (selectedCategory === TemplateCategory.QUOTE &&
           STATIC_QUOTE_TEMPLATE_IDS.includes(templateId));
 
+      console.log(
+        `[TemplatesTab] Setting default template: ${templateId}, isStatic: ${isStaticTemplate}`,
+      );
+
       // Template defaults are now managed through printer settings, not template.isDefault flags
       // This functionality has been moved to the PrinterSettingsTab component
 
       // Update local state immediately for instant UI feedback
-      setLocalDefaults((prev) => ({
-        ...prev,
-        [selectedCategory === TemplateCategory.RECEIPT
-          ? "receipt"
-          : selectedCategory === TemplateCategory.INVOICE
-            ? "invoice"
-            : "quote"]: templateId,
-      }));
+      setLocalDefaults((prev) => {
+        const newDefaults = {
+          ...prev,
+          [selectedCategory === TemplateCategory.RECEIPT
+            ? "receipt"
+            : selectedCategory === TemplateCategory.INVOICE
+              ? "invoice"
+              : "quote"]: templateId,
+        };
+        console.log("[TemplatesTab] Updated local defaults:", newDefaults);
+        return newDefaults;
+      });
 
-      // Update printer settings to persist the default template choice
-      // For updates, we only send the fields that can actually change
-      const settingsToUpdate: Partial<PrinterSettings> = {};
+      // Create a complete printer settings object to avoid merge conflicts
+      const settingsToUpdate: Partial<PrinterSettings> = {
+        receipts: printerSettings?.receipts
+          ? { ...printerSettings.receipts }
+          : {},
+        invoices: printerSettings?.invoices
+          ? { ...printerSettings.invoices }
+          : {},
+        quotes: printerSettings?.quotes ? { ...printerSettings.quotes } : {},
+      };
 
       // Set the appropriate template ID based on category
       switch (selectedCategory) {
         case TemplateCategory.RECEIPT:
-          if (!settingsToUpdate.receipts) settingsToUpdate.receipts = {};
-          settingsToUpdate.receipts.defaultTemplateId = templateId;
+          settingsToUpdate.receipts!.defaultTemplateId = templateId;
           break;
         case TemplateCategory.INVOICE:
-          if (!settingsToUpdate.invoices) settingsToUpdate.invoices = {};
-          settingsToUpdate.invoices.defaultTemplateId = templateId;
+          settingsToUpdate.invoices!.defaultTemplateId = templateId;
           break;
         case TemplateCategory.QUOTE:
-          if (!settingsToUpdate.quotes) settingsToUpdate.quotes = {};
-          settingsToUpdate.quotes.defaultTemplateId = templateId;
+          settingsToUpdate.quotes!.defaultTemplateId = templateId;
           break;
-      }
-
-      // Preserve existing template IDs for other categories
-      if (printerSettings) {
-        if (
-          selectedCategory !== TemplateCategory.RECEIPT &&
-          printerSettings.receipts?.defaultTemplateId
-        ) {
-          if (!settingsToUpdate.receipts) settingsToUpdate.receipts = {};
-          settingsToUpdate.receipts.defaultTemplateId =
-            printerSettings.receipts.defaultTemplateId;
-        }
-        if (
-          selectedCategory !== TemplateCategory.INVOICE &&
-          printerSettings.invoices?.defaultTemplateId
-        ) {
-          if (!settingsToUpdate.invoices) settingsToUpdate.invoices = {};
-          settingsToUpdate.invoices.defaultTemplateId =
-            printerSettings.invoices.defaultTemplateId;
-        }
-        if (
-          selectedCategory !== TemplateCategory.QUOTE &&
-          printerSettings.quotes?.defaultTemplateId
-        ) {
-          if (!settingsToUpdate.quotes) settingsToUpdate.quotes = {};
-          settingsToUpdate.quotes.defaultTemplateId =
-            printerSettings.quotes.defaultTemplateId;
-        }
       }
 
       console.log("Sending printer settings to update:", settingsToUpdate);
       // Update printer settings directly in Firestore
-      const { updatePrinterSettings } = await import('@/lib/firebase/firestore/settings/printer');
-      const { id, organizationId, createdAt, ...updateData } = settingsToUpdate;
+      const { updatePrinterSettings } = await import(
+        "@/lib/firebase/firestore/settings/printer"
+      );
+      const updateData = settingsToUpdate as Partial<PrinterSettings>;
       await updatePrinterSettings(printerSettings!.id, updateData);
+
+      // Force refresh store settings to ensure UI updates immediately
+      await refreshStoreSettings();
 
       toast.success(`${selectedCategory} template set as default`);
     } catch (error) {

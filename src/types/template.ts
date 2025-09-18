@@ -235,21 +235,5 @@ export enum TemplateCategory {
   QUOTE = "quote",
 }
 
-// Unified template interface
-export interface UnifiedTemplate {
-  id: string;
-  organizationId: string;
-  name: string;
-  description?: string;
-  category: TemplateCategory;
-  type: string; // Will be the specific type like 'thermal', 'a4', etc.
-  content: string;
-  customHeader?: string;
-  customFooter?: string;
-  isDefault: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
 // Union type for all template types
 export type TemplateType = ReceiptTemplate | InvoiceTemplate | QuoteTemplate;

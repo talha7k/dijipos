@@ -4,6 +4,26 @@ export enum TableStatus {
   RESERVED = "reserved",
   MAINTENANCE = "maintenance",
 }
+export const STATIC_INVOICE_TEMPLATE_IDS = [
+  "english-invoice",
+  "arabic-invoice",
+];
+// Static template IDs that cannot be modified
+export const STATIC_RECEIPT_TEMPLATE_IDS = [
+  "english-thermal",
+  "arabic-thermal",
+  "english-a4",
+  "arabic-a4",
+];
+
+export enum ReceiptTemplateType {
+  ENGLISH_A4 = "english_a4",
+  ENGLISH_THERMAL = "english_thermal",
+  ARABIC_A4 = "arabic_a4",
+  ARABIC_THERMAL = "arabic_thermal",
+  CUSTOM = "custom",
+}
+export const STATIC_QUOTE_TEMPLATE_IDS = ["english-quote", "arabic-quote"];
 
 export enum OrderStatus {
   OPEN = "open",
@@ -63,14 +83,6 @@ export enum QuoteTemplateType {
 export enum InvoiceTemplateType {
   ENGLISH = "english",
   ARABIC = "arabic",
-  CUSTOM = "custom",
-}
-
-export enum ReceiptTemplateType {
-  ENGLISH_A4 = "english_a4",
-  ENGLISH_THERMAL = "english_thermal",
-  ARABIC_A4 = "arabic_a4",
-  ARABIC_THERMAL = "arabic_thermal",
   CUSTOM = "custom",
 }
 

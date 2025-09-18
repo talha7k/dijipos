@@ -24,6 +24,7 @@ interface StoreSettingsState {
 
 interface StoreSettingsActions {
   createDefaultSettings: () => Promise<void>;
+  refreshStoreSettings: () => Promise<void>;
 }
 
 /**
@@ -143,6 +144,17 @@ export function useStoreSettings(): StoreSettingsState & StoreSettingsActions {
     }
   };
 
+  const refreshStoreSettings = async () => {
+    if (!selectedOrganization?.id) return;
+
+    try {
+      const completeSettings = await getStoreSettings(selectedOrganization.id);
+      setStoreSettings(completeSettings);
+    } catch (err) {
+      console.error('Error refreshing store settings:', err);
+    }
+  };
+
   const combinedLoading = loading || realtimeLoading;
   const combinedError = error || realtimeError;
 
@@ -151,5 +163,6 @@ export function useStoreSettings(): StoreSettingsState & StoreSettingsActions {
     loading: combinedLoading,
     error: combinedError,
     createDefaultSettings,
+    refreshStoreSettings,
   };
 }

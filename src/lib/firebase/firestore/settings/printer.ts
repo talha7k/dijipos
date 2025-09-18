@@ -90,6 +90,13 @@ export async function updatePrinterSettings(printerSettingsId: string, updates: 
       }
     });
 
+    // Clean up legacy root-level default template ID fields to prevent conflicts
+    const legacyFields = ['defaultReceiptTemplateId', 'defaultInvoiceTemplateId', 'defaultQuoteTemplateId'];
+    legacyFields.forEach(field => {
+      // Explicitly set legacy fields to null to remove them from Firestore
+      updateData[field] = null;
+    });
+
     console.log('Updating printer settings:', printerSettingsId, 'with data:', updateData);
 
     const docRef = doc(printerSettingsRef, printerSettingsId);
