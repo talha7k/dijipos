@@ -45,26 +45,11 @@ export function EditableSetting<T extends string | number | boolean>({
 
   // Update editValue when value prop changes and force re-render
   useEffect(() => {
-    console.log(
-      "[EditableSetting] useEffect triggered - value changed:",
-      value,
-    );
-    console.log("[EditableSetting] Previous editValue:", editValue);
-    console.log("[EditableSetting] Value comparison:", {
-      newValue: value,
-      oldValue: editValue,
-      areEqual: value === editValue,
-      type: typeof value,
-      editValueType: typeof editValue,
-    });
     // Only update if the values are actually different
     if (value !== editValue) {
-      console.log('[EditableSetting] Values are different, updating editValue and forcing re-render');
       setEditValue(value);
       // Force re-render by updating key
       setKey((prev) => prev + 1);
-    } else {
-      console.log('[EditableSetting] Values are the same, skipping update');
     }
   }, [value, editValue]);
 
@@ -82,9 +67,7 @@ export function EditableSetting<T extends string | number | boolean>({
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      console.log("[EditableSetting] Saving value:", editValue);
       await onSave(editValue);
-      console.log("[EditableSetting] Save successful");
       setIsEditing(false);
     } catch (error) {
       console.error("Failed to save setting:", error);
@@ -97,9 +80,7 @@ export function EditableSetting<T extends string | number | boolean>({
   const handleSaveWithValue = async (valueToSave: T) => {
     setIsSaving(true);
     try {
-      console.log("[EditableSetting] Saving value directly:", valueToSave);
       await onSave(valueToSave);
-      console.log("[EditableSetting] Save successful");
       setIsEditing(false);
     } catch (error) {
       console.error("Failed to save setting:", error);
@@ -118,11 +99,6 @@ export function EditableSetting<T extends string | number | boolean>({
   };
 
   const renderDisplayValue = () => {
-    console.log("[EditableSetting] renderDisplayValue called with:", {
-      value,
-      editValue,
-      type,
-    });
     const displayVal = displayValue
       ? displayValue(editValue)
       : (() => {
@@ -140,12 +116,6 @@ export function EditableSetting<T extends string | number | boolean>({
               const option = options.find(
                 (opt) => opt.value === String(editValue),
               );
-              console.log(
-                "[EditableSetting] Select option found:",
-                option,
-                "for value:",
-                editValue,
-              );
               return option
                 ? option.label
                 : String(editValue) || placeholder || "Not selected";
@@ -154,7 +124,6 @@ export function EditableSetting<T extends string | number | boolean>({
           }
         })();
 
-    console.log("[EditableSetting] renderDisplayValue result:", displayVal);
     return displayVal;
   };
 
@@ -215,10 +184,6 @@ export function EditableSetting<T extends string | number | boolean>({
             <Select
               value={String(editValue) || ""}
               onValueChange={(val) => {
-                console.log('[EditableSetting] Select onValueChange called with:', val);
-                console.log('[EditableSetting] Current options:', options);
-                const selectedOption = options.find(opt => opt.value === val);
-                console.log('[EditableSetting] Selected option:', selectedOption);
                 setEditValue(val as T);
                 // Auto-save for select type - pass the new value directly to avoid race condition
                 handleSaveWithValue(val as T);
@@ -253,7 +218,7 @@ export function EditableSetting<T extends string | number | boolean>({
     >
       <span className="text-sm font-medium">{label}:</span>
 
-      {isEditing ? (
+      {isEditing && type !== 'select' ? (
         <div className="flex items-center gap-1">
           {renderEditInput()}
           <Button
@@ -274,6 +239,10 @@ export function EditableSetting<T extends string | number | boolean>({
           >
             <X className="h-3 w-3" />
           </Button>
+        </div>
+      ) : isEditing && type === 'select' ? (
+        <div className="flex items-center gap-1">
+          {renderEditInput()}
         </div>
       ) : (
         <div

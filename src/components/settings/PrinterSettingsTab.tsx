@@ -35,32 +35,10 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
   // Use store settings printer settings, fallback to prop
   const printerSettings = storeSettings?.printerSettings || propPrinterSettings;
 
-  console.log('[PrinterSettingsTab] === COMPONENT RENDER ===');
-  console.log('[PrinterSettingsTab] Current data:', {
-    organizationId,
-    storeSettingsLoading,
-    hasStoreSettings: !!storeSettings,
-    hasPrinterSettings: !!printerSettings,
-    printerSettingsId: printerSettings?.id,
-    receiptDefaultTemplate: printerSettings?.receipts?.defaultTemplateId,
-    invoiceDefaultTemplate: printerSettings?.invoices?.defaultTemplateId,
-    quoteDefaultTemplate: printerSettings?.quotes?.defaultTemplateId,
-    receiptTemplates: receiptTemplates.length,
-    invoiceTemplates: invoiceTemplates.length,
-    quoteTemplates: quoteTemplates.length
-  });
+  
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleUpdateSettings = async (field: string, value: string | number | boolean) => {
-    console.log('[PrinterSettingsTab] === SAVING START ===');
-    console.log('[PrinterSettingsTab] handleUpdateSettings called:', { 
-      field, 
-      value, 
-      organizationId: !!organizationId, 
-      storeSettings: !!storeSettings, 
-      storeSettingsLoading,
-      currentPrinterSettings: printerSettings
-    });
 
     if (!organizationId) {
       console.error('[PrinterSettingsTab] Missing organizationId');
@@ -270,10 +248,7 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
                       placeholder="Select template"
                       disabled={storeSettingsLoading}
                     />
-                    <div className="text-xs text-muted-foreground">
-                      Current: {printerSettings?.receipts?.defaultTemplateId || 'None'} |
-                      Available: {receiptTemplates.map(t => t.name).join(', ')}
-                    </div>
+
 
 <EditableSetting
                        key={`invoice-template-${printerSettings?.invoices?.defaultTemplateId || 'none'}`}
