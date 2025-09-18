@@ -20,10 +20,18 @@ export function CustomerCard({ customer, onClick }: CustomerCardProps) {
       </CardHeader>
       <CardContent className="pt-0">
         <div className="space-y-2">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground break-words" title={customer.email}>
-            <Mail className="h-4 w-4 flex-shrink-0" />
-            {customer.email}
-          </div>
+          {customer.email && customer.email.trim() !== '' && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground break-words" title={customer.email}>
+              <Mail className="h-4 w-4 flex-shrink-0" />
+              {customer.email}
+            </div>
+          )}
+          {customer.nameAr && customer.nameAr.trim() !== '' && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground break-words" title={customer.nameAr}>
+              <span className="h-4 w-4 flex-shrink-0 text-xs">ع</span>
+              {customer.nameAr}
+            </div>
+          )}
           {customer.phone && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground break-words">
               <Phone className="h-4 w-4 flex-shrink-0" />

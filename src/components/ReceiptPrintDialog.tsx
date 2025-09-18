@@ -10,14 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { TemplateSelector } from "@/components/ui/TemplateSelector";
 import { Printer } from "lucide-react";
 import {
   Order,
@@ -296,63 +289,15 @@ export function ReceiptPrintDialog({
                     Settings.
                   </p>
                 ) : (
-                  <div className="space-y-3">
-                    <Label htmlFor="template-select">
-                      Select Receipt Template
-                    </Label>
-                    <Select
-                      value={selectedTemplate}
-                      onValueChange={setSelectedTemplate}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Choose a template" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {receiptTemplates.map((template) => (
-                          <SelectItem key={template.id} value={template.id}>
-                            <div className="flex items-center gap-2">
-                              <span>{template.name}</span>
-                              {template.isDefault && (
-                                <Badge variant="default" className="text-xs">
-                                  Default
-                                </Badge>
-                              )}
-                              <Badge variant="outline" className="text-xs">
-                                {template.type}
-                              </Badge>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {selectedTemplate && (
-                      <div className="p-3 bg-muted/50 rounded-md">
-                        {(() => {
-                          const template = receiptTemplates.find(
-                            (t) => t.id === selectedTemplate,
-                          );
-                          return template ? (
-                            <div>
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className="font-medium">
-                                  {template.name}
-                                </span>
-                                {template.isDefault && (
-                                  <Badge variant="default">Default</Badge>
-                                )}
-                                <Badge variant="outline">{template.type}</Badge>
-                              </div>
-                              {template.description && (
-                                <p className="text-sm text-muted-foreground">
-                                  {template.description}
-                                </p>
-                              )}
-                            </div>
-                          ) : null;
-                        })()}
-                      </div>
-                    )}
-                  </div>
+                  <TemplateSelector
+                    templates={receiptTemplates}
+                    selectedTemplate={selectedTemplate}
+                    onTemplateChange={setSelectedTemplate}
+                    label="Select Receipt Template"
+                    placeholder="Choose a template"
+                    printerSettings={effectivePrinterSettings}
+                    templateType="receipts"
+                  />
                 )}
               </CardContent>
             </Card>

@@ -5,8 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
+import { TemplateSelector } from '@/components/ui/TemplateSelector';
 import { Printer } from 'lucide-react';
 import { Invoice, Payment, Organization, Customer, Supplier, InvoiceTemplate, PrinterSettings } from '@/types';
 import { renderInvoiceTemplate } from '@/lib/template-renderer';
@@ -226,27 +225,15 @@ export function InvoicePrintDialog({
                 {invoiceTemplates.length === 0 ? (
                   <p className="text-muted-foreground">No invoice templates available. Please create templates in Settings.</p>
                 ) : (
-                  <RadioGroup value={selectedTemplate} onValueChange={setSelectedTemplate}>
-                    <div className="grid gap-3">
-                      {invoiceTemplates.map((template) => (
-                        <div key={template.id} className="flex items-center space-x-3 p-3 border rounded hover:bg-accent/50">
-                          <RadioGroupItem value={template.id} id={template.id} />
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <Label htmlFor={template.id} className="font-medium cursor-pointer">
-                                {template.name}
-                              </Label>
-                              {template.isDefault && <Badge variant="default">Default</Badge>}
-                              <Badge variant="outline">{template.type}</Badge>
-                            </div>
-                            {template.description && (
-                              <p className="text-sm text-muted-foreground">{template.description}</p>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </RadioGroup>
+                  <TemplateSelector
+                    templates={invoiceTemplates}
+                    selectedTemplate={selectedTemplate}
+                    onTemplateChange={setSelectedTemplate}
+                    label="Select Invoice Template"
+                    variant="radio"
+                    printerSettings={printerSettings}
+                    templateType="invoices"
+                  />
                 )}
               </CardContent>
             </Card>
