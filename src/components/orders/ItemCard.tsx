@@ -1,6 +1,7 @@
 import { Package, Wrench } from 'lucide-react';
 import { Product, Service } from '@/types';
 import { useCurrency } from '@/lib/hooks/useCurrency';
+import { cn } from '@/lib/utils';
 
 interface ItemCardProps {
   item: Product | Service;
@@ -12,6 +13,12 @@ export function ItemCard({ item, onClick, className = '' }: ItemCardProps) {
   const { formatCurrency } = useCurrency();
   const isProduct = 'price' in item;
   const price = isProduct ? item.price : (item as Service).price;
+  
+  const nameWordCount = item.name.trim().split(/\s+/).length;
+  const isLongName = nameWordCount > 4;
+  
+  const descriptionWordCount = item.description?.trim().split(/\s+/).length || 0;
+  const isLongDescription = descriptionWordCount > 4;
 
   const handleClick = () => {
     onClick(item, isProduct ? 'product' : 'service');
@@ -32,14 +39,22 @@ export function ItemCard({ item, onClick, className = '' }: ItemCardProps) {
           )}
         </div>
         <div 
-          className="px-3 mb-3 text-lg text-center font-bold text-foreground leading-tight" 
+          className={cn(
+            "px-3 mb-3 text-center font-bold text-foreground leading-tight",
+            "text-lg",
+            isLongName && "text-sm"
+          )} 
           title={item.name}
         >
           {item.name}
         </div>
       </div>
       <div className="flex-1 flex flex-col">
-        <div className="text-center text-muted-foreground text-xs line-clamp-2 mb-2 px-3">
+        <div className={cn(
+          "text-center text-muted-foreground line-clamp-2 mb-2 px-3",
+          "text-xs",
+          isLongDescription && "text-[10px]"
+        )}>
           {item.description}
         </div>
         <div className="mt-auto">
