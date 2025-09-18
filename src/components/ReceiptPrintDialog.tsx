@@ -1,87 +1,130 @@
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Printer } from 'lucide-react';
-import { Order, ReceiptTemplate, Organization, OrderPayment, PrinterSettings } from '@/types';
-import { renderReceiptTemplate } from '@/lib/template-renderer';
-import { toast } from 'sonner';
-import { useAtomValue } from 'jotai';
-import { printerSettingsAtom } from '@/atoms/uiAtoms';
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Printer } from "lucide-react";
+import {
+  Order,
+  ReceiptTemplate,
+  Organization,
+  OrderPayment,
+  PrinterSettings,
+} from "@/types";
+import { renderReceiptTemplate } from "@/lib/template-renderer";
+import { toast } from "sonner";
+import { useAtomValue } from "jotai";
+import { printerSettingsAtom } from "@/atoms/uiAtoms";
 
 interface ReceiptPrintDialogProps {
-   order: Order;
-   organization: Organization | null;
-   receiptTemplates: ReceiptTemplate[];
-   payments?: OrderPayment[];
-   printerSettings?: PrinterSettings | null;
-   children: React.ReactNode;
+  order: Order;
+  organization: Organization | null;
+  receiptTemplates: ReceiptTemplate[];
+  payments?: OrderPayment[];
+  printerSettings?: PrinterSettings | null;
+  children: React.ReactNode;
 }
 
 export function ReceiptPrintDialog({
-   order,
-   organization,
-   receiptTemplates,
-   payments = [],
-   printerSettings,
-   children
- }: ReceiptPrintDialogProps) {
-   const [open, setOpen] = useState(false);
-   const [selectedTemplate, setSelectedTemplate] = useState<string>('');
-   const [isGenerating, setIsGenerating] = useState(false);
-    const atomPrinterSettings = useAtomValue(printerSettingsAtom);
-    const effectivePrinterSettings = printerSettings || atomPrinterSettings;
+  order,
+  organization,
+  receiptTemplates,
+  payments = [],
+  printerSettings,
+  children,
+}: ReceiptPrintDialogProps) {
+  const [open, setOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<string>("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const atomPrinterSettings = useAtomValue(printerSettingsAtom);
+  const effectivePrinterSettings = printerSettings || atomPrinterSettings;
 
   // Set default template on open
   const handleOpenChange = (newOpen: boolean) => {
     if (newOpen) {
-      const defaultTemplate = receiptTemplates.find(t => t.isDefault);
-      setSelectedTemplate(defaultTemplate?.id || receiptTemplates[0]?.id || '');
+      const defaultTemplate = receiptTemplates.find((t) => t.isDefault);
+      setSelectedTemplate(defaultTemplate?.id || receiptTemplates[0]?.id || "");
     }
     setOpen(newOpen);
   };
 
   const generateReceipt = async () => {
-    const template = receiptTemplates.find(t => t.id === selectedTemplate);
+    const template = receiptTemplates.find((t) => t.id === selectedTemplate);
     if (!template) return;
 
     setIsGenerating(true);
 
     try {
       // Render the receipt using template
-      const renderedContent = await renderReceiptTemplate(template, order, organization, payments, effectivePrinterSettings || undefined);
+      const renderedContent = await renderReceiptTemplate(
+        template,
+        order,
+        organization,
+        payments,
+        effectivePrinterSettings || undefined,
+      );
 
-      console.log('=== RECEIPT PRINT DEBUG ===');
-      console.log('Template ID:', template.id);
-      console.log('Template Type:', template.type);
-      console.log('Rendered Content Length:', renderedContent.length);
-      console.log('Rendered Content Preview:', renderedContent.substring(0, 300) + '...');
+      console.log("=== RECEIPT PRINT DEBUG ===");
+      console.log("Template ID:", template.id);
+      console.log("Template Type:", template.type);
+      console.log("Rendered Content Length:", renderedContent.length);
+      console.log(
+        "Rendered Content Preview:",
+        renderedContent.substring(0, 300) + "...",
+      );
 
       // Check if key fields are present in rendered content
-      const hasOrderType = renderedContent.includes('Dine-in') || renderedContent.includes('dine-in');
-      const hasQueueNumber = renderedContent.includes('Queue #') || renderedContent.includes('رقم الدور');
-      const hasSubtotal = renderedContent.includes('Items Value') || renderedContent.includes('قيمة الأصناف');
-      const hasVAT = renderedContent.includes('VAT') || renderedContent.includes('الضريبة');
-      const hasTotal = renderedContent.includes('TOTAL AMOUNT') || renderedContent.includes('المبلغ الإجمالي');
-      const hasPayments = renderedContent.includes('Payment Type') || renderedContent.includes('نوع الدفع');
-      const hasDijibill = renderedContent.includes('Powered by') || renderedContent.includes('مشغل بواسطة');
+      const hasOrderType =
+        renderedContent.includes("Dine-in") ||
+        renderedContent.includes("dine-in");
+      const hasQueueNumber =
+        renderedContent.includes("Queue #") ||
+        renderedContent.includes("رقم الدور");
+      const hasSubtotal =
+        renderedContent.includes("Items Value") ||
+        renderedContent.includes("قيمة الأصناف");
+      const hasVAT =
+        renderedContent.includes("VAT") || renderedContent.includes("الضريبة");
+      const hasTotal =
+        renderedContent.includes("TOTAL AMOUNT") ||
+        renderedContent.includes("المبلغ الإجمالي");
+      const hasPayments =
+        renderedContent.includes("Payment Type") ||
+        renderedContent.includes("نوع الدفع");
+      const hasDijibill =
+        renderedContent.includes("Powered by") ||
+        renderedContent.includes("مشغل بواسطة");
 
-      console.log('Rendered Content Field Check:');
-      console.log('- Order Type:', hasOrderType);
-      console.log('- Queue Number:', hasQueueNumber);
-      console.log('- Subtotal:', hasSubtotal);
-      console.log('- VAT:', hasVAT);
-      console.log('- Total:', hasTotal);
-      console.log('- Payments:', hasPayments);
-      console.log('- Dijibill Branding:', hasDijibill);
+      console.log("Rendered Content Field Check:");
+      console.log("- Order Type:", hasOrderType);
+      console.log("- Queue Number:", hasQueueNumber);
+      console.log("- Subtotal:", hasSubtotal);
+      console.log("- VAT:", hasVAT);
+      console.log("- Total:", hasTotal);
+      console.log("- Payments:", hasPayments);
+      console.log("- Dijibill Branding:", hasDijibill);
 
       // Create a new window for printing (safer than manipulating current DOM)
-      const printWindow = window.open('', '_blank', 'width=800,height=600');
+      const printWindow = window.open("", "_blank", "width=800,height=600");
       if (!printWindow) {
-        throw new Error('Unable to open print window. Please check your popup blocker.');
+        throw new Error(
+          "Unable to open print window. Please check your popup blocker.",
+        );
       }
 
       // Write the receipt content to the new window
@@ -110,9 +153,12 @@ export function ReceiptPrintDialog({
         </html>
       `;
 
-      console.log('=== PRINT WINDOW DEBUG ===');
-      console.log('Full HTML Content Length:', fullHtmlContent.length);
-      console.log('Full HTML Content Preview:', fullHtmlContent.substring(0, 500) + '...');
+      console.log("=== PRINT WINDOW DEBUG ===");
+      console.log("Full HTML Content Length:", fullHtmlContent.length);
+      console.log(
+        "Full HTML Content Preview:",
+        fullHtmlContent.substring(0, 500) + "...",
+      );
 
       printWindow.document.write(fullHtmlContent);
 
@@ -126,48 +172,50 @@ export function ReceiptPrintDialog({
           printWindow.close();
           setIsGenerating(false);
           setOpen(false);
-          toast.success('Receipt sent to printer!');
-        }, 1000);
+          toast.success("Receipt sent to printer!");
+        }, 6000);
       };
-
     } catch (error) {
-      console.error('Error generating receipt:', error);
+      console.error("Error generating receipt:", error);
       setIsGenerating(false);
-      toast.error(error instanceof Error ? error.message : 'Error generating receipt. Please try again.');
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Error generating receipt. Please try again.",
+      );
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        {children}
-      </DialogTrigger>
+      <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="max-w-4xl">
         <DialogHeader>
-           <div className="flex justify-between items-center">
-             <div>
-               <DialogTitle className="flex items-center gap-2">
-                 <Printer className="h-5 w-5" />
-                 Print Receipt
-               </DialogTitle>
-               <DialogDescription>
-                 Select a receipt template and print your order receipt
-               </DialogDescription>
-             </div>
-             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setOpen(false)}
-              >
+          <div className="flex justify-between items-center">
+            <div>
+              <DialogTitle className="flex items-center gap-2">
+                <Printer className="h-5 w-5" />
+                Print Receipt
+              </DialogTitle>
+              <DialogDescription>
+                Select a receipt template and print your order receipt
+              </DialogDescription>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
               <Button
                 onClick={generateReceipt}
-                disabled={!selectedTemplate || receiptTemplates.length === 0 || isGenerating}
+                disabled={
+                  !selectedTemplate ||
+                  receiptTemplates.length === 0 ||
+                  isGenerating
+                }
                 className="flex items-center gap-2"
               >
                 <Printer className="h-4 w-4" />
-                {isGenerating ? 'Generating...' : 'Print Receipt'}
+                {isGenerating ? "Generating..." : "Print Receipt"}
               </Button>
             </div>
           </div>
@@ -190,7 +238,9 @@ export function ReceiptPrintDialog({
                     </tr>
                     <tr>
                       <td className="font-medium py-1">Date:</td>
-                      <td className="py-1">{new Date(order.createdAt).toLocaleString()}</td>
+                      <td className="py-1">
+                        {new Date(order.createdAt).toLocaleString()}
+                      </td>
                     </tr>
                     {order.customerName && (
                       <tr>
@@ -212,12 +262,16 @@ export function ReceiptPrintDialog({
                     )}
                     <tr>
                       <td className="font-medium py-1">Total:</td>
-                      <td className="py-1 font-bold">${(order.total || 0).toFixed(2)}</td>
+                      <td className="py-1 font-bold">
+                        ${(order.total || 0).toFixed(2)}
+                      </td>
                     </tr>
                     <tr>
                       <td className="font-medium py-1">Status:</td>
                       <td className="py-1">
-                        <Badge variant="outline" className="ml-0">{order.status}</Badge>
+                        <Badge variant="outline" className="ml-0">
+                          {order.status}
+                        </Badge>
                       </td>
                     </tr>
                   </tbody>
@@ -231,69 +285,94 @@ export function ReceiptPrintDialog({
             {/* Template Selection */}
             <Card className="h-full">
               <CardHeader>
-                <CardTitle className="text-lg">Select Receipt Template</CardTitle>
+                <CardTitle className="text-lg">
+                  Select Receipt Template
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                 {receiptTemplates.length === 0 ? (
-                   <p className="text-muted-foreground">No receipt templates available. Please create templates in Settings.</p>
-                 ) : (
-                   <div className="space-y-3">
-                     <Label htmlFor="template-select">Select Receipt Template</Label>
-                     <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
-                       <SelectTrigger>
-                         <SelectValue placeholder="Choose a template" />
-                       </SelectTrigger>
-                       <SelectContent>
-                         {receiptTemplates.map((template) => (
-                           <SelectItem key={template.id} value={template.id}>
-                             <div className="flex items-center gap-2">
-                               <span>{template.name}</span>
-                               {template.isDefault && <Badge variant="default" className="text-xs">Default</Badge>}
-                               <Badge variant="outline" className="text-xs">{template.type}</Badge>
-                             </div>
-                           </SelectItem>
-                         ))}
-                       </SelectContent>
-                     </Select>
-                     {selectedTemplate && (
-                       <div className="p-3 bg-muted/50 rounded-md">
-                         {(() => {
-                           const template = receiptTemplates.find(t => t.id === selectedTemplate);
-                           return template ? (
-                             <div>
-                               <div className="flex items-center gap-2 mb-1">
-                                 <span className="font-medium">{template.name}</span>
-                                 {template.isDefault && <Badge variant="default">Default</Badge>}
-                                 <Badge variant="outline">{template.type}</Badge>
-                               </div>
-                               {template.description && (
-                                 <p className="text-sm text-muted-foreground">{template.description}</p>
-                               )}
-                             </div>
-                           ) : null;
-                         })()}
-                       </div>
-                     )}
-                   </div>
-                 )}
+                {receiptTemplates.length === 0 ? (
+                  <p className="text-muted-foreground">
+                    No receipt templates available. Please create templates in
+                    Settings.
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    <Label htmlFor="template-select">
+                      Select Receipt Template
+                    </Label>
+                    <Select
+                      value={selectedTemplate}
+                      onValueChange={setSelectedTemplate}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Choose a template" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {receiptTemplates.map((template) => (
+                          <SelectItem key={template.id} value={template.id}>
+                            <div className="flex items-center gap-2">
+                              <span>{template.name}</span>
+                              {template.isDefault && (
+                                <Badge variant="default" className="text-xs">
+                                  Default
+                                </Badge>
+                              )}
+                              <Badge variant="outline" className="text-xs">
+                                {template.type}
+                              </Badge>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {selectedTemplate && (
+                      <div className="p-3 bg-muted/50 rounded-md">
+                        {(() => {
+                          const template = receiptTemplates.find(
+                            (t) => t.id === selectedTemplate,
+                          );
+                          return template ? (
+                            <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="font-medium">
+                                  {template.name}
+                                </span>
+                                {template.isDefault && (
+                                  <Badge variant="default">Default</Badge>
+                                )}
+                                <Badge variant="outline">{template.type}</Badge>
+                              </div>
+                              {template.description && (
+                                <p className="text-sm text-muted-foreground">
+                                  {template.description}
+                                </p>
+                              )}
+                            </div>
+                          ) : null;
+                        })()}
+                      </div>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
             {/* Actions */}
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setOpen(false)}
-              >
+              <Button variant="outline" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
               <Button
                 onClick={generateReceipt}
-                disabled={!selectedTemplate || receiptTemplates.length === 0 || isGenerating}
+                disabled={
+                  !selectedTemplate ||
+                  receiptTemplates.length === 0 ||
+                  isGenerating
+                }
                 className="flex items-center gap-2"
               >
                 <Printer className="h-4 w-4" />
-                {isGenerating ? 'Generating...' : 'Print Receipt'}
+                {isGenerating ? "Generating..." : "Print Receipt"}
               </Button>
             </div>
           </div>
