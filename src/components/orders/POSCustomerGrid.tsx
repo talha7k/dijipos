@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Users, Search, ArrowLeft, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { QuickAddCustomerDialog } from './QuickAddCustomerDialog';
+import { CustomerCard } from './CustomerCard';
 
 interface POSCustomerGridProps {
   customers: Customer[];
@@ -67,41 +68,13 @@ export function POSCustomerGrid({ customers, onCustomerSelect, onBack, onCustome
       {/* Customers Grid */}
       <div className="flex-1 overflow-auto p-6 bg-background">
         {filteredCustomers.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {filteredCustomers.map((customer) => (
-              <Card 
-                key={customer.id} 
-                className="cursor-pointer hover:shadow-lg transition-all duration-200 transform hover:scale-105 active:scale-95"
-                onClick={() => onCustomerSelect(customer)}
-              >
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg font-bold truncate" title={customer.name}>
-                    {customer.name}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="space-y-2">
-                    <div className="text-sm text-muted-foreground truncate" title={customer.email}>
-                      {customer.email}
-                    </div>
-                    {customer.phone && (
-                      <div className="text-sm text-muted-foreground">
-                        {customer.phone}
-                      </div>
-                    )}
-                    {customer.address && (
-                      <div className="text-sm text-muted-foreground truncate" title={customer.address}>
-                        {customer.address}
-                      </div>
-                    )}
-                    {customer.vatNumber && (
-                      <div className="text-sm text-muted-foreground">
-                        VAT: {customer.vatNumber}
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+              <CustomerCard
+                key={customer.id}
+                customer={customer}
+                onClick={onCustomerSelect}
+              />
             ))}
           </div>
         ) : (
