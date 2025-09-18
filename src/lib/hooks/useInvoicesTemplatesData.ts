@@ -18,9 +18,9 @@ export function useInvoicesTemplatesData(organizationId: string | undefined) {
 
     baseTemplates.push(
       {
-        id: 'default-invoice',
-        name: 'Default Invoice',
-        description: 'Default invoice template in English',
+        id: 'english-invoice',
+        name: 'English Invoice',
+        description: 'English invoice template',
         type: InvoiceTemplateType.ENGLISH,
         content: defaultInvoiceEnglish,
         organizationId,

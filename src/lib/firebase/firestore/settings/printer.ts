@@ -45,6 +45,11 @@ export async function getPrinterSettings(organizationId: string): Promise<Printe
  */
 export async function createPrinterSettings(data: Omit<PrinterSettings, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
   try {
+    // Validate required fields
+    if (!data.organizationId || data.organizationId.trim() === '') {
+      throw new Error('Invalid organization ID: organizationId cannot be empty');
+    }
+
     const now = Timestamp.now();
 
     // Prepare the data for Firestore - ensure no undefined values
@@ -64,6 +69,7 @@ export async function createPrinterSettings(data: Omit<PrinterSettings, 'id' | '
     console.log('Creating printer settings with data:', firestoreData);
 
     const docRef = await addDoc(printerSettingsRef, firestoreData);
+    console.log('Successfully created printer settings with ID:', docRef.id);
     return docRef.id;
   } catch (error) {
     console.error('Error creating printer settings:', error);
@@ -77,6 +83,11 @@ export async function createPrinterSettings(data: Omit<PrinterSettings, 'id' | '
  */
 export async function updatePrinterSettings(printerSettingsId: string, updates: Partial<Omit<PrinterSettings, 'id' | 'organizationId' | 'createdAt'>>): Promise<void> {
   try {
+    // Validate input
+    if (!printerSettingsId || printerSettingsId.trim() === '') {
+      throw new Error('Invalid printer settings ID: ID cannot be empty');
+    }
+
     // Prepare the update data - ensure no undefined values
     const updateData: Record<string, unknown> = {
       ...updates,
@@ -101,8 +112,11 @@ export async function updatePrinterSettings(printerSettingsId: string, updates: 
 
     const docRef = doc(printerSettingsRef, printerSettingsId);
     await setDoc(docRef, updateData, { merge: true });
+
+    console.log('Successfully updated printer settings:', printerSettingsId);
   } catch (error) {
     console.error('Error updating printer settings:', error);
+    console.error('Printer settings ID:', printerSettingsId);
     console.error('Update data that caused error:', updates);
     throw error;
   }

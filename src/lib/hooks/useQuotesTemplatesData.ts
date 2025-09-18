@@ -18,9 +18,9 @@ export function useQuotesTemplatesData(organizationId: string | undefined) {
 
     baseTemplates.push(
       {
-        id: 'default-quote',
-        name: 'Default Quote',
-        description: 'Default quote template in English',
+        id: 'english-quote',
+        name: 'English Quote',
+        description: 'English quote template',
         type: QuoteTemplateType.ENGLISH,
         content: defaultQuoteEnglish,
         organizationId,

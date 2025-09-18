@@ -27,7 +27,7 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
   const { receiptTemplates, loading: templatesLoading } = useReceiptTemplatesData(organizationId || undefined);
   const { templates: invoiceTemplates } = useInvoicesTemplatesData(organizationId || undefined);
   const { templates: quoteTemplates } = useQuotesTemplatesData(organizationId || undefined);
-  const { storeSettings } = useStoreSettings();
+  const { storeSettings, refreshStoreSettings } = useStoreSettings();
 
   // Use store settings printer settings, fallback to prop
   const printerSettings = storeSettings?.printerSettings || propPrinterSettings;
@@ -117,15 +117,32 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
         }
       }
 
-      // Update the printer settings in Firestore
-      const { updatePrinterSettings } = await import('@/lib/firebase/firestore/settings/printer');
-      const { id, organizationId: _, createdAt, ...updateData } = updatedSettings;
-      await updatePrinterSettings(printerSettings!.id, updateData);
+      // Update or create the printer settings in Firestore
+      const { updatePrinterSettings, createPrinterSettings } = await import('@/lib/firebase/firestore/settings/printer');
+
+      if (printerSettings && printerSettings.id) {
+        // Update existing printer settings
+        const { id, organizationId: _, createdAt, ...updateData } = updatedSettings;
+        await updatePrinterSettings(printerSettings.id, updateData);
+        console.log('Updated existing printer settings with ID:', printerSettings.id);
+      } else {
+        // Create new printer settings if they don't exist or ID is missing
+        const { id, createdAt, updatedAt, ...createData } = updatedSettings;
+        const newId = await createPrinterSettings(createData);
+        updatedSettings.id = newId;
+        console.log('Created new printer settings with ID:', newId);
+      }
+
+      // Refresh store settings to ensure UI updates
+      await refreshStoreSettings();
 
       onPrinterSettingsUpdate?.(updatedSettings);
       toast.success('Settings updated successfully!');
     } catch (error) {
       console.error('Error updating printer settings:', error);
+      console.error('Field:', field, 'Value:', value);
+      console.error('Printer settings state:', printerSettings);
+      console.error('Store settings state:', storeSettings);
       toast.error('Failed to update settings. Please try again.');
     }
   };

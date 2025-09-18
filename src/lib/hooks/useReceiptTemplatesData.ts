@@ -43,9 +43,9 @@ export function useReceiptTemplatesData(organizationId: string | undefined) {
         updatedAt: new Date(),
       },
       {
-        id: "default-a4",
-        name: "Default A4 Receipt",
-        description: "Default A4 paper receipt template",
+        id: "english-a4",
+        name: "English A4 Receipt",
+        description: "English A4 paper receipt template",
         type: ReceiptTemplateType.ENGLISH_A4,
         content: defaultReceiptA4Template,
         organizationId,

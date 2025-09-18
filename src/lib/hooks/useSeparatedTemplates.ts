@@ -108,9 +108,9 @@ export function useSeparatedTemplates(): SeparatedTemplatesState {
         updatedAt: new Date(),
       },
       {
-        id: "default-a4",
-        name: "Default A4 Receipt",
-        description: "Default A4 paper receipt template",
+        id: "english-a4",
+        name: "English A4 Receipt",
+        description: "English A4 paper receipt template",
         type: "english_a4" as ReceiptTemplateType,
         content: "",
         isDefault: false,
@@ -137,10 +137,10 @@ export function useSeparatedTemplates(): SeparatedTemplatesState {
 
     return [
       {
-        id: "default-invoice",
-        name: "Default Invoice",
-        description: "Default invoice template",
-        type: "default" as InvoiceTemplateType,
+        id: "english-invoice",
+        name: "English Invoice",
+        description: "English invoice template",
+        type: "english" as InvoiceTemplateType,
         content: "",
         isDefault: false,
         fields: [],
@@ -188,10 +188,10 @@ export function useSeparatedTemplates(): SeparatedTemplatesState {
 
     return [
       {
-        id: "default-quote",
-        name: "Default Quote",
-        description: "Default quote template",
-        type: "default" as QuoteTemplateType,
+        id: "english-quote",
+        name: "English Quote",
+        description: "English quote template",
+        type: "english" as QuoteTemplateType,
         content: "",
         isDefault: false,
         fields: [],
