@@ -47,6 +47,7 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
 export function useOrganizationManager() {
   const { user } = useAuth();
   const [selectedOrgId, setSelectedOrgId] = useAtom(selectedOrganizationIdAtom);
+  const [previousUserId, setPreviousUserId] = useState<string | null>(null);
   const [, setSelectedOrganization] = useAtom(selectedOrganizationAtom);
   const [, setUserOrganizations] = useAtom(userOrganizationsAtom);
   const [, setUserOrganizationAssociations] = useAtom(userOrganizationAssociationsAtom);
@@ -67,18 +68,35 @@ export function useOrganizationManager() {
 
   // Effect to fetch the user's list of organizations when they log in
   useEffect(() => {
-    if (!user?.uid) {
+    const currentUserId = user?.uid || null;
+    console.log('useOrganizationManager: Effect running with user?.uid:', currentUserId, 'previousUserId:', previousUserId, 'selectedOrgId:', selectedOrgId);
+
+    // Only clear organization state if user actually logged out (was authenticated, now not)
+    if (!currentUserId && previousUserId) {
+      console.log('useOrganizationManager: User logged out, clearing organization state');
       setUserOrganizations([]);
+      console.log('useOrganizationManager: Setting selectedOrgId to null due to logout');
       setSelectedOrgId(null); // Clear selection on logout
+      setPreviousUserId(null);
       return;
     }
+
+    // Update previous user ID
+    setPreviousUserId(currentUserId);
+
+    if (!currentUserId) {
+      // User not authenticated, don't fetch organizations
+      return;
+    }
+
+    console.log('useOrganizationManager: User authenticated, fetching organizations for:', currentUserId);
 
     const fetchUserOrgs = async () => {
       setOrganizationsLoading(true);
       setError(null);
       try {
         // Add timeout to prevent indefinite loading
-        const orgs = await withTimeout(getOrganizationsForUser(user.uid), 10000); // 10 second timeout
+        const orgs = await withTimeout(getOrganizationsForUser(currentUserId), 10000); // 10 second timeout
         setUserOrganizations(orgs);
 
         // Also fetch organization associations with roles
@@ -86,7 +104,7 @@ export function useOrganizationManager() {
         for (const org of orgs) {
           // Add timeout for each organization user fetch
           const users = await withTimeout(getOrganizationUsers(org.id), 5000); // 5 second timeout
-          const userAssociation = users.find(u => u.userId === user.uid);
+          const userAssociation = users.find(u => u.userId === currentUserId);
           if (userAssociation) {
             associations.push({
               organizationId: org.id,
