@@ -82,9 +82,19 @@ Data is stored in Firestore with organization isolation:
 
 ## Offline Support
 
-- Firestore automatically syncs when online
-- PWA manifest for installable app
-- Service worker for caching (to be implemented)
+- **Firestore Offline Persistence**: Data is cached locally in IndexedDB, allowing the app to work offline
+- **Automatic Sync**: Changes sync automatically when connectivity is restored
+- **PWA Manifest**: Installable as a progressive web app on mobile devices
+- **Service Worker**: Caching for static assets (to be implemented)
+
+### Offline Persistence Details
+
+The app uses Firestore's `enableIndexedDbPersistence` to cache data locally:
+
+- **Client-side Only**: Persistence is enabled only in the browser to avoid SSR issues
+- **Error Handling**: Gracefully handles multiple tabs and unsupported browsers
+- **Real-time Sync**: Local changes sync with the server when online
+- **Data Availability**: Quotes, invoices, products, and services remain accessible offline
 
 ## Next Steps
 

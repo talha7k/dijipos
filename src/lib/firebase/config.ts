@@ -46,10 +46,11 @@ export const enablePersistence = async () => {
   try {
     await enableIndexedDbPersistence(db);
     console.log("Firestore persistence enabled successfully.");
-  } catch (error: any) {
-    if (error.code === 'failed-precondition') {
+  } catch (error: unknown) {
+    const err = error as { code?: string };
+    if (err.code === 'failed-precondition') {
       console.warn('Firestore persistence failed: Multiple tabs open. Persistence can only be enabled in one tab at a time.');
-    } else if (error.code === 'unimplemented') {
+    } else if (err.code === 'unimplemented') {
       console.error('Firestore persistence failed: The current browser does not support all of the features required.');
     } else {
       console.error('An error occurred while enabling Firestore persistence:', error);
