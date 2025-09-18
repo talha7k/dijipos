@@ -64,7 +64,7 @@ export function InvoicePrintDialog({
 
     try {
       // Render the invoice using template
-      const renderedContent = await renderInvoiceTemplate(template, invoice, organization, customer, supplier);
+      const renderedContent = await renderInvoiceTemplate(template, invoice, organization, customer, supplier, printerSettings || undefined);
 
       // Create a new window for printing (safer than manipulating current DOM)
       const printWindow = window.open('', '_blank', 'width=800,height=600');
@@ -73,11 +73,6 @@ export function InvoicePrintDialog({
       }
 
       // Write the invoice content to the new window
-      const marginTop = printerSettings?.marginTop || 0;
-      const marginBottom = printerSettings?.marginBottom || 0;
-      const marginLeft = printerSettings?.marginLeft || 0;
-      const marginRight = printerSettings?.marginRight || 0;
-
       printWindow.document.write(`
         <!DOCTYPE html>
         <html>
@@ -86,12 +81,12 @@ export function InvoicePrintDialog({
             <style>
               body {
                 margin: 0;
-                padding: ${marginTop}mm ${marginRight}mm ${marginBottom}mm ${marginLeft}mm;
+                padding: 0;
                 font-family: Arial, sans-serif;
               }
               @media print {
                 body {
-                  margin: ${marginTop}mm ${marginRight}mm ${marginBottom}mm ${marginLeft}mm;
+                  margin: 0;
                   padding: 0;
                 }
               }

@@ -229,12 +229,12 @@ export function useSeparatedTemplates(): SeparatedTemplatesState {
   const allReceiptTemplates = useMemo(() => {
     const staticWithDefaults = staticReceiptTemplates.map(template => ({
       ...template,
-      isDefault: printerSettings?.defaultReceiptTemplateId === template.id
+      isDefault: printerSettings?.receipts?.defaultTemplateId === template.id
     }));
-    
+
     const customWithDefaults = customReceiptTemplates.map(template => ({
       ...template,
-      isDefault: printerSettings?.defaultReceiptTemplateId === template.id
+      isDefault: printerSettings?.receipts?.defaultTemplateId === template.id
     }));
 
     return [...staticWithDefaults, ...customWithDefaults];
@@ -243,12 +243,12 @@ export function useSeparatedTemplates(): SeparatedTemplatesState {
   const allInvoiceTemplates = useMemo(() => {
     const staticWithDefaults = staticInvoiceTemplates.map(template => ({
       ...template,
-      isDefault: printerSettings?.defaultInvoiceTemplateId === template.id
+      isDefault: printerSettings?.invoices?.defaultTemplateId === template.id
     }));
-    
+
     const customWithDefaults = customInvoiceTemplates.map(template => ({
       ...template,
-      isDefault: printerSettings?.defaultInvoiceTemplateId === template.id
+      isDefault: printerSettings?.invoices?.defaultTemplateId === template.id
     }));
 
     return [...staticWithDefaults, ...customWithDefaults];
@@ -257,12 +257,12 @@ export function useSeparatedTemplates(): SeparatedTemplatesState {
   const allQuoteTemplates = useMemo(() => {
     const staticWithDefaults = staticQuoteTemplates.map(template => ({
       ...template,
-      isDefault: printerSettings?.defaultQuoteTemplateId === template.id
+      isDefault: printerSettings?.quotes?.defaultTemplateId === template.id
     }));
-    
+
     const customWithDefaults = customQuoteTemplates.map(template => ({
       ...template,
-      isDefault: printerSettings?.defaultQuoteTemplateId === template.id
+      isDefault: printerSettings?.quotes?.defaultTemplateId === template.id
     }));
 
     return [...staticWithDefaults, ...customWithDefaults];

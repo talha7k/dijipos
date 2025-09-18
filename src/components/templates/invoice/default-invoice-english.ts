@@ -5,7 +5,7 @@
   <title>Invoice</title>
   <style>
     body { font-family: system-ui, sans-serif; margin: 0; padding: 0; background: white; }
-    .container { max-width: 1000px; margin: 0 auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 40px; }
+     .container { max-width: 1000px; margin: {{marginTop}}mm auto {{marginBottom}}mm auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: {{paddingTop}}mm {{paddingRight}}mm {{paddingBottom}}mm {{paddingLeft}}mm; }
     .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; }
     .qr-section { margin-bottom: 20px; }
     .logo-section { position: relative; width: 192px; height: 80px; margin-left: auto; }

@@ -52,7 +52,7 @@ export function ReceiptPrintDialog({
 
     try {
       // Render the receipt using template
-      const renderedContent = await renderReceiptTemplate(template, order, organization, payments, effectivePrinterSettings ? { paperWidth: effectivePrinterSettings.paperWidth } : undefined);
+      const renderedContent = await renderReceiptTemplate(template, order, organization, payments, effectivePrinterSettings || undefined);
 
       console.log('=== RECEIPT PRINT DEBUG ===');
       console.log('Template ID:', template.id);
@@ -85,11 +85,6 @@ export function ReceiptPrintDialog({
       }
 
       // Write the receipt content to the new window
-      const marginTop = effectivePrinterSettings?.marginTop || 0;
-      const marginBottom = effectivePrinterSettings?.marginBottom || 0;
-      const marginLeft = effectivePrinterSettings?.marginLeft || 0;
-      const marginRight = effectivePrinterSettings?.marginRight || 0;
-
       const fullHtmlContent = `
         <!DOCTYPE html>
         <html>
@@ -98,12 +93,12 @@ export function ReceiptPrintDialog({
             <style>
               body {
                 margin: 0;
-                padding: ${marginTop}mm ${marginRight}mm ${marginBottom}mm ${marginLeft}mm;
+                padding: 0;
                 font-family: Arial, sans-serif;
               }
               @media print {
                 body {
-                  margin: ${marginTop}mm ${marginRight}mm ${marginBottom}mm ${marginLeft}mm;
+                  margin: 0;
                   padding: 0;
                 }
               }

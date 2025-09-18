@@ -2,20 +2,37 @@
 import { PrinterType, FontSize, PaperWidth, CHARACTER_SETS, Currency, CurrencyLocale } from './enums';
 import type { CharacterSet } from './enums';
 
+// Document-specific print settings
+export interface DocumentPrintSettings {
+  // Template selection
+  defaultTemplateId?: string;
+
+  // Margins (in mm)
+  marginTop?: number;
+  marginBottom?: number;
+  marginLeft?: number;
+  marginRight?: number;
+
+  // Padding (in mm)
+  paddingTop?: number;
+  paddingBottom?: number;
+  paddingLeft?: number;
+  paddingRight?: number;
+}
+
 export interface PrinterSettings {
   id: string;
-  defaultReceiptTemplateId?: string; // ID of the default receipt template to use
-  defaultInvoiceTemplateId?: string; // ID of the default invoice template to use
-  defaultQuoteTemplateId?: string; // ID of the default quote template to use
   includeQRCode?: boolean; // Whether to include ZATCA QR code on receipt
   paperWidth?: number; // Paper width in mm
   fontSize?: FontSize; // Font size for printing
   characterPerLine?: number; // Characters per line
   characterSet?: CharacterSet; // Character set for printing
-  marginTop?: number; // Top margin in mm
-  marginBottom?: number; // Bottom margin in mm
-  marginLeft?: number; // Left margin in mm
-  marginRight?: number; // Right margin in mm
+
+  // Document-specific settings
+  receipts?: DocumentPrintSettings;
+  invoices?: DocumentPrintSettings;
+  quotes?: DocumentPrintSettings;
+
   organizationId: string;
   createdAt: Date;
   updatedAt: Date;

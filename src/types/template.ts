@@ -90,10 +90,18 @@ export interface ReceiptTemplateData {
   vatRate: string;
   vatAmount: string;
   total: string;
-  customHeader?: string;
-  customFooter?: string;
-  totalQty: number;
-  paperWidth?: number; // Paper width in mm for dynamic layout
+   customHeader?: string;
+   customFooter?: string;
+   totalQty: number;
+   paperWidth?: number; // Paper width in mm for dynamic layout
+   marginTop?: number; // Top margin in mm
+   marginBottom?: number; // Bottom margin in mm
+   marginLeft?: number; // Left margin in mm
+   marginRight?: number; // Right margin in mm
+   paddingTop?: number; // Top padding in mm
+   paddingBottom?: number; // Bottom padding in mm
+   paddingLeft?: number; // Left padding in mm
+   paddingRight?: number; // Right padding in mm
   items: Array<{
     name: string;
     quantity: number;
@@ -108,79 +116,95 @@ export interface ReceiptTemplateData {
 }
 
 export interface InvoiceTemplateData {
-  invoiceId: string;
-  invoiceDate: string;
-  dueDate: string;
-  status: string;
-  companyName: string;
-  companyNameAr: string;
-  companyAddress: string;
-  companyEmail: string;
-  companyPhone: string;
-  companyVat: string;
-  companyLogo: string;
-  companyStamp: string;
-  clientName: string;
-  customerNameAr: string;
-  clientAddress: string;
-  clientEmail: string;
-  clientVat: string;
-  customerLogo: string;
-  supplierName: string;
-  supplierNameAr: string;
-  supplierAddress: string;
-  supplierEmail: string;
-  supplierVat: string;
-  supplierLogo: string;
-  subtotal: string;
-  taxRate: string;
-  taxAmount: string;
-  total: string;
-  notes: string;
-  includeQR: boolean;
-  qrCodeUrl?: string;
-  items: Array<{
-    name: string;
-    description: string;
-    quantity: number;
-    unitPrice: string;
-    total: string;
-  }>;
-}
+   invoiceId: string;
+   invoiceDate: string;
+   dueDate: string;
+   status: string;
+   companyName: string;
+   companyNameAr: string;
+   companyAddress: string;
+   companyEmail: string;
+   companyPhone: string;
+   companyVat: string;
+   companyLogo: string;
+   companyStamp: string;
+   clientName: string;
+   customerNameAr: string;
+   clientAddress: string;
+   clientEmail: string;
+   clientVat: string;
+   customerLogo: string;
+   supplierName: string;
+   supplierNameAr: string;
+   supplierAddress: string;
+   supplierEmail: string;
+   supplierVat: string;
+   supplierLogo: string;
+   subtotal: string;
+   taxRate: string;
+   taxAmount: string;
+   total: string;
+   notes: string;
+   includeQR: boolean;
+   qrCodeUrl?: string;
+   marginTop?: number; // Top margin in mm
+   marginBottom?: number; // Bottom margin in mm
+   marginLeft?: number; // Left margin in mm
+   marginRight?: number; // Right margin in mm
+   paddingTop?: number; // Top padding in mm
+   paddingBottom?: number; // Bottom padding in mm
+   paddingLeft?: number; // Left padding in mm
+   paddingRight?: number; // Right padding in mm
+   items: Array<{
+     name: string;
+     description: string;
+     quantity: number;
+     unitPrice: string;
+     total: string;
+   }>;
+ }
 
 export interface QuoteTemplateData {
-  quoteId: string;
-  quoteDate: string;
-  validUntil: string;
-  status: string;
-  companyName: string;
-  companyNameAr: string;
-  companyAddress: string;
-  companyEmail: string;
-  companyPhone: string;
-  companyVat: string;
-  companyLogo: string;
-  clientName: string;
-  customerNameAr: string;
-  clientAddress: string;
-  clientEmail: string;
-  clientVat: string;
-  customerLogo: string;
-  subtotal: string;
-  taxRate: string;
-  taxAmount: string;
-  total: string;
-  notes: string;
-  includeQR: boolean;
-  qrCodeUrl?: string;
-  items: Array<{
-    name: string;
-    description: string;
-    quantity: number;
-    unitPrice: string;
-    total: string;
-  }>;
-}
+   quoteId: string;
+   quoteDate: string;
+   validUntil: string;
+   status: string;
+   companyName: string;
+   companyNameAr: string;
+   companyAddress: string;
+   companyEmail: string;
+   companyPhone: string;
+   companyVat: string;
+   companyLogo: string;
+   clientName: string;
+   customerNameAr: string;
+   clientAddress: string;
+   clientEmail: string;
+   clientVat: string;
+   customerLogo: string;
+   subtotal: string;
+   taxRate: string;
+   taxAmount: string;
+   total: string;
+   notes: string;
+   includeQR: boolean;
+   qrCodeUrl?: string;
+   marginTop?: number; // Top margin in mm
+   marginBottom?: number; // Bottom margin in mm
+   marginLeft?: number; // Left margin in mm
+   marginRight?: number; // Right margin in mm
+   paddingTop?: number; // Top padding in mm
+   paddingBottom?: number; // Bottom padding in mm
+   paddingLeft?: number; // Left padding in mm
+   paddingRight?: number; // Right padding in mm
+   items: Array<{
+     name: string;
+     description: string;
+     quantity: number;
+     unitPrice: string;
+     total: string;
+   }>;
+ }
 
 export type TemplateData = ReceiptTemplateData | InvoiceTemplateData | QuoteTemplateData;
 

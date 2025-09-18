@@ -10,6 +10,7 @@ import { defaultQuoteEnglish } from '@/components/templates/quotes/default-quote
 import { defaultQuoteArabic } from '@/components/templates/quotes/default-quote-arabic';
 import { createReceiptQRData, generateZatcaQRCode } from '@/lib/zatca-qr';
 import { ReceiptTemplateData, InvoiceTemplateData, QuoteTemplateData, TemplateData } from '@/types/template';
+import { PrinterSettings } from '@/types';
 
 // Utility function to convert image URL to base64
 async function convertImageToBase64(imageUrl: string): Promise<string> {
@@ -35,7 +36,7 @@ export async function renderReceiptTemplate(
     order: Order,
     organization: Organization | null,
     payments: OrderPayment[] = [],
-    printerSettings?: { paperWidth?: number }
+    printerSettings?: PrinterSettings
   ): Promise<string> {
     console.log('=== Receipt Template Debug ===');
     console.log('Template:', template);
@@ -86,10 +87,18 @@ export async function renderReceiptTemplate(
      vatRate: (order.taxRate || 0).toString(),
      vatAmount: (order.taxAmount || 0).toFixed(2),
      total: (order.total || 0).toFixed(2),
-      customHeader: template.customHeader || '',
-      customFooter: template.customFooter || '',
-      totalQty: totalQty,
-      paperWidth: printerSettings?.paperWidth,
+       customHeader: template.customHeader || '',
+       customFooter: template.customFooter || '',
+       totalQty: totalQty,
+       paperWidth: printerSettings?.paperWidth,
+        marginTop: printerSettings?.receipts?.marginTop || 0,
+        marginBottom: printerSettings?.receipts?.marginBottom || 0,
+        marginLeft: printerSettings?.receipts?.marginLeft || 0,
+        marginRight: printerSettings?.receipts?.marginRight || 0,
+        paddingTop: printerSettings?.receipts?.paddingTop || 0,
+        paddingBottom: printerSettings?.receipts?.paddingBottom || 0,
+        paddingLeft: printerSettings?.receipts?.paddingLeft || 0,
+        paddingRight: printerSettings?.receipts?.paddingRight || 0,
       items: order.items.map(item => ({
        name: item.name,
        quantity: item.quantity,
@@ -256,7 +265,8 @@ export async function renderInvoiceTemplate(
   invoice: Invoice,
   organization: Organization | null,
   customer?: Customer,
-  supplier?: Supplier
+  supplier?: Supplier,
+  printerSettings?: PrinterSettings
 ): Promise<string> {
   // For PDF generation, use original URLs and let html2canvas handle them
   const companyLogoUrl = organization?.logoUrl || '';
@@ -298,6 +308,14 @@ export async function renderInvoiceTemplate(
     notes: invoice.notes || '',
     includeQR: 'includeQR' in invoice ? invoice.includeQR : false,
     qrCodeUrl: qrCodeBase64,
+     marginTop: printerSettings?.invoices?.marginTop || 0,
+     marginBottom: printerSettings?.invoices?.marginBottom || 0,
+     marginLeft: printerSettings?.invoices?.marginLeft || 0,
+     marginRight: printerSettings?.invoices?.marginRight || 0,
+     paddingTop: printerSettings?.invoices?.paddingTop || 0,
+     paddingBottom: printerSettings?.invoices?.paddingBottom || 0,
+     paddingLeft: printerSettings?.invoices?.paddingLeft || 0,
+     paddingRight: printerSettings?.invoices?.paddingRight || 0,
     items: invoice.items.map(item => ({
       name: item.name,
       description: item.description || '',
@@ -422,7 +440,8 @@ export async function renderQuoteTemplate(
   template: QuoteTemplate,
   quote: Quote,
   organization: Organization | null,
-  customer?: Customer
+  customer?: Customer,
+  printerSettings?: PrinterSettings
 ): Promise<string> {
   // For PDF generation, use original URLs and let html2canvas handle them
   const companyLogoUrl = organization?.logoUrl || '';
@@ -454,6 +473,14 @@ export async function renderQuoteTemplate(
     notes: quote.notes || '',
     includeQR: false, // Quotes typically don't include QR codes
     qrCodeUrl: '',
+     marginTop: printerSettings?.quotes?.marginTop || 0,
+     marginBottom: printerSettings?.quotes?.marginBottom || 0,
+     marginLeft: printerSettings?.quotes?.marginLeft || 0,
+     marginRight: printerSettings?.quotes?.marginRight || 0,
+     paddingTop: printerSettings?.quotes?.paddingTop || 0,
+     paddingBottom: printerSettings?.quotes?.paddingBottom || 0,
+     paddingLeft: printerSettings?.quotes?.paddingLeft || 0,
+     paddingRight: printerSettings?.quotes?.paddingRight || 0,
     items: quote.items.map(item => ({
       name: item.name,
       description: item.description || '',

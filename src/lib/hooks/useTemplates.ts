@@ -51,39 +51,39 @@ export function useTemplates(): TemplatesState {
   const receiptTemplates = [
     ...staticReceiptTemplates.map(template => ({
       ...template,
-      isDefault: printerSettings?.defaultReceiptTemplateId === template.id
+      isDefault: printerSettings?.receipts?.defaultTemplateId === template.id
     })),
     ...firestoreReceiptTemplates
       .filter(ft => !staticReceiptTemplates.some(st => st.id === ft.id))
       .map(template => ({
         ...template,
-        isDefault: printerSettings?.defaultReceiptTemplateId === template.id
+        isDefault: printerSettings?.receipts?.defaultTemplateId === template.id
       }))
   ];
 
   const invoiceTemplates = [
     ...staticInvoiceTemplates.map(template => ({
       ...template,
-      isDefault: printerSettings?.defaultInvoiceTemplateId === template.id
+      isDefault: printerSettings?.invoices?.defaultTemplateId === template.id
     })),
     ...firestoreInvoiceTemplates
       .filter(ft => !staticInvoiceTemplates.some(st => st.id === ft.id))
       .map(template => ({
         ...template,
-        isDefault: printerSettings?.defaultInvoiceTemplateId === template.id
+        isDefault: printerSettings?.invoices?.defaultTemplateId === template.id
       }))
   ];
 
   const quoteTemplates = [
     ...staticQuoteTemplates.map(template => ({
       ...template,
-      isDefault: printerSettings?.defaultQuoteTemplateId === template.id
+      isDefault: printerSettings?.quotes?.defaultTemplateId === template.id
     })),
     ...firestoreQuoteTemplates
       .filter(ft => !staticQuoteTemplates.some(st => st.id === ft.id))
       .map(template => ({
         ...template,
-        isDefault: printerSettings?.defaultQuoteTemplateId === template.id
+        isDefault: printerSettings?.quotes?.defaultTemplateId === template.id
       }))
   ];
 

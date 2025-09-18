@@ -10,10 +10,10 @@ export const defaultArabicReceiptA4Template = `<!DOCTYPE html>
       padding: 0;
       background: white;
     }
-    .receipt-container {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 40px;
+     .receipt-container {
+       max-width: 800px;
+       margin: {{marginTop}}mm auto {{marginBottom}}mm auto;
+       padding: {{paddingTop}}mm {{paddingRight}}mm {{paddingBottom}}mm {{paddingLeft}}mm;
       border: 1px solid #e5e7eb;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }

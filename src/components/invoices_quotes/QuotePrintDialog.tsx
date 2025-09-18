@@ -57,7 +57,7 @@ export function QuotePrintDialog({
 
     try {
       // Render the quote using template
-      const renderedContent = await renderQuoteTemplate(template, quote, organization, customer);
+      const renderedContent = await renderQuoteTemplate(template, quote, organization, customer, printerSettings || undefined);
 
       // Create a new window for printing (safer than manipulating current DOM)
       const printWindow = window.open('', '_blank', 'width=800,height=600');
@@ -66,11 +66,6 @@ export function QuotePrintDialog({
       }
 
       // Write the quote content to the new window
-      const marginTop = printerSettings?.marginTop || 0;
-      const marginBottom = printerSettings?.marginBottom || 0;
-      const marginLeft = printerSettings?.marginLeft || 0;
-      const marginRight = printerSettings?.marginRight || 0;
-
       printWindow.document.write(`
         <!DOCTYPE html>
         <html>
@@ -79,12 +74,12 @@ export function QuotePrintDialog({
             <style>
               body {
                 margin: 0;
-                padding: ${marginTop}mm ${marginRight}mm ${marginBottom}mm ${marginLeft}mm;
+                padding: 0;
                 font-family: Arial, sans-serif;
               }
               @media print {
                 body {
-                  margin: ${marginTop}mm ${marginRight}mm ${marginBottom}mm ${marginLeft}mm;
+                  margin: 0;
                   padding: 0;
                 }
               }

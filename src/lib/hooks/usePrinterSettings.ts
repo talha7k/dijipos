@@ -63,14 +63,14 @@ export function usePrinterSettings(): PrinterSettingsState & PrinterSettingsActi
         // This is a partial update - merge with existing settings
         if (!printerSettings) {
           // No existing settings, create new ones with the partial data
-          const newSettings: Omit<PrinterSettings, 'id' | 'createdAt' | 'updatedAt'> = {
-            organizationId: selectedOrganization.id,
-            includeQRCode: true, // default value
-            defaultReceiptTemplateId: undefined,
-            defaultInvoiceTemplateId: undefined,
-            defaultQuoteTemplateId: undefined,
-            ...settings,
-          };
+           const newSettings: Omit<PrinterSettings, 'id' | 'createdAt' | 'updatedAt'> = {
+             organizationId: selectedOrganization.id,
+             includeQRCode: true, // default value
+             receipts: {},
+             invoices: {},
+             quotes: {},
+             ...settings,
+           };
 
           const createdId = await createPrinterSettings(newSettings);
           // Fetch the created settings to update global state

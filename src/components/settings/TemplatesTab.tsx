@@ -59,17 +59,17 @@ export function TemplatesTab({}: TemplatesTabProps) {
 
   // Local state for default template IDs to ensure immediate UI updates
   const [localDefaults, setLocalDefaults] = useState({
-    receipt: printerSettings?.defaultReceiptTemplateId,
-    invoice: printerSettings?.defaultInvoiceTemplateId,
-    quote: printerSettings?.defaultQuoteTemplateId,
+    receipt: printerSettings?.receipts?.defaultTemplateId,
+    invoice: printerSettings?.invoices?.defaultTemplateId,
+    quote: printerSettings?.quotes?.defaultTemplateId,
   });
 
   // Update local defaults when printer settings change
   useEffect(() => {
     setLocalDefaults({
-      receipt: printerSettings?.defaultReceiptTemplateId,
-      invoice: printerSettings?.defaultInvoiceTemplateId,
-      quote: printerSettings?.defaultQuoteTemplateId,
+      receipt: printerSettings?.receipts?.defaultTemplateId,
+      invoice: printerSettings?.invoices?.defaultTemplateId,
+      quote: printerSettings?.quotes?.defaultTemplateId,
     });
   }, [printerSettings]);
 
@@ -211,26 +211,32 @@ export function TemplatesTab({}: TemplatesTabProps) {
       // Set the appropriate template ID based on category
       switch (selectedCategory) {
         case TemplateCategory.RECEIPT:
-          settingsToUpdate.defaultReceiptTemplateId = templateId;
+          if (!settingsToUpdate.receipts) settingsToUpdate.receipts = {};
+          settingsToUpdate.receipts.defaultTemplateId = templateId;
           break;
         case TemplateCategory.INVOICE:
-          settingsToUpdate.defaultInvoiceTemplateId = templateId;
+          if (!settingsToUpdate.invoices) settingsToUpdate.invoices = {};
+          settingsToUpdate.invoices.defaultTemplateId = templateId;
           break;
         case TemplateCategory.QUOTE:
-          settingsToUpdate.defaultQuoteTemplateId = templateId;
+          if (!settingsToUpdate.quotes) settingsToUpdate.quotes = {};
+          settingsToUpdate.quotes.defaultTemplateId = templateId;
           break;
       }
 
       // Preserve existing template IDs for other categories
       if (printerSettings) {
-        if (selectedCategory !== TemplateCategory.RECEIPT && printerSettings.defaultReceiptTemplateId) {
-          settingsToUpdate.defaultReceiptTemplateId = printerSettings.defaultReceiptTemplateId;
+        if (selectedCategory !== TemplateCategory.RECEIPT && printerSettings.receipts?.defaultTemplateId) {
+          if (!settingsToUpdate.receipts) settingsToUpdate.receipts = {};
+          settingsToUpdate.receipts.defaultTemplateId = printerSettings.receipts.defaultTemplateId;
         }
-        if (selectedCategory !== TemplateCategory.INVOICE && printerSettings.defaultInvoiceTemplateId) {
-          settingsToUpdate.defaultInvoiceTemplateId = printerSettings.defaultInvoiceTemplateId;
+        if (selectedCategory !== TemplateCategory.INVOICE && printerSettings.invoices?.defaultTemplateId) {
+          if (!settingsToUpdate.invoices) settingsToUpdate.invoices = {};
+          settingsToUpdate.invoices.defaultTemplateId = printerSettings.invoices.defaultTemplateId;
         }
-        if (selectedCategory !== TemplateCategory.QUOTE && printerSettings.defaultQuoteTemplateId) {
-          settingsToUpdate.defaultQuoteTemplateId = printerSettings.defaultQuoteTemplateId;
+        if (selectedCategory !== TemplateCategory.QUOTE && printerSettings.quotes?.defaultTemplateId) {
+          if (!settingsToUpdate.quotes) settingsToUpdate.quotes = {};
+          settingsToUpdate.quotes.defaultTemplateId = printerSettings.quotes.defaultTemplateId;
         }
       }
 
