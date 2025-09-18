@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useAtomValue } from 'jotai';
-import { selectedOrganizationAtom } from '@/atoms';
+import { selectedOrganizationAtom, selectedOrganizationIdAtom } from '@/atoms';
 import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
 import { PrinterSettings } from '@/types';
 import { useReceiptTemplatesData } from '@/lib/hooks/useReceiptTemplatesData';
@@ -22,19 +22,26 @@ interface PrinterSettingsTabProps {
 
 export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPrinterSettingsUpdate }: PrinterSettingsTabProps) {
   const selectedOrganization = useAtomValue(selectedOrganizationAtom);
-  const organizationId = selectedOrganization?.id;
+  const organizationId = useAtomValue(selectedOrganizationIdAtom);
   const [selectedTab, setSelectedTab] = useState('general');
+
+
+
   const { receiptTemplates, loading: templatesLoading } = useReceiptTemplatesData(organizationId || undefined);
   const { templates: invoiceTemplates } = useInvoicesTemplatesData(organizationId || undefined);
   const { templates: quoteTemplates } = useQuotesTemplatesData(organizationId || undefined);
   const { storeSettings, refreshStoreSettings } = useStoreSettings();
+
+
 
   // Use store settings printer settings, fallback to prop
   const printerSettings = storeSettings?.printerSettings || propPrinterSettings;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleUpdateSettings = async (field: string, value: string | number | boolean) => {
-    if (!organizationId || !storeSettings) return;
+    if (!organizationId || !storeSettings) {
+      return;
+    }
 
     try {
       let updatedSettings: PrinterSettings;
@@ -187,45 +194,50 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
 
           {selectedTab === 'general' && (
             <div className="space-y-4">
-             {!templatesLoading && receiptTemplates.length > 0 && (
+              {!templatesLoading && (
                <>
-                  <EditableSetting
-                    label="Default Receipt Template"
-                    value={printerSettings?.receipts?.defaultTemplateId || ''}
-                    type="select"
-                    options={receiptTemplates.map(t => ({
-                      value: t.id,
-                      label: t.name
-                    }))}
-                    onSave={(value) => handleUpdateSettings('receipts.defaultTemplateId', value)}
-                    placeholder="Select template"
-                  />
-<EditableSetting
-                    label="Default Invoice Template"
-                    value={printerSettings?.invoices?.defaultTemplateId || ''}
-                    type="select"
-                    options={invoiceTemplates.map(t => ({
-                      value: t.id,
-                      label: t.name
-                    }))}
-                    onSave={(value) => handleUpdateSettings('invoices.defaultTemplateId', value)}
-                    placeholder="Select template"
-                  />
-                  <EditableSetting
-                    label="Default Quote Template"
-                    value={printerSettings?.quotes?.defaultTemplateId || ''}
-                    type="select"
-                    options={quoteTemplates.map(t => ({
-                      value: t.id,
-                      label: t.name
-                    }))}
-                    onSave={(value) => handleUpdateSettings('quotes.defaultTemplateId', value)}
-                    placeholder="Select template"
-                  />
-               </>
-             )}
+                   <EditableSetting
+                     label="Default Receipt Template"
+                     value={printerSettings?.receipts?.defaultTemplateId || ''}
+                     type="select"
+                     options={receiptTemplates.map(t => ({
+                       value: t.id,
+                       label: t.name
+                     }))}
+                     onSave={(value) => handleUpdateSettings('receipts.defaultTemplateId', value)}
+                     placeholder="Select template"
+                   />
 
-</div>
+                   <EditableSetting
+                     label="Default Invoice Template"
+                     value={printerSettings?.invoices?.defaultTemplateId || ''}
+                     type="select"
+                     options={invoiceTemplates.map(t => ({
+                       value: t.id,
+                       label: t.name
+                     }))}
+                     onSave={(value) => handleUpdateSettings('invoices.defaultTemplateId', value)}
+                     placeholder="Select template"
+                   />
+
+                   <EditableSetting
+                     label="Default Quote Template"
+                     value={printerSettings?.quotes?.defaultTemplateId || ''}
+                     type="select"
+                     options={quoteTemplates.map(t => ({
+                       value: t.id,
+                       label: t.name
+                     }))}
+                     onSave={(value) => handleUpdateSettings('quotes.defaultTemplateId', value)}
+                     placeholder="Select template"
+                   />
+
+                </>
+              )}
+
+
+
+ </div>
           )}
 
           {selectedTab === 'receipts' && (

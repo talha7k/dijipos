@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAtomValue } from "jotai";
-import { selectedOrganizationAtom } from "@/atoms";
+import { selectedOrganizationAtom, selectedOrganizationIdAtom } from "@/atoms";
 import {
   ReceiptTemplate,
   InvoiceTemplate,
@@ -65,7 +65,7 @@ interface TemplatesTabProps {
 
 export function TemplatesTab({}: TemplatesTabProps) {
   const selectedOrganization = useAtomValue(selectedOrganizationAtom);
-  const organizationId = selectedOrganization?.id;
+  const organizationId = useAtomValue(selectedOrganizationIdAtom);
 
   const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
   const [deleteTemplateId, setDeleteTemplateId] = useState<string | null>(null);
@@ -92,6 +92,8 @@ export function TemplatesTab({}: TemplatesTabProps) {
   } = useSeparatedTemplates();
   const { storeSettings, refreshStoreSettings } = useStoreSettings();
   const printerSettings = storeSettings?.printerSettings;
+
+
 
   // Local state for default template IDs to ensure immediate UI updates
   const [localDefaults, setLocalDefaults] = useState({

@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
+import { useAtomValue } from 'jotai';
 import { StoreSettings, OrderType, PaymentType } from '@/types';
+import { selectedOrganizationIdAtom } from '@/atoms';
 import {
   getStoreSettings,
   createDefaultStoreSettings,
@@ -49,6 +51,7 @@ interface StoreSettingsActions {
  */
 export function useStoreSettings(): StoreSettingsState & StoreSettingsActions {
   const { selectedOrganization } = useOrganization();
+  const selectedOrganizationId = useAtomValue(selectedOrganizationIdAtom);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [storeSettings, setStoreSettings] = useState<StoreSettings | null>(null);
@@ -60,14 +63,14 @@ export function useStoreSettings(): StoreSettingsState & StoreSettingsActions {
     error: realtimeError
   } = useRealtimeCollection<RawStoreSettings>(
     'storeSettings',
-    selectedOrganization?.id || null,
+    selectedOrganizationId || null,
     [],
     null // Disable orderBy to prevent index errors
   );
 
   // Effect to load and refresh complete store settings
   useEffect(() => {
-    if (!selectedOrganization?.id) {
+    if (!selectedOrganizationId) {
       setStoreSettings(null);
       return;
     }
@@ -75,7 +78,7 @@ export function useStoreSettings(): StoreSettingsState & StoreSettingsActions {
     const loadCompleteStoreSettings = async () => {
       try {
         setLoading(true);
-        const completeSettings = await getStoreSettings(selectedOrganization.id);
+        const completeSettings = await getStoreSettings(selectedOrganizationId);
         setStoreSettings(completeSettings);
       } catch (err) {
         console.error('Error loading store settings:', err);
@@ -86,11 +89,11 @@ export function useStoreSettings(): StoreSettingsState & StoreSettingsActions {
     };
 
     loadCompleteStoreSettings();
-  }, [selectedOrganization?.id]);
+  }, [selectedOrganizationId]);
 
   // Effect to set up real-time listeners for related collections
   useEffect(() => {
-    if (!selectedOrganization?.id || storeSettingsList.length === 0) return;
+    if (!selectedOrganizationId || storeSettingsList.length === 0) return;
 
     const baseStoreSettings = storeSettingsList[0];
     if (!baseStoreSettings.vatSettingsId || !baseStoreSettings.currencySettingsId || !baseStoreSettings.printerSettingsId) return;
@@ -101,7 +104,7 @@ export function useStoreSettings(): StoreSettingsState & StoreSettingsActions {
       async () => {
         // Refresh complete store settings when VAT settings change
         try {
-          const updatedSettings = await getStoreSettings(selectedOrganization.id);
+          const updatedSettings = await getStoreSettings(selectedOrganizationId);
           setStoreSettings(updatedSettings);
         } catch (err) {
           console.error('Error refreshing store settings after VAT change:', err);
@@ -114,7 +117,7 @@ export function useStoreSettings(): StoreSettingsState & StoreSettingsActions {
       async () => {
         // Refresh complete store settings when currency settings change
         try {
-          const updatedSettings = await getStoreSettings(selectedOrganization.id);
+          const updatedSettings = await getStoreSettings(selectedOrganizationId);
           setStoreSettings(updatedSettings);
         } catch (err) {
           console.error('Error refreshing store settings after currency change:', err);
@@ -128,7 +131,7 @@ export function useStoreSettings(): StoreSettingsState & StoreSettingsActions {
         console.log('[useStoreSettings] Printer settings realtime listener triggered');
         // Refresh complete store settings when printer settings change
         try {
-          const updatedSettings = await getStoreSettings(selectedOrganization.id);
+          const updatedSettings = await getStoreSettings(selectedOrganizationId);
           console.log('[useStoreSettings] Realtime update - new printer settings:', updatedSettings?.printerSettings);
           setStoreSettings(updatedSettings ? { ...updatedSettings } : null);
         } catch (err) {
@@ -142,18 +145,18 @@ export function useStoreSettings(): StoreSettingsState & StoreSettingsActions {
       currencyUnsubscribe();
       printerUnsubscribe();
     };
-  }, [selectedOrganization?.id, storeSettingsList]);
+  }, [selectedOrganizationId, storeSettingsList]);
 
   const createDefaultSettings = async () => {
-    if (!selectedOrganization?.id) return;
+    if (!selectedOrganizationId) return;
 
     setLoading(true);
     setError(null);
 
     try {
-      await createDefaultStoreSettings(selectedOrganization.id);
+      await createDefaultStoreSettings(selectedOrganizationId);
       // Load the complete settings after creation
-      const completeSettings = await getStoreSettings(selectedOrganization.id);
+      const completeSettings = await getStoreSettings(selectedOrganizationId);
       setStoreSettings(completeSettings);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create default settings');
@@ -164,11 +167,11 @@ export function useStoreSettings(): StoreSettingsState & StoreSettingsActions {
   };
 
   const refreshStoreSettings = async () => {
-    if (!selectedOrganization?.id) return;
+    if (!selectedOrganizationId) return;
 
     try {
       console.log('[useStoreSettings] Refreshing store settings...');
-      const completeSettings = await getStoreSettings(selectedOrganization.id);
+      const completeSettings = await getStoreSettings(selectedOrganizationId);
       console.log('[useStoreSettings] Retrieved store settings:', completeSettings);
       console.log('[useStoreSettings] Printer settings:', completeSettings?.printerSettings);
       // Ensure we create a new object reference to trigger re-renders
@@ -181,14 +184,14 @@ export function useStoreSettings(): StoreSettingsState & StoreSettingsActions {
 
   // Order Types CRUD operations
   const createNewOrderType = async (orderTypeData: Omit<OrderType, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
-    if (!selectedOrganization?.id) {
+    if (!selectedOrganizationId) {
       throw new Error('No organization selected');
     }
 
     try {
       return await createOrderType({
         ...orderTypeData,
-        organizationId: selectedOrganization.id,
+        organizationId: selectedOrganizationId,
       });
     } catch (err) {
       console.error('Error creating order type:', err);
@@ -219,14 +222,14 @@ export function useStoreSettings(): StoreSettingsState & StoreSettingsActions {
 
   // Payment Types CRUD operations
   const createNewPaymentType = async (paymentTypeData: Omit<PaymentType, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
-    if (!selectedOrganization?.id) {
+    if (!selectedOrganizationId) {
       throw new Error('No organization selected');
     }
 
     try {
       return await createPaymentType({
         ...paymentTypeData,
-        organizationId: selectedOrganization.id,
+        organizationId: selectedOrganizationId,
       });
     } catch (err) {
       console.error('Error creating payment type:', err);
