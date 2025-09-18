@@ -49,7 +49,8 @@ export function StoreSettingsTab({ vatSettings, onVatSettingsUpdate }: StoreSett
 
       if (!storeSettings.vatSettings) {
         // Create new VAT settings if they don't exist
-        const vatSettingsId = await createVATSettings(storeSettings.organizationId, {
+        const vatSettingsId = await createVATSettings({
+          organizationId: storeSettings.organizationId,
           rate: defaultVatSettings.rate,
           isEnabled: defaultVatSettings.isEnabled,
         });
@@ -78,7 +79,8 @@ export function StoreSettingsTab({ vatSettings, onVatSettingsUpdate }: StoreSett
 
       if (!storeSettings.currencySettings) {
         // Create new currency settings if they don't exist
-        await createCurrencySettings(storeSettings.organizationId, {
+        await createCurrencySettings({
+          organizationId: storeSettings.organizationId,
           locale: value,
           currency: currency,
         });

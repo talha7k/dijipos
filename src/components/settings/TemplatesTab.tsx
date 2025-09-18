@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAtomValue } from "jotai";
 import { selectedOrganizationAtom, selectedOrganizationIdAtom } from "@/atoms";
+import { FontSize } from "@/types/enums";
 import {
   ReceiptTemplate,
   InvoiceTemplate,
@@ -270,7 +271,7 @@ export function TemplatesTab({}: TemplatesTabProps) {
           receipts: {
             includeQRCode: true,
             paperWidth: 80,
-            fontSize: "medium" as any,
+            fontSize: FontSize.MEDIUM,
             headingFont: "Arial",
             bodyFont: "Helvetica",
             lineSpacing: 1.2,
@@ -279,14 +280,14 @@ export function TemplatesTab({}: TemplatesTabProps) {
           },
           invoices: {
             paperWidth: 210,
-            fontSize: "medium" as any,
+            fontSize: FontSize.MEDIUM,
             headingFont: "Arial",
             bodyFont: "Helvetica",
             defaultTemplateId: "english-invoice",
           },
           quotes: {
             paperWidth: 210,
-            fontSize: "medium" as any,
+            fontSize: FontSize.MEDIUM,
             headingFont: "Arial",
             bodyFont: "Helvetica",
             defaultTemplateId: "english-quote",
