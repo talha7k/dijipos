@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Check, X, Edit2 } from "lucide-react";
+import { Loader } from "@/components/ui/loader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -45,13 +46,13 @@ export function EditableSetting<T extends string | number | boolean>({
 
   // Update editValue when value prop changes and force re-render
   useEffect(() => {
-    // Only update if the values are actually different
-    if (value !== editValue) {
+    // Only update if the values are actually different and we're not editing
+    if (value !== editValue && !isEditing) {
       setEditValue(value);
       // Force re-render by updating key
       setKey((prev) => prev + 1);
     }
-  }, [value, editValue]);
+  }, [value, editValue, isEditing]);
 
   const handleStartEdit = () => {
     if (disabled) return;
@@ -105,10 +106,7 @@ export function EditableSetting<T extends string | number | boolean>({
           switch (type) {
             case "switch":
               return (
-                <Badge
-                  variant={(editValue as boolean) ? "default" : "secondary"}
-                  className="ml-2"
-                >
+                <Badge variant="secondary" className="ml-2 bg-muted">
                   {(editValue as boolean) ? "Enabled" : "Disabled"}
                 </Badge>
               );
@@ -140,11 +138,9 @@ export function EditableSetting<T extends string | number | boolean>({
               placeholder={placeholder}
               autoFocus
               disabled={isSaving}
-              className="h-8"
+              className="h-10 px-4 py-2 border-2 border-input focus:border-ring bg-muted w-full"
             />
-            {isSaving && (
-              <span className="text-xs text-muted-foreground">Saving...</span>
-            )}
+            {isSaving && <Loader size="sm" className="text-muted-foreground" />}
           </div>
         );
       case "number":
@@ -152,17 +148,15 @@ export function EditableSetting<T extends string | number | boolean>({
           <div className="flex items-center gap-2">
             <Input
               type="number"
-              value={Number(editValue)}
+              value={String(editValue)}
               onChange={(e) => setEditValue(Number(e.target.value) as T)}
               onKeyDown={handleKeyDown}
               placeholder={placeholder}
               autoFocus
               disabled={isSaving}
-              className="h-8"
+              className="h-10 px-4 py-2 border-2 border-input focus:border-ring bg-muted w-full"
             />
-            {isSaving && (
-              <span className="text-xs text-muted-foreground">Saving...</span>
-            )}
+            {isSaving && <Loader size="sm" className="text-muted-foreground" />}
           </div>
         );
       case "switch":
@@ -173,9 +167,7 @@ export function EditableSetting<T extends string | number | boolean>({
               onCheckedChange={(checked) => setEditValue(checked as T)}
               disabled={isSaving}
             />
-            {isSaving && (
-              <span className="text-xs text-muted-foreground">Saving...</span>
-            )}
+            {isSaving && <Loader size="sm" className="text-muted-foreground" />}
           </div>
         );
       case "select":
@@ -185,12 +177,10 @@ export function EditableSetting<T extends string | number | boolean>({
               value={String(editValue) || ""}
               onValueChange={(val) => {
                 setEditValue(val as T);
-                // Auto-save for select type - pass the new value directly to avoid race condition
-                handleSaveWithValue(val as T);
               }}
               disabled={isSaving}
             >
-              <SelectTrigger className="h-8">
+              <SelectTrigger className="h-10 px-4 py-2 border-2 border-input focus:border-ring bg-muted/20 w-full">
                 <SelectValue placeholder={placeholder || "Select option"} />
               </SelectTrigger>
               <SelectContent>
@@ -201,9 +191,7 @@ export function EditableSetting<T extends string | number | boolean>({
                 ))}
               </SelectContent>
             </Select>
-            {isSaving && (
-              <span className="text-xs text-muted-foreground">Saving...</span>
-            )}
+            {isSaving && <Loader size="sm" className="text-muted-foreground" />}
           </div>
         );
       default:
@@ -218,7 +206,7 @@ export function EditableSetting<T extends string | number | boolean>({
     >
       <span className="text-sm font-medium">{label}:</span>
 
-      {isEditing && type !== 'select' ? (
+      {isEditing && type !== "select" ? (
         <div className="flex items-center gap-1">
           {renderEditInput()}
           <Button
@@ -240,14 +228,35 @@ export function EditableSetting<T extends string | number | boolean>({
             <X className="h-3 w-3" />
           </Button>
         </div>
-      ) : isEditing && type === 'select' ? (
+      ) : isEditing && type === "select" ? (
         <div className="flex items-center gap-1">
           {renderEditInput()}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleSave}
+            disabled={isSaving}
+            className="h-8 w-8 p-0"
+          >
+            <Check className="h-3 w-3" />
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleCancel}
+            disabled={isSaving}
+            className="h-8 w-8 p-0"
+          >
+            <X className="h-3 w-3" />
+          </Button>
         </div>
       ) : (
         <div
           className={cn(
-            "flex items-center gap-2 cursor-pointer hover:bg-muted/50 px-2 p-2 rounded-lg",
+            "flex items-center gap-2 cursor-pointer flex-1 px-2 mx-2 p-2 rounded-lg hover:bg-muted/20",
+            type === "switch"
+              ? "justify-end"
+              : "bg-muted border border-input hover:bg-muted/20 hover:border-ring",
             disabled && "cursor-not-allowed opacity-50",
           )}
           onDoubleClick={handleStartEdit}

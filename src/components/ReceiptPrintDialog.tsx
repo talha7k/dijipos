@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TemplateSelector } from "@/components/ui/TemplateSelector";
+import { PrinterSettingsPreview } from "@/components/ui/printer-settings-preview";
 import { Printer } from "lucide-react";
 import {
   Order,
@@ -306,9 +307,15 @@ export function ReceiptPrintDialog({
                     </tr>
                   </tbody>
                 </table>
-              </CardContent>
-            </Card>
-          </div>
+               </CardContent>
+             </Card>
+
+             {/* Printer Settings Preview */}
+             <PrinterSettingsPreview
+               printerSettings={printerSettings}
+               documentType="receipts"
+             />
+           </div>
 
           {/* Right Column - Template Selection & Actions */}
           <div className="space-y-6">

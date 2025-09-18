@@ -220,458 +220,453 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
             </ToggleGroupItem>
           </ToggleGroup>
 
-          {selectedTab === 'general' && (
-            <div className="space-y-4">
-              {!templatesLoading && (
-               <>
+           {selectedTab === 'general' && (
+             <div className="space-y-4">
+               {!templatesLoading && (
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                   <EditableSetting
+                     key={`receipt-template-${printerSettings?.receipts?.defaultTemplateId || 'none'}`}
+                     label="Default Receipt Template"
+                     value={(() => {
+                       const val = printerSettings?.receipts?.defaultTemplateId || '';
+                       console.log('[PrinterSettingsTab] Rendering EditableSetting with value:', val);
+                       return val;
+                     })()}
+                     type="select"
+                     options={(() => {
+                       const opts = receiptTemplates.map(t => ({
+                         value: t.id,
+                         label: t.name
+                       }));
+                       console.log('[PrinterSettingsTab] Available options:', opts);
+                       return opts;
+                     })()}
+                     onSave={async (value) => {
+                       console.log('[PrinterSettingsTab] onSave called with value:', value);
+                       await handleUpdateSettings('receipts.defaultTemplateId', value);
+                     }}
+                     placeholder="Select template"
+                     disabled={storeSettingsLoading}
+                   />
+
+                   <EditableSetting
+                     key={`invoice-template-${printerSettings?.invoices?.defaultTemplateId || 'none'}`}
+                     label="Default Invoice Template"
+                     value={printerSettings?.invoices?.defaultTemplateId || ''}
+                     type="select"
+                     options={invoiceTemplates.map(t => ({
+                       value: t.id,
+                       label: t.name
+                     }))}
+                     onSave={(value) => handleUpdateSettings('invoices.defaultTemplateId', value)}
+                     placeholder="Select template"
+                     disabled={storeSettingsLoading}
+                   />
+
+                   <EditableSetting
+                     key={`quote-template-${printerSettings?.quotes?.defaultTemplateId || 'none'}`}
+                     label="Default Quote Template"
+                     value={printerSettings?.quotes?.defaultTemplateId || ''}
+                     type="select"
+                     options={quoteTemplates.map(t => ({
+                       value: t.id,
+                       label: t.name
+                     }))}
+                     onSave={(value) => handleUpdateSettings('quotes.defaultTemplateId', value)}
+                     placeholder="Select template"
+                     disabled={storeSettingsLoading}
+                   />
+                 </div>
+               )}
+             </div>
+           )}
+
+           {selectedTab === 'receipts' && (
+             <div className="space-y-4">
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-lg font-semibold mb-3">Margins (mm)</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <EditableSetting
-                      key={`receipt-template-${printerSettings?.receipts?.defaultTemplateId || 'none'}`}
-                      label="Default Receipt Template"
-                      value={(() => {
-                        const val = printerSettings?.receipts?.defaultTemplateId || '';
-                        console.log('[PrinterSettingsTab] Rendering EditableSetting with value:', val);
-                        return val;
-                      })()}
-                      type="select"
-                      options={(() => {
-                        const opts = receiptTemplates.map(t => ({
-                          value: t.id,
-                          label: t.name
-                        }));
-                        console.log('[PrinterSettingsTab] Available options:', opts);
-                        return opts;
-                      })()}
-                      onSave={async (value) => {
-                        console.log('[PrinterSettingsTab] onSave called with value:', value);
-                        await handleUpdateSettings('receipts.defaultTemplateId', value);
-                      }}
-                      placeholder="Select template"
-                      disabled={storeSettingsLoading}
+                      label="Top Margin"
+                      value={printerSettings?.receipts?.marginTop?.toString() || '0'}
+                      type="number"
+                      onSave={(value) => handleUpdateSettings('receipts.marginTop', parseInt(value))}
+                      placeholder="Enter top margin in mm"
                     />
-
-
-<EditableSetting
-                       key={`invoice-template-${printerSettings?.invoices?.defaultTemplateId || 'none'}`}
-                       label="Default Invoice Template"
-                       value={printerSettings?.invoices?.defaultTemplateId || ''}
-                       type="select"
-                       options={invoiceTemplates.map(t => ({
-                         value: t.id,
-                         label: t.name
-                       }))}
-                        onSave={(value) => handleUpdateSettings('invoices.defaultTemplateId', value)}
-                       placeholder="Select template"
-                       disabled={storeSettingsLoading}
+                    <EditableSetting
+                      label="Bottom Margin"
+                      value={printerSettings?.receipts?.marginBottom?.toString() || '0'}
+                      type="number"
+                      onSave={(value) => handleUpdateSettings('receipts.marginBottom', parseInt(value))}
+                      placeholder="Enter bottom margin in mm"
+                    />
+                    <EditableSetting
+                      label="Left Margin"
+                      value={printerSettings?.receipts?.marginLeft?.toString() || '0'}
+                      type="number"
+                      onSave={(value) => handleUpdateSettings('receipts.marginLeft', parseInt(value))}
+                      placeholder="Enter left margin in mm"
+                    />
+                    <EditableSetting
+                      label="Right Margin"
+                      value={printerSettings?.receipts?.marginRight?.toString() || '0'}
+                      type="number"
+                      onSave={(value) => handleUpdateSettings('receipts.marginRight', parseInt(value))}
+                      placeholder="Enter right margin in mm"
                      />
-
-<EditableSetting
-                       key={`quote-template-${printerSettings?.quotes?.defaultTemplateId || 'none'}`}
-                       label="Default Quote Template"
-                       value={printerSettings?.quotes?.defaultTemplateId || ''}
-                       type="select"
-                       options={quoteTemplates.map(t => ({
-                         value: t.id,
-                         label: t.name
-                       }))}
-                        onSave={(value) => handleUpdateSettings('quotes.defaultTemplateId', value)}
-                       placeholder="Select template"
-                       disabled={storeSettingsLoading}
-                     />
-
-                </>
-              )}
-
-
-
- </div>
-          )}
-
-          {selectedTab === 'receipts' && (
-            <div className="space-y-4">
-             <div className="space-y-6">
-               <div>
-                 <h4 className="text-sm font-medium mb-3">Margins (mm)</h4>
-                 <div className="grid grid-cols-2 gap-4">
-                   <EditableSetting
-                     label="Top Margin"
-                     value={printerSettings?.receipts?.marginTop?.toString() || '0'}
-                     type="number"
-                     onSave={(value) => handleUpdateSettings('receipts.marginTop', parseInt(value))}
-                     placeholder="Enter top margin in mm"
-                   />
-                   <EditableSetting
-                     label="Bottom Margin"
-                     value={printerSettings?.receipts?.marginBottom?.toString() || '0'}
-                     type="number"
-                     onSave={(value) => handleUpdateSettings('receipts.marginBottom', parseInt(value))}
-                     placeholder="Enter bottom margin in mm"
-                   />
-                   <EditableSetting
-                     label="Left Margin"
-                     value={printerSettings?.receipts?.marginLeft?.toString() || '0'}
-                     type="number"
-                     onSave={(value) => handleUpdateSettings('receipts.marginLeft', parseInt(value))}
-                     placeholder="Enter left margin in mm"
-                   />
-                   <EditableSetting
-                     label="Right Margin"
-                     value={printerSettings?.receipts?.marginRight?.toString() || '0'}
-                     type="number"
-                     onSave={(value) => handleUpdateSettings('receipts.marginRight', parseInt(value))}
-                     placeholder="Enter right margin in mm"
-                   />
-                 </div>
-               </div>
-               <div>
-                 <h4 className="text-sm font-medium mb-3">Padding (mm)</h4>
-                 <div className="grid grid-cols-2 gap-4">
-                   <EditableSetting
-                     label="Top Padding"
-                     value={printerSettings?.receipts?.paddingTop?.toString() || '0'}
-                     type="number"
-                     onSave={(value) => handleUpdateSettings('receipts.paddingTop', parseInt(value))}
-                     placeholder="Enter top padding in mm"
-                   />
-                   <EditableSetting
-                     label="Bottom Padding"
-                     value={printerSettings?.receipts?.paddingBottom?.toString() || '0'}
-                     type="number"
-                     onSave={(value) => handleUpdateSettings('receipts.paddingBottom', parseInt(value))}
-                     placeholder="Enter bottom padding in mm"
-                   />
-                   <EditableSetting
-                     label="Left Padding"
-                     value={printerSettings?.receipts?.paddingLeft?.toString() || '0'}
-                     type="number"
-                     onSave={(value) => handleUpdateSettings('receipts.paddingLeft', parseInt(value))}
-                     placeholder="Enter left padding in mm"
-                   />
-                   <EditableSetting
-                     label="Right Padding"
-                     value={printerSettings?.receipts?.paddingRight?.toString() || '0'}
-                     type="number"
-                     onSave={(value) => handleUpdateSettings('receipts.paddingRight', parseInt(value))}
-                     placeholder="Enter right padding in mm"
-                   />
-                 </div>
-               </div>
-               <div>
-                 <h4 className="text-sm font-medium mb-3">Printer Settings</h4>
-                 <div className="grid grid-cols-2 gap-4">
-                   <EditableSetting
-                     label="Include ZATCA QR Code"
-                     value={printerSettings?.receipts?.includeQRCode ?? true}
-                     type="switch"
-                     onSave={(value) => handleUpdateSettings('receipts.includeQRCode', value)}
-                   />
-                   <EditableSetting
-                     label="Paper Width (mm)"
-                     value={printerSettings?.receipts?.paperWidth?.toString() || '80'}
-                     type="number"
-                     onSave={(value) => handleUpdateSettings('receipts.paperWidth', parseInt(value))}
-                     placeholder="Enter width in mm"
-                   />
-                   <EditableSetting
-                     label="Font Size"
-                     value={printerSettings?.receipts?.fontSize || FontSize.MEDIUM}
-                     type="select"
-                     options={[
-                       { value: FontSize.SMALL, label: 'Small' },
-                       { value: FontSize.MEDIUM, label: 'Medium' },
-                       { value: FontSize.LARGE, label: 'Large' },
-                     ]}
-                     onSave={(value) => handleUpdateSettings('receipts.fontSize', value)}
-                   />
-                   <EditableSetting
-                     label="Heading Font"
-                     value={printerSettings?.receipts?.headingFont || 'Arial'}
-                     type="select"
-                     options={[
-                       { value: 'Arial', label: 'Arial' },
-                       { value: 'Helvetica', label: 'Helvetica' },
-                       { value: 'Times New Roman', label: 'Times New Roman' },
-                       { value: 'Georgia', label: 'Georgia' },
-                       { value: 'Verdana', label: 'Verdana' },
-                       { value: 'Courier New', label: 'Courier New' },
-                     ]}
-                     onSave={(value) => handleUpdateSettings('receipts.headingFont', value)}
-                   />
-                   <EditableSetting
-                     label="Body Font"
-                     value={printerSettings?.receipts?.bodyFont || 'Helvetica'}
-                     type="select"
-                     options={[
-                       { value: 'Arial', label: 'Arial' },
-                       { value: 'Helvetica', label: 'Helvetica' },
-                       { value: 'Times New Roman', label: 'Times New Roman' },
-                       { value: 'Georgia', label: 'Georgia' },
-                       { value: 'Verdana', label: 'Verdana' },
-                       { value: 'Courier New', label: 'Courier New' },
-                     ]}
-                     onSave={(value) => handleUpdateSettings('receipts.bodyFont', value)}
-                   />
-                   <EditableSetting
-                     label="Line Spacing"
-                     value={printerSettings?.receipts?.lineSpacing?.toString() || '1.2'}
-                     type="number"
-                     onSave={(value) => handleUpdateSettings('receipts.lineSpacing', parseFloat(value))}
-                     placeholder="Enter line spacing (e.g., 1.2)"
-                   />
-                   <EditableSetting
-                     label="Auto Print"
-                     value={printerSettings?.receipts?.autoPrint ?? false}
-                     type="switch"
-                     onSave={(value) => handleUpdateSettings('receipts.autoPrint', value)}
-                   />
-                 </div>
+                   </div>
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold mb-3">Padding (mm)</h2>
+                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                     <EditableSetting
+                       label="Top Padding"
+                       value={printerSettings?.receipts?.paddingTop?.toString() || '0'}
+                      type="number"
+                      onSave={(value) => handleUpdateSettings('receipts.paddingTop', parseInt(value))}
+                      placeholder="Enter top padding in mm"
+                    />
+                    <EditableSetting
+                      label="Bottom Padding"
+                      value={printerSettings?.receipts?.paddingBottom?.toString() || '0'}
+                      type="number"
+                      onSave={(value) => handleUpdateSettings('receipts.paddingBottom', parseInt(value))}
+                      placeholder="Enter bottom padding in mm"
+                    />
+                    <EditableSetting
+                      label="Left Padding"
+                      value={printerSettings?.receipts?.paddingLeft?.toString() || '0'}
+                      type="number"
+                      onSave={(value) => handleUpdateSettings('receipts.paddingLeft', parseInt(value))}
+                      placeholder="Enter left padding in mm"
+                    />
+                    <EditableSetting
+                      label="Right Padding"
+                      value={printerSettings?.receipts?.paddingRight?.toString() || '0'}
+                      type="number"
+                      onSave={(value) => handleUpdateSettings('receipts.paddingRight', parseInt(value))}
+                      placeholder="Enter right padding in mm"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold mb-3">Printer Settings</h2>
+                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                     <EditableSetting
+                       label="Include ZATCA QR Code"
+                      value={printerSettings?.receipts?.includeQRCode ?? true}
+                      type="switch"
+                      onSave={(value) => handleUpdateSettings('receipts.includeQRCode', value)}
+                    />
+                    <EditableSetting
+                      label="Paper Width (mm)"
+                      value={printerSettings?.receipts?.paperWidth?.toString() || '80'}
+                      type="number"
+                      onSave={(value) => handleUpdateSettings('receipts.paperWidth', parseInt(value))}
+                      placeholder="Enter width in mm"
+                    />
+                    <EditableSetting
+                      label="Font Size"
+                      value={printerSettings?.receipts?.fontSize || FontSize.MEDIUM}
+                      type="select"
+                      options={[
+                        { value: FontSize.SMALL, label: 'Small' },
+                        { value: FontSize.MEDIUM, label: 'Medium' },
+                        { value: FontSize.LARGE, label: 'Large' },
+                      ]}
+                      onSave={(value) => handleUpdateSettings('receipts.fontSize', value)}
+                    />
+                    <EditableSetting
+                      label="Heading Font"
+                      value={printerSettings?.receipts?.headingFont || 'Arial'}
+                      type="select"
+                      options={[
+                        { value: 'Arial', label: 'Arial' },
+                        { value: 'Helvetica', label: 'Helvetica' },
+                        { value: 'Times New Roman', label: 'Times New Roman' },
+                        { value: 'Georgia', label: 'Georgia' },
+                        { value: 'Verdana', label: 'Verdana' },
+                        { value: 'Courier New', label: 'Courier New' },
+                      ]}
+                      onSave={(value) => handleUpdateSettings('receipts.headingFont', value)}
+                    />
+                    <EditableSetting
+                      label="Body Font"
+                      value={printerSettings?.receipts?.bodyFont || 'Helvetica'}
+                      type="select"
+                      options={[
+                        { value: 'Arial', label: 'Arial' },
+                        { value: 'Helvetica', label: 'Helvetica' },
+                        { value: 'Times New Roman', label: 'Times New Roman' },
+                        { value: 'Georgia', label: 'Georgia' },
+                        { value: 'Verdana', label: 'Verdana' },
+                        { value: 'Courier New', label: 'Courier New' },
+                      ]}
+                      onSave={(value) => handleUpdateSettings('receipts.bodyFont', value)}
+                    />
+                    <EditableSetting
+                      label="Line Spacing"
+                      value={printerSettings?.receipts?.lineSpacing?.toString() || '1.2'}
+                      type="number"
+                      onSave={(value) => handleUpdateSettings('receipts.lineSpacing', parseFloat(value))}
+                      placeholder="Enter line spacing (e.g., 1.2)"
+                    />
+                    <EditableSetting
+                      label="Auto Print"
+                      value={printerSettings?.receipts?.autoPrint ?? false}
+                      type="switch"
+                      onSave={(value) => handleUpdateSettings('receipts.autoPrint', value)}
+                    />
+                  </div>
                </div>
              </div>
 </div>
           )}
 
-          {selectedTab === 'invoices' && (
-            <div className="space-y-4">
-             <div className="space-y-6">
-               <div>
-                 <h4 className="text-sm font-medium mb-3">Margins (mm)</h4>
-                 <div className="grid grid-cols-2 gap-4">
-                   <EditableSetting
-                     label="Top Margin"
-                     value={printerSettings?.invoices?.marginTop?.toString() || '0'}
-                     type="number"
-                     onSave={(value) => handleUpdateSettings('invoices.marginTop', parseInt(value))}
-                     placeholder="Enter top margin in mm"
-                   />
-                   <EditableSetting
-                     label="Bottom Margin"
-                     value={printerSettings?.invoices?.marginBottom?.toString() || '0'}
-                     type="number"
-                     onSave={(value) => handleUpdateSettings('invoices.marginBottom', parseInt(value))}
-                     placeholder="Enter bottom margin in mm"
-                   />
-                   <EditableSetting
-                     label="Left Margin"
-                     value={printerSettings?.invoices?.marginLeft?.toString() || '0'}
-                     type="number"
-                     onSave={(value) => handleUpdateSettings('invoices.marginLeft', parseInt(value))}
-                     placeholder="Enter left margin in mm"
-                   />
-                   <EditableSetting
-                     label="Right Margin"
-                     value={printerSettings?.invoices?.marginRight?.toString() || '0'}
-                     type="number"
-                     onSave={(value) => handleUpdateSettings('invoices.marginRight', parseInt(value))}
-                     placeholder="Enter right margin in mm"
-                   />
-                 </div>
-               </div>
-               <div>
-                 <h4 className="text-sm font-medium mb-3">Padding (mm)</h4>
-                 <div className="grid grid-cols-2 gap-4">
-                   <EditableSetting
-                     label="Top Padding"
-                     value={printerSettings?.invoices?.paddingTop?.toString() || '0'}
-                     type="number"
-                     onSave={(value) => handleUpdateSettings('invoices.paddingTop', parseInt(value))}
-                     placeholder="Enter top padding in mm"
-                   />
-                   <EditableSetting
-                     label="Bottom Padding"
-                     value={printerSettings?.invoices?.paddingBottom?.toString() || '0'}
-                     type="number"
-                     onSave={(value) => handleUpdateSettings('invoices.paddingBottom', parseInt(value))}
-                     placeholder="Enter bottom padding in mm"
-                   />
-                   <EditableSetting
-                     label="Left Padding"
-                     value={printerSettings?.invoices?.paddingLeft?.toString() || '0'}
-                     type="number"
-                     onSave={(value) => handleUpdateSettings('invoices.paddingLeft', parseInt(value))}
-                     placeholder="Enter left padding in mm"
-                   />
-                   <EditableSetting
-                     label="Right Padding"
-                     value={printerSettings?.invoices?.paddingRight?.toString() || '0'}
-                     type="number"
-                     onSave={(value) => handleUpdateSettings('invoices.paddingRight', parseInt(value))}
-                     placeholder="Enter right padding in mm"
-                   />
-                 </div>
-               </div>
-               <div>
-                 <h4 className="text-sm font-medium mb-3">Printer Settings</h4>
-                 <div className="grid grid-cols-2 gap-4">
-                   <EditableSetting
-                     label="Paper Width (mm)"
-                     value={printerSettings?.invoices?.paperWidth?.toString() || '210'}
-                     type="number"
-                     onSave={(value) => handleUpdateSettings('invoices.paperWidth', parseInt(value))}
-                     placeholder="Enter width in mm"
-                   />
-                   <EditableSetting
-                     label="Font Size"
-                     value={printerSettings?.invoices?.fontSize || FontSize.MEDIUM}
-                     type="select"
-                     options={[
-                       { value: FontSize.SMALL, label: 'Small' },
-                       { value: FontSize.MEDIUM, label: 'Medium' },
-                       { value: FontSize.LARGE, label: 'Large' },
-                     ]}
-                     onSave={(value) => handleUpdateSettings('invoices.fontSize', value)}
-                   />
-                   <EditableSetting
-                     label="Heading Font"
-                     value={printerSettings?.invoices?.headingFont || 'Arial'}
-                     type="select"
-                     options={[
-                       { value: 'Arial', label: 'Arial' },
-                       { value: 'Helvetica', label: 'Helvetica' },
-                       { value: 'Times New Roman', label: 'Times New Roman' },
-                       { value: 'Georgia', label: 'Georgia' },
-                       { value: 'Verdana', label: 'Verdana' },
-                       { value: 'Courier New', label: 'Courier New' },
-                     ]}
-                     onSave={(value) => handleUpdateSettings('invoices.headingFont', value)}
-                   />
-                   <EditableSetting
-                     label="Body Font"
-                     value={printerSettings?.invoices?.bodyFont || 'Helvetica'}
-                     type="select"
-                     options={[
-                       { value: 'Arial', label: 'Arial' },
-                       { value: 'Helvetica', label: 'Helvetica' },
-                       { value: 'Times New Roman', label: 'Times New Roman' },
-                       { value: 'Georgia', label: 'Georgia' },
-                       { value: 'Verdana', label: 'Verdana' },
-                       { value: 'Courier New', label: 'Courier New' },
-                     ]}
-                     onSave={(value) => handleUpdateSettings('invoices.bodyFont', value)}
-                   />
-                 </div>
+           {selectedTab === 'invoices' && (
+             <div className="space-y-4">
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-lg font-semibold mb-3">Margins (mm)</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <EditableSetting
+                      label="Top Margin"
+                      value={printerSettings?.invoices?.marginTop?.toString() || '0'}
+                      type="number"
+                      onSave={(value) => handleUpdateSettings('invoices.marginTop', parseInt(value))}
+                      placeholder="Enter top margin in mm"
+                    />
+                    <EditableSetting
+                      label="Bottom Margin"
+                      value={printerSettings?.invoices?.marginBottom?.toString() || '0'}
+                      type="number"
+                      onSave={(value) => handleUpdateSettings('invoices.marginBottom', parseInt(value))}
+                      placeholder="Enter bottom margin in mm"
+                    />
+                    <EditableSetting
+                      label="Left Margin"
+                      value={printerSettings?.invoices?.marginLeft?.toString() || '0'}
+                      type="number"
+                      onSave={(value) => handleUpdateSettings('invoices.marginLeft', parseInt(value))}
+                      placeholder="Enter left margin in mm"
+                    />
+                    <EditableSetting
+                      label="Right Margin"
+                      value={printerSettings?.invoices?.marginRight?.toString() || '0'}
+                      type="number"
+                      onSave={(value) => handleUpdateSettings('invoices.marginRight', parseInt(value))}
+                      placeholder="Enter right margin in mm"
+                     />
+                   </div>
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold mb-3">Padding (mm)</h2>
+                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                     <EditableSetting
+                       label="Top Padding"
+                       value={printerSettings?.invoices?.paddingTop?.toString() || '0'}
+                      type="number"
+                      onSave={(value) => handleUpdateSettings('invoices.paddingTop', parseInt(value))}
+                      placeholder="Enter top padding in mm"
+                    />
+                    <EditableSetting
+                      label="Bottom Padding"
+                      value={printerSettings?.invoices?.paddingBottom?.toString() || '0'}
+                      type="number"
+                      onSave={(value) => handleUpdateSettings('invoices.paddingBottom', parseInt(value))}
+                      placeholder="Enter bottom padding in mm"
+                    />
+                    <EditableSetting
+                      label="Left Padding"
+                      value={printerSettings?.invoices?.paddingLeft?.toString() || '0'}
+                      type="number"
+                      onSave={(value) => handleUpdateSettings('invoices.paddingLeft', parseInt(value))}
+                      placeholder="Enter left padding in mm"
+                    />
+                    <EditableSetting
+                      label="Right Padding"
+                      value={printerSettings?.invoices?.paddingRight?.toString() || '0'}
+                      type="number"
+                      onSave={(value) => handleUpdateSettings('invoices.paddingRight', parseInt(value))}
+                      placeholder="Enter right padding in mm"
+                     />
+                   </div>
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold mb-3">Printer Settings</h2>
+                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                     <EditableSetting
+                       label="Paper Width (mm)"
+                       value={printerSettings?.invoices?.paperWidth?.toString() || '210'}
+                      type="number"
+                      onSave={(value) => handleUpdateSettings('invoices.paperWidth', parseInt(value))}
+                      placeholder="Enter width in mm"
+                    />
+                    <EditableSetting
+                      label="Font Size"
+                      value={printerSettings?.invoices?.fontSize || FontSize.MEDIUM}
+                      type="select"
+                      options={[
+                        { value: FontSize.SMALL, label: 'Small' },
+                        { value: FontSize.MEDIUM, label: 'Medium' },
+                        { value: FontSize.LARGE, label: 'Large' },
+                      ]}
+                      onSave={(value) => handleUpdateSettings('invoices.fontSize', value)}
+                    />
+                    <EditableSetting
+                      label="Heading Font"
+                      value={printerSettings?.invoices?.headingFont || 'Arial'}
+                      type="select"
+                      options={[
+                        { value: 'Arial', label: 'Arial' },
+                        { value: 'Helvetica', label: 'Helvetica' },
+                        { value: 'Times New Roman', label: 'Times New Roman' },
+                        { value: 'Georgia', label: 'Georgia' },
+                        { value: 'Verdana', label: 'Verdana' },
+                        { value: 'Courier New', label: 'Courier New' },
+                      ]}
+                      onSave={(value) => handleUpdateSettings('invoices.headingFont', value)}
+                    />
+                    <EditableSetting
+                      label="Body Font"
+                      value={printerSettings?.invoices?.bodyFont || 'Helvetica'}
+                      type="select"
+                      options={[
+                        { value: 'Arial', label: 'Arial' },
+                        { value: 'Helvetica', label: 'Helvetica' },
+                        { value: 'Times New Roman', label: 'Times New Roman' },
+                        { value: 'Georgia', label: 'Georgia' },
+                        { value: 'Verdana', label: 'Verdana' },
+                        { value: 'Courier New', label: 'Courier New' },
+                      ]}
+                      onSave={(value) => handleUpdateSettings('invoices.bodyFont', value)}
+                    />
+                  </div>
                </div>
              </div>
 </div>
           )}
 
-          {selectedTab === 'quotes' && (
-            <div className="space-y-4">
-             <div className="space-y-6">
-               <div>
-                 <h4 className="text-sm font-medium mb-3">Margins (mm)</h4>
-                 <div className="grid grid-cols-2 gap-4">
-                   <EditableSetting
-                     label="Top Margin"
-                     value={printerSettings?.quotes?.marginTop?.toString() || '0'}
-                     type="number"
-                     onSave={(value) => handleUpdateSettings('quotes.marginTop', parseInt(value))}
-                     placeholder="Enter top margin in mm"
-                   />
-                   <EditableSetting
-                     label="Bottom Margin"
-                     value={printerSettings?.quotes?.marginBottom?.toString() || '0'}
-                     type="number"
-                     onSave={(value) => handleUpdateSettings('quotes.marginBottom', parseInt(value))}
-                     placeholder="Enter bottom margin in mm"
-                   />
-                   <EditableSetting
-                     label="Left Margin"
-                     value={printerSettings?.quotes?.marginLeft?.toString() || '0'}
-                     type="number"
-                     onSave={(value) => handleUpdateSettings('quotes.marginLeft', parseInt(value))}
-                     placeholder="Enter left margin in mm"
-                   />
-                   <EditableSetting
-                     label="Right Margin"
-                     value={printerSettings?.quotes?.marginRight?.toString() || '0'}
-                     type="number"
-                     onSave={(value) => handleUpdateSettings('quotes.marginRight', parseInt(value))}
-                     placeholder="Enter right margin in mm"
-                   />
-                 </div>
-               </div>
-               <div>
-                 <h4 className="text-sm font-medium mb-3">Padding (mm)</h4>
-                 <div className="grid grid-cols-2 gap-4">
-                   <EditableSetting
-                     label="Top Padding"
-                     value={printerSettings?.quotes?.paddingTop?.toString() || '0'}
-                     type="number"
-                     onSave={(value) => handleUpdateSettings('quotes.paddingTop', parseInt(value))}
-                     placeholder="Enter top padding in mm"
-                   />
-                   <EditableSetting
-                     label="Bottom Padding"
-                     value={printerSettings?.quotes?.paddingBottom?.toString() || '0'}
-                     type="number"
-                     onSave={(value) => handleUpdateSettings('quotes.paddingBottom', parseInt(value))}
-                     placeholder="Enter bottom padding in mm"
-                   />
-                   <EditableSetting
-                     label="Left Padding"
-                     value={printerSettings?.quotes?.paddingLeft?.toString() || '0'}
-                     type="number"
-                     onSave={(value) => handleUpdateSettings('quotes.paddingLeft', parseInt(value))}
-                     placeholder="Enter left padding in mm"
-                   />
-                   <EditableSetting
-                     label="Right Padding"
-                     value={printerSettings?.quotes?.paddingRight?.toString() || '0'}
-                     type="number"
-                     onSave={(value) => handleUpdateSettings('quotes.paddingRight', parseInt(value))}
-                     placeholder="Enter right padding in mm"
-                   />
-                 </div>
-               </div>
-               <div>
-                 <h4 className="text-sm font-medium mb-3">Printer Settings</h4>
-                 <div className="grid grid-cols-2 gap-4">
-                   <EditableSetting
-                     label="Paper Width (mm)"
-                     value={printerSettings?.quotes?.paperWidth?.toString() || '210'}
-                     type="number"
-                     onSave={(value) => handleUpdateSettings('quotes.paperWidth', parseInt(value))}
-                     placeholder="Enter width in mm"
-                   />
-                   <EditableSetting
-                     label="Font Size"
-                     value={printerSettings?.quotes?.fontSize || FontSize.MEDIUM}
-                     type="select"
-                     options={[
-                       { value: FontSize.SMALL, label: 'Small' },
-                       { value: FontSize.MEDIUM, label: 'Medium' },
-                       { value: FontSize.LARGE, label: 'Large' },
-                     ]}
-                     onSave={(value) => handleUpdateSettings('quotes.fontSize', value)}
-                   />
-                   <EditableSetting
-                     label="Heading Font"
-                     value={printerSettings?.quotes?.headingFont || 'Arial'}
-                     type="select"
-                     options={[
-                       { value: 'Arial', label: 'Arial' },
-                       { value: 'Helvetica', label: 'Helvetica' },
-                       { value: 'Times New Roman', label: 'Times New Roman' },
-                       { value: 'Georgia', label: 'Georgia' },
-                       { value: 'Verdana', label: 'Verdana' },
-                       { value: 'Courier New', label: 'Courier New' },
-                     ]}
-                     onSave={(value) => handleUpdateSettings('quotes.headingFont', value)}
-                   />
-                   <EditableSetting
-                     label="Body Font"
-                     value={printerSettings?.quotes?.bodyFont || 'Helvetica'}
-                     type="select"
-                     options={[
-                       { value: 'Arial', label: 'Arial' },
-                       { value: 'Helvetica', label: 'Helvetica' },
-                       { value: 'Times New Roman', label: 'Times New Roman' },
-                       { value: 'Georgia', label: 'Georgia' },
-                       { value: 'Verdana', label: 'Verdana' },
-                       { value: 'Courier New', label: 'Courier New' },
-                     ]}
-                     onSave={(value) => handleUpdateSettings('quotes.bodyFont', value)}
-                   />
-                 </div>
+           {selectedTab === 'quotes' && (
+             <div className="space-y-4">
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-lg font-semibold mb-3">Margins (mm)</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <EditableSetting
+                      label="Top Margin"
+                      value={printerSettings?.quotes?.marginTop?.toString() || '0'}
+                      type="number"
+                      onSave={(value) => handleUpdateSettings('quotes.marginTop', parseInt(value))}
+                      placeholder="Enter top margin in mm"
+                    />
+                    <EditableSetting
+                      label="Bottom Margin"
+                      value={printerSettings?.quotes?.marginBottom?.toString() || '0'}
+                      type="number"
+                      onSave={(value) => handleUpdateSettings('quotes.marginBottom', parseInt(value))}
+                      placeholder="Enter bottom margin in mm"
+                    />
+                    <EditableSetting
+                      label="Left Margin"
+                      value={printerSettings?.quotes?.marginLeft?.toString() || '0'}
+                      type="number"
+                      onSave={(value) => handleUpdateSettings('quotes.marginLeft', parseInt(value))}
+                      placeholder="Enter left margin in mm"
+                    />
+                    <EditableSetting
+                      label="Right Margin"
+                      value={printerSettings?.quotes?.marginRight?.toString() || '0'}
+                      type="number"
+                      onSave={(value) => handleUpdateSettings('quotes.marginRight', parseInt(value))}
+                      placeholder="Enter right margin in mm"
+                     />
+                   </div>
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold mb-3">Padding (mm)</h2>
+                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                     <EditableSetting
+                       label="Top Padding"
+                       value={printerSettings?.quotes?.paddingTop?.toString() || '0'}
+                      type="number"
+                      onSave={(value) => handleUpdateSettings('quotes.paddingTop', parseInt(value))}
+                      placeholder="Enter top padding in mm"
+                    />
+                    <EditableSetting
+                      label="Bottom Padding"
+                      value={printerSettings?.quotes?.paddingBottom?.toString() || '0'}
+                      type="number"
+                      onSave={(value) => handleUpdateSettings('quotes.paddingBottom', parseInt(value))}
+                      placeholder="Enter bottom padding in mm"
+                    />
+                    <EditableSetting
+                      label="Left Padding"
+                      value={printerSettings?.quotes?.paddingLeft?.toString() || '0'}
+                      type="number"
+                      onSave={(value) => handleUpdateSettings('quotes.paddingLeft', parseInt(value))}
+                      placeholder="Enter left padding in mm"
+                    />
+                    <EditableSetting
+                      label="Right Padding"
+                      value={printerSettings?.quotes?.paddingRight?.toString() || '0'}
+                      type="number"
+                      onSave={(value) => handleUpdateSettings('quotes.paddingRight', parseInt(value))}
+                      placeholder="Enter right padding in mm"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold mb-3">Printer Settings</h2>
+                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                     <EditableSetting
+                       label="Paper Width (mm)"
+                       value={printerSettings?.quotes?.paperWidth?.toString() || '210'}
+                      type="number"
+                      onSave={(value) => handleUpdateSettings('quotes.paperWidth', parseInt(value))}
+                      placeholder="Enter width in mm"
+                    />
+                    <EditableSetting
+                      label="Font Size"
+                      value={printerSettings?.quotes?.fontSize || FontSize.MEDIUM}
+                      type="select"
+                      options={[
+                        { value: FontSize.SMALL, label: 'Small' },
+                        { value: FontSize.MEDIUM, label: 'Medium' },
+                        { value: FontSize.LARGE, label: 'Large' },
+                      ]}
+                      onSave={(value) => handleUpdateSettings('quotes.fontSize', value)}
+                    />
+                    <EditableSetting
+                      label="Heading Font"
+                      value={printerSettings?.quotes?.headingFont || 'Arial'}
+                      type="select"
+                      options={[
+                        { value: 'Arial', label: 'Arial' },
+                        { value: 'Helvetica', label: 'Helvetica' },
+                        { value: 'Times New Roman', label: 'Times New Roman' },
+                        { value: 'Georgia', label: 'Georgia' },
+                        { value: 'Verdana', label: 'Verdana' },
+                        { value: 'Courier New', label: 'Courier New' },
+                      ]}
+                      onSave={(value) => handleUpdateSettings('quotes.headingFont', value)}
+                    />
+                    <EditableSetting
+                      label="Body Font"
+                      value={printerSettings?.quotes?.bodyFont || 'Helvetica'}
+                      type="select"
+                      options={[
+                        { value: 'Arial', label: 'Arial' },
+                        { value: 'Helvetica', label: 'Helvetica' },
+                        { value: 'Times New Roman', label: 'Times New Roman' },
+                        { value: 'Georgia', label: 'Georgia' },
+                        { value: 'Verdana', label: 'Verdana' },
+                        { value: 'Courier New', label: 'Courier New' },
+                      ]}
+                      onSave={(value) => handleUpdateSettings('quotes.bodyFont', value)}
+                    />
+                  </div>
                </div>
              </div>
 </div>

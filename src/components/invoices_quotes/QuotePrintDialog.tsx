@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { TemplateSelector } from '@/components/ui/TemplateSelector';
+import { PrinterSettingsPreview } from '@/components/ui/printer-settings-preview';
 import { Printer } from 'lucide-react';
 import { Quote, Organization, Customer, QuoteTemplate, PrinterSettings } from '@/types';
 import { renderQuoteTemplate } from '@/lib/template-renderer';
@@ -229,11 +230,15 @@ export function QuotePrintDialog({
                     </tr>
                   </tbody>
                 </table>
-              </CardContent>
-            </Card>
+               </CardContent>
+             </Card>
 
-            
-          </div>
+             {/* Printer Settings Preview */}
+             <PrinterSettingsPreview
+               printerSettings={printerSettings}
+               documentType="quotes"
+             />
+           </div>
 
           {/* Right Column - Template Selection & Actions */}
           <div className="space-y-6">

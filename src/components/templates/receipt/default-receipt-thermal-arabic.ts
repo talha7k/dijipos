@@ -111,18 +111,34 @@ export const defaultArabicReceiptTemplate = `<!DOCTYPE html>
     </div>
 
     <div class="total">
-      <div class="bilingual">
-        <span><strong>Total Qty (إجمالي الكمية):</strong>  {{totalQty}}</span>
-      </div>
-      <div class="bilingual">
-        <span><strong>Items Value (قيمة الأصناف):</strong>  {{subtotal}}</span>
-      </div>
-      <div class="bilingual">
-        <span><strong>Total VAT (إجمالي الضريبة) ({{vatRate}}%):</strong>  {{vatAmount}}</span>
-      </div>
-      <div class="bilingual total-amount">
-        <span><strong>TOTAL AMOUNT (المبلغ الإجمالي):</strong>  {{total}}</span>
-      </div>
+       <div class="bilingual">
+         <div style="display: flex; justify-content: space-between; align-items: center;">
+           <span><strong>Total Qty</strong></span>
+           <span><strong>إجمالي الكمية</strong></span>
+         </div>
+         <div style="text-align: center; font-weight: bold;">{{totalQty}}</div>
+       </div>
+       <div class="bilingual">
+         <div style="display: flex; justify-content: space-between; align-items: center;">
+           <span><strong>Items Value</strong></span>
+           <span><strong>قيمة الأصناف</strong></span>
+         </div>
+         <div style="text-align: center; font-weight: bold;">{{subtotal}}</div>
+       </div>
+       <div class="bilingual">
+         <div style="display: flex; justify-content: space-between; align-items: center;">
+           <span><strong>Total VAT ({{vatRate}}%)</strong></span>
+           <span><strong>إجمالي الضريبة ({{vatRate}}%)</strong></span>
+         </div>
+         <div style="text-align: center; font-weight: bold;">{{vatAmount}}</div>
+       </div>
+       <div class="bilingual total-amount">
+         <div style="display: flex; justify-content: space-between; align-items: center;">
+           <span><strong>TOTAL AMOUNT</strong></span>
+           <span><strong>المبلغ الإجمالي</strong></span>
+         </div>
+         <div style="text-align: center; font-weight: bold; font-size: 16px;">{{total}}</div>
+       </div>
     </div>
 
     {{#payments}}

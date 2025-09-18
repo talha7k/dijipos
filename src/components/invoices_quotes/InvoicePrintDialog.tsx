@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TemplateSelector } from '@/components/ui/TemplateSelector';
+import { PrinterSettingsPreview } from '@/components/ui/printer-settings-preview';
 import { Printer } from 'lucide-react';
 import { Invoice, Payment, Organization, Customer, Supplier, InvoiceTemplate, PrinterSettings } from '@/types';
 import { renderInvoiceTemplate } from '@/lib/template-renderer';
@@ -239,11 +240,15 @@ export function InvoicePrintDialog({
                     </tr>
                   </tbody>
                 </table>
-              </CardContent>
-            </Card>
+               </CardContent>
+             </Card>
 
-            
-          </div>
+             {/* Printer Settings Preview */}
+             <PrinterSettingsPreview
+               printerSettings={printerSettings}
+               documentType="invoices"
+             />
+           </div>
 
           {/* Right Column - Template Selection & Actions */}
           <div className="space-y-6">
