@@ -44,6 +44,7 @@ export function TemplatesTab({}: TemplatesTabProps) {
   const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
   const [deleteTemplateId, setDeleteTemplateId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<TemplateCategory>(TemplateCategory.RECEIPT);
+  const [templateView, setTemplateView] = useState<'all' | 'default' | 'custom'>('all');
   const [newTemplate, setNewTemplate] = useState({
     name: '',
     description: '',
@@ -89,18 +90,43 @@ export function TemplatesTab({}: TemplatesTabProps) {
 
 
 
-  // Get templates based on selected category
+  // Get templates based on selected category and view
   const getTemplates = () => {
+    let templates;
     switch (selectedCategory) {
       case TemplateCategory.RECEIPT:
-        return allReceiptTemplates || receiptTemplates;
+        templates = allReceiptTemplates || receiptTemplates;
+        break;
       case TemplateCategory.INVOICE:
-        return allInvoiceTemplates || invoiceTemplates;
+        templates = allInvoiceTemplates || invoiceTemplates;
+        break;
       case TemplateCategory.QUOTE:
-        return allQuoteTemplates || quoteTemplates;
+        templates = allQuoteTemplates || quoteTemplates;
+        break;
       default:
         return [];
     }
+
+    // Filter based on template view
+    if (templateView === 'default') {
+      return templates.filter(template =>
+        selectedCategory === TemplateCategory.RECEIPT
+          ? STATIC_RECEIPT_TEMPLATE_IDS.includes(template.id)
+          : selectedCategory === TemplateCategory.INVOICE
+          ? STATIC_INVOICE_TEMPLATE_IDS.includes(template.id)
+          : STATIC_QUOTE_TEMPLATE_IDS.includes(template.id)
+      );
+    } else if (templateView === 'custom') {
+      return templates.filter(template =>
+        selectedCategory === TemplateCategory.RECEIPT
+          ? !STATIC_RECEIPT_TEMPLATE_IDS.includes(template.id)
+          : selectedCategory === TemplateCategory.INVOICE
+          ? !STATIC_INVOICE_TEMPLATE_IDS.includes(template.id)
+          : !STATIC_QUOTE_TEMPLATE_IDS.includes(template.id)
+      );
+    }
+
+    return templates;
   };
 
   const templates = getTemplates();
@@ -312,23 +338,11 @@ export function TemplatesTab({}: TemplatesTabProps) {
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Add {selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)} Template</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label>Template Category</Label>
-                  <ToggleGroup
-                    type="single"
-                    value={selectedCategory}
-                    onValueChange={(value) => value && setSelectedCategory(value as TemplateCategory)}
-                    className="justify-start"
-                  >
-                    <ToggleGroupItem value={TemplateCategory.RECEIPT}>Receipt</ToggleGroupItem>
-                    <ToggleGroupItem value={TemplateCategory.INVOICE}>Invoice</ToggleGroupItem>
-                    <ToggleGroupItem value={TemplateCategory.QUOTE}>Quote</ToggleGroupItem>
-                  </ToggleGroup>
-                </div>
+               <DialogHeader>
+                 <DialogTitle>Add {selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)} Template</DialogTitle>
+                 <p className="text-sm text-muted-foreground">Currently selected category: {selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)}</p>
+               </DialogHeader>
+               <div className="space-y-4">
                 <div>
                   <Label htmlFor="template-name">Template Name</Label>
                   <Input
@@ -399,8 +413,45 @@ export function TemplatesTab({}: TemplatesTabProps) {
         </CardTitle>
       </CardHeader>
       <CardContent>
+        {/* Template Category Toggle */}
+        <div className="mb-4">
+          <Label className="text-sm font-medium mb-2 block">Template Type</Label>
+          <ToggleGroup
+            type="single"
+            value={selectedCategory}
+            onValueChange={(value) => value && setSelectedCategory(value as TemplateCategory)}
+            className="justify-start"
+          >
+            <ToggleGroupItem value={TemplateCategory.RECEIPT}>Receipt</ToggleGroupItem>
+            <ToggleGroupItem value={TemplateCategory.INVOICE}>Invoice</ToggleGroupItem>
+            <ToggleGroupItem value={TemplateCategory.QUOTE}>Quote</ToggleGroupItem>
+          </ToggleGroup>
+        </div>
+
+        {/* Template View Toggle */}
+        <div className="mb-4">
+          <Label className="text-sm font-medium mb-2 block">View</Label>
+          <ToggleGroup
+            type="single"
+            value={templateView}
+            onValueChange={(value) => value && setTemplateView(value as 'all' | 'default' | 'custom')}
+            className="justify-start"
+          >
+            <ToggleGroupItem value="all">All Templates</ToggleGroupItem>
+            <ToggleGroupItem value="default">Default Templates</ToggleGroupItem>
+            <ToggleGroupItem value="custom">Custom Templates</ToggleGroupItem>
+          </ToggleGroup>
+        </div>
+
         {templates.length === 0 ? (
-          <p className="text-muted-foreground">No {selectedCategory.toLowerCase()} templates added yet.</p>
+          <p className="text-muted-foreground">
+            {templateView === 'default'
+              ? `No default ${selectedCategory.toLowerCase()} templates available.`
+              : templateView === 'custom'
+              ? `No custom ${selectedCategory.toLowerCase()} templates added yet.`
+              : `No ${selectedCategory.toLowerCase()} templates added yet.`
+            }
+          </p>
         ) : (
           <div className="grid gap-2">
             {templates.map((template) => (

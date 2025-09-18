@@ -208,7 +208,7 @@ export const Component = () => {
                 "--delay": `${square.delay}s`,
                 "--speed": speed,
                 "--play-state": isPaused ? "paused" : "running",
-              }}
+              } as React.CSSProperties}
               onMouseEnter={(e) => {
                 e.currentTarget.style.borderColor = "#ffffff";
                 e.currentTarget.style.boxShadow =

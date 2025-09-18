@@ -5,23 +5,30 @@ import { selectedOrganizationAtom } from '@/atoms';
 import { usePrinterSettings } from '@/lib/hooks/usePrinterSettings';
 import { PrinterSettings } from '@/types';
 import { useReceiptTemplatesData } from '@/lib/hooks/useReceiptTemplatesData';
+import { useInvoicesTemplatesData } from '@/lib/hooks/useInvoicesTemplatesData';
+import { useQuotesTemplatesData } from '@/lib/hooks/useQuotesTemplatesData';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EditableSetting } from '@/components/ui/editable-setting';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Settings, Receipt, FileText, Quote } from 'lucide-react';
 import { toast } from 'sonner';
-import { PaperWidth, FontSize } from '@/types/enums';
+import { FontSize } from '@/types/enums';
 
 interface PrinterSettingsTabProps {
-  printerSettings: PrinterSettings | null;
-  onPrinterSettingsUpdate: (settings: PrinterSettings) => void;
+  printerSettings?: PrinterSettings | null;
+  onPrinterSettingsUpdate?: (settings: PrinterSettings) => void;
 }
 
-export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }: PrinterSettingsTabProps) {
+export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPrinterSettingsUpdate }: PrinterSettingsTabProps) {
   const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
-  const { receiptTemplates, loading: templatesLoading } = useReceiptTemplatesData(organizationId || undefined);
-  const { handlePrinterSettingsUpdate } = usePrinterSettings();
+  const { receiptTemplates, loading: templatesLoading, setDefaultTemplate: setReceiptDefaultTemplate } = useReceiptTemplatesData(organizationId || undefined);
+  const { setDefaultTemplate: setInvoiceDefaultTemplate } = useInvoicesTemplatesData(organizationId || undefined);
+  const { setDefaultTemplate: setQuoteDefaultTemplate } = useQuotesTemplatesData(organizationId || undefined);
+  const { printerSettings: globalPrinterSettings, handlePrinterSettingsUpdate } = usePrinterSettings();
+
+  // Use global state if available, fallback to prop
+  const printerSettings = globalPrinterSettings || propPrinterSettings;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleUpdateSettings = async (field: string, value: string | number | boolean) => {
@@ -51,12 +58,28 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
           if (documentType === 'receipts') {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (updatedSettings.receipts as Record<string, any>)[settingField] = value;
+
+            // If setting default template for receipts, also update the template's isDefault flag
+            if (settingField === 'defaultTemplateId' && value) {
+              // Update the template's default status
+              await setReceiptDefaultTemplate(value as string);
+            }
           } else if (documentType === 'invoices') {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (updatedSettings.invoices as Record<string, any>)[settingField] = value;
+
+            // If setting default template for invoices, also update the template's isDefault flag
+            if (settingField === 'defaultTemplateId' && value) {
+              await setInvoiceDefaultTemplate(value as string);
+            }
           } else if (documentType === 'quotes') {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (updatedSettings.quotes as Record<string, any>)[settingField] = value;
+
+            // If setting default template for quotes, also update the template's isDefault flag
+            if (settingField === 'defaultTemplateId' && value) {
+              await setQuoteDefaultTemplate(value as string);
+            }
           }
         } else {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -97,10 +120,25 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
           const [documentType, settingField] = field.split('.');
           if (documentType === 'receipts') {
             updatedSettings.receipts = { [settingField]: value };
+
+            // If setting default template for receipts, also update the template's isDefault flag
+            if (settingField === 'defaultTemplateId' && value) {
+              await setReceiptDefaultTemplate(value as string);
+            }
           } else if (documentType === 'invoices') {
             updatedSettings.invoices = { [settingField]: value };
+
+            // If setting default template for invoices, also update the template's isDefault flag
+            if (settingField === 'defaultTemplateId' && value) {
+              await setInvoiceDefaultTemplate(value as string);
+            }
           } else if (documentType === 'quotes') {
             updatedSettings.quotes = { [settingField]: value };
+
+            // If setting default template for quotes, also update the template's isDefault flag
+            if (settingField === 'defaultTemplateId' && value) {
+              await setQuoteDefaultTemplate(value as string);
+            }
           }
         } else {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -109,7 +147,7 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
       }
 
       await handlePrinterSettingsUpdate(updatedSettings);
-      onPrinterSettingsUpdate(updatedSettings);
+      onPrinterSettingsUpdate?.(updatedSettings);
       toast.success('Settings updated successfully!');
     } catch (error) {
       console.error('Error updating printer settings:', error);
@@ -152,17 +190,17 @@ export function PrinterSettingsTab({ printerSettings, onPrinterSettingsUpdate }:
            <TabsContent value="general" className="space-y-4 mt-4">
              {!templatesLoading && receiptTemplates.length > 0 && (
                <>
-                 <EditableSetting
-                   label="Default Receipt Template"
-                   value={printerSettings?.receipts?.defaultTemplateId || ''}
-                   type="select"
-                   options={receiptTemplates.filter(t => t.type.toString().includes('thermal')).map(t => ({
-                     value: t.id,
-                     label: t.name
-                   }))}
-                   onSave={(value) => handleUpdateSettings('receipts.defaultTemplateId', value)}
-                   placeholder="Select template"
-                 />
+                  <EditableSetting
+                    label="Default Receipt Template"
+                    value={printerSettings?.receipts?.defaultTemplateId || ''}
+                    type="select"
+                    options={receiptTemplates.map(t => ({
+                      value: t.id,
+                      label: t.name
+                    }))}
+                    onSave={(value) => handleUpdateSettings('receipts.defaultTemplateId', value)}
+                    placeholder="Select template"
+                  />
                  <EditableSetting
                    label="Default Invoice Template"
                    value={printerSettings?.invoices?.defaultTemplateId || ''}
