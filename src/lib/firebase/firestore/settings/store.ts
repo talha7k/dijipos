@@ -11,7 +11,8 @@ import {
   Timestamp
 } from 'firebase/firestore';
 import { db } from '../../config';
-import { StoreSettings, VATSettings, CurrencySettings, OrderType, PaymentType } from '@/types';
+import { StoreSettings, VATSettings, CurrencySettings, OrderType, PaymentType, PrinterSettings } from '@/types';
+import { FontSize } from '@/types/enums';
 
 // Collection references
 const storeSettingsRef = collection(db, 'storeSettings');
@@ -19,6 +20,7 @@ const vatSettingsRef = collection(db, 'vatSettings');
 const currencySettingsRef = collection(db, 'currencySettings');
 const orderTypesRef = collection(db, 'orderTypes');
 const paymentTypesRef = collection(db, 'paymentTypes');
+const printerSettingsRef = collection(db, 'printerSettings');
 
 /**
  * Get store settings for an organization (aggregated with all related settings)
@@ -74,6 +76,57 @@ export async function getStoreSettings(organizationId: string): Promise<StoreSet
       updatedAt: doc.data().updatedAt?.toDate() || new Date(),
     })) as PaymentType[];
 
+    // Get printer settings
+    const printerSettingsQuery = query(printerSettingsRef, where('organizationId', '==', organizationId));
+    const printerSettingsSnapshot = await getDocs(printerSettingsQuery);
+    let printerSettings: PrinterSettings;
+
+    if (printerSettingsSnapshot.empty) {
+      // Create default printer settings if none exist
+      const defaultPrinterSettings = {
+        organizationId,
+        receipts: {
+          includeQRCode: true,
+          paperWidth: 80,
+          fontSize: FontSize.MEDIUM,
+          headingFont: 'Arial',
+          bodyFont: 'Helvetica',
+          lineSpacing: 1.2,
+          autoPrint: false,
+        },
+        invoices: {
+          paperWidth: 210,
+          fontSize: FontSize.MEDIUM,
+          headingFont: 'Arial',
+          bodyFont: 'Helvetica',
+        },
+        quotes: {
+          paperWidth: 210,
+          fontSize: FontSize.MEDIUM,
+          headingFont: 'Arial',
+          bodyFont: 'Helvetica',
+        },
+        createdAt: Timestamp.now(),
+        updatedAt: Timestamp.now(),
+      };
+      const printerDocRef = await addDoc(printerSettingsRef, defaultPrinterSettings);
+      printerSettings = {
+        id: printerDocRef.id,
+        ...defaultPrinterSettings,
+        createdAt: defaultPrinterSettings.createdAt.toDate(),
+        updatedAt: defaultPrinterSettings.updatedAt.toDate(),
+      } as PrinterSettings;
+    } else {
+      const printerDoc = printerSettingsSnapshot.docs[0];
+      const printerData = printerDoc.data();
+      printerSettings = {
+        id: printerDoc.id,
+        ...printerData,
+        createdAt: printerData.createdAt?.toDate() || new Date(),
+        updatedAt: printerData.updatedAt?.toDate() || new Date(),
+      } as PrinterSettings;
+    }
+
     return {
       id: storeSettingsDoc.id,
       organizationId,
@@ -81,6 +134,7 @@ export async function getStoreSettings(organizationId: string): Promise<StoreSet
       currencySettings,
       orderTypes,
       paymentTypes,
+      printerSettings,
       createdAt: storeSettingsData.createdAt?.toDate() || new Date(),
       updatedAt: storeSettingsData.updatedAt?.toDate() || new Date(),
     };
@@ -147,11 +201,41 @@ export async function createDefaultStoreSettings(organizationId: string): Promis
     );
     await Promise.all(paymentTypesPromises);
 
+    // Create default printer settings
+    const printerSettingsData = {
+      organizationId,
+      receipts: {
+        includeQRCode: true,
+        paperWidth: 80,
+        fontSize: FontSize.MEDIUM,
+        headingFont: 'Arial',
+        bodyFont: 'Helvetica',
+        lineSpacing: 1.2,
+        autoPrint: false,
+      },
+      invoices: {
+        paperWidth: 210,
+        fontSize: FontSize.MEDIUM,
+        headingFont: 'Arial',
+        bodyFont: 'Helvetica',
+      },
+      quotes: {
+        paperWidth: 210,
+        fontSize: FontSize.MEDIUM,
+        headingFont: 'Arial',
+        bodyFont: 'Helvetica',
+      },
+      createdAt: Timestamp.now(),
+      updatedAt: Timestamp.now(),
+    };
+    const printerSettingsRef = await addDoc(collection(db, 'printerSettings'), printerSettingsData);
+
     // Create store settings document
     const storeSettingsData = {
       organizationId,
       vatSettingsId: vatSettingsRef.id,
       currencySettingsId: currencySettingsRef.id,
+      printerSettingsId: printerSettingsRef.id,
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
     };

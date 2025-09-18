@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useAtomValue } from 'jotai';
 import { selectedOrganizationAtom } from '@/atoms';
-import { usePrinterSettings } from '@/lib/hooks/usePrinterSettings';
+import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
 import { PrinterSettings } from '@/types';
 import { useReceiptTemplatesData } from '@/lib/hooks/useReceiptTemplatesData';
 import { useInvoicesTemplatesData } from '@/lib/hooks/useInvoicesTemplatesData';
@@ -27,14 +27,14 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
   const { receiptTemplates, loading: templatesLoading } = useReceiptTemplatesData(organizationId || undefined);
   const { templates: invoiceTemplates } = useInvoicesTemplatesData(organizationId || undefined);
   const { templates: quoteTemplates } = useQuotesTemplatesData(organizationId || undefined);
-  const { printerSettings: globalPrinterSettings, handlePrinterSettingsUpdate } = usePrinterSettings();
+  const { storeSettings } = useStoreSettings();
 
-  // Use global state if available, fallback to prop
-  const printerSettings = globalPrinterSettings || propPrinterSettings;
+  // Use store settings printer settings, fallback to prop
+  const printerSettings = storeSettings?.printerSettings || propPrinterSettings;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleUpdateSettings = async (field: string, value: string | number | boolean) => {
-    if (!organizationId) return;
+    if (!organizationId || !storeSettings) return;
 
     try {
       let updatedSettings: PrinterSettings;
@@ -117,7 +117,11 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
         }
       }
 
-      await handlePrinterSettingsUpdate(updatedSettings);
+      // Update the printer settings in Firestore
+      const { updatePrinterSettings } = await import('@/lib/firebase/firestore/settings/printer');
+      const { id, organizationId: _, createdAt, ...updateData } = updatedSettings;
+      await updatePrinterSettings(printerSettings!.id, updateData);
+
       onPrinterSettingsUpdate?.(updatedSettings);
       toast.success('Settings updated successfully!');
     } catch (error) {

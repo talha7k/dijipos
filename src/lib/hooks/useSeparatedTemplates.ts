@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { ReceiptTemplate, InvoiceTemplate, QuoteTemplate, ReceiptTemplateType, InvoiceTemplateType, QuoteTemplateType } from '@/types';
 import { useRealtimeCollection } from './useRealtimeCollection';
 import { useOrganization } from './useOrganization';
-import { usePrinterSettings } from './usePrinterSettings';
+import { useStoreSettings } from './useStoreSettings';
 
 // Static template IDs for easy reference
 export const STATIC_RECEIPT_TEMPLATE_IDS = [
@@ -48,7 +48,8 @@ interface SeparatedTemplatesState {
  */
 export function useSeparatedTemplates(): SeparatedTemplatesState {
   const { selectedOrganization } = useOrganization();
-  const { printerSettings } = usePrinterSettings();
+  const { storeSettings } = useStoreSettings();
+  const printerSettings = storeSettings?.printerSettings;
   
   const organizationId = selectedOrganization?.id || null;
 

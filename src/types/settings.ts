@@ -68,6 +68,7 @@ export interface StoreSettings {
   currencySettings: CurrencySettings;
   orderTypes: OrderType[];
   paymentTypes: PaymentType[];
+  printerSettings: PrinterSettings;
   createdAt: Date;
   updatedAt: Date;
 }

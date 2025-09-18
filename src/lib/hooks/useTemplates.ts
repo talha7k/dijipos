@@ -4,7 +4,7 @@ import { useOrganization } from './useOrganization';
 import { useReceiptTemplatesData } from './useReceiptTemplatesData';
 import { useInvoicesTemplatesData } from './useInvoicesTemplatesData';
 import { useQuotesTemplatesData } from './useQuotesTemplatesData';
-import { usePrinterSettings } from './usePrinterSettings';
+import { useStoreSettings } from './useStoreSettings';
 
 interface TemplatesState {
   receiptTemplates: ReceiptTemplate[];
@@ -19,7 +19,8 @@ interface TemplatesState {
  */
 export function useTemplates(): TemplatesState {
   const { selectedOrganization } = useOrganization();
-  const { printerSettings } = usePrinterSettings();
+  const { storeSettings } = useStoreSettings();
+  const printerSettings = storeSettings?.printerSettings;
 
   const organizationId = selectedOrganization?.id || null;
 

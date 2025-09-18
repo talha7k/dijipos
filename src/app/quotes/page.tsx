@@ -8,7 +8,7 @@ import { useInvoices } from '@/lib/hooks/useInvoices';
 import { useCustomers } from '@/lib/hooks/useCustomers';
 import { useOrganization } from '@/lib/hooks/useOrganization';
 import { useQuotesTemplatesData } from '@/lib/hooks/useQuotesTemplatesData';
-import { usePrinterSettings } from '@/lib/hooks/usePrinterSettings';
+import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import QuoteForm from '@/components/invoices_quotes/QuoteForm';
@@ -24,7 +24,8 @@ function QuotesContent() {
   const { selectedOrganization } = useOrganization();
   const organizationId = selectedOrganization?.id;
   const { templates: quoteTemplates, loading: templatesLoading } = useQuotesTemplatesData(organizationId || undefined);
-  const { printerSettings } = usePrinterSettings();
+  const { storeSettings } = useStoreSettings();
+  const printerSettings = storeSettings?.printerSettings;
 
 
 

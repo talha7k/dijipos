@@ -10,7 +10,7 @@ import { useTemplates } from '@/lib/hooks/useTemplates';
 import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
 import { useOrderTypes } from '@/lib/hooks/useOrderTypes';
 import { usePaymentTypes } from '@/lib/hooks/usePaymentTypes';
-import { usePrinterSettings } from '@/lib/hooks/usePrinterSettings';
+
 import { VATSettings } from '@/types';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -30,7 +30,7 @@ function SettingsContent() {
   const { loading: receiptTemplatesLoading } = useTemplates();
   const { orderTypes, loading: orderTypesLoading } = useOrderTypes();
   const { tables, loading: tablesLoading } = useTables();
-  const { printerSettings, handlePrinterSettingsUpdate } = usePrinterSettings();
+
   const {
     storeSettings,
     loading: settingsLoading
@@ -100,8 +100,8 @@ function SettingsContent() {
 
         <TabsContent value="printer-settings" className="space-y-4">
           <PrinterSettingsTab
-            printerSettings={printerSettings}
-            onPrinterSettingsUpdate={handlePrinterSettingsUpdate}
+            printerSettings={storeSettings?.printerSettings}
+            onPrinterSettingsUpdate={() => {}} // Will be handled internally
           />
         </TabsContent>
 

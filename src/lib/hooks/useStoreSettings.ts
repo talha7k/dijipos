@@ -11,6 +11,7 @@ interface RawStoreSettings {
   organizationId: string;
   vatSettingsId: string;
   currencySettingsId: string;
+  printerSettingsId: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -74,7 +75,7 @@ export function useStoreSettings(): StoreSettingsState & StoreSettingsActions {
     if (!selectedOrganization?.id || storeSettingsList.length === 0) return;
 
     const baseStoreSettings = storeSettingsList[0];
-    if (!baseStoreSettings.vatSettingsId || !baseStoreSettings.currencySettingsId) return;
+    if (!baseStoreSettings.vatSettingsId || !baseStoreSettings.currencySettingsId || !baseStoreSettings.printerSettingsId) return;
 
     // Set up listeners for VAT and currency settings changes
     const vatUnsubscribe = onSnapshot(
@@ -103,9 +104,23 @@ export function useStoreSettings(): StoreSettingsState & StoreSettingsActions {
       }
     );
 
+    const printerUnsubscribe = onSnapshot(
+      doc(db, 'printerSettings', baseStoreSettings.printerSettingsId),
+      async () => {
+        // Refresh complete store settings when printer settings change
+        try {
+          const updatedSettings = await getStoreSettings(selectedOrganization.id);
+          setStoreSettings(updatedSettings);
+        } catch (err) {
+          console.error('Error refreshing store settings after printer change:', err);
+        }
+      }
+    );
+
     return () => {
       vatUnsubscribe();
       currencyUnsubscribe();
+      printerUnsubscribe();
     };
   }, [selectedOrganization?.id, storeSettingsList]);
 

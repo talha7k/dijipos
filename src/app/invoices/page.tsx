@@ -12,7 +12,7 @@ import { InvoicePrintDialog } from '@/components/invoices_quotes/InvoicePrintDia
 import { Button } from '@/components/ui/button';
 import { Plus, Printer } from 'lucide-react';
 import { useTemplates } from '@/lib/hooks/useTemplates';
-import { usePrinterSettings } from '@/lib/hooks/usePrinterSettings';
+import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
 import {
   Dialog,
   DialogContent,
@@ -41,7 +41,8 @@ export default function InvoicesPage() {
   const { suppliers, loading: suppliersLoading } = useSuppliers();
   const { data: payments, loading: paymentsLoading } = useRealtimeCollection<Payment>('payments', organizationId || null);
   const { invoiceTemplates, loading: templatesLoading } = useTemplates();
-  const { printerSettings } = usePrinterSettings();
+  const { storeSettings } = useStoreSettings();
+  const printerSettings = storeSettings?.printerSettings;
   const loading = invoicesLoading || customersLoading || suppliersLoading || paymentsLoading || templatesLoading;
 
   const groupedPayments = useMemo(() => {

@@ -17,7 +17,7 @@ import {
   QuoteTemplateType,
 } from "@/types/enums";
 import { useTemplates } from "@/lib/hooks/useTemplates";
-import { usePrinterSettings } from "@/lib/hooks/usePrinterSettings";
+import { useStoreSettings } from "@/lib/hooks/useStoreSettings";
 import {
   useSeparatedTemplates,
   STATIC_RECEIPT_TEMPLATE_IDS,
@@ -92,7 +92,8 @@ export function TemplatesTab({}: TemplatesTabProps) {
 
   const { receiptTemplates, invoiceTemplates, quoteTemplates, loading } =
     useTemplates();
-  const { printerSettings, handlePrinterSettingsUpdate } = usePrinterSettings();
+  const { storeSettings } = useStoreSettings();
+  const printerSettings = storeSettings?.printerSettings;
   const { allReceiptTemplates, allInvoiceTemplates, allQuoteTemplates } =
     useSeparatedTemplates();
 
@@ -300,7 +301,10 @@ export function TemplatesTab({}: TemplatesTabProps) {
       }
 
       console.log("Sending printer settings to update:", settingsToUpdate);
-      await handlePrinterSettingsUpdate(settingsToUpdate);
+      // Update printer settings directly in Firestore
+      const { updatePrinterSettings } = await import('@/lib/firebase/firestore/settings/printer');
+      const { id, organizationId, createdAt, ...updateData } = settingsToUpdate;
+      await updatePrinterSettings(printerSettings!.id, updateData);
 
       toast.success(`${selectedCategory} template set as default`);
     } catch (error) {

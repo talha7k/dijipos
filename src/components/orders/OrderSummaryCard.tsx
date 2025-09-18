@@ -62,7 +62,7 @@ export function OrderSummaryCard({
   const [selectedOrganization] = useAtom(selectedOrganizationAtom);
   const { storeSettings } = useStoreSettings();
   const { receiptTemplates = [] } = useTemplates();
-  const { printerSettings } = usePrinterSettings();
+  const printerSettings = storeSettings?.printerSettings;
   const { formatCurrency } = useCurrency();
 
   // Calculate payment amounts for display, but use order.paid for status

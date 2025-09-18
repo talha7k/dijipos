@@ -15,7 +15,7 @@ import {
   currentQueueNumberAtom,
 } from "@/atoms/posAtoms";
 import { useTemplates } from "@/lib/hooks/useTemplates";
-import { usePrinterSettings } from "@/lib/hooks/usePrinterSettings";
+import { useStoreSettings } from "@/lib/hooks/useStoreSettings";
 import { useCurrency } from "@/lib/hooks/useCurrency";
 
 interface CartItem {
@@ -54,7 +54,8 @@ export function POSCartSidebar({
   const organizationId = selectedOrganization?.id || "";
 
   const { receiptTemplates = [] } = useTemplates();
-  const { printerSettings } = usePrinterSettings();
+  const { storeSettings } = useStoreSettings();
+  const printerSettings = storeSettings?.printerSettings;
   const { formatCurrency } = useCurrency();
 
   const handleClearConfirm = () => {
