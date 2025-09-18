@@ -130,12 +130,12 @@ export const defaultArabicReceiptTemplate = `<!DOCTYPE html>
       <table style="width: 100%; border-collapse: collapse;">
         <thead>
           <tr>
-            <th style="text-align: right; border-bottom: 1px solid #000; padding: 2px 10px;">
-              <strong>Payment<br>(نوع الدفع):</strong>
-            </th>
-            <th style="text-align: right; border-bottom: 1px solid #000; padding: 2px 10px;">
-              <strong>Amount<br>(المبلغ):</strong>
-            </th>
+             <th style="text-align: right; border-bottom: 1px solid #000; padding: 2px 10px;">
+               <strong>Payment<br>(نوع الدفع)</strong>
+             </th>
+             <th style="text-align: right; border-bottom: 1px solid #000; padding: 2px 10px;">
+               <strong>Amount<br>(المبلغ)</strong>
+             </th>
           </tr>
         </thead>
         <tbody>
