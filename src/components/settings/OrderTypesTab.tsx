@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useAtomValue } from 'jotai';
 import { selectedOrganizationAtom } from '@/atoms';
-import { useOrderTypes } from '@/lib/hooks/useOrderTypes';
+import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
 import { OrderType } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,7 +21,7 @@ interface OrderTypesTabProps {
 export function OrderTypesTab({ orderTypes: propOrderTypes }: OrderTypesTabProps) {
   const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
-  const { orderTypes, createNewOrderType, deleteExistingOrderType, loading } = useOrderTypes();
+  const { storeSettings, createNewOrderType, deleteExistingOrderType, loading } = useStoreSettings();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteOrderTypeId, setDeleteOrderTypeId] = useState<string | null>(null);
   const [newOrderType, setNewOrderType] = useState({ name: '', description: '' });
@@ -116,11 +116,11 @@ export function OrderTypesTab({ orderTypes: propOrderTypes }: OrderTypesTabProps
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {orderTypes.length === 0 ? (
+        {(storeSettings?.orderTypes || []).length === 0 ? (
           <p className="text-muted-foreground">No order types added yet.</p>
         ) : (
           <div className="grid gap-2">
-            {orderTypes.map((type) => (
+            {(storeSettings?.orderTypes || []).map((type) => (
               <div key={type.id} className="flex items-center justify-between p-3 border rounded">
                 <div>
                   <h3 className="font-medium">{type.name}</h3>

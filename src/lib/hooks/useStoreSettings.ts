@@ -1,6 +1,15 @@
 import { useState, useEffect } from 'react';
-import { StoreSettings } from '@/types';
-import { getStoreSettings, createDefaultStoreSettings } from '../firebase/firestore/settings/storeSettings';
+import { StoreSettings, OrderType, PaymentType } from '@/types';
+import {
+  getStoreSettings,
+  createDefaultStoreSettings,
+  createOrderType,
+  updateOrderType,
+  deleteOrderType,
+  createPaymentType,
+  updatePaymentType,
+  deletePaymentType
+} from '../firebase/firestore/settings/storeSettings';
 import { useRealtimeCollection } from './useRealtimeCollection';
 import { useOrganization } from './useOrganization';
 import { onSnapshot, doc } from 'firebase/firestore';
@@ -25,6 +34,14 @@ interface StoreSettingsState {
 interface StoreSettingsActions {
   createDefaultSettings: () => Promise<void>;
   refreshStoreSettings: () => Promise<void>;
+  // Order Types CRUD
+  createNewOrderType: (orderTypeData: Omit<OrderType, 'id' | 'createdAt' | 'updatedAt'>) => Promise<string>;
+  updateExistingOrderType: (orderTypeId: string, updates: Partial<Omit<OrderType, 'id' | 'createdAt'>>) => Promise<void>;
+  deleteExistingOrderType: (orderTypeId: string) => Promise<void>;
+  // Payment Types CRUD
+  createNewPaymentType: (paymentTypeData: Omit<PaymentType, 'id' | 'createdAt' | 'updatedAt'>) => Promise<string>;
+  updateExistingPaymentType: (paymentTypeId: string, updates: Partial<Omit<PaymentType, 'id' | 'createdAt'>>) => Promise<void>;
+  deleteExistingPaymentType: (paymentTypeId: string) => Promise<void>;
 }
 
 /**
@@ -162,6 +179,82 @@ export function useStoreSettings(): StoreSettingsState & StoreSettingsActions {
     }
   };
 
+  // Order Types CRUD operations
+  const createNewOrderType = async (orderTypeData: Omit<OrderType, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
+    if (!selectedOrganization?.id) {
+      throw new Error('No organization selected');
+    }
+
+    try {
+      return await createOrderType({
+        ...orderTypeData,
+        organizationId: selectedOrganization.id,
+      });
+    } catch (err) {
+      console.error('Error creating order type:', err);
+      throw err;
+    }
+  };
+
+  const updateExistingOrderType = async (
+    orderTypeId: string,
+    updates: Partial<Omit<OrderType, 'id' | 'createdAt'>>
+  ): Promise<void> => {
+    try {
+      await updateOrderType(orderTypeId, updates);
+    } catch (err) {
+      console.error('Error updating order type:', err);
+      throw err;
+    }
+  };
+
+  const deleteExistingOrderType = async (orderTypeId: string): Promise<void> => {
+    try {
+      await deleteOrderType(orderTypeId);
+    } catch (err) {
+      console.error('Error deleting order type:', err);
+      throw err;
+    }
+  };
+
+  // Payment Types CRUD operations
+  const createNewPaymentType = async (paymentTypeData: Omit<PaymentType, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
+    if (!selectedOrganization?.id) {
+      throw new Error('No organization selected');
+    }
+
+    try {
+      return await createPaymentType({
+        ...paymentTypeData,
+        organizationId: selectedOrganization.id,
+      });
+    } catch (err) {
+      console.error('Error creating payment type:', err);
+      throw err;
+    }
+  };
+
+  const updateExistingPaymentType = async (
+    paymentTypeId: string,
+    updates: Partial<Omit<PaymentType, 'id' | 'createdAt'>>
+  ): Promise<void> => {
+    try {
+      await updatePaymentType(paymentTypeId, updates);
+    } catch (err) {
+      console.error('Error updating payment type:', err);
+      throw err;
+    }
+  };
+
+  const deleteExistingPaymentType = async (paymentTypeId: string): Promise<void> => {
+    try {
+      await deletePaymentType(paymentTypeId);
+    } catch (err) {
+      console.error('Error deleting payment type:', err);
+      throw err;
+    }
+  };
+
   const combinedLoading = loading || realtimeLoading;
   const combinedError = error || realtimeError;
 
@@ -171,5 +264,11 @@ export function useStoreSettings(): StoreSettingsState & StoreSettingsActions {
     error: combinedError,
     createDefaultSettings,
     refreshStoreSettings,
+    createNewOrderType,
+    updateExistingOrderType,
+    deleteExistingOrderType,
+    createNewPaymentType,
+    updateExistingPaymentType,
+    deleteExistingPaymentType,
   };
 }

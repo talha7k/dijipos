@@ -8,8 +8,7 @@ import { selectedOrganizationAtom } from '@/atoms';
 import { useTables } from '@/lib/hooks/useTables';
 import { useSeparatedTemplates } from '@/lib/hooks/useSeparatedTemplates';
 import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
-import { useOrderTypes } from '@/lib/hooks/useOrderTypes';
-import { usePaymentTypes } from '@/lib/hooks/usePaymentTypes';
+
 
 import { VATSettings } from '@/types';
 
@@ -26,15 +25,17 @@ function SettingsContent() {
   const {} = useAuth();
   const [selectedOrganization] = useAtom(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
-  const { paymentTypes, loading: paymentTypesLoading } = usePaymentTypes();
   const { loading: receiptTemplatesLoading } = useSeparatedTemplates();
-  const { orderTypes, loading: orderTypesLoading } = useOrderTypes();
   const { tables, loading: tablesLoading } = useTables();
 
   const {
     storeSettings,
     loading: settingsLoading
   } = useStoreSettings();
+
+  // Extract data from storeSettings
+  const orderTypes = storeSettings?.orderTypes || [];
+  const paymentTypes = storeSettings?.paymentTypes || [];
 
   // Extract data from storeSettings
   const vatSettings = storeSettings?.vatSettings || null;
@@ -48,14 +49,12 @@ function SettingsContent() {
   console.log('SettingsPage Debug:', {
     organizationId,
     settingsLoading,
-    paymentTypesLoading,
     receiptTemplatesLoading,
-    orderTypesLoading,
     tablesLoading,
     tablesLength: tables?.length
   });
 
-  if (settingsLoading || paymentTypesLoading || receiptTemplatesLoading || orderTypesLoading || tablesLoading) {
+  if (settingsLoading || receiptTemplatesLoading || tablesLoading) {
     return <div className="flex justify-center items-center h-64">Loading...</div>;
   }
 

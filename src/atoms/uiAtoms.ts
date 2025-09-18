@@ -1,19 +1,26 @@
-import { atom } from 'jotai';
-import { atomWithStorage } from 'jotai/utils';
-import { indexedDBStorage } from '@/lib/storage';
-import { PrinterSettings } from '@/types';
+import { atom } from "jotai";
+import { atomWithStorage } from "jotai/utils";
+import { indexedDBStorage } from "@/lib/storage";
 
 // =====================
 // THEME STATE ATOMS
 // =====================
 
-export const themeAtom = atomWithStorage<'light' | 'dark'>('dijibill-theme', 'light', indexedDBStorage);
+export const themeAtom = atomWithStorage<"light" | "dark">(
+  "dijibill-theme",
+  "light",
+  indexedDBStorage,
+);
 
 // =====================
 // SIDEBAR STATE ATOMS
 // =====================
 
-export const sidebarCollapsedAtom = atomWithStorage<boolean>('dijibill-sidebar-collapsed', false, indexedDBStorage);
+export const sidebarCollapsedAtom = atomWithStorage<boolean>(
+  "dijibill-sidebar-collapsed",
+  false,
+  indexedDBStorage,
+);
 export const mobileSidebarOpenAtom = atom<boolean>(false);
 
 // =====================
@@ -39,15 +46,7 @@ export const sidebarLoadingAtom = atom<boolean>(false);
 // =====================
 
 export const notificationAtom = atom<{
-  type: 'success' | 'error' | 'warning' | 'info';
+  type: "success" | "error" | "warning" | "info";
   message: string;
   duration?: number;
 } | null>(null);
-
-// =====================
-// PRINTER SETTINGS STATE ATOMS
-// =====================
-
-export const printerSettingsAtom = atom<PrinterSettings | null>(null);
-export const printerSettingsLoadingAtom = atom<boolean>(false);
-export const printerSettingsErrorAtom = atom<string | null>(null);

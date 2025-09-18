@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useAtomValue } from 'jotai';
 import { selectedOrganizationAtom } from '@/atoms';
-import { usePaymentTypes } from '@/lib/hooks/usePaymentTypes';
+import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
 import { PaymentType } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,7 +21,7 @@ interface PaymentTypesTabProps {
 export function PaymentTypesTab({ paymentTypes: propPaymentTypes = [] }: PaymentTypesTabProps) {
   const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
-  const { paymentTypes, createNewPaymentType, deleteExistingPaymentType } = usePaymentTypes();
+  const { storeSettings, createNewPaymentType, deleteExistingPaymentType } = useStoreSettings();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deletePaymentTypeId, setDeletePaymentTypeId] = useState<string | null>(null);
   const [newPaymentType, setNewPaymentType] = useState({ name: '', description: '' });
@@ -116,11 +116,11 @@ export function PaymentTypesTab({ paymentTypes: propPaymentTypes = [] }: Payment
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {paymentTypes.length === 0 ? (
+        {(storeSettings?.paymentTypes || []).length === 0 ? (
           <p className="text-muted-foreground">No payment types added yet.</p>
         ) : (
           <div className="grid gap-2">
-            {paymentTypes.map((type) => (
+            {(storeSettings?.paymentTypes || []).map((type) => (
               <div key={type.id} className="flex items-center justify-between p-3 border rounded">
                 <div>
                   <h3 className="font-medium">{type.name}</h3>

@@ -8,8 +8,7 @@ import { useServices } from "@/lib/hooks/useServices";
 import { useTables } from "@/lib/hooks/useTables";
 import { useCustomers } from "@/lib/hooks/useCustomers";
 import { useOrders } from "@/lib/hooks/useOrders";
-import { useOrderTypes } from "@/lib/hooks/useOrderTypes";
-import { usePaymentTypes } from "@/lib/hooks/usePaymentTypes";
+import { useStoreSettings } from "@/lib/hooks/useStoreSettings";
 import { useAuth } from "@/lib/hooks/useAuth";
 
 import {
@@ -60,9 +59,9 @@ export default function SimplifiedPOSPage() {
   const { tables, loading: tablesLoading } = useTables();
   const { customers, loading: customersLoading } = useCustomers();
   const { orders, loading: ordersLoading, createNewOrder, updateExistingOrder } = useOrders();
-  const { orderTypes = [] } = useOrderTypes();
-  const { paymentTypes = [], loading: paymentTypesLoading } =
-    usePaymentTypes();
+  const { storeSettings } = useStoreSettings();
+  const orderTypes = storeSettings?.orderTypes || [];
+  const paymentTypes = storeSettings?.paymentTypes || [];
 
   // Use POS atoms directly
   const [cartItems, setCartItems] = useAtom(safeCartItemsAtom);

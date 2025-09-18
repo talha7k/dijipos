@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -21,8 +20,7 @@ import {
 } from "@/types";
 import { renderReceiptTemplate } from "@/lib/template-renderer";
 import { toast } from "sonner";
-import { useAtomValue } from "jotai";
-import { printerSettingsAtom } from "@/atoms/uiAtoms";
+import { useState } from "react";
 
 interface ReceiptPrintDialogProps {
   order: Order;
@@ -44,44 +42,52 @@ export function ReceiptPrintDialog({
   const [open, setOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState(false);
-  const atomPrinterSettings = useAtomValue(printerSettingsAtom);
-  const effectivePrinterSettings = printerSettings || atomPrinterSettings;
 
   // Set default template on open
   const handleOpenChange = (newOpen: boolean) => {
     if (newOpen) {
       console.log(`[ReceiptPrintDialog] Opening dialog with:`, {
         templatesCount: receiptTemplates.length,
-        printerSettings: effectivePrinterSettings ? {
-          receipts: effectivePrinterSettings.receipts?.defaultTemplateId,
-          invoices: effectivePrinterSettings.invoices?.defaultTemplateId,
-          quotes: effectivePrinterSettings.quotes?.defaultTemplateId,
-        } : null,
-        templates: receiptTemplates.map(t => ({ id: t.id, name: t.name }))
+        printerSettings: printerSettings
+          ? {
+              receipts: printerSettings.receipts?.defaultTemplateId,
+              invoices: printerSettings.invoices?.defaultTemplateId,
+              quotes: printerSettings.quotes?.defaultTemplateId,
+            }
+          : null,
+        templates: receiptTemplates.map((t) => ({ id: t.id, name: t.name })),
       });
 
       // First try to get default template from printer settings
-      const printerDefaultId = effectivePrinterSettings?.receipts?.defaultTemplateId;
+      const printerDefaultId = printerSettings?.receipts?.defaultTemplateId;
       let selectedId = "";
-      
+
       if (printerDefaultId) {
-        const printerDefaultTemplate = receiptTemplates.find((t) => t.id === printerDefaultId);
+        const printerDefaultTemplate = receiptTemplates.find(
+          (t) => t.id === printerDefaultId,
+        );
         if (printerDefaultTemplate) {
           selectedId = printerDefaultTemplate.id;
-          console.log(`[ReceiptPrintDialog] Using printer default template: ${printerDefaultTemplate.name}`);
+          console.log(
+            `[ReceiptPrintDialog] Using printer default template: ${printerDefaultTemplate.name}`,
+          );
         } else {
-          console.log(`[ReceiptPrintDialog] Printer default template not found: ${printerDefaultId}`);
+          console.log(
+            `[ReceiptPrintDialog] Printer default template not found: ${printerDefaultId}`,
+          );
         }
       }
-      
+
       // No fallback to template's isDefault flag - rely only on printer settings
-      
+
       // Final fallback to first template
       if (!selectedId && receiptTemplates.length > 0) {
         selectedId = receiptTemplates[0].id;
-        console.log(`[ReceiptPrintDialog] Using first template as fallback: ${receiptTemplates[0].name}`);
+        console.log(
+          `[ReceiptPrintDialog] Using first template as fallback: ${receiptTemplates[0].name}`,
+        );
       }
-      
+
       setSelectedTemplate(selectedId);
     }
     setOpen(newOpen);
@@ -100,7 +106,7 @@ export function ReceiptPrintDialog({
         order,
         organization,
         payments,
-        effectivePrinterSettings || undefined,
+        printerSettings || undefined,
       );
 
       console.log("=== RECEIPT PRINT DEBUG ===");
@@ -326,7 +332,7 @@ export function ReceiptPrintDialog({
                     onTemplateChange={setSelectedTemplate}
                     label="Select Receipt Template"
                     placeholder="Choose a template"
-                    printerSettings={effectivePrinterSettings}
+                    printerSettings={printerSettings}
                     templateType="receipts"
                   />
                 )}
