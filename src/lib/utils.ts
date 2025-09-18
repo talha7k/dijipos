@@ -5,11 +5,19 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(amount)
+export function formatCurrency(amount: number, locale: string = 'en-US', currency: string = 'USD'): string {
+  try {
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: currency,
+    }).format(amount);
+  } catch (error) {
+    // Fallback to USD if the locale/currency combination is not supported
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(amount);
+  }
 }
 
 export function formatDate(date: Date | string | number | null | undefined): string {

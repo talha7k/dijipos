@@ -435,6 +435,7 @@ export function TemplatesTab({}: TemplatesTabProps) {
             type="single"
             value={templateView}
             onValueChange={(value) => value && setTemplateView(value as 'all' | 'default' | 'custom')}
+            variant="secondary"
             className="justify-start"
           >
             <ToggleGroupItem value="all">All Templates</ToggleGroupItem>

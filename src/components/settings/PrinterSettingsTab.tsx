@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useAtomValue } from 'jotai';
 import { selectedOrganizationAtom } from '@/atoms';
 import { usePrinterSettings } from '@/lib/hooks/usePrinterSettings';
@@ -9,7 +10,7 @@ import { useInvoicesTemplatesData } from '@/lib/hooks/useInvoicesTemplatesData';
 import { useQuotesTemplatesData } from '@/lib/hooks/useQuotesTemplatesData';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EditableSetting } from '@/components/ui/editable-setting';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Settings, Receipt, FileText, Quote } from 'lucide-react';
 import { toast } from 'sonner';
 import { FontSize } from '@/types/enums';
@@ -22,6 +23,7 @@ interface PrinterSettingsTabProps {
 export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPrinterSettingsUpdate }: PrinterSettingsTabProps) {
   const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
+  const [selectedTab, setSelectedTab] = useState('general');
   const { receiptTemplates, loading: templatesLoading, setDefaultTemplate: setReceiptDefaultTemplate } = useReceiptTemplatesData(organizationId || undefined);
   const { setDefaultTemplate: setInvoiceDefaultTemplate } = useInvoicesTemplatesData(organizationId || undefined);
   const { setDefaultTemplate: setQuoteDefaultTemplate } = useQuotesTemplatesData(organizationId || undefined);
@@ -170,24 +172,31 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
         )}
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="general" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="general">General</TabsTrigger>
-            <TabsTrigger value="receipts">
+        <div className="space-y-4">
+          <ToggleGroup
+            type="single"
+            value={selectedTab}
+            onValueChange={(value) => value && setSelectedTab(value)}
+            variant="secondary"
+            className="w-full justify-start"
+          >
+            <ToggleGroupItem value="general">General</ToggleGroupItem>
+            <ToggleGroupItem value="receipts">
               <Receipt className="h-4 w-4 mr-2" />
               Receipts
-            </TabsTrigger>
-            <TabsTrigger value="invoices">
+            </ToggleGroupItem>
+            <ToggleGroupItem value="invoices">
               <FileText className="h-4 w-4 mr-2" />
               Invoices
-            </TabsTrigger>
-            <TabsTrigger value="quotes">
+            </ToggleGroupItem>
+            <ToggleGroupItem value="quotes">
               <Quote className="h-4 w-4 mr-2" />
               Quotes
-            </TabsTrigger>
-          </TabsList>
+            </ToggleGroupItem>
+          </ToggleGroup>
 
-           <TabsContent value="general" className="space-y-4 mt-4">
+          {selectedTab === 'general' && (
+            <div className="space-y-4">
              {!templatesLoading && receiptTemplates.length > 0 && (
                <>
                   <EditableSetting
@@ -226,9 +235,11 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
                </>
              )}
 
-           </TabsContent>
+</div>
+          )}
 
-           <TabsContent value="receipts" className="space-y-4 mt-4">
+          {selectedTab === 'receipts' && (
+            <div className="space-y-4">
              <div className="space-y-6">
                <div>
                  <h4 className="text-sm font-medium mb-3">Margins (mm)</h4>
@@ -367,9 +378,11 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
                  </div>
                </div>
              </div>
-           </TabsContent>
+</div>
+          )}
 
-           <TabsContent value="invoices" className="space-y-4 mt-4">
+          {selectedTab === 'invoices' && (
+            <div className="space-y-4">
              <div className="space-y-6">
                <div>
                  <h4 className="text-sm font-medium mb-3">Margins (mm)</h4>
@@ -489,9 +502,11 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
                  </div>
                </div>
              </div>
-           </TabsContent>
+</div>
+          )}
 
-           <TabsContent value="quotes" className="space-y-4 mt-4">
+          {selectedTab === 'quotes' && (
+            <div className="space-y-4">
              <div className="space-y-6">
                <div>
                  <h4 className="text-sm font-medium mb-3">Margins (mm)</h4>
@@ -611,8 +626,9 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
                  </div>
                </div>
              </div>
-           </TabsContent>
-        </Tabs>
+</div>
+          )}
+         </div>
       </CardContent>
     </Card>
   );

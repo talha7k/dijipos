@@ -19,6 +19,7 @@ import {
   getOrderStatusColor,
 } from "@/types/enums";
 import { OrderActionsDialog } from "./OrderStatusActionsDialog";
+import { useCurrency } from "@/lib/hooks/useCurrency";
 import { ReceiptPrintDialog } from "@/components/ReceiptPrintDialog";
 import { useAtom } from "jotai";
 import { selectedOrganizationAtom } from "@/atoms";
@@ -62,6 +63,7 @@ export function OrderSummaryCard({
   const { storeSettings } = useStoreSettings();
   const { receiptTemplates = [] } = useTemplates();
   const { printerSettings } = usePrinterSettings();
+  const { formatCurrency } = useCurrency();
 
   // Calculate payment amounts for display, but use order.paid for status
   const calculatedTotalPaid =
@@ -204,14 +206,14 @@ export function OrderSummaryCard({
 
           <div className="flex justify-between">
             <span>Order Total:</span>
-            <span className="font-bold">${(order.total || 0).toFixed(2)}</span>
+            <span className="font-bold">{formatCurrency(order.total || 0)}</span>
           </div>
 
           {totalPaid !== undefined && (
             <div className="flex justify-between">
               <span>Total Paid:</span>
               <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                ${(totalPaid || 0).toFixed(2)}
+                {formatCurrency(totalPaid || 0)}
               </span>
             </div>
           )}
@@ -226,7 +228,7 @@ export function OrderSummaryCard({
                     : "text-emerald-600 dark:text-emerald-400"
                 }`}
               >
-                ${(remainingAmount || 0).toFixed(2)}
+                {formatCurrency(remainingAmount || 0)}
               </span>
             </div>
           )}
@@ -237,7 +239,7 @@ export function OrderSummaryCard({
                 Change Due:
               </span>
               <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                ${(changeDue || 0).toFixed(2)}
+                {formatCurrency(changeDue || 0)}
               </span>
             </div>
           )}

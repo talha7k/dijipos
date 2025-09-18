@@ -10,6 +10,7 @@ import { selectedTableAtom, selectedCustomerAtom, selectedOrderTypeAtom, current
 import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
 import { useTemplates } from '@/lib/hooks/useTemplates';
 import { usePrinterSettings } from '@/lib/hooks/usePrinterSettings';
+import { useCurrency } from '@/lib/hooks/useCurrency';
 
 interface CartItem {
   id: string;
@@ -48,6 +49,7 @@ export function POSCartSidebar({
 
   const { receiptTemplates = [] } = useTemplates();
   const { printerSettings } = usePrinterSettings();
+  const { formatCurrency } = useCurrency();
 
   const handleClearConfirm = () => {
     if (onClearCart) onClearCart();
@@ -136,7 +138,7 @@ export function POSCartSidebar({
         
         <div className="flex justify-between mb-4">
           <span className="font-medium text-lg text-foreground">Total:</span>
-          <span className="font-bold text-xl text-foreground">${total.toFixed(2)}</span>
+          <span className="font-bold text-xl text-foreground">{formatCurrency(total)}</span>
         </div>
         <div className="flex gap-2 mb-2">
           {onSaveOrder && (

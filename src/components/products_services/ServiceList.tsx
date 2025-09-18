@@ -2,6 +2,7 @@
 
 import { Service, Category } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useCurrency } from '@/lib/hooks/useCurrency';
 import { Badge } from '@/components/ui/badge';
 import { ActionButtons } from '@/components/ui/action-buttons';
 import { Wrench } from 'lucide-react';
@@ -21,6 +22,8 @@ export function ServiceList({
   searchTerm,
   onDeleteService
 }: ServiceListProps) {
+  const { formatCurrency } = useCurrency();
+
   const getCategoryPath = (categoryId: string): string => {
     const category = categories.find(c => c.id === categoryId);
     if (!category) return '';
@@ -64,7 +67,7 @@ export function ServiceList({
                 <CardHeader className="pb-2">
                   <div className="flex justify-between items-start">
                     <CardTitle className="text-lg">{service.name}</CardTitle>
-                    <Badge variant="outline">${service.price.toFixed(2)}</Badge>
+                    <Badge variant="outline">{formatCurrency(service.price)}</Badge>
                   </div>
                   {service.categoryId && (
                     <Badge variant="secondary" className="w-fit">

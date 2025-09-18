@@ -7,6 +7,7 @@ import { selectedOrganizationAtom } from '@/atoms';
 import { usePurchaseProductsData, usePurchaseProductsActions } from '@/lib/hooks/usePurchaseProducts';
 import { usePurchaseServicesData, usePurchaseServicesActions } from '@/lib/hooks/usePurchaseServices';
 import { useProducts } from '@/lib/hooks/useProducts';
+import { useCurrency } from '@/lib/hooks/useCurrency';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,6 +26,7 @@ function ProductsContent() {
   const { categories, loading: categoriesLoading } = useProducts();
   const { createProduct, deleteProduct } = usePurchaseProductsActions(organizationId || undefined);
   const { createService, deleteService } = usePurchaseServicesActions(organizationId || undefined);
+  const { formatCurrency } = useCurrency();
   
   const [loading, setLoading] = useState(true);
   const [productDialogOpen, setProductDialogOpen] = useState(false);
@@ -186,7 +188,7 @@ function ProductsContent() {
                     <TableRow key={product.id}>
                       <TableCell>{product.name}</TableCell>
                       <TableCell>{product.description}</TableCell>
-                      <TableCell>${product.price ? product.price.toFixed(2) : '0.00'}</TableCell>
+                      <TableCell>{product.price ? formatCurrency(product.price) : formatCurrency(0)}</TableCell>
                       <TableCell>{categories.find(c => c.id === product.categoryId)?.name || 'Uncategorized'}</TableCell>
                       <TableCell>
                         <Button
@@ -285,7 +287,7 @@ function ProductsContent() {
                     <TableRow key={service.id}>
                       <TableCell>{service.name}</TableCell>
                       <TableCell>{service.description}</TableCell>
-                      <TableCell>${service.price ? service.price.toFixed(2) : '0.00'}</TableCell>
+                      <TableCell>{service.price ? formatCurrency(service.price) : formatCurrency(0)}</TableCell>
                       <TableCell>{categories.find(c => c.id === service.categoryId)?.name || 'Uncategorized'}</TableCell>
                       <TableCell>
                         <Button

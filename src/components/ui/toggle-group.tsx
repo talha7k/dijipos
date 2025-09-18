@@ -1,18 +1,18 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import * as ToggleGroupPrimitive from "@radix-ui/react-toggle-group"
-import { type VariantProps } from "class-variance-authority"
+import * as React from "react";
+import * as ToggleGroupPrimitive from "@radix-ui/react-toggle-group";
+import { type VariantProps } from "class-variance-authority";
 
-import { cn } from "@/lib/utils"
-import { toggleVariants } from "@/components/ui/toggle"
+import { cn } from "@/lib/utils";
+import { toggleVariants } from "@/components/ui/toggle";
 
 const ToggleGroupContext = React.createContext<
   VariantProps<typeof toggleVariants>
 >({
   size: "default",
   variant: "default",
-})
+});
 
 function ToggleGroup({
   className,
@@ -28,8 +28,8 @@ function ToggleGroup({
       data-variant={variant}
       data-size={size}
       className={cn(
-        "group/toggle-group flex w-fit items-center rounded-md data-[variant=outline]:shadow-xs data-[variant=secondary]:bg-muted/10 data-[variant=secondary]:p-1 gap-1",
-        className
+        "group/toggle-group flex w-fit items-center rounded-md data-[variant=outline]:shadow-xs data-[variant=secondary]:bg-transparent data-[variant=secondary]:p-1 gap-1",
+        className,
       )}
       {...props}
     >
@@ -37,7 +37,7 @@ function ToggleGroup({
         {children}
       </ToggleGroupContext.Provider>
     </ToggleGroupPrimitive.Root>
-  )
+  );
 }
 
 function ToggleGroupItem({
@@ -48,7 +48,7 @@ function ToggleGroupItem({
   ...props
 }: React.ComponentProps<typeof ToggleGroupPrimitive.Item> &
   VariantProps<typeof toggleVariants>) {
-  const context = React.useContext(ToggleGroupContext)
+  const context = React.useContext(ToggleGroupContext);
 
   return (
     <ToggleGroupPrimitive.Item
@@ -60,14 +60,14 @@ function ToggleGroupItem({
           variant: context.variant || variant,
           size: context.size || size,
         }),
-        "min-w-fit px-3 rounded-md shadow-none focus:z-10 focus-visible:z-10 data-[variant=outline]:border-l-0 data-[variant=outline]:first:border-l data-[variant=secondary]:border-l-0 data-[variant=secondary]:first:border-l mx-0.5",
-        className
+        "min-w-fit px-3 rounded-md shadow-none focus:z-10 focus-visible:z-10 data-[variant=outline]:border-none data-[variant=outline]:first:border-none data-[variant=secondary]:border-purple-200  data-[variant=secondary]:first:border-purple-200 mx-0.5",
+        className,
       )}
       {...props}
     >
       {children}
     </ToggleGroupPrimitive.Item>
-  )
+  );
 }
 
-export { ToggleGroup, ToggleGroupItem }
+export { ToggleGroup, ToggleGroupItem };

@@ -6,6 +6,7 @@ import { selectedOrganizationAtom } from '@/atoms';
 import { Order, OrderPayment, OrderStatus } from '@/types';
 import { useOrders } from '@/lib/hooks/useOrders';
 import { useRealtimeCollection } from '@/lib/hooks/useRealtimeCollection';
+import { useCurrency } from '@/lib/hooks/useCurrency';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -57,12 +58,7 @@ function OrdersContent() {
 
 
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
+  const { formatCurrency } = useCurrency();
 
   const clearSelection = () => setSelectedOrder(null);
 

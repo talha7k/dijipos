@@ -1,5 +1,6 @@
 import { Package, Wrench } from 'lucide-react';
 import { Product, Service } from '@/types';
+import { useCurrency } from '@/lib/hooks/useCurrency';
 
 interface ItemCardProps {
   item: Product | Service;
@@ -8,6 +9,7 @@ interface ItemCardProps {
 }
 
 export function ItemCard({ item, onClick, className = '' }: ItemCardProps) {
+  const { formatCurrency } = useCurrency();
   const isProduct = 'price' in item;
   const price = isProduct ? item.price : (item as Service).price;
 
@@ -42,7 +44,7 @@ export function ItemCard({ item, onClick, className = '' }: ItemCardProps) {
         </div>
         <div className="mt-auto">
           <div className="text-center font-bold text-xl py-2 text-foreground bg-primary/5 rounded-md w-full border-t-3 hover:border-primary border-primary/60 dark:border-primary/20">
-            {price ? price.toFixed(2) : '0.00'}
+            {price ? formatCurrency(price) : formatCurrency(0)}
           </div>
         </div>
       </div>

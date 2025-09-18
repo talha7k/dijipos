@@ -14,6 +14,7 @@ import { usePayments } from '@/lib/hooks/usePayments';
 import { useProducts } from '@/lib/hooks/useProducts';
 import { useServices } from '@/lib/hooks/useServices';
 import { useTables } from '@/lib/hooks/useTables';
+import { useCurrency } from '@/lib/hooks/useCurrency';
 import { TableStatus, Payment } from '@/types';
 
 function DashboardContent() {
@@ -27,6 +28,7 @@ function DashboardContent() {
   const { products } = useProducts();
   const { services } = useServices();
   const { tables } = useTables();
+  const { formatCurrency } = useCurrency();
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -57,7 +59,7 @@ function DashboardContent() {
               <CardDescription>Total Value</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${quotes.reduce((sum, q) => sum + q.total, 0).toFixed(2)}</div>
+              <div className="text-2xl font-bold">{formatCurrency(quotes.reduce((sum, q) => sum + q.total, 0))}</div>
               <p className="text-sm text-muted-foreground">
                 {quotes.length} total • {quotes.filter(q => q.status === 'draft').length} pending
               </p>
@@ -72,9 +74,9 @@ function DashboardContent() {
               <CardDescription>Total Value</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${invoices.reduce((sum, inv) => sum + inv.total, 0).toFixed(2)}</div>
+              <div className="text-2xl font-bold">{formatCurrency(invoices.reduce((sum, inv) => sum + inv.total, 0))}</div>
               <p className="text-sm text-muted-foreground">
-                {invoices.length} total • ${invoices.filter(inv => inv.status !== 'paid').reduce((sum, inv) => sum + inv.total, 0).toFixed(2)} unpaid
+                {invoices.length} total • {formatCurrency(invoices.filter(inv => inv.status !== 'paid').reduce((sum, inv) => sum + inv.total, 0))} unpaid
               </p>
             </CardContent>
           </Card>
@@ -87,7 +89,7 @@ function DashboardContent() {
               <CardDescription>Total Received</CardDescription>
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold">${payments.reduce((sum: number, p: Payment) => sum + p.amount, 0).toFixed(2)}</div>
+                <div className="text-2xl font-bold">{formatCurrency(payments.reduce((sum: number, p: Payment) => sum + p.amount, 0))}</div>
               <p className="text-sm text-muted-foreground">
                 Revenue collected
               </p>

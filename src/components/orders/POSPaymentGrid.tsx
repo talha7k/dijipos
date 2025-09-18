@@ -10,6 +10,7 @@ import { OrderSummaryCard } from './OrderSummaryCard';
 import { PaymentList } from './PaymentList';
 import { PaymentEntryForm } from './PaymentEntryForm';
 import { OrderAlreadyPaid } from './OrderAlreadyPaid';
+import { useCurrency } from '@/lib/hooks/useCurrency';
 
 interface POSPaymentGridProps {
   order: Order;
@@ -33,6 +34,7 @@ export function POSPaymentGrid({ order, paymentTypes, onPaymentProcessed, onBack
   const [notes, setNotes] = useState('');
   const [paymentProcessed, setPaymentProcessed] = useState(false);
 
+  const { formatCurrency } = useCurrency();
   const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
   const remainingAmount = order.total - totalPaid;
   const changeDue = totalPaid > order.total ? totalPaid - order.total : 0;
@@ -168,11 +170,11 @@ export function POSPaymentGrid({ order, paymentTypes, onPaymentProcessed, onBack
               <p className={`text-sm mt-1 ${
                 remainingAmount > 0 ? 'text-destructive/80' : 'text-emerald-600 dark:text-emerald-400'
               }`}>
-                ${totalPaid.toFixed(2)} of ${order.total.toFixed(2)} paid
+                {formatCurrency(totalPaid)} of {formatCurrency(order.total)} paid
               </p>
               {remainingAmount > 0 && (
                 <p className="text-sm text-destructive/90 mt-1 font-medium">
-                  Add ${remainingAmount.toFixed(2)} more to process payment
+                  Add {formatCurrency(remainingAmount)} more to process payment
                 </p>
               )}
             </div>
@@ -180,7 +182,7 @@ export function POSPaymentGrid({ order, paymentTypes, onPaymentProcessed, onBack
               <div className={`text-2xl font-bold ${
                 remainingAmount > 0 ? 'text-destructive' : 'text-emerald-700 dark:text-emerald-300'
               }`}>
-                {remainingAmount > 0 ? `$${remainingAmount.toFixed(2)}` : 'Paid'}
+                {remainingAmount > 0 ? formatCurrency(remainingAmount) : 'Paid'}
               </div>
               <div className={`text-sm ${
                 remainingAmount > 0 ? 'text-destructive/80' : 'text-emerald-600 dark:text-emerald-400'
@@ -254,11 +256,11 @@ export function POSPaymentGrid({ order, paymentTypes, onPaymentProcessed, onBack
                 disabled={totalPaid < order.total}
                 size="lg"
                 className="px-8"
-                title={totalPaid < order.total ? `Add $${(order.total - totalPaid).toFixed(2)} more to process payment` : undefined}
+                title={totalPaid < order.total ? `Add ${formatCurrency(order.total - totalPaid)} more to process payment` : undefined}
               >
                 <CreditCard className="h-5 w-5 mr-2" />
                 {totalPaid < order.total
-                  ? `Add $${(order.total - totalPaid).toFixed(2)} More`
+                  ? `Add ${formatCurrency(order.total - totalPaid)} More`
                   : changeDue > 0
                     ? 'Process Payment & Give Change'
                     : 'Process Payment'
