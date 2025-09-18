@@ -1,6 +1,6 @@
 import React from "react";
 import { useCurrency } from "@/lib/hooks/useCurrency";
-import { cn } from "@/lib/utils";
+import { cn, truncateTextByType, isTextTooLong, getDisplayLength } from "@/lib/utils";
 
 export interface OrderItemDisplayProps {
   id: string;
@@ -26,8 +26,8 @@ export function OrderItemDisplay({
 }: OrderItemDisplayProps) {
   const { formatCurrency } = useCurrency();
 
-  const wordCount = name.trim().split(/\s+/).length;
-  const isLongName = wordCount > 3;
+  // Use character-based length detection instead of word count
+  const isLongName = isTextTooLong(name, getDisplayLength('short'));
 
   return (
     <div
@@ -42,15 +42,16 @@ export function OrderItemDisplay({
             "font-medium text-foreground break-words line-clamp-2",
             isLongName && "text-xs",
           )}
+          title={name}
         >
-          {name}
+          {truncateTextByType(name, 'short')}
         </div>
         <div className="text-sm text-muted-foreground whitespace-nowrap">
           {formatCurrency(unitPrice)} × {quantity}
         </div>
         {showNotes && notes && (
-          <div className="text-xs text-muted-foreground mt-1 break-words line-clamp-2">
-            {notes}
+          <div className="text-xs text-muted-foreground mt-1 break-words line-clamp-2" title={notes}>
+            {truncateTextByType(notes, 'short')}
           </div>
         )}
       </div>

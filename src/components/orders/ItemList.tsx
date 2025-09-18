@@ -5,6 +5,7 @@ import { Item } from '@/types';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
+import { truncateTextByType } from '@/lib/utils';
 import {
   Table,
   TableBody,
@@ -103,12 +104,12 @@ function EditableTableRow({ item, index, onUpdate, onRemove }: EditableTableRowP
   return (
     <TableRow>
       <EditableTableCell
-        value={item.name}
+        value={truncateTextByType(item.name, 'medium')}
         onSave={(value) => handleUpdate('name', value)}
         className="font-medium"
       />
       <EditableTableCell
-        value={item.description || ''}
+        value={truncateTextByType(item.description, 'medium')}
         onSave={(value) => handleUpdate('description', value)}
         className="text-muted-foreground"
       />
@@ -131,7 +132,7 @@ function EditableTableRow({ item, index, onUpdate, onRemove }: EditableTableRowP
         ${item.total.toFixed(2)}
       </TableCell>
       <EditableTableCell
-        value={item.notes || ''}
+        value={truncateTextByType(item.notes, 'medium')}
         onSave={(value) => handleUpdate('notes', value)}
         className="text-muted-foreground"
       />
@@ -160,12 +161,12 @@ interface ReadOnlyTableRowProps {
 function ReadOnlyTableRow({ item, index, onRemove, showDelete = false }: ReadOnlyTableRowProps) {
   return (
     <TableRow>
-      <TableCell className="font-medium">{item.name}</TableCell>
-      <TableCell className="text-muted-foreground">{item.description || ''}</TableCell>
+      <TableCell className="font-medium" title={item.name}>{truncateTextByType(item.name, 'medium')}</TableCell>
+      <TableCell className="text-muted-foreground" title={item.description}>{truncateTextByType(item.description, 'medium')}</TableCell>
       <TableCell className="text-center">{item.quantity}</TableCell>
       <TableCell className="text-right">${item.unitPrice.toFixed(2)}</TableCell>
       <TableCell className="text-right font-medium">${item.total.toFixed(2)}</TableCell>
-      <TableCell className="text-muted-foreground">{item.notes || ''}</TableCell>
+      <TableCell className="text-muted-foreground" title={item.notes}>{truncateTextByType(item.notes, 'medium')}</TableCell>
       {showDelete && (
         <TableCell className="text-center">
           <Button

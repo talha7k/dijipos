@@ -1,7 +1,7 @@
 import { Package, Wrench } from 'lucide-react';
 import { Product, Service } from '@/types';
 import { useCurrency } from '@/lib/hooks/useCurrency';
-import { cn } from '@/lib/utils';
+import { cn, truncateTextByType, isTextTooLong, getDisplayLength } from '@/lib/utils';
 
 interface ItemCardProps {
   item: Product | Service;
@@ -13,12 +13,10 @@ export function ItemCard({ item, onClick, className = '' }: ItemCardProps) {
   const { formatCurrency } = useCurrency();
   const isProduct = 'price' in item;
   const price = isProduct ? item.price : (item as Service).price;
-  
-  const nameWordCount = item.name.trim().split(/\s+/).length;
-  const isLongName = nameWordCount > 4;
-  
-  const descriptionWordCount = item.description?.trim().split(/\s+/).length || 0;
-  const isLongDescription = descriptionWordCount > 4;
+
+  // Use character-based length detection instead of word count
+  const isLongName = isTextTooLong(item.name, getDisplayLength('short'));
+  const isLongDescription = isTextTooLong(item.description, getDisplayLength('short'));
 
   const handleClick = () => {
     onClick(item, isProduct ? 'product' : 'service');
@@ -38,15 +36,15 @@ export function ItemCard({ item, onClick, className = '' }: ItemCardProps) {
             <Wrench className="h-5 w-5 text-primary" />
           )}
         </div>
-        <div 
+        <div
           className={cn(
             "px-3 mb-3 text-center font-bold text-foreground leading-tight",
             "text-lg",
             isLongName && "text-sm"
-          )} 
+          )}
           title={item.name}
         >
-          {item.name}
+          {truncateTextByType(item.name, 'short')}
         </div>
       </div>
       <div className="flex-1 flex flex-col">
@@ -54,8 +52,9 @@ export function ItemCard({ item, onClick, className = '' }: ItemCardProps) {
           "text-center text-muted-foreground line-clamp-2 mb-2 px-3",
           "text-xs",
           isLongDescription && "text-[10px]"
-        )}>
-          {item.description}
+        )}
+        title={item.description}>
+          {truncateTextByType(item.description, 'short')}
         </div>
         <div className="mt-auto">
           <div className="text-center font-bold text-xl py-2 text-foreground bg-primary/5 rounded-md w-full border-t-3 hover:border-primary border-primary/60 dark:border-primary/20">
