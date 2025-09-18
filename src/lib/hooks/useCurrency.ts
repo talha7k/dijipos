@@ -22,13 +22,19 @@ export function useCurrency() {
       const { locale, currency } = currencySettings;
 
       try {
-        return new Intl.NumberFormat(locale, {
+        // Use English locale for numbers (Western numerals) but get currency symbol from the selected locale
+        const formatter = new Intl.NumberFormat('en-US', {
           style: 'currency',
           currency: currency,
-        }).format(amount);
+          // These options help ensure consistent formatting
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        });
+        
+        return formatter.format(amount);
       } catch (error) {
-        // Fallback to USD if the locale/currency combination is not supported
-        console.warn(`Unsupported locale/currency combination: ${locale}/${currency}, falling back to USD`);
+        // Fallback to USD if the currency is not supported with en-US locale
+        console.warn(`Currency ${currency} not supported with en-US locale, falling back to USD`);
         return new Intl.NumberFormat('en-US', {
           style: 'currency',
           currency: 'USD',

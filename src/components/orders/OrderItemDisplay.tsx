@@ -1,4 +1,5 @@
 import React from 'react';
+import { useCurrency } from '@/lib/hooks/useCurrency';
 
 export interface OrderItemDisplayProps {
   id: string;
@@ -22,6 +23,8 @@ export function OrderItemDisplay({
   onClick,
   showNotes = true,
 }: OrderItemDisplayProps) {
+  const { formatCurrency } = useCurrency();
+
   return (
     <div
       className={`grid grid-cols-[1fr_auto] gap-4 p-3 border rounded bg-card transition-colors ${
@@ -32,7 +35,7 @@ export function OrderItemDisplay({
       <div className="min-w-0">
         <div className="font-medium text-foreground break-words">{name}</div>
         <div className="text-sm text-muted-foreground">
-          ${unitPrice.toFixed(2)} × {quantity}
+          {formatCurrency(unitPrice)} × {quantity}
         </div>
         {showNotes && notes && (
           <div className="text-xs text-muted-foreground mt-1 break-words">
@@ -41,7 +44,7 @@ export function OrderItemDisplay({
         )}
       </div>
       <div className="font-medium text-foreground text-right whitespace-nowrap">
-        ${total.toFixed(2)}
+        {formatCurrency(total)}
       </div>
     </div>
   );
