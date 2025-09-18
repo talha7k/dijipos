@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ShoppingCart } from 'lucide-react';
-import { CartItem } from '@/types';
-import { OrderItemDisplay } from './OrderItemDisplay';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ShoppingCart } from "lucide-react";
+import { CartItem } from "@/types";
+import { OrderItemDisplay } from "./OrderItemDisplay";
 
 interface OrderItemListProps {
   items: CartItem[];
   className?: string;
 }
 
-export function OrderItemList({ items, className = '' }: OrderItemListProps) {
+export function OrderItemList({ items, className = "" }: OrderItemListProps) {
   const subtotal = items.reduce((sum, item) => sum + item.total, 0);
 
   return (
@@ -22,7 +22,7 @@ export function OrderItemList({ items, className = '' }: OrderItemListProps) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-2 max-h-64 overflow-y-auto">
+        <div className="space-y-1 max-h-64 overflow-y-auto">
           {items.map((item) => (
             <OrderItemDisplay
               key={item.id}

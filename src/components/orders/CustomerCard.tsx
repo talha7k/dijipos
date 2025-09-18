@@ -1,5 +1,6 @@
 import { Customer } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Mail, Phone, MapPin, Receipt } from 'lucide-react';
 
 interface CustomerCardProps {
   customer: Customer;
@@ -19,21 +20,25 @@ export function CustomerCard({ customer, onClick }: CustomerCardProps) {
       </CardHeader>
       <CardContent className="pt-0">
         <div className="space-y-2">
-          <div className="text-sm text-muted-foreground break-words" title={customer.email}>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground break-words" title={customer.email}>
+            <Mail className="h-4 w-4 flex-shrink-0" />
             {customer.email}
           </div>
           {customer.phone && (
-            <div className="text-sm text-muted-foreground break-words">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground break-words">
+              <Phone className="h-4 w-4 flex-shrink-0" />
               {customer.phone}
             </div>
           )}
           {customer.address && (
-            <div className="text-sm text-muted-foreground break-words" title={customer.address}>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground break-words" title={customer.address}>
+              <MapPin className="h-4 w-4 flex-shrink-0" />
               {customer.address}
             </div>
           )}
           {customer.vatNumber && (
-            <div className="text-sm text-muted-foreground break-words">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground break-words">
+              <Receipt className="h-4 w-4 flex-shrink-0" />
               VAT: {customer.vatNumber}
             </div>
           )}
