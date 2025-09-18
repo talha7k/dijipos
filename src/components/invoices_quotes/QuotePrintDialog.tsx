@@ -50,7 +50,7 @@ export function QuotePrintDialog({
           invoices: printerSettings.invoices?.defaultTemplateId,
           quotes: printerSettings.quotes?.defaultTemplateId,
         } : null,
-        templates: quoteTemplates.map(t => ({ id: t.id, name: t.name, isDefault: t.isDefault }))
+        templates: quoteTemplates.map(t => ({ id: t.id, name: t.name }))
       });
 
       // First try to get default template from printer settings
@@ -67,14 +67,7 @@ export function QuotePrintDialog({
         }
       }
       
-      // Fallback to template's isDefault flag
-      if (!selectedId) {
-        const defaultTemplate = quoteTemplates.find((t) => t.isDefault);
-        if (defaultTemplate) {
-          selectedId = defaultTemplate.id;
-          console.log(`[QuotePrintDialog] Using fallback default template: ${defaultTemplate.name}`);
-        }
-      }
+      // No fallback to template's isDefault flag - rely only on printer settings
       
       // Final fallback to first template
       if (!selectedId && quoteTemplates.length > 0) {

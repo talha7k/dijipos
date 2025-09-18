@@ -45,7 +45,7 @@ export function TemplateSelector({
       invoices: printerSettings.invoices?.defaultTemplateId,
       quotes: printerSettings.quotes?.defaultTemplateId,
     } : null,
-    templates: templates.map(t => ({ id: t.id, name: t.name, isDefault: t.isDefault }))
+    templates: templates.map(t => ({ id: t.id, name: t.name }))
   });
   // Get the default template ID from printer settings
   const getDefaultTemplateId = () => {
@@ -55,7 +55,7 @@ export function TemplateSelector({
     return settings?.defaultTemplateId || null;
   };
 
-  // Get the effective default template (from printer settings or fallback to template.isDefault)
+  // Get the effective default template (from printer settings only)
   const getEffectiveDefaultTemplate = () => {
     const printerDefaultId = getDefaultTemplateId();
     
@@ -69,12 +69,7 @@ export function TemplateSelector({
       }
     }
     
-    // Fallback to template's isDefault flag
-    const fallbackDefault = templates.find(t => t.isDefault);
-    if (fallbackDefault) {
-      console.log(`[TemplateSelector] Using fallback default template: ${fallbackDefault.name} (${fallbackDefault.id})`);
-    }
-    return fallbackDefault;
+    return null;
   };
 
   const renderTemplateInfo = (template: TemplateType) => {

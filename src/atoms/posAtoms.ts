@@ -1,6 +1,6 @@
 import { atom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
-import { Order, CartItem, Table, OrderType } from '@/types/order';
+import { Order, CartItem, Table, OrderType } from '@/types/pos-order';
 import { Customer } from '@/types/customer-supplier';
 import { indexedDBStorage } from '@/lib/storage';
 

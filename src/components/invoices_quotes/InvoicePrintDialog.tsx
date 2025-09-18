@@ -56,7 +56,7 @@ export function InvoicePrintDialog({
           invoices: printerSettings.invoices?.defaultTemplateId,
           quotes: printerSettings.quotes?.defaultTemplateId,
         } : null,
-        templates: invoiceTemplates.map(t => ({ id: t.id, name: t.name, isDefault: t.isDefault }))
+        templates: invoiceTemplates.map(t => ({ id: t.id, name: t.name }))
       });
 
       // First try to get default template from printer settings
@@ -73,14 +73,7 @@ export function InvoicePrintDialog({
         }
       }
       
-      // Fallback to template's isDefault flag
-      if (!selectedId) {
-        const defaultTemplate = invoiceTemplates.find((t) => t.isDefault);
-        if (defaultTemplate) {
-          selectedId = defaultTemplate.id;
-          console.log(`[InvoicePrintDialog] Using fallback default template: ${defaultTemplate.name}`);
-        }
-      }
+      // No fallback to template's isDefault flag - rely only on printer settings
       
       // Final fallback to first template
       if (!selectedId && invoiceTemplates.length > 0) {

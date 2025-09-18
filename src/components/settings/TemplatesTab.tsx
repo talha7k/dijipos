@@ -238,52 +238,8 @@ export function TemplatesTab({}: TemplatesTabProps) {
         (selectedCategory === TemplateCategory.QUOTE &&
           STATIC_QUOTE_TEMPLATE_IDS.includes(templateId));
 
-      // Only update Firestore templates (not static templates)
-      if (!isStaticTemplate) {
-        // First, unset all other custom templates as default
-        const allTemplates = getTemplates();
-        for (const template of allTemplates) {
-          if (template.id !== templateId && template.isDefault) {
-            // Skip static templates when updating defaults
-            const isTemplateStatic =
-              (selectedCategory === TemplateCategory.RECEIPT &&
-                STATIC_RECEIPT_TEMPLATE_IDS.includes(template.id)) ||
-              (selectedCategory === TemplateCategory.INVOICE &&
-                STATIC_INVOICE_TEMPLATE_IDS.includes(template.id)) ||
-              (selectedCategory === TemplateCategory.QUOTE &&
-                STATIC_QUOTE_TEMPLATE_IDS.includes(template.id));
-
-            if (!isTemplateStatic) {
-              const updateData = { isDefault: false };
-              switch (selectedCategory) {
-                case TemplateCategory.RECEIPT:
-                  await updateReceiptTemplate(template.id, updateData);
-                  break;
-                case TemplateCategory.INVOICE:
-                  await updateInvoiceTemplate(template.id, updateData);
-                  break;
-                case TemplateCategory.QUOTE:
-                  await updateQuoteTemplate(template.id, updateData);
-                  break;
-              }
-            }
-          }
-        }
-
-        // Set the selected custom template as default
-        const updateData = { isDefault: true };
-        switch (selectedCategory) {
-          case TemplateCategory.RECEIPT:
-            await updateReceiptTemplate(templateId, updateData);
-            break;
-          case TemplateCategory.INVOICE:
-            await updateInvoiceTemplate(templateId, updateData);
-            break;
-          case TemplateCategory.QUOTE:
-            await updateQuoteTemplate(templateId, updateData);
-            break;
-        }
-      }
+      // Template defaults are now managed through printer settings, not template.isDefault flags
+      // This functionality has been moved to the PrinterSettingsTab component
 
       // Update local state immediately for instant UI feedback
       setLocalDefaults((prev) => ({

@@ -73,18 +73,11 @@ const STATIC_QUOTE_TEMPLATE_IDS = ['default-quote', 'arabic-quote'];
  */
 export async function updateReceiptTemplate(templateId: string, updates: Partial<Omit<ReceiptTemplate, 'id' | 'createdAt'>>): Promise<void> {
   try {
-    // For static templates, only allow setting as default
+    // Static templates don't exist in Firestore, so we don't need to update anything
+    // Template defaults are now managed through printer settings, not template.isDefault flags
     if (STATIC_RECEIPT_TEMPLATE_IDS.includes(templateId)) {
-      // Only allow isDefault updates for static templates
-      if (Object.keys(updates).length === 1 && updates.isDefault !== undefined) {
-        console.log(`Allowing isDefault update for static template: ${templateId}`);
-        // Static templates don't exist in Firestore, so we don't need to update anything
-        // The frontend state will be updated by the useTemplates hook
-        return;
-      } else {
-        console.log(`Skipping non-isDefault update for static template: ${templateId}`);
-        return;
-      }
+      console.log(`Skipping update for static template: ${templateId}`);
+      return;
     }
 
     const docRef = doc(receiptTemplatesRef, templateId);

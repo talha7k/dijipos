@@ -73,4 +73,4 @@ export interface StoreSettings {
 }
 
 // Import types from other modules
-import { OrderType, PaymentType } from "./order";
+import { OrderType, PaymentType } from "./pos-order";

@@ -60,28 +60,12 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
           if (documentType === 'receipts') {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (updatedSettings.receipts as Record<string, any>)[settingField] = value;
-
-            // If setting default template for receipts, also update the template's isDefault flag
-            if (settingField === 'defaultTemplateId' && value) {
-              // Update the template's default status
-              await setReceiptDefaultTemplate(value as string);
-            }
           } else if (documentType === 'invoices') {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (updatedSettings.invoices as Record<string, any>)[settingField] = value;
-
-            // If setting default template for invoices, also update the template's isDefault flag
-            if (settingField === 'defaultTemplateId' && value) {
-              await setInvoiceDefaultTemplate(value as string);
-            }
           } else if (documentType === 'quotes') {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (updatedSettings.quotes as Record<string, any>)[settingField] = value;
-
-            // If setting default template for quotes, also update the template's isDefault flag
-            if (settingField === 'defaultTemplateId' && value) {
-              await setQuoteDefaultTemplate(value as string);
-            }
           }
         } else {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -122,25 +106,10 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
           const [documentType, settingField] = field.split('.');
           if (documentType === 'receipts') {
             updatedSettings.receipts = { [settingField]: value };
-
-            // If setting default template for receipts, also update the template's isDefault flag
-            if (settingField === 'defaultTemplateId' && value) {
-              await setReceiptDefaultTemplate(value as string);
-            }
           } else if (documentType === 'invoices') {
             updatedSettings.invoices = { [settingField]: value };
-
-            // If setting default template for invoices, also update the template's isDefault flag
-            if (settingField === 'defaultTemplateId' && value) {
-              await setInvoiceDefaultTemplate(value as string);
-            }
           } else if (documentType === 'quotes') {
             updatedSettings.quotes = { [settingField]: value };
-
-            // If setting default template for quotes, also update the template's isDefault flag
-            if (settingField === 'defaultTemplateId' && value) {
-              await setQuoteDefaultTemplate(value as string);
-            }
           }
         } else {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
