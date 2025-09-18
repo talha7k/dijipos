@@ -253,7 +253,7 @@ export function EditableSetting<T extends string | number | boolean>({
       ) : (
         <div
           className={cn(
-            "flex items-center gap-2 cursor-pointer flex-1 px-2 mx-2 p-2 rounded-lg hover:bg-muted/20",
+            "flex items-center justify-between cursor-pointer flex-1 px-2 mx-2 p-2 rounded-lg hover:bg-muted/20",
             type === "switch"
               ? "justify-end"
               : "bg-muted border border-input hover:bg-muted/20 hover:border-ring",

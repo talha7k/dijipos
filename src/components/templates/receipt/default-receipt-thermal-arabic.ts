@@ -116,29 +116,29 @@ export const defaultArabicReceiptTemplate = `<!DOCTYPE html>
            <span><strong>Total Qty</strong></span>
            <span><strong>إجمالي الكمية</strong></span>
          </div>
-         <div style="text-align: center; font-weight: bold;">{{totalQty}}</div>
+         <div style="text-align: right; font-weight: bold;">{{totalQty}}</div>
        </div>
        <div class="bilingual">
          <div style="display: flex; justify-content: space-between; align-items: center;">
            <span><strong>Items Value</strong></span>
            <span><strong>قيمة الأصناف</strong></span>
          </div>
-         <div style="text-align: center; font-weight: bold;">{{subtotal}}</div>
+         <div style="text-align: right; font-weight: bold;">{{subtotal}}</div>
        </div>
        <div class="bilingual">
          <div style="display: flex; justify-content: space-between; align-items: center;">
            <span><strong>Total VAT ({{vatRate}}%)</strong></span>
            <span><strong>إجمالي الضريبة ({{vatRate}}%)</strong></span>
          </div>
-         <div style="text-align: center; font-weight: bold;">{{vatAmount}}</div>
+         <div style="text-align: right; font-weight: bold;">{{vatAmount}}</div>
        </div>
-       <div class="bilingual total-amount">
-         <div style="display: flex; justify-content: space-between; align-items: center;">
-           <span><strong>TOTAL AMOUNT</strong></span>
-           <span><strong>المبلغ الإجمالي</strong></span>
-         </div>
-         <div style="text-align: center; font-weight: bold; font-size: 16px;">{{total}}</div>
-       </div>
+<div class="bilingual total-amount">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span><strong>TOTAL</strong></span>
+            <span><strong>المبلغ الإجمالي</strong></span>
+          </div>
+          <div style="text-align: right; font-weight: bold; font-size: 16px;">{{total}}</div>
+        </div>
     </div>
 
     {{#payments}}
