@@ -10,11 +10,8 @@ import {
   TemplateCategory,
   PrinterSettings,
 } from "@/types";
-import {
-  ReceiptTemplateType,
-  InvoiceTemplateType,
-  QuoteTemplateType,
-} from "@/types/enums";
+import { ReceiptTemplateType } from "@/types/enums";
+
 
 import { useStoreSettings } from "@/lib/hooks/useStoreSettings";
 import {
@@ -27,9 +24,6 @@ import {
   createReceiptTemplate,
   createInvoiceTemplate,
   createQuoteTemplate,
-  updateReceiptTemplate,
-  updateInvoiceTemplate,
-  updateQuoteTemplate,
   deleteReceiptTemplate,
   deleteInvoiceTemplate,
   deleteQuoteTemplate,
@@ -72,6 +66,7 @@ interface TemplatesTabProps {
 export function TemplatesTab({}: TemplatesTabProps) {
   const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
+
   const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
   const [deleteTemplateId, setDeleteTemplateId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<TemplateCategory>(
@@ -107,7 +102,7 @@ export function TemplatesTab({}: TemplatesTabProps) {
 
   // Update local defaults when printer settings change
   useEffect(() => {
-    console.log('[TemplatesTab] useEffect triggered with dependencies:', {
+    console.log("[TemplatesTab] useEffect triggered with dependencies:", {
       receipt: printerSettings?.receipts?.defaultTemplateId,
       invoice: printerSettings?.invoices?.defaultTemplateId,
       quote: printerSettings?.quotes?.defaultTemplateId,
@@ -118,7 +113,7 @@ export function TemplatesTab({}: TemplatesTabProps) {
       invoice: printerSettings?.invoices?.defaultTemplateId,
       quote: printerSettings?.quotes?.defaultTemplateId,
     };
-    console.log('[TemplatesTab] Setting localDefaults to:', newDefaults);
+    console.log("[TemplatesTab] Setting localDefaults to:", newDefaults);
     setLocalDefaults(newDefaults);
   }, [printerSettings]); // Watch the entire printerSettings object for changes
 
@@ -149,7 +144,7 @@ export function TemplatesTab({}: TemplatesTabProps) {
           receipt: localDefaults.receipt === templateId,
           invoice: localDefaults.invoice === templateId,
           quote: localDefaults.quote === templateId,
-        }
+        },
       },
     );
     return isDefault;
@@ -256,53 +251,63 @@ export function TemplatesTab({}: TemplatesTabProps) {
 
   const handleSetDefaultTemplate = async (templateId: string) => {
     if (!organizationId) return;
-    
+
     // If printer settings don't exist, create them first
-    let effectivePrinterSettings: PrinterSettings | null | undefined = printerSettings;
+    let effectivePrinterSettings: PrinterSettings | null | undefined =
+      printerSettings;
     if (!printerSettings) {
-      console.log('[TemplatesTab] Printer settings not found, creating them...');
+      console.log(
+        "[TemplatesTab] Printer settings not found, creating them...",
+      );
       try {
-        const { createPrinterSettings } = await import("@/lib/firebase/firestore/settings/storeSettings");
+        const { createPrinterSettings } = await import(
+          "@/lib/firebase/firestore/settings/storeSettings"
+        );
         const newPrinterSettingsId = await createPrinterSettings({
           organizationId,
           receipts: {
             includeQRCode: true,
             paperWidth: 80,
-            fontSize: 'medium' as any,
-            headingFont: 'Arial',
-            bodyFont: 'Helvetica',
+            fontSize: "medium" as any,
+            headingFont: "Arial",
+            bodyFont: "Helvetica",
             lineSpacing: 1.2,
             autoPrint: false,
             defaultTemplateId: templateId,
           },
           invoices: {
             paperWidth: 210,
-            fontSize: 'medium' as any,
-            headingFont: 'Arial',
-            bodyFont: 'Helvetica',
-            defaultTemplateId: 'english-invoice',
+            fontSize: "medium" as any,
+            headingFont: "Arial",
+            bodyFont: "Helvetica",
+            defaultTemplateId: "english-invoice",
           },
           quotes: {
             paperWidth: 210,
-            fontSize: 'medium' as any,
-            headingFont: 'Arial',
-            bodyFont: 'Helvetica',
-            defaultTemplateId: 'english-quote',
+            fontSize: "medium" as any,
+            headingFont: "Arial",
+            bodyFont: "Helvetica",
+            defaultTemplateId: "english-quote",
           },
         });
-        
+
         // Get the newly created settings
-        const { getPrinterSettings } = await import("@/lib/firebase/firestore/settings/storeSettings");
+        const { getPrinterSettings } = await import(
+          "@/lib/firebase/firestore/settings/storeSettings"
+        );
         effectivePrinterSettings = await getPrinterSettings(organizationId);
-        
+
         if (!effectivePrinterSettings) {
-          throw new Error('Failed to create printer settings');
+          throw new Error("Failed to create printer settings");
         }
-        
-        console.log('[TemplatesTab] Created new printer settings:', newPrinterSettingsId);
+
+        console.log(
+          "[TemplatesTab] Created new printer settings:",
+          newPrinterSettingsId,
+        );
       } catch (error) {
-        console.error('[TemplatesTab] Error creating printer settings:', error);
-        toast.error('Failed to create printer settings. Please try again.');
+        console.error("[TemplatesTab] Error creating printer settings:", error);
+        toast.error("Failed to create printer settings. Please try again.");
         return;
       }
     }
@@ -382,14 +387,14 @@ export function TemplatesTab({}: TemplatesTabProps) {
       );
       const updateData = settingsToUpdate as Partial<PrinterSettings>;
       if (!effectivePrinterSettings) {
-        throw new Error('Printer settings not available');
+        throw new Error("Printer settings not available");
       }
       await updatePrinterSettings(effectivePrinterSettings.id, updateData);
 
       // Force refresh store settings to ensure UI updates immediately
-      console.log('[TemplatesTab] Calling refreshStoreSettings...');
+      console.log("[TemplatesTab] Calling refreshStoreSettings...");
       await refreshStoreSettings();
-      console.log('[TemplatesTab] refreshStoreSettings completed');
+      console.log("[TemplatesTab] refreshStoreSettings completed");
 
       toast.success(`${selectedCategory} template set as default`);
     } catch (error) {

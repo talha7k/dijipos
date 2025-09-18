@@ -2,6 +2,7 @@
 import { JotaiProvider } from "@/providers/JotaiProvider"; // Your Jotai provider component
 import { AuthProvider } from "@/providers/AuthProvider"; // Your Auth provider
 import { AuthGuard } from "@/components/layout/AuthGuard";
+import { OrganizationGuard } from "@/components/layout/OrganizationGuard";
 import { AppLayout } from "@/components/layout/AppLayout";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
@@ -19,12 +20,14 @@ export default function RootLayout({
         <FirestoreProvider>
           <JotaiProvider>
             <ThemeProvider>
-              <AuthProvider>
-                <AuthGuard>
-                  <AppLayout>{children}</AppLayout>
-                </AuthGuard>
-                <Toaster />
-              </AuthProvider>
+               <AuthProvider>
+                 <AuthGuard>
+                   <OrganizationGuard>
+                     <AppLayout>{children}</AppLayout>
+                   </OrganizationGuard>
+                 </AuthGuard>
+                 <Toaster />
+               </AuthProvider>
             </ThemeProvider>
           </JotaiProvider>
         </FirestoreProvider>

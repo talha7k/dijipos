@@ -59,7 +59,7 @@ export default function SimplifiedPOSPage() {
   const { tables, loading: tablesLoading } = useTables();
   const { customers, loading: customersLoading } = useCustomers();
   const { orders, loading: ordersLoading, createNewOrder, updateExistingOrder } = useOrders();
-  const { storeSettings } = useStoreSettings();
+   const { storeSettings, loading: storeSettingsLoading } = useStoreSettings();
   const orderTypes = storeSettings?.orderTypes || [];
   const paymentTypes = storeSettings?.paymentTypes || [];
 
@@ -346,7 +346,7 @@ export default function SimplifiedPOSPage() {
     tablesLoading ||
     customersLoading ||
     (currentView !== 'orders' ? ordersLoading : false) ||
-    paymentTypesLoading;
+    storeSettingsLoading;
 
   if (loading) {
     return (
