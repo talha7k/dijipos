@@ -64,8 +64,6 @@ export function StoreSettingsTab({ vatSettings, onVatSettingsUpdate }: StoreSett
       }
 
       toast.success('VAT settings updated successfully!');
-      // Refresh the page to show updated data
-      window.location.reload();
     } catch (error) {
       console.error('Error updating VAT settings:', error);
       toast.error('Failed to update VAT settings. Please try again.');
@@ -93,8 +91,6 @@ export function StoreSettingsTab({ vatSettings, onVatSettingsUpdate }: StoreSett
       }
 
       toast.success('Currency settings updated successfully!');
-      // Refresh the page to show updated data
-      window.location.reload();
     } catch (error) {
       console.error('Error updating currency settings:', error);
       toast.error('Failed to update currency settings. Please try again.');

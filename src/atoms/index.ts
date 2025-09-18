@@ -22,7 +22,18 @@ export * from "./uiAtoms";
 export const selectedOrganizationIdAtom = atomWithStorage<string | null>(
   "selectedOrgId",
   null,
-  indexedDBStorage,
+  {
+    ...indexedDBStorage,
+    getItem: async (key: string) => {
+      const value = await indexedDBStorage.getItem(key);
+      console.log(`selectedOrganizationIdAtom getItem: ${key} =`, value);
+      return value;
+    },
+    setItem: async (key: string, value: unknown) => {
+      console.log(`selectedOrganizationIdAtom setItem: ${key} =`, value);
+      await indexedDBStorage.setItem(key, value);
+    },
+  },
 );
 
 // This atom holds the full object for the selected organization.

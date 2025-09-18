@@ -128,8 +128,9 @@ export function useOrganizationManager() {
 
   // Effect to fetch the full details of the selected organization when the ID changes
   useEffect(() => {
+    console.log('useOrganizationManager: selectedOrgId changed to:', selectedOrgId);
     if (!selectedOrgId) {
-      console.log('No selectedOrgId');
+      console.log('No selectedOrgId - clearing organization state');
       setSelectedOrganization(null);
       setOrganizationUserRole(null);
       return;

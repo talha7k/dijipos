@@ -26,10 +26,13 @@ export const indexedDBStorage = {
     try {
       const currentStore = initializeStore();
       if (!currentStore) {
+        console.warn(`IndexedDB store not available for key ${key}`);
         return null;
       }
       const value = await getItem(key, currentStore);
-      return value === undefined ? null : value;
+      const result = value === undefined ? null : value;
+      console.log(`IndexedDB getItem: ${key} =`, result);
+      return result;
     } catch (error) {
       console.error(`Error getting item from IndexedDB for key ${key}:`, error);
       if (error instanceof Error && error.name === 'UnknownError') {
@@ -43,8 +46,10 @@ export const indexedDBStorage = {
     try {
       const currentStore = initializeStore();
       if (!currentStore) {
+        console.warn(`IndexedDB store not available for setting key ${key}`);
         return;
       }
+      console.log(`IndexedDB setItem: ${key} =`, value);
       await setItem(key, value, currentStore);
     } catch (error) {
       console.error(`Error setting item in IndexedDB for key ${key}:`, error);
