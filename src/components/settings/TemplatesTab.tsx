@@ -257,11 +257,54 @@ export function TemplatesTab({}: TemplatesTabProps) {
   const handleSetDefaultTemplate = async (templateId: string) => {
     if (!organizationId) return;
     
-    // Check if printer settings exist
+    // If printer settings don't exist, create them first
+    let effectivePrinterSettings: PrinterSettings | null | undefined = printerSettings;
     if (!printerSettings) {
-      console.error('[TemplatesTab] Printer settings not available');
-      toast.error('Printer settings not available. Please refresh and try again.');
-      return;
+      console.log('[TemplatesTab] Printer settings not found, creating them...');
+      try {
+        const { createPrinterSettings } = await import("@/lib/firebase/firestore/settings/printer");
+        const newPrinterSettingsId = await createPrinterSettings({
+          organizationId,
+          receipts: {
+            includeQRCode: true,
+            paperWidth: 80,
+            fontSize: 'medium' as any,
+            headingFont: 'Arial',
+            bodyFont: 'Helvetica',
+            lineSpacing: 1.2,
+            autoPrint: false,
+            defaultTemplateId: templateId,
+          },
+          invoices: {
+            paperWidth: 210,
+            fontSize: 'medium' as any,
+            headingFont: 'Arial',
+            bodyFont: 'Helvetica',
+            defaultTemplateId: 'english-invoice',
+          },
+          quotes: {
+            paperWidth: 210,
+            fontSize: 'medium' as any,
+            headingFont: 'Arial',
+            bodyFont: 'Helvetica',
+            defaultTemplateId: 'english-quote',
+          },
+        });
+        
+        // Get the newly created settings
+        const { getPrinterSettings } = await import("@/lib/firebase/firestore/settings/printer");
+        effectivePrinterSettings = await getPrinterSettings(organizationId);
+        
+        if (!effectivePrinterSettings) {
+          throw new Error('Failed to create printer settings');
+        }
+        
+        console.log('[TemplatesTab] Created new printer settings:', newPrinterSettingsId);
+      } catch (error) {
+        console.error('[TemplatesTab] Error creating printer settings:', error);
+        toast.error('Failed to create printer settings. Please try again.');
+        return;
+      }
     }
 
     try {
@@ -338,7 +381,10 @@ export function TemplatesTab({}: TemplatesTabProps) {
         "@/lib/firebase/firestore/settings/printer"
       );
       const updateData = settingsToUpdate as Partial<PrinterSettings>;
-      await updatePrinterSettings(printerSettings.id, updateData);
+      if (!effectivePrinterSettings) {
+        throw new Error('Printer settings not available');
+      }
+      await updatePrinterSettings(effectivePrinterSettings.id, updateData);
 
       // Force refresh store settings to ensure UI updates immediately
       console.log('[TemplatesTab] Calling refreshStoreSettings...');

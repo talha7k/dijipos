@@ -52,7 +52,7 @@ export async function createPrinterSettings(data: Omit<PrinterSettings, 'id' | '
 
     const now = Timestamp.now();
 
-    // Prepare the data for Firestore - ensure no undefined values
+    // Prepare the data for Firestore - ensure no undefined values and no legacy root-level fields
     const firestoreData: Record<string, unknown> = {
       ...data,
       createdAt: now,
@@ -63,6 +63,14 @@ export async function createPrinterSettings(data: Omit<PrinterSettings, 'id' | '
     Object.keys(firestoreData).forEach(key => {
       if (firestoreData[key] === undefined) {
         delete firestoreData[key];
+      }
+    });
+
+    // Clean up legacy root-level default template ID fields to prevent conflicts
+    const legacyFields = ['defaultReceiptTemplateId', 'defaultInvoiceTemplateId', 'defaultQuoteTemplateId'];
+    legacyFields.forEach(field => {
+      if (firestoreData[field] !== undefined) {
+        delete firestoreData[field];
       }
     });
 

@@ -93,18 +93,21 @@ export async function getStoreSettings(organizationId: string): Promise<StoreSet
           bodyFont: 'Helvetica',
           lineSpacing: 1.2,
           autoPrint: false,
+          defaultTemplateId: 'english-thermal', // Default receipt template
         },
         invoices: {
           paperWidth: 210,
           fontSize: FontSize.MEDIUM,
           headingFont: 'Arial',
           bodyFont: 'Helvetica',
+          defaultTemplateId: 'english-invoice', // Default invoice template
         },
         quotes: {
           paperWidth: 210,
           fontSize: FontSize.MEDIUM,
           headingFont: 'Arial',
           bodyFont: 'Helvetica',
+          defaultTemplateId: 'english-quote', // Default quote template
         },
         createdAt: Timestamp.now(),
         updatedAt: Timestamp.now(),
