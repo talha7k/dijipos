@@ -108,10 +108,12 @@ export function useStoreSettings(): StoreSettingsState & StoreSettingsActions {
     const printerUnsubscribe = onSnapshot(
       doc(db, 'printerSettings', baseStoreSettings.printerSettingsId),
       async () => {
+        console.log('[useStoreSettings] Printer settings realtime listener triggered');
         // Refresh complete store settings when printer settings change
         try {
           const updatedSettings = await getStoreSettings(selectedOrganization.id);
-          setStoreSettings(updatedSettings);
+          console.log('[useStoreSettings] Realtime update - new printer settings:', updatedSettings?.printerSettings);
+          setStoreSettings(updatedSettings ? { ...updatedSettings } : null);
         } catch (err) {
           console.error('Error refreshing store settings after printer change:', err);
         }
@@ -148,8 +150,13 @@ export function useStoreSettings(): StoreSettingsState & StoreSettingsActions {
     if (!selectedOrganization?.id) return;
 
     try {
+      console.log('[useStoreSettings] Refreshing store settings...');
       const completeSettings = await getStoreSettings(selectedOrganization.id);
-      setStoreSettings(completeSettings);
+      console.log('[useStoreSettings] Retrieved store settings:', completeSettings);
+      console.log('[useStoreSettings] Printer settings:', completeSettings?.printerSettings);
+      // Ensure we create a new object reference to trigger re-renders
+      setStoreSettings(completeSettings ? { ...completeSettings } : null);
+      console.log('[useStoreSettings] Store settings updated');
     } catch (err) {
       console.error('Error refreshing store settings:', err);
     }

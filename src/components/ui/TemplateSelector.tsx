@@ -59,14 +59,28 @@ export function TemplateSelector({
   const getEffectiveDefaultTemplate = () => {
     const printerDefaultId = getDefaultTemplateId();
     
+    console.log(`[TemplateSelector] getEffectiveDefaultTemplate called:`, {
+      printerDefaultId,
+      availableTemplateIds: templates.map(t => t.id),
+      templateType,
+      printerSettings: printerSettings ? {
+        receipts: printerSettings.receipts?.defaultTemplateId,
+        invoices: printerSettings.invoices?.defaultTemplateId,
+        quotes: printerSettings.quotes?.defaultTemplateId,
+      } : null,
+    });
+    
     if (printerDefaultId) {
       const printerDefaultTemplate = templates.find(t => t.id === printerDefaultId);
       if (printerDefaultTemplate) {
-        console.log(`[TemplateSelector] Using printer default template: ${printerDefaultTemplate.name} (${printerDefaultTemplate.id})`);
+        console.log(`[TemplateSelector] ✅ Found printer default template: ${printerDefaultTemplate.name} (${printerDefaultTemplate.id})`);
         return printerDefaultTemplate;
       } else {
-        console.log(`[TemplateSelector] Printer default template not found: ${printerDefaultId}`);
+        console.log(`[TemplateSelector] ❌ Printer default template not found in available templates: ${printerDefaultId}`);
+        console.log(`[TemplateSelector] Available template IDs:`, templates.map(t => t.id));
       }
+    } else {
+      console.log(`[TemplateSelector] ❌ No printer default ID found for templateType: ${templateType}`);
     }
     
     return null;
@@ -75,6 +89,14 @@ export function TemplateSelector({
   const renderTemplateInfo = (template: TemplateType) => {
     const effectiveDefault = getEffectiveDefaultTemplate();
     const isEffectiveDefault = effectiveDefault?.id === template.id;
+    
+    console.log(`[TemplateSelector] renderTemplateInfo for ${template.id}:`, {
+      templateName: template.name,
+      effectiveDefaultId: effectiveDefault?.id,
+      effectiveDefaultName: effectiveDefault?.name,
+      isEffectiveDefault,
+      templateId: template.id,
+    });
     
     return (
       <div className="flex items-center gap-2">

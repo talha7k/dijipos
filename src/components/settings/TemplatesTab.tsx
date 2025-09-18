@@ -107,12 +107,20 @@ export function TemplatesTab({}: TemplatesTabProps) {
 
   // Update local defaults when printer settings change
   useEffect(() => {
-    setLocalDefaults({
+    console.log('[TemplatesTab] useEffect triggered with dependencies:', {
       receipt: printerSettings?.receipts?.defaultTemplateId,
       invoice: printerSettings?.invoices?.defaultTemplateId,
       quote: printerSettings?.quotes?.defaultTemplateId,
+      printerSettingsExists: !!printerSettings,
     });
-  }, [printerSettings]);
+    const newDefaults = {
+      receipt: printerSettings?.receipts?.defaultTemplateId,
+      invoice: printerSettings?.invoices?.defaultTemplateId,
+      quote: printerSettings?.quotes?.defaultTemplateId,
+    };
+    console.log('[TemplatesTab] Setting localDefaults to:', newDefaults);
+    setLocalDefaults(newDefaults);
+  }, [printerSettings]); // Watch the entire printerSettings object for changes
 
   // Helper function to check if a template is the current default
   const isTemplateDefault = (templateId: string): boolean => {
@@ -132,9 +140,17 @@ export function TemplatesTab({}: TemplatesTabProps) {
     }
     console.log(
       `[TemplatesTab] isTemplateDefault(${templateId}) for ${selectedCategory}:`,
-      isDefault,
-      "localDefaults:",
-      localDefaults,
+      {
+        isDefault,
+        localDefaults,
+        selectedCategory,
+        templateId,
+        comparison: {
+          receipt: localDefaults.receipt === templateId,
+          invoice: localDefaults.invoice === templateId,
+          quote: localDefaults.quote === templateId,
+        }
+      },
     );
     return isDefault;
   };
@@ -318,7 +334,9 @@ export function TemplatesTab({}: TemplatesTabProps) {
       await updatePrinterSettings(printerSettings!.id, updateData);
 
       // Force refresh store settings to ensure UI updates immediately
+      console.log('[TemplatesTab] Calling refreshStoreSettings...');
       await refreshStoreSettings();
+      console.log('[TemplatesTab] refreshStoreSettings completed');
 
       toast.success(`${selectedCategory} template set as default`);
     } catch (error) {
