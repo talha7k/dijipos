@@ -3,6 +3,17 @@ import { StoreSettings } from '@/types';
 import { getStoreSettings, createDefaultStoreSettings } from '../firebase/firestore/settings/store';
 import { useRealtimeCollection } from './useRealtimeCollection';
 import { useOrganization } from './useOrganization';
+import { onSnapshot, doc } from 'firebase/firestore';
+import { db } from '../firebase/config';
+
+interface RawStoreSettings {
+  id: string;
+  organizationId: string;
+  vatSettingsId: string;
+  currencySettingsId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 interface StoreSettingsState {
   storeSettings: StoreSettings | null;
@@ -21,37 +32,82 @@ export function useStoreSettings(): StoreSettingsState & StoreSettingsActions {
   const { selectedOrganization } = useOrganization();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [storeSettings, setStoreSettings] = useState<StoreSettings | null>(null);
 
-  // Real-time store settings
+  // Real-time store settings (base document with reference IDs)
   const {
     data: storeSettingsList,
     loading: realtimeLoading,
     error: realtimeError
-  } = useRealtimeCollection<StoreSettings>(
+  } = useRealtimeCollection<RawStoreSettings>(
     'storeSettings',
     selectedOrganization?.id || null,
     [],
     null // Disable orderBy to prevent index errors
   );
 
-  // Get the first (and should be only) store settings document
-  const storeSettings = storeSettingsList.length > 0 ? storeSettingsList[0] : null;
-
-  // Load store settings when selected organization changes (for initial setup)
+  // Effect to load and refresh complete store settings
   useEffect(() => {
-    if (selectedOrganization?.id && !storeSettings) {
-      // Only try to create default settings if we don't have any
-      getStoreSettings(selectedOrganization.id).then(existing => {
-        if (!existing) {
-          createDefaultStoreSettings(selectedOrganization.id).catch(err => {
-            console.error('Error creating default store settings:', err);
-          });
-        }
-      }).catch(err => {
-        console.error('Error checking for existing store settings:', err);
-      });
+    if (!selectedOrganization?.id) {
+      setStoreSettings(null);
+      return;
     }
-  }, [selectedOrganization?.id, storeSettings]);
+
+    const loadCompleteStoreSettings = async () => {
+      try {
+        setLoading(true);
+        const completeSettings = await getStoreSettings(selectedOrganization.id);
+        setStoreSettings(completeSettings);
+      } catch (err) {
+        console.error('Error loading store settings:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load store settings');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCompleteStoreSettings();
+  }, [selectedOrganization?.id]);
+
+  // Effect to set up real-time listeners for related collections
+  useEffect(() => {
+    if (!selectedOrganization?.id || storeSettingsList.length === 0) return;
+
+    const baseStoreSettings = storeSettingsList[0];
+    if (!baseStoreSettings.vatSettingsId || !baseStoreSettings.currencySettingsId) return;
+
+    // Set up listeners for VAT and currency settings changes
+    const vatUnsubscribe = onSnapshot(
+      doc(db, 'vatSettings', baseStoreSettings.vatSettingsId),
+      async () => {
+        // Refresh complete store settings when VAT settings change
+        try {
+          const updatedSettings = await getStoreSettings(selectedOrganization.id);
+          setStoreSettings(updatedSettings);
+        } catch (err) {
+          console.error('Error refreshing store settings after VAT change:', err);
+        }
+      }
+    );
+
+    const currencyUnsubscribe = onSnapshot(
+      doc(db, 'currencySettings', baseStoreSettings.currencySettingsId),
+      async () => {
+        // Refresh complete store settings when currency settings change
+        try {
+          const updatedSettings = await getStoreSettings(selectedOrganization.id);
+          setStoreSettings(updatedSettings);
+        } catch (err) {
+          console.error('Error refreshing store settings after currency change:', err);
+        }
+      }
+    );
+
+    return () => {
+      vatUnsubscribe();
+      currencyUnsubscribe();
+    };
+  }, [selectedOrganization?.id, storeSettingsList]);
 
   const createDefaultSettings = async () => {
     if (!selectedOrganization?.id) return;
@@ -61,7 +117,9 @@ export function useStoreSettings(): StoreSettingsState & StoreSettingsActions {
 
     try {
       await createDefaultStoreSettings(selectedOrganization.id);
-      // Real-time listener will automatically update the storeSettings
+      // Load the complete settings after creation
+      const completeSettings = await getStoreSettings(selectedOrganization.id);
+      setStoreSettings(completeSettings);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create default settings');
       console.error('Error creating default settings:', err);
