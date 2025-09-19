@@ -26,16 +26,12 @@ export const defaultArabicReceiptTemplate = `<!DOCTYPE html>
     .qty-col { text-align: center; width: 50px; }
     .item-col { width: calc({{paperWidth}}px - 120px); }
     .bilingual { margin-bottom: 2px; text-align: right; }
-    .english { text-align: left; direction: ltr; margin-bottom: 1px; }
+     .english { text-align: center; direction: ltr; margin-bottom: 1px; }
     .arabic { text-align: right; direction: rtl; }
   </style>
 </head>
 <body>
-    {{#customHeader}}
-    <div class="custom-header">
-      {{customHeader}}
-    </div>
-    {{/customHeader}}
+
 
      <div class="header">
        {{#companyLogo}}
@@ -61,6 +57,12 @@ export const defaultArabicReceiptTemplate = `<!DOCTYPE html>
        </div>
        {{/companyVat}}
        <hr>
+       {{#customHeader}}
+       <div class="custom-header">
+         {{customHeader}}
+       </div>
+          <hr>
+       {{/customHeader}}
        <div class="bilingual">
          <p><strong>Order #</strong> <span style="color: #666;">(طلب #)</span>: {{orderNumber}}</p>
          {{#queueNumber}}<p><strong>Queue #</strong> <span style="color: #666;">(رقم الدور)</span>: {{queueNumber}}</p>{{/queueNumber}}
@@ -167,17 +169,15 @@ export const defaultArabicReceiptTemplate = `<!DOCTYPE html>
     {{#customFooter}}
     <div class="custom-footer">
       {{customFooter}}
+         <hr>
     </div>
     {{/customFooter}}
 
-    <div class="footer" style="border-top: 1px dashed #000">
-      <div class="bilingual">
-        <p>{{companyAddress}}</p>
-      </div>
-      {{#includeQR}}
+     <div class="footer" style="border-top: 1px dashed #000">
+       {{#includeQR}}
       <div style="text-align: center; margin-top: 15px; padding-top: 10px; border-top: 1px dashed #000;">
         <div style="display: inline-block; padding: 5px; background: white; border: 1px solid #ddd;">
-          <img src="{{qrCodeUrl}}" alt="رمز QR متوافق مع زاتكا" style="width: 80px; height: 80px;" />
+          <img src="{{qrCodeUrl}}" alt="رمز QR متوافق مع زاتكا" style="width: 110px; height: 110px;" />
         </div>
       </div>
          <p style="font-size: 0.75rem; color: #666; margin-bottom: 5px;">Powered by DijiBill.com</p>
