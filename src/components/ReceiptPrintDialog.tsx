@@ -25,6 +25,18 @@ interface ReceiptPrintDialogProps {
   children: React.ReactNode;
 }
 
+interface LayoutSettings {
+  paperWidth: number;
+  marginTop: number;
+  marginBottom: number;
+  marginLeft: number;
+  marginRight: number;
+  paddingTop: number;
+  paddingBottom: number;
+  paddingLeft: number;
+  paddingRight: number;
+}
+
 export function ReceiptPrintDialog({
   order,
   organization,
@@ -143,8 +155,21 @@ export function ReceiptPrintDialog({
       console.log("- Payments:", hasPayments);
       console.log("- Dijibill Branding:", hasDijibill);
 
+      // Extract layout settings
+      const layoutSettings: LayoutSettings = {
+        paperWidth: printerSettings?.receipts?.paperWidth || 80,
+        marginTop: printerSettings?.receipts?.marginTop || 0,
+        marginBottom: printerSettings?.receipts?.marginBottom || 0,
+        marginLeft: printerSettings?.receipts?.marginLeft || 0,
+        marginRight: printerSettings?.receipts?.marginRight || 0,
+        paddingTop: printerSettings?.receipts?.paddingTop || 0,
+        paddingBottom: printerSettings?.receipts?.paddingBottom || 0,
+        paddingLeft: printerSettings?.receipts?.paddingLeft || 0,
+        paddingRight: printerSettings?.receipts?.paddingRight || 0,
+      };
+
       // Calculate appropriate window width based on paper width
-      const paperWidthMm = printerSettings?.receipts?.paperWidth || 80;
+      const paperWidthMm = layoutSettings.paperWidth;
       // Convert mm to pixels (assuming 96 DPI) and add some padding for UI
       const windowWidth = Math.max(400, Math.min(1000, paperWidthMm * 3.78 + 200));
       const windowHeight = 600;
@@ -163,26 +188,29 @@ export function ReceiptPrintDialog({
         <html>
           <head>
             <title>Receipt - ${order.orderNumber}</title>
-             <style>
-               body {
-                 margin: 0;
-                 padding: 0;
-                 font-family: Arial, sans-serif;
-               }
+              <style>
+                body {
+                  margin: 0;
+                  padding: 0;
+                  font-family: Arial, sans-serif;
+                }
                 @media print {
                   @page {
-                    margin: 0;
+                    margin: ${layoutSettings.marginTop}mm ${layoutSettings.marginRight}mm ${layoutSettings.marginBottom}mm ${layoutSettings.marginLeft}mm;
                   }
                   body {
-                    margin: 0 !important;
-                    padding: 0 !important;
+                    max-width: ${layoutSettings.paperWidth}mm;
+                    margin: 0;
+                    padding: ${layoutSettings.paddingTop}mm ${layoutSettings.paddingRight}mm ${layoutSettings.paddingBottom}mm ${layoutSettings.paddingLeft}mm;
+                  }
+                  .item-col {
+                    width: calc(${layoutSettings.paperWidth}mm - 120px);
                   }
                   * {
-                    margin: 0 !important;
-                    padding: 0 !important;
+                    box-sizing: border-box;
                   }
                 }
-             </style>
+              </style>
           </head>
           <body>
             ${renderedContent}
