@@ -116,25 +116,25 @@ export function POSHeader({
                   onConfirm={handleConfirmNewOrder}
                 >
                   {({ openDialog }) => (
-                    <Badge
-                      variant="secondary"
-                      className="flex items-center py-1 space-x-1 cursor-pointer bg-orange-100 text-orange-800 hover:bg-orange-200"
-                      onClick={openDialog}
-                    >
-                      <PlusCircle className="h-5 w-5" />
-                      <span>New Order</span>
-                    </Badge>
+                     <Badge
+                       variant="secondary"
+                       className={`flex items-center py-1 space-x-1 cursor-pointer ${currentView === 'items' ? 'bg-orange-100 text-orange-800 hover:bg-orange-200' : 'bg-blue-100 text-blue-800 hover:bg-blue-200'}`}
+                       onClick={openDialog}
+                     >
+                       {currentView === 'items' ? <PlusCircle className="h-5 w-5" /> : <ShoppingBag className="h-5 w-5" />}
+                       <span>{currentView === 'items' ? 'New Order' : 'POS'}</span>
+                     </Badge>
                   )}
                 </ClearOrderDialog>
               ) : (
-                <Badge
-                  variant="secondary"
-                  className="flex items-center py-1 space-x-1 cursor-pointer bg-orange-100 text-orange-800 hover:bg-orange-200"
-                  onClick={handleOrderToggle}
-                >
-                  <PlusCircle className="h-5 w-5" />
-                  <span>New Order</span>
-                </Badge>
+                 <Badge
+                   variant="secondary"
+                   className={`flex items-center py-1 space-x-1 cursor-pointer ${currentView === 'items' ? 'bg-orange-100 text-orange-800 hover:bg-orange-200' : 'bg-blue-100 text-blue-800 hover:bg-blue-200'}`}
+                   onClick={handleOrderToggle}
+                 >
+                   {currentView === 'items' ? <PlusCircle className="h-5 w-5" /> : <ShoppingBag className="h-5 w-5" />}
+                   <span>{currentView === 'items' ? 'New Order' : 'POS'}</span>
+                 </Badge>
               )
             )}
           </div>

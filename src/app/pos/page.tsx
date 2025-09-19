@@ -328,6 +328,18 @@ export default function SimplifiedPOSPage() {
     }
   }, [pathname, router, resetPOSState]);
 
+  // Function to handle order toggle
+  const handleOrderToggle = useCallback(() => {
+    if (currentView === 'items') {
+      // When on items view, reset for new order
+      resetPOSState();
+    } else {
+      // When on other views, just switch to items view without clearing cart
+      setCurrentView('items');
+      setCategoryPath([]);
+    }
+  }, [currentView, resetPOSState, setCurrentView, setCategoryPath]);
+
   const handleTableDeselect = useCallback(() => {
     setSelectedTable(null);
   }, [setSelectedTable]);
@@ -460,7 +472,7 @@ export default function SimplifiedPOSPage() {
             onCustomerDeselect={handleCustomerDeselect}
             onOrderTypeDeselect={handleOrderTypeDeselect}
             onOrdersClick={handleOrdersClick}
-            onOrderToggle={handleNewOrder}
+            onOrderToggle={handleOrderToggle}
             isOnPOSPage={true}
             currentView={currentView}
            />
