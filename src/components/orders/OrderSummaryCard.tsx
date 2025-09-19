@@ -11,7 +11,7 @@ import {
   Save,
   Printer,
 } from "lucide-react";
-import { Order, OrderStatus, OrderPayment } from "@/types";
+import { Order, OrderStatus, PaymentStatus, OrderPayment } from "@/types";
 import {
   ORDER_STATUS_BUTTON_VARIANTS,
   getOrderStatusColor,
@@ -74,7 +74,7 @@ export function OrderSummaryCard({
       ? totalPaid
       : payments.reduce((sum, payment) => sum + payment.amount, 0);
 
-  const isActuallyPaid = order.paid;
+  const isActuallyPaid = order.paymentStatus === PaymentStatus.PAID;
 
   // Get color for UI indicators using the new status color system
   const statusColor = getOrderStatusColor(order.status as OrderStatus);

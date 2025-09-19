@@ -3,7 +3,7 @@
 import React, { useState, useCallback, useMemo } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { selectedOrganizationAtom } from '@/atoms';
-import { CartItem, ItemType, Order, OrderStatus, Product, Service, Table, Customer, OrderType, OrderPayment } from "@/types";
+import { CartItem, ItemType, Order, OrderStatus, PaymentStatus, Product, Service, Table, Customer, OrderType, OrderPayment } from "@/types";
 import { useProducts } from "@/lib/hooks/useProducts";
 import { useServices } from "@/lib/hooks/useServices";
 import { useTables } from "@/lib/hooks/useTables";
@@ -287,6 +287,7 @@ export default function SimplifiedPOSPage() {
         taxAmount,
         total,
         status: OrderStatus.OPEN,
+        paymentStatus: PaymentStatus.UNPAID,
         paid: false,
         orderType: selectedOrderType?.name || 'dine-in',
         ...(selectedCustomer?.name && { customerName: selectedCustomer.name }),
@@ -326,10 +327,24 @@ export default function SimplifiedPOSPage() {
   }, [organizationId, cartItems, cartSubtotal, selectedOrder, selectedOrderType, selectedCustomer, selectedTable, user, userName, nextQueueNumber, createNewOrder, updateExistingOrder, resetPOSState, setNextQueueNumber, vatSettings?.isEnabled, vatSettings?.isVatInclusive, vatSettings?.rate]);
 
   const handlePaymentProcessed = useCallback(async (payments: OrderPayment[]) => {
-    setPaymentSuccessData({ totalPaid: payments.reduce((sum, payment) => sum + payment.amount, 0) });
+    const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
+
+    // Update the order's payment status if we have a selected order
+    if (selectedOrder) {
+      try {
+        await updateExistingOrder(selectedOrder.id, {
+          paymentStatus: PaymentStatus.PAID,
+          paid: true
+        });
+      } catch (error) {
+        console.error('Error updating order payment status:', error);
+      }
+    }
+
+    setPaymentSuccessData({ totalPaid });
     setShowPaymentSuccessDialog(true);
     setCurrentView('items');
-  }, [setCurrentView]);
+  }, [setCurrentView, selectedOrder, updateExistingOrder]);
 
   const handleClearCart = useCallback(() => {
     setCartItems([]);
@@ -421,6 +436,7 @@ export default function SimplifiedPOSPage() {
       taxAmount: cartSubtotal * 0.15,
       total: cartTotal,
       status: OrderStatus.OPEN,
+      paymentStatus: PaymentStatus.UNPAID,
       paid: false,
       orderType: selectedOrderType?.name || 'dine-in',
       createdById: user?.uid || 'unknown',

@@ -1,5 +1,5 @@
 // Import enums from the main enums file
-import { TableStatus, OrderStatus, ItemType } from './enums';
+import { TableStatus, OrderStatus, PaymentStatus, ItemType } from './enums';
 
 export interface Table {
   id: string;
@@ -35,6 +35,7 @@ export interface Order {
   taxAmount: number;
   total: number;
   status: OrderStatus;
+  paymentStatus: PaymentStatus;
   paid: boolean; // Whether the order has been fully paid
   customerName?: string;
   customerPhone?: string;

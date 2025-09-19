@@ -1,7 +1,7 @@
 // Sample data for customers, products, and services
 // This would typically come from a database
 
-import { Invoice, PurchaseInvoice, SalesInvoice, Category, Product, Service, Table, Order, Customer, Supplier, OrderType, PaymentType, ItemType, CategoryType, TableStatus, OrderStatus, InvoiceStatus, PurchaseInvoiceStatus, InvoiceType } from '@/types';
+import { Invoice, PurchaseInvoice, SalesInvoice, Category, Product, Service, Table, Order, Customer, Supplier, OrderType, PaymentType, ItemType, CategoryType, TableStatus, OrderStatus, PaymentStatus, InvoiceStatus, PurchaseInvoiceStatus, InvoiceType } from '@/types';
 import { InvoiceTemplateType } from '@/types/enums';
 
 // Sample categories
@@ -391,6 +391,7 @@ export const sampleOrders: Omit<Order, 'organizationId'>[] = [
     taxAmount: 6.15,
     total: 47.13,
     status: OrderStatus.COMPLETED,
+    paymentStatus: PaymentStatus.PAID,
     paid: true,
     customerName: 'John Smith',
     customerPhone: '+1-234-567-8900',
@@ -439,6 +440,7 @@ export const sampleOrders: Omit<Order, 'organizationId'>[] = [
     taxAmount: 4.27,
     total: 32.75,
     status: OrderStatus.COMPLETED,
+    paymentStatus: PaymentStatus.PAID,
     paid: true,
     customerName: 'Sarah Johnson',
     customerPhone: '+1-234-567-8901',

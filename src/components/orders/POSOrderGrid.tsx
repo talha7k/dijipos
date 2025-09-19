@@ -1,4 +1,4 @@
-import { Order, OrderPayment, OrderStatus } from "@/types";
+import { Order, OrderPayment, OrderStatus, PaymentStatus } from "@/types";
 
 import { OrderDetailView } from "@/components/orders/OrderDetailView";
 import { useOrders } from "@/lib/hooks/useOrders";
@@ -40,7 +40,10 @@ export function POSOrderGrid({
 
   const markOrderAsPaid = async (orderId: string) => {
     try {
-      await updateExistingOrder(orderId, { status: OrderStatus.COMPLETED });
+      await updateExistingOrder(orderId, {
+        paymentStatus: PaymentStatus.PAID,
+        paid: true
+      });
       onOrderUpdate?.();
       return true;
     } catch (error) {

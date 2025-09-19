@@ -36,6 +36,12 @@ export enum OrderStatus {
   ON_HOLD = "on_hold",
 }
 
+export enum PaymentStatus {
+  UNPAID = "unpaid",
+  PAID = "paid",
+  PARTIAL = "partial",
+}
+
 export enum QuoteStatus {
   DRAFT = "draft",
   SENT = "sent",

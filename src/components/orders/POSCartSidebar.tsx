@@ -6,7 +6,7 @@ import { QueueBadge } from "./QueueBadge";
 import { ClearOrderDialog } from "@/components/ui/clear-order-dialog";
 import { POSCartItem } from "./POSCartItem";
 import { ReceiptPrintDialog } from "@/components/ReceiptPrintDialog";
-import { OrderStatus, ItemType } from "@/types";
+import { OrderStatus, PaymentStatus, ItemType } from "@/types";
 import { useAtomValue } from "jotai";
 import { selectedOrganizationAtom } from "@/atoms";
 import {
@@ -87,6 +87,7 @@ export function POSCartSidebar({
         taxAmount: 0,
         total: 0,
         status: OrderStatus.OPEN,
+        paymentStatus: PaymentStatus.UNPAID,
         paid: false,
         orderType: "dine-in",
         createdById: "temp-user",
@@ -151,6 +152,7 @@ export function POSCartSidebar({
       taxAmount: taxAmount,
       total: total,
       status: OrderStatus.OPEN,
+      paymentStatus: PaymentStatus.UNPAID,
       paid: false,
       orderType: selectedOrderType?.name || "dine-in",
       ...(selectedCustomer?.name !== undefined && {

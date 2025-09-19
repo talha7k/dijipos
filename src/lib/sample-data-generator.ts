@@ -1,6 +1,6 @@
 import { db } from '@/lib/firebase/config';
 import { collection, doc, writeBatch } from 'firebase/firestore';
-import { Product, Service, Quote, Customer, Supplier, Item, Payment, PurchaseInvoice, Invoice, Category, Order, OrderPayment, CartItem, OrderType, PaymentType, Table, TableStatus, OrderStatus, CategoryType, ItemType, InvoiceType, QuoteStatus, InvoiceStatus } from '@/types';
+import { Product, Service, Quote, Customer, Supplier, Item, Payment, PurchaseInvoice, Invoice, Category, Order, OrderPayment, CartItem, OrderType, PaymentType, Table, TableStatus, OrderStatus, PaymentStatus, CategoryType, ItemType, InvoiceType, QuoteStatus, InvoiceStatus } from '@/types';
 import { InvoiceTemplateType } from '@/types/enums';
  
 // --- HELPER FUNCTIONS ---
@@ -241,6 +241,7 @@ const generateOrders = (count: number, customers: Omit<Customer, 'organizationId
             taxAmount,
             total,
             status,
+            paymentStatus: status === OrderStatus.COMPLETED ? PaymentStatus.PAID : PaymentStatus.UNPAID,
             paid: status === OrderStatus.COMPLETED, // Completed orders are paid
              orderType: getRandomElement(orderTypes).name,
             createdById: 'temp-user-id', // Will be replaced with actual userId
