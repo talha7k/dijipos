@@ -9,7 +9,7 @@ export const defaultArabicReceiptTemplate = `<!DOCTYPE html>
        --body-font: {{bodyFont}};
        --line-spacing: {{lineSpacing}};
      }
-     body { font-family: var(--body-font), 'Amiri', serif; margin: {{marginTop}}mm {{marginRight}}mm {{marginBottom}}mm {{marginLeft}}mm; padding: {{paddingTop}}mm {{paddingRight}}mm {{paddingBottom}}mm {{paddingLeft}}mm; font-size: 12px; max-width: {{paperWidth}}px; line-height: var(--line-spacing); }
+      body { font-family: var(--body-font), 'Amiri', serif; margin: {{marginTop}}mm {{marginRight}}mm {{marginBottom}}mm {{marginLeft}}mm; padding: {{paddingTop}}mm {{paddingRight}}mm {{paddingBottom}}mm {{paddingLeft}}mm; font-size: 12px; max-width: {{paperWidth}}mm; line-height: var(--line-spacing); }
     .header { text-align: center; margin-bottom: 10px; }
     .header h2 { font-family: var(--heading-font), 'Amiri', serif; }
     .custom-header { text-align: center; margin-bottom: 10px; font-weight: bold; font-family: var(--heading-font), 'Amiri', serif; }
@@ -36,7 +36,7 @@ export const defaultArabicReceiptTemplate = `<!DOCTYPE html>
      <div class="header">
        {{#companyLogo}}
        <div style="text-align: center; margin-bottom: 10px;">
-         <img src="{{companyLogo}}" alt="شعار الشركة" style="max-width: 100px; max-height: 50px;" />
+          <img src="{{companyLogo}}" alt="شعار الشركة" style="max-width: 95%; padding: 2%;" />
        </div>
        {{/companyLogo}}
         <div style="text-align: center; margin-bottom: 10px;">
