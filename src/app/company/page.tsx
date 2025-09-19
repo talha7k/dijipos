@@ -31,6 +31,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { toast } from 'sonner';
+import { DatePicker } from '@/components/ui/date-picker';
 
 
 
@@ -502,15 +503,16 @@ function CompanyContent() {
                      </SelectContent>
                    </Select>
                   </div>
-                  <div>
-                    <Label htmlFor="expiresAt">Expires At</Label>
-                    <Input
-                      id="expiresAt"
-                      type="datetime-local"
-                      value={invitationFormData.expiresAt.toISOString().slice(0, 16)}
-                      onChange={(e) => setInvitationFormData({ ...invitationFormData, expiresAt: new Date(e.target.value) })}
-                    />
-                  </div>
+                   <DatePicker
+                     label="Expires At"
+                     value={invitationFormData.expiresAt}
+                      onChange={(date) =>
+                        setInvitationFormData({
+                          ...invitationFormData,
+                          expiresAt: date || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+                        })
+                      }
+                   />
                   <div className="flex justify-end space-x-2 pt-4">
                     <Button variant="outline" onClick={() => setInvitationDialogOpen(false)}>
                       Cancel
