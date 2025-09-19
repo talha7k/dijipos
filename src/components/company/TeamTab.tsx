@@ -55,6 +55,7 @@ interface Invitation {
 interface TeamTabProps {
   invitationCodes: Invitation[];
   organizationUsers: OrganizationUser[];
+  currentUser: any;
   handleCreateInvitation: () => void;
   handleDeleteInvitation: (codeId: string) => void;
   handleCopyInvitation: (code: string) => void;
@@ -82,6 +83,7 @@ interface TeamTabProps {
 export function TeamTab({
   invitationCodes,
   organizationUsers,
+  currentUser,
   handleCreateInvitation,
   handleDeleteInvitation,
   handleCopyInvitation,
@@ -167,11 +169,10 @@ export function TeamTab({
                       <SelectValue placeholder="Select role" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value={UserRole.ADMIN}>Admin</SelectItem>
-                      <SelectItem value={UserRole.MANAGER}>Manager</SelectItem>
-                      <SelectItem value={UserRole.WAITER}>Waiter</SelectItem>
-                      <SelectItem value={UserRole.CASHIER}>Cashier</SelectItem>
-                    </SelectContent>
+                       <SelectItem value={UserRole.MANAGER}>Manager</SelectItem>
+                       <SelectItem value={UserRole.WAITER}>Waiter</SelectItem>
+                       <SelectItem value={UserRole.CASHIER}>Cashier</SelectItem>
+                     </SelectContent>
                   </Select>
                 </div>
                 <DatePicker
@@ -227,15 +228,17 @@ export function TeamTab({
                       {invitationCode.code}
                     </TableCell>
                     <TableCell>
-                      <Badge
-                        variant={getRoleBadgeColor(invitationCode.role)}
-                        className="capitalize"
-                      >
-                        {RoleIcon === "Shield" && "🛡️"}
-                        {RoleIcon === "Settings" && "⚙️"}
-                        {RoleIcon === "Users" && "👥"}
-                        {invitationCode.role}
-                      </Badge>
+                       <Badge
+                         variant={getRoleBadgeColor(invitationCode.role)}
+                         className="capitalize"
+                       >
+                         <span className="mr-1">
+                           {RoleIcon === "Shield" && "🛡️"}
+                           {RoleIcon === "Settings" && "⚙️"}
+                           {RoleIcon === "Users" && "👥"}
+                         </span>
+                         {invitationCode.role}
+                       </Badge>
                     </TableCell>
                     <TableCell>
                       {invitationCode.expiresAt.toLocaleDateString()}
@@ -349,15 +352,17 @@ export function TeamTab({
                       {organizationUser.userId}
                     </TableCell>
                     <TableCell>
-                      <Badge
-                        variant={getRoleBadgeColor(organizationUser.role)}
-                        className="capitalize"
-                      >
-                        {RoleIcon === "Shield" && "🛡️"}
-                        {RoleIcon === "Settings" && "⚙️"}
-                        {RoleIcon === "Users" && "👥"}
-                        {organizationUser.role}
-                      </Badge>
+                       <Badge
+                         variant={getRoleBadgeColor(organizationUser.role)}
+                         className="capitalize"
+                       >
+                         <span className="mr-1">
+                           {RoleIcon === "Shield" && "🛡️"}
+                           {RoleIcon === "Settings" && "⚙️"}
+                           {RoleIcon === "Users" && "👥"}
+                         </span>
+                         {organizationUser.role}
+                       </Badge>
                     </TableCell>
                     <TableCell>
                       <Badge
@@ -371,15 +376,19 @@ export function TeamTab({
                     <TableCell>
                       {organizationUser.createdAt?.toLocaleDateString()}
                     </TableCell>
-                    <TableCell>
-                      <div className="flex items-center space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openEditDialog(organizationUser)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
+                     <TableCell>
+                       <div className="flex items-center space-x-2">
+                         <Button
+                           variant="outline"
+                           size="sm"
+                           onClick={() => openEditDialog(organizationUser)}
+                           disabled={
+                             currentUser?.uid === organizationUser.userId &&
+                             organizationUser.role === UserRole.ADMIN
+                           }
+                         >
+                           <Edit className="h-4 w-4" />
+                         </Button>
 
                         <Switch
                           checked={organizationUser.isActive}
@@ -435,11 +444,10 @@ export function TeamTab({
                   <SelectValue placeholder="Select role" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={UserRole.ADMIN}>Admin</SelectItem>
-                  <SelectItem value={UserRole.MANAGER}>Manager</SelectItem>
-                  <SelectItem value={UserRole.WAITER}>Waiter</SelectItem>
-                  <SelectItem value={UserRole.CASHIER}>Cashier</SelectItem>
-                </SelectContent>
+                   <SelectItem value={UserRole.MANAGER}>Manager</SelectItem>
+                   <SelectItem value={UserRole.WAITER}>Waiter</SelectItem>
+                   <SelectItem value={UserRole.CASHIER}>Cashier</SelectItem>
+                 </SelectContent>
               </Select>
             </div>
             <div className="flex items-center space-x-2">

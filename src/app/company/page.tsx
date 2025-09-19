@@ -418,25 +418,26 @@ function CompanyContent() {
 
         <TabsContent value="team" className="space-y-6">
           <TeamTab
-            invitationCodes={invitationCodes}
-            organizationUsers={organizationUsers}
-            handleCreateInvitation={handleCreateInvitation}
-            handleDeleteInvitation={handleDeleteInvitation}
-            handleCopyInvitation={handleCopyInvitation}
-            handleUpdateUser={handleUpdateUser}
-            handleToggleUserStatus={handleToggleUserStatus}
-            openEditDialog={openEditDialog}
-            editingUser={editingUser}
-            setEditingUser={setEditingUser}
-            formData={formData}
-            setFormData={setFormData}
-            invitationFormData={invitationFormData}
-            setInvitationFormData={setInvitationFormData}
-            dialogOpen={dialogOpen}
-            setDialogOpen={setDialogOpen}
-            invitationDialogOpen={invitationDialogOpen}
-            setInvitationDialogOpen={setInvitationDialogOpen}
-          />
+             invitationCodes={invitationCodes}
+             organizationUsers={organizationUsers}
+             currentUser={user}
+             handleCreateInvitation={handleCreateInvitation}
+             handleDeleteInvitation={handleDeleteInvitation}
+             handleCopyInvitation={handleCopyInvitation}
+             handleUpdateUser={handleUpdateUser}
+             handleToggleUserStatus={handleToggleUserStatus}
+             openEditDialog={openEditDialog}
+             editingUser={editingUser}
+             setEditingUser={setEditingUser}
+             formData={formData}
+             setFormData={setFormData}
+             invitationFormData={invitationFormData}
+             setInvitationFormData={setInvitationFormData}
+             dialogOpen={dialogOpen}
+             setDialogOpen={setDialogOpen}
+             invitationDialogOpen={invitationDialogOpen}
+             setInvitationDialogOpen={setInvitationDialogOpen}
+           />
         </TabsContent>
 
         <TabsContent value="subscription" className="space-y-6">
