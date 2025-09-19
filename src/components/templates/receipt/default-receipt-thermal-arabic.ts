@@ -46,7 +46,7 @@ export const defaultArabicReceiptTemplate = `<!DOCTYPE html>
         <div style="text-align: center; margin-bottom: 10px;">
           <div class="english"><h2>{{companyName}}</h2></div>
           {{#companyNameAr}}
-          <div class="arabic"><h2>{{companyNameAr}}</h2></div>
+          <div class="arabic" style="text-align: center;"><h2>{{companyNameAr}}</h2></div>
           {{/companyNameAr}}
         </div>
        <div class="bilingual">

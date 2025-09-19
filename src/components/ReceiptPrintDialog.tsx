@@ -1,11 +1,4 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { DialogWithActions } from "@/components/ui/DialogWithActions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -217,156 +210,131 @@ export function ReceiptPrintDialog({
     }
   };
 
+  const actions = (
+    <>
+      <Button variant="outline" onClick={() => setOpen(false)}>
+        Cancel
+      </Button>
+      <Button
+        onClick={generateReceipt}
+        disabled={
+          !selectedTemplate ||
+          receiptTemplates.length === 0 ||
+          isGenerating
+        }
+        className="flex items-center gap-2"
+      >
+        <Printer className="h-4 w-4" />
+        {isGenerating ? "Generating..." : "Print Receipt"}
+      </Button>
+    </>
+  );
+
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="max-w-4xl">
-        <DialogHeader>
-          <div className="flex justify-between items-center">
-            <div>
-              <DialogTitle className="flex items-center gap-2">
-                <Printer className="h-5 w-5" />
-                Print Receipt
-              </DialogTitle>
-              <DialogDescription>
-                Select a receipt template and print your order receipt
-              </DialogDescription>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setOpen(false)}>
-                Cancel
-              </Button>
-              <Button
-                onClick={generateReceipt}
-                disabled={
-                  !selectedTemplate ||
-                  receiptTemplates.length === 0 ||
-                  isGenerating
-                }
-                className="flex items-center gap-2"
-              >
-                <Printer className="h-4 w-4" />
-                {isGenerating ? "Generating..." : "Print Receipt"}
-              </Button>
-            </div>
-          </div>
-        </DialogHeader>
-
-        <div className="grid grid-cols-2 gap-6">
-          {/* Left Column - Order & Settings */}
-          <div className="space-y-6">
-            {/* Order Summary */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Order Summary</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <table className="w-full text-sm">
-                  <tbody>
+    <DialogWithActions
+      open={open}
+      onOpenChange={handleOpenChange}
+      title="Print Receipt"
+      description="Select a receipt template and print your order receipt"
+      actions={actions}
+      trigger={children}
+      contentClassName="max-h-[70vh]"
+    >
+      <div className="grid grid-cols-2 gap-6">
+        {/* Left Column - Order & Settings */}
+        <div className="space-y-6">
+          {/* Order Summary */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Order Summary</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <table className="w-full text-sm">
+                <tbody>
+                  <tr>
+                    <td className="font-medium py-1">Order #:</td>
+                    <td className="py-1">{order.orderNumber}</td>
+                  </tr>
+                  <tr>
+                    <td className="font-medium py-1">Date:</td>
+                    <td className="py-1">
+                      {new Date(order.createdAt).toLocaleString()}
+                    </td>
+                  </tr>
+                  {order.customerName && (
                     <tr>
-                      <td className="font-medium py-1">Order #:</td>
-                      <td className="py-1">{order.orderNumber}</td>
+                      <td className="font-medium py-1">Customer:</td>
+                      <td className="py-1">{order.customerName}</td>
                     </tr>
+                  )}
+                  {order.customerPhone && (
                     <tr>
-                      <td className="font-medium py-1">Date:</td>
-                      <td className="py-1">
-                        {new Date(order.createdAt).toLocaleString()}
-                      </td>
+                      <td className="font-medium py-1">Phone:</td>
+                      <td className="py-1">{order.customerPhone}</td>
                     </tr>
-                    {order.customerName && (
-                      <tr>
-                        <td className="font-medium py-1">Customer:</td>
-                        <td className="py-1">{order.customerName}</td>
-                      </tr>
-                    )}
-                    {order.customerPhone && (
-                      <tr>
-                        <td className="font-medium py-1">Phone:</td>
-                        <td className="py-1">{order.customerPhone}</td>
-                      </tr>
-                    )}
-                    {order.tableName && (
-                      <tr>
-                        <td className="font-medium py-1">Table:</td>
-                        <td className="py-1">{order.tableName}</td>
-                      </tr>
-                    )}
+                  )}
+                  {order.tableName && (
                     <tr>
-                      <td className="font-medium py-1">Total:</td>
-                      <td className="py-1 font-bold">
-                        ${(order.total || 0).toFixed(2)}
-                      </td>
+                      <td className="font-medium py-1">Table:</td>
+                      <td className="py-1">{order.tableName}</td>
                     </tr>
-                    <tr>
-                      <td className="font-medium py-1">Status:</td>
-                      <td className="py-1">
-                        <Badge variant="outline" className="ml-0">
-                          {order.status}
-                        </Badge>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-               </CardContent>
-             </Card>
-
-             {/* Printer Settings Preview */}
-             <PrinterSettingsPreview
-               printerSettings={printerSettings}
-               documentType="receipts"
-             />
-           </div>
-
-          {/* Right Column - Template Selection & Actions */}
-          <div className="space-y-6">
-            {/* Template Selection */}
-            <Card className="h-full">
-              <CardHeader>
-                <CardTitle className="text-lg">
-                  Select Receipt Template
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {receiptTemplates.length === 0 ? (
-                  <p className="text-muted-foreground">
-                    No receipt templates available. Please create templates in
-                    Settings.
-                  </p>
-                ) : (
-                  <TemplateSelector
-                    templates={receiptTemplates}
-                    selectedTemplate={selectedTemplate}
-                    onTemplateChange={setSelectedTemplate}
-                    label="Select Receipt Template"
-                    placeholder="Choose a template"
-                    printerSettings={printerSettings}
-                    templateType="receipts"
-                  />
-                )}
-              </CardContent>
+                  )}
+                  <tr>
+                    <td className="font-medium py-1">Total:</td>
+                    <td className="py-1 font-bold">
+                      ${(order.total || 0).toFixed(2)}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="font-medium py-1">Status:</td>
+                    <td className="py-1">
+                      <Badge variant="outline" className="ml-0">
+                        {order.status}
+                      </Badge>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+             </CardContent>
             </Card>
 
-            {/* Actions */}
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setOpen(false)}>
-                Cancel
-              </Button>
-              <Button
-                onClick={generateReceipt}
-                disabled={
-                  !selectedTemplate ||
-                  receiptTemplates.length === 0 ||
-                  isGenerating
-                }
-                className="flex items-center gap-2"
-              >
-                <Printer className="h-4 w-4" />
-                {isGenerating ? "Generating..." : "Print Receipt"}
-              </Button>
-            </div>
+            {/* Printer Settings Preview */}
+            <PrinterSettingsPreview
+              printerSettings={printerSettings}
+              documentType="receipts"
+            />
           </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+
+         {/* Right Column - Template Selection */}
+         <div className="space-y-6">
+           {/* Template Selection */}
+           <Card className="h-full">
+             <CardHeader>
+               <CardTitle className="text-lg">
+                 Select Receipt Template
+               </CardTitle>
+             </CardHeader>
+             <CardContent>
+               {receiptTemplates.length === 0 ? (
+                 <p className="text-muted-foreground">
+                   No receipt templates available. Please create templates in
+                   Settings.
+                 </p>
+               ) : (
+                 <TemplateSelector
+                   templates={receiptTemplates}
+                   selectedTemplate={selectedTemplate}
+                   onTemplateChange={setSelectedTemplate}
+                   label="Select Receipt Template"
+                   placeholder="Choose a template"
+                   printerSettings={printerSettings}
+                   templateType="receipts"
+                 />
+               )}
+             </CardContent>
+           </Card>
+         </div>
+       </div>
+    </DialogWithActions>
   );
 }
