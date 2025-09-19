@@ -42,6 +42,7 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { Label } from "@/components/ui/label";
 import { OrganizationUser } from "@/types";
 import { UserRole } from "@/types/enums";
+import { User } from "firebase/auth";
 
 interface Invitation {
   id: string;
@@ -55,7 +56,7 @@ interface Invitation {
 interface TeamTabProps {
   invitationCodes: Invitation[];
   organizationUsers: OrganizationUser[];
-  currentUser: any;
+  currentUser: User | null;
   handleCreateInvitation: () => void;
   handleDeleteInvitation: (codeId: string) => void;
   handleCopyInvitation: (code: string) => void;
