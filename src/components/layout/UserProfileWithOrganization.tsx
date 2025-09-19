@@ -34,7 +34,7 @@ export function UserProfileWithOrganization({
   };
 
   const handleProfileClick = () => {
-    router.push('/company#account');
+    router.push('/profile');
   };
 
   const handleSwitchOrganization = () => {

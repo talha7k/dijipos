@@ -23,7 +23,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building2, X, Users, Plus, Edit, Trash2, Shield, Settings, Copy, Link } from 'lucide-react';
+import { Building2, CreditCard, X, Users, Plus, Edit, Trash2, Shield, Settings, Copy, Link } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
@@ -68,7 +68,7 @@ function CompanyContent() {
   // Handle URL hash for tab navigation
   useEffect(() => {
     const hash = window.location.hash.replace('#', '');
-    if (hash && ['company', 'branding', 'team'].includes(hash)) {
+    if (hash && ['company', 'branding', 'team', 'subscription'].includes(hash)) {
       setActiveTab(hash);
     }
   }, []);
@@ -238,25 +238,7 @@ function CompanyContent() {
     }
   };
 
-  const handleUpdateUserDisplayName = async () => {
-    if (!user?.uid) return;
 
-    setSaving(true);
-    try {
-      // Update Firebase Auth profile
-      await updateProfile(user, { displayName: userDisplayName });
-
-      // Also update the user profile in Firestore
-      await updateUser(user.uid, { name: userDisplayName });
-
-      toast.success('Display name updated successfully!');
-    } catch (error) {
-      console.error('Error updating display name:', error);
-      toast.error('Failed to update display name.');
-    } finally {
-      setSaving(false);
-    }
-  };
 
   const openEditDialog = (organizationUser: OrganizationUser) => {
     setEditingUser(organizationUser);
@@ -304,10 +286,11 @@ function CompanyContent() {
       </div>
 
        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-         <TabsList className="grid w-full grid-cols-3">
+         <TabsList className="grid w-full grid-cols-4">
            <TabsTrigger value="company">Company Info</TabsTrigger>
            <TabsTrigger value="branding">Branding</TabsTrigger>
            <TabsTrigger value="team">Team</TabsTrigger>
+           <TabsTrigger value="subscription">Subscription</TabsTrigger>
          </TabsList>
 
         <TabsContent value="company" className="space-y-6">
