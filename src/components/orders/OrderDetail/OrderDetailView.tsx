@@ -1,5 +1,5 @@
 import { Order, OrderPayment } from "@/types";
-import { OrderDetail } from "@/components/orders/OrderDetail";
+import { OrderDetail } from "@/components/orders/OrderDetail/OrderDetail";
 
 interface OrderDetailViewProps {
   order: Order;
@@ -22,7 +22,6 @@ export function OrderDetailView({
         onBack={onBack}
         onReopenOrder={onReopenOrder}
       />
-
     </div>
   );
 }

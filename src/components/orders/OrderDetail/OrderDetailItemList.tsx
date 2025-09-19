@@ -1,25 +1,34 @@
 "use client";
 
+import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShoppingCart } from "lucide-react";
 import { CartItem } from "@/types";
 import { OrderItemDisplay } from "./OrderItemDisplay";
 
-interface OrderItemListProps {
+interface OrderDetailItemListProps {
   items: CartItem[];
   className?: string;
+  headerAction?: React.ReactNode;
 }
 
-export function OrderItemList({ items, className = "" }: OrderItemListProps) {
+export function OrderDetailItemList({
+  items,
+  className = "",
+  headerAction,
+}: OrderDetailItemListProps) {
   const subtotal = items.reduce((sum, item) => sum + item.total, 0);
 
   return (
     <Card className={className}>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <ShoppingCart className="h-5 w-5" />
-          Order Items
-        </CardTitle>
+        <div className="flex justify-between items-center">
+          <CardTitle className="flex items-center gap-2">
+            <ShoppingCart className="h-5 w-5" />
+            Order Items
+          </CardTitle>
+          {headerAction}
+        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-1 max-h-64 overflow-y-auto">

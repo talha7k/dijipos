@@ -1,6 +1,6 @@
 import { Order, OrderPayment, OrderStatus, PaymentStatus } from "@/types";
 
-import { OrderDetailView } from "@/components/orders/OrderDetailView";
+import { OrderDetailView } from "@/components/orders/OrderDetail/OrderDetailView";
 import { useOrders } from "@/lib/hooks/useOrders";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -27,7 +27,9 @@ export function POSOrderGrid({
 }: POSOrderGridProps) {
   const { loading, updateExistingOrder } = useOrders();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [filterStatus, setFilterStatus] = useState<'all' | 'open' | 'completed' | 'preparing' | 'cancelled' | 'on_hold'>('open');
+  const [filterStatus, setFilterStatus] = useState<
+    "all" | "open" | "completed" | "preparing" | "cancelled" | "on_hold"
+  >("open");
 
   // Helper functions to replace the legacy hook functionality
   const selectOrder = (order: Order) => {
@@ -41,12 +43,12 @@ export function POSOrderGrid({
   const markOrderAsPaid = async (orderId: string) => {
     try {
       await updateExistingOrder(orderId, {
-        paymentStatus: PaymentStatus.PAID
+        paymentStatus: PaymentStatus.PAID,
       });
       onOrderUpdate?.();
       return true;
     } catch (error) {
-      console.error('Error marking order as paid:', error);
+      console.error("Error marking order as paid:", error);
       return false;
     }
   };
@@ -57,7 +59,7 @@ export function POSOrderGrid({
       onOrderUpdate?.();
       return true;
     } catch (error) {
-      console.error('Error completing order:', error);
+      console.error("Error completing order:", error);
       return false;
     }
   };
@@ -68,7 +70,7 @@ export function POSOrderGrid({
       onOrderUpdate?.();
       return true;
     } catch (error) {
-      console.error('Error updating order status:', error);
+      console.error("Error updating order status:", error);
       return false;
     }
   };
@@ -90,7 +92,10 @@ export function POSOrderGrid({
     }
   };
 
-  const handleUpdateOrderStatus = async (order: Order, newStatus: OrderStatus) => {
+  const handleUpdateOrderStatus = async (
+    order: Order,
+    newStatus: OrderStatus,
+  ) => {
     const success = await updateOrderStatus(order.id, newStatus);
     if (success) {
       onOrderUpdate?.();
@@ -107,7 +112,7 @@ export function POSOrderGrid({
   };
 
   const wrapUpdateStatus = (orderId: string, status: OrderStatus) => {
-    const order = orders.find(o => o.id === orderId);
+    const order = orders.find((o) => o.id === orderId);
     if (order) {
       return handleUpdateOrderStatus(order, status);
     }
@@ -130,19 +135,19 @@ export function POSOrderGrid({
     onPayOrder(order);
   };
 
-  const filteredOrders = orders.filter(order => {
+  const filteredOrders = orders.filter((order) => {
     switch (filterStatus) {
-      case 'open':
+      case "open":
         return order.status === OrderStatus.OPEN;
-      case 'completed':
+      case "completed":
         return order.status === OrderStatus.COMPLETED;
-      case 'preparing':
+      case "preparing":
         return order.status === OrderStatus.PREPARING;
-      case 'cancelled':
+      case "cancelled":
         return order.status === OrderStatus.CANCELLED;
-      case 'on_hold':
+      case "on_hold":
         return order.status === OrderStatus.ON_HOLD;
-      case 'all':
+      case "all":
       default:
         return true;
     }
@@ -187,48 +192,68 @@ export function POSOrderGrid({
           Back
         </Button>
         {/* <h2 className="text-2xl font-bold capitalize">
-            {filterStatus === 'open' ? 'Open Orders' : 
-             filterStatus === 'completed' ? 'Completed Orders' : 
-             filterStatus === 'preparing' ? 'Preparing Orders' : 
-             filterStatus === 'cancelled' ? 'Cancelled Orders' : 
-             filterStatus === 'on_hold' ? 'On Hold Orders' : 
+            {filterStatus === 'open' ? 'Open Orders' :
+             filterStatus === 'completed' ? 'Completed Orders' :
+             filterStatus === 'preparing' ? 'Preparing Orders' :
+             filterStatus === 'cancelled' ? 'Cancelled Orders' :
+             filterStatus === 'on_hold' ? 'On Hold Orders' :
              'All Orders'}
           </h2> */}
         <div className="ml-auto">
-          <ToggleGroup 
-             type="single" 
-             value={filterStatus} 
-             onValueChange={(value) => setFilterStatus(value as 'all' | 'open' | 'completed' | 'preparing' | 'cancelled' | 'on_hold')}
-           >
-             <ToggleGroupItem value="open" aria-label="Open orders">
-               Open
-             </ToggleGroupItem>
-            
-             <ToggleGroupItem value="completed" aria-label="Completed orders">
-               Completed
-             </ToggleGroupItem>
-             <ToggleGroupItem value="on_hold" aria-label="On hold orders">
-               On Hold
-             </ToggleGroupItem>
-             <ToggleGroupItem value="cancelled" aria-label="Cancelled orders">
-               Cancelled
-             </ToggleGroupItem>
-             <ToggleGroupItem value="all" aria-label="All orders">
-               All
-             </ToggleGroupItem>
-           </ToggleGroup>
+          <ToggleGroup
+            type="single"
+            value={filterStatus}
+            onValueChange={(value) =>
+              setFilterStatus(
+                value as
+                  | "all"
+                  | "open"
+                  | "completed"
+                  | "preparing"
+                  | "cancelled"
+                  | "on_hold",
+              )
+            }
+          >
+            <ToggleGroupItem value="open" aria-label="Open orders">
+              Open
+            </ToggleGroupItem>
+
+            <ToggleGroupItem value="completed" aria-label="Completed orders">
+              Completed
+            </ToggleGroupItem>
+            <ToggleGroupItem value="on_hold" aria-label="On hold orders">
+              On Hold
+            </ToggleGroupItem>
+            <ToggleGroupItem value="cancelled" aria-label="Cancelled orders">
+              Cancelled
+            </ToggleGroupItem>
+            <ToggleGroupItem value="all" aria-label="All orders">
+              All
+            </ToggleGroupItem>
+          </ToggleGroup>
         </div>
       </div>
-      
+
       {filteredOrders.length === 0 ? (
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center py-12 text-muted-foreground">
             <Clock className="h-12 w-12 mx-auto mb-4 text-muted-foreground/30" />
-            <p>No {filterStatus === 'open' ? 'open' : 
-                      filterStatus === 'completed' ? 'completed' : 
-                      filterStatus === 'preparing' ? 'preparing' : 
-                      filterStatus === 'cancelled' ? 'cancelled' : 
-                      filterStatus === 'on_hold' ? 'on hold' : ''} orders found</p>
+            <p>
+              No{" "}
+              {filterStatus === "open"
+                ? "open"
+                : filterStatus === "completed"
+                  ? "completed"
+                  : filterStatus === "preparing"
+                    ? "preparing"
+                    : filterStatus === "cancelled"
+                      ? "cancelled"
+                      : filterStatus === "on_hold"
+                        ? "on hold"
+                        : ""}{" "}
+              orders found
+            </p>
           </div>
         </div>
       ) : (

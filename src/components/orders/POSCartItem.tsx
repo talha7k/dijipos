@@ -1,6 +1,6 @@
 interface CartItem {
   id: string;
-  type: 'product' | 'service';
+  type: "product" | "service";
   name: string;
   price: number;
   quantity: number;
@@ -12,7 +12,7 @@ interface POSCartItemProps {
   onClick?: () => void;
 }
 
-import { OrderItemDisplay } from './OrderItemDisplay';
+import { OrderItemDisplay } from "./OrderDetail/OrderItemDisplayrItemDisplay";
 
 export function POSCartItem({ item, onClick }: POSCartItemProps) {
   return (

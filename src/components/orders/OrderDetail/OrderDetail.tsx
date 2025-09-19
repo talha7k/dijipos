@@ -3,7 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { Order, OrderPayment } from "@/types";
 import { OrderSummaryCard } from "@/components/orders/OrderSummaryCard";
 import { PaymentList } from "@/components/orders/PaymentList";
-import { OrderItemList } from "@/components/orders/OrderItemList";
+import { OrderDetailItemList } from "./OrderDetailItemList";
 
 interface OrderDetailProps {
   order: Order;
@@ -16,10 +16,8 @@ export function OrderDetail({
   order,
   payments,
   onBack,
-  onReopenOrder
+  onReopenOrder,
 }: OrderDetailProps) {
-
-
   return (
     <div className="h-screen flex flex-col bg-background pb-15">
       <div className="flex-shrink-0 p-4 border-b">
@@ -28,20 +26,7 @@ export function OrderDetail({
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Orders
           </Button>
-          <h2 className="text-2xl font-bold">
-            Order #{order.orderNumber}
-          </h2>
-        </div>
-      </div>
-        <div className="flex-shrink-0 p-4 border-t bg-background">
-        <div className="flex gap-4">
-          <Button
-            onClick={() => onReopenOrder(order)}
-            className="flex-1 bg-orange-500 hover:bg-orange-600 text-white border-orange-500"
-
-          >
-            Reopen Order
-          </Button>
+          <h2 className="text-2xl font-bold">Order #{order.orderNumber}</h2>
         </div>
       </div>
       <div className="flex-1 overflow-y-auto">
@@ -54,15 +39,21 @@ export function OrderDetail({
               showOrderDetails={true}
             />
 
-            <OrderItemList items={order.items} />
+            <OrderDetailItemList
+              items={order.items}
+              headerAction={
+                <Button
+                  onClick={() => onReopenOrder(order)}
+                  className="bg-orange-500 hover:bg-orange-600 text-white border-orange-500"
+                >
+                  Reopen Order
+                </Button>
+              }
+            />
           </div>
-          <PaymentList
-            payments={payments}
-            orderTotal={order.total}
-          />
+          <PaymentList payments={payments} orderTotal={order.total} />
         </div>
       </div>
-    
     </div>
   );
 }
