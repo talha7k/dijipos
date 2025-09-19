@@ -153,13 +153,8 @@ export function POSOrderGrid({
       <OrderDetailView
         order={selectedOrder}
         payments={payments[selectedOrder.id] || []}
-        updatingStatus={false}
         onBack={handleBackToList}
         onReopenOrder={handleReopenOrder}
-        onPayOrder={handlePayOrder}
-        onMarkAsPaid={wrapMarkAsPaid}
-        onCompleteOrder={wrapCompleteOrder}
-        onUpdateStatus={wrapUpdateStatus}
       />
     );
   }

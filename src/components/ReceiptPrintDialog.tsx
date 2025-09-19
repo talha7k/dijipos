@@ -17,9 +17,6 @@ import { formatDateTime } from "@/lib/utils";
 import { renderTemplate } from "@/lib/template-renderer";
 import { DialogWithActions } from "@/components/ui/DialogWithActions";
 
-
-// --- END: Mock Dependencies ---
-
 async function renderReceipt(
   templateObj: ReceiptTemplate,
   order: Order,
@@ -56,7 +53,10 @@ async function renderReceipt(
     customFooter: printerSettings?.receipts?.customFooter || "",
     items: order.items.map((item) => ({
       ...item,
-      total: item.total.toFixed(2),
+      unitPrice: (item.unitPrice || 0).toFixed(2),
+      // --- THIS IS THE FIX ---
+      // Recalculate the line item total instead of using the existing item.total
+      total: (item.quantity * item.unitPrice).toFixed(2),
     })),
     payments: payments.map((p) => ({
       paymentType: p.paymentMethod,
@@ -74,7 +74,15 @@ async function renderReceipt(
 }
 
 // Helper component for settings inputs
-const SettingsInputGroup = ({ label, values, onChange }: { label: string; values: Record<string, number>; onChange: (key: string, value: string) => void }) => (
+const SettingsInputGroup = ({
+  label,
+  values,
+  onChange,
+}: {
+  label: string;
+  values: Record<string, number>;
+  onChange: (key: string, value: string) => void;
+}) => (
   <div>
     <label className="block text-sm font-medium mb-1">{label}</label>
     <div
