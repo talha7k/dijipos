@@ -5,53 +5,10 @@ import { Organization } from "@/types/organization-user";
 import { QuoteTemplate, QuoteTemplateData } from "@/types/template";
 import { Customer } from "@/types/customer-supplier";
 import { DocumentPrintSettings } from "@/types"; // Assuming types are in @/types
-
-// --- START: Mock Dependencies (replace with your actual components) ---
-const DialogWithActions = ({
-  open,
-  onOpenChange,
-  title,
-  trigger,
-  children,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  title: string;
-  trigger: ReactNode;
-  children: ReactNode;
-}) => {
-  if (!open) return <div onClick={() => onOpenChange(true)}>{trigger}</div>;
-  return (
-    <div
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: "rgba(0,0,0,0.5)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        zIndex: 50,
-      }}
-    >
-      <div
-        style={{
-          background: "white",
-          padding: "20px",
-          borderRadius: "8px",
-          width: "90%",
-          maxWidth: "1024px",
-          color: "black",
-        }}
-      >
-        <h2 style={{ marginTop: 0 }}>{title}</h2>
-        {children}
-      </div>
-    </div>
-  );
-};
+import { DialogWithActions } from "@/components/ui/DialogWithActions";
+import { Button } from "@/components/ui/button";
+import { Printer } from "lucide-react";
+import { toast } from "sonner";
 const defaultQuoteEnglish = `<!DOCTYPE html><html><body><h1>Quote {{quoteId}}</h1></body></html>`;
 const defaultQuoteArabic = `<!DOCTYPE html><html dir="rtl"><body><h1>عرض سعر {{quoteId}}</h1></body></html>`;
 // --- END: Mock Dependencies ---
@@ -105,7 +62,7 @@ async function renderQuote(
 }
 
 // Helper component for settings inputs
-const SettingsInputGroup = ({ label, values, onChange }) => (
+const SettingsInputGroup = ({ label, values, onChange }: { label: string; values: Record<string, number>; onChange: (key: string, value: string) => void }) => (
   <div>
     <label className="block text-sm font-medium mb-1">{label}</label>
     <div
@@ -150,6 +107,7 @@ export function QuotePrintDialog({
   const [renderedHtml, setRenderedHtml] = useState("");
   const [direction, setDirection] = useState<"ltr" | "rtl">("ltr");
   const [pageSize, setPageSize] = useState("210mm"); // A4 default
+  const [isGenerating, setIsGenerating] = useState(false);
   const [margins, setMargins] = useState({
     top: 10,
     right: 10,
@@ -212,18 +170,42 @@ export function QuotePrintDialog({
     setRenderedHtml(content);
   };
 
+  const handlePrint = async () => {
+    setIsGenerating(true);
+    try {
+      // Print logic would go here
+      toast.info("Printing logic not implemented in this example.");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return (
     <DialogWithActions
       open={open}
       onOpenChange={setOpen}
       title="Print Quote"
+      actions={
+        <>
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handlePrint}
+            disabled={!selectedTemplate || isGenerating}
+          >
+            <Printer className="h-4 w-4 mr-2" />
+            {isGenerating ? "Processing..." : "Print Quote"}
+          </Button>
+        </>
+      }
       trigger={children}
     >
       <div
         className="flex h-[80vh] font-sans"
         style={{ maxHeight: "calc(100vh - 100px)" }}
       >
-        <div className="w-1/4 p-4 border-r bg-gray-100 overflow-y-auto space-y-4">
+        <div className="w-1/4 p-4 border-r bg-muted overflow-y-auto space-y-4">
           <h2 className="text-lg font-bold">Settings</h2>
           <div>
             <label className="block text-sm font-medium">Template</label>

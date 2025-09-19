@@ -1,6 +1,7 @@
 import React, { useState, useEffect, ReactNode } from "react";
 import { Printer } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import {
   Order,
   Organization,
@@ -14,70 +15,9 @@ import { defaultArabicReceiptTemplate } from "@/components/templates/receipt/def
 import { createReceiptQRData, generateZatcaQRCode } from "@/lib/zatca-qr";
 import { formatDateTime } from "@/lib/utils";
 import { renderTemplate } from "@/lib/template-renderer";
+import { DialogWithActions } from "@/components/ui/DialogWithActions";
 
-// --- START: Mock Dependencies (replace with your actual components) ---
-const DialogWithActions = ({
-  open,
-  onOpenChange,
-  title,
-  trigger,
-  children,
-  actions,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  title: string;
-  trigger: ReactNode;
-  children: ReactNode;
-  actions?: ReactNode;
-}) => {
-  if (!open) return <div onClick={() => onOpenChange(true)}>{trigger}</div>;
-  return (
-    <div
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: "rgba(0,0,0,0.5)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        zIndex: 50,
-      }}
-    >
-      <div
-        style={{
-          background: "white",
-          borderRadius: "8px",
-          width: "90%",
-          maxWidth: "1024px",
-          color: "black",
-        }}
-      >
-        <div style={{ padding: "20px", borderBottom: "1px solid #eee" }}>
-          <h2 style={{ marginTop: 0, marginBottom: 0 }}>{title}</h2>
-        </div>
-        <div style={{ padding: "20px" }}>{children}</div>
-        <div
-          style={{
-            padding: "10px 20px",
-            borderTop: "1px solid #eee",
-            display: "flex",
-            justifyContent: "flex-end",
-            gap: "10px",
-          }}
-        >
-          {actions}
-        </div>
-      </div>
-    </div>
-  );
-};
-const Button = (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
-  <button {...props} />
-);
+
 // --- END: Mock Dependencies ---
 
 async function renderReceipt(
@@ -134,7 +74,7 @@ async function renderReceipt(
 }
 
 // Helper component for settings inputs
-const SettingsInputGroup = ({ label, values, onChange }) => (
+const SettingsInputGroup = ({ label, values, onChange }: { label: string; values: Record<string, number>; onChange: (key: string, value: string) => void }) => (
   <div>
     <label className="block text-sm font-medium mb-1">{label}</label>
     <div
@@ -289,7 +229,7 @@ export function ReceiptPrintDialog({
         className="flex h-[70vh] font-sans"
         style={{ maxHeight: "calc(100vh - 180px)" }}
       >
-        <div className="w-1/3 p-4 border-r bg-gray-100 overflow-y-auto space-y-4">
+        <div className="w-1/3 p-4 border-r bg-muted overflow-y-auto space-y-4">
           <h2 className="text-lg font-bold">Print Settings</h2>
           <div>
             <label className="block text-sm font-medium mb-1">Template</label>
