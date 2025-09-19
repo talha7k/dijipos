@@ -250,6 +250,7 @@ export function POSOrderGrid({
                 onStatusChange={wrapUpdateStatus}
                 onMarkAsPaid={wrapMarkAsPaid}
                 onCompleteOrder={wrapCompleteOrder}
+                onReopenOrder={handleReopenOrder}
               />
             ))}
           </div>

@@ -18,12 +18,14 @@ import {
 } from "@/types/enums";
 import { OrderActionsDialog } from "./OrderStatusActionsDialog";
 import { OrderStatusBadge } from "./OrderStatusBadge";
+import { QueueBadge } from "./QueueBadge";
 import { useCurrency } from "@/lib/hooks/useCurrency";
 import { ReceiptPrintDialog } from "@/components/ReceiptPrintDialog";
 import { useAtom } from "jotai";
 import { selectedOrganizationAtom } from "@/atoms";
 import { useStoreSettings } from "@/lib/hooks/useStoreSettings";
 import { useSeparatedTemplates } from "@/lib/hooks/useSeparatedTemplates";
+import { formatDateTime } from "@/lib/utils";
 
 interface OrderSummaryCardProps {
   order: Order;
@@ -39,6 +41,7 @@ interface OrderSummaryCardProps {
   onStatusChange?: (orderId: string, status: OrderStatus) => Promise<void>;
   onMarkAsPaid?: (orderId: string) => Promise<void>;
   onCompleteOrder?: (orderId: string) => Promise<void>;
+  onReopenOrder?: (order: Order) => void;
   className?: string;
 }
 
@@ -55,11 +58,13 @@ export function OrderSummaryCard({
   onStatusChange,
   onMarkAsPaid,
   onCompleteOrder,
+  onReopenOrder,
   className = "",
 }: OrderSummaryCardProps) {
   const [selectedOrganization] = useAtom(selectedOrganizationAtom);
   const { storeSettings } = useStoreSettings();
-  const { allReceiptTemplates: receiptTemplates = [] } = useSeparatedTemplates();
+  const { allReceiptTemplates: receiptTemplates = [] } =
+    useSeparatedTemplates();
   const printerSettings = storeSettings?.printerSettings;
   const { formatCurrency } = useCurrency();
 
@@ -148,46 +153,62 @@ export function OrderSummaryCard({
             <OrderStatusBadge
               isPaid={isActuallyPaid}
               queueNumber={order.queueNumber}
-              showQueueBadge={true}
+              showQueueBadge={false}
             />
           </div>
         </div>
 
-        {/* Print Button */}
-        {selectedOrganization && storeSettings && (
-          <div className="flex justify-center mt-2">
-            <ReceiptPrintDialog
-              order={order}
-              organization={selectedOrganization}
-              receiptTemplates={receiptTemplates}
-              payments={payments}
-              printerSettings={printerSettings}
-            >
-              <Button variant="outline" size="sm" className="w-full">
-                <Printer className="h-4 w-4 mr-2" />
-                Print Receipt
+        {/* Print and Reopen Order Buttons - Same Row */}
+        {(selectedOrganization && storeSettings) || onReopenOrder ? (
+          <div className="flex gap-2 mt-2">
+            {selectedOrganization && storeSettings && (
+              <ReceiptPrintDialog
+                order={order}
+                organization={selectedOrganization}
+                receiptTemplates={receiptTemplates}
+                payments={payments}
+                printerSettings={printerSettings}
+              >
+                <Button variant="outline" size="sm" className="flex-1">
+                  <Printer className="h-4 w-4 mr-2" />
+                  Print
+                </Button>
+              </ReceiptPrintDialog>
+            )}
+            {onReopenOrder && (
+              <Button
+                onClick={() => onReopenOrder(order)}
+                variant="outline"
+                size="sm"
+                className="flex-1 bg-orange-500 hover:bg-orange-600 text-white border-orange-500"
+              >
+                Reopen
               </Button>
-            </ReceiptPrintDialog>
+            )}
           </div>
-        )}
+        ) : null}
 
         <div
           onClick={onClick ? () => onClick(order) : undefined}
           className="space-y-2 cursor-pointer"
         >
-          <div className="flex-row justify-center text-center items-center bg-muted/70 rounded-lg py-2 my-4">
-            <span className="font-bold">{order.orderNumber}</span>
-            <br />
-            {showCreatedDate && (
-              <span className="text-xs text-muted-foreground">
-                {order.createdAt.toLocaleString()}
+          <div className="bg-muted/70 rounded-lg py-2 my-4 px-4">
+            <div className="flex items-center gap-2 mb-1">
+              {order.queueNumber && <QueueBadge queueNumber={order.queueNumber} />}
+              <span className="font-bold">
+                {formatCurrency(order.total || 0)}
               </span>
+            </div>
+            {showCreatedDate && (
+              <div className="text-xs text-muted-foreground text-center">
+                {formatDateTime(order.createdAt)}
+              </div>
             )}
           </div>
 
-          <div className="flex justify-between">
-            <span>Order Total:</span>
-            <span className="font-bold">{formatCurrency(order.total || 0)}</span>
+          <div className="flex justify-between text-sm">
+            <span>Order ID:</span>
+            <span>{order.orderNumber}</span>
           </div>
 
           {totalPaid !== undefined && (
@@ -200,7 +221,7 @@ export function OrderSummaryCard({
           )}
 
           {remainingAmount !== undefined && (
-            <div className="flex justify-between border-t pt-2">
+            <div className="flex justify-between border-t pt-2 ">
               <span className="font-bold">Remaining:</span>
               <span
                 className={`font-bold ${
@@ -227,23 +248,23 @@ export function OrderSummaryCard({
 
           {showOrderDetails && (
             <>
-              <div className="flex justify-between">
+              <div className="flex justify-between text-sm">
                 <span>Customer:</span>
                 <span>{order.customerName || "Walk-in"}</span>
               </div>
 
-              <div className="flex justify-between">
+              <div className="flex justify-between text-sm">
                 <span>Table:</span>
                 <span>{order.tableName || "N/A"}</span>
               </div>
 
-              <div className="flex justify-between">
+              <div className="flex justify-between text-sm">
                 <span>Order Type:</span>
                 <span className="capitalize">{order.orderType}</span>
               </div>
 
               {showItemCount && (
-                <div className="flex justify-between">
+                <div className="flex justify-between text-sm">
                   <span>Items:</span>
                   <span>{order.items.length}</span>
                 </div>

@@ -58,7 +58,7 @@ export function formatDateTime(
       hour12: true,
     }).format(dateObj);
 
-    return `${dateStr} (${timeStr.toLowerCase()})`;
+    return `${dateStr} (${timeStr.toUpperCase()})`;
   }
 
   return formatDate(dateObj);
