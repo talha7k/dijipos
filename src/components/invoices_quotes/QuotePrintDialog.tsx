@@ -1,7 +1,12 @@
 import React, { useState, useEffect, ReactNode } from "react";
 import { Printer } from "lucide-react";
 import { toast } from "sonner";
-import { renderTemplate } from "@/lib/template-renderer"; // Assuming local file
+import { renderTemplate } from "@/lib/template-renderer";
+import { Quote } from "@/types/invoice-quote";
+import { Item } from "@/types/product-service";
+import { Organization } from "@/types/organization-user";
+import { QuoteTemplate, QuoteTemplateData } from "@/types/template";
+import { Customer } from "@/types/customer-supplier";
 
 // --- START: Self-Contained Dependencies ---
 
@@ -56,36 +61,6 @@ const Button = (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
   <button {...props} />
 );
 
-type Quote = {
-  id: string;
-  createdAt: Date;
-  validUntil?: Date;
-  status: string;
-  clientName: string;
-  clientAddress: string;
-  subtotal: number;
-  taxAmount: number;
-  total: number;
-  notes: string;
-  items: any[];
-};
-type Organization = {
-  name: string;
-  nameAr?: string;
-  address: string;
-  phone: string;
-  vatNumber: string;
-  logoUrl?: string;
-};
-type QuoteTemplate = {
-  id: string;
-  name: string;
-  type?: string;
-  content?: string;
-};
-type Customer = { name: string; address: string; vatNumber: string };
-type QuoteTemplateData = { [key: string]: any };
-
 const defaultQuoteEnglish = `<!DOCTYPE html><html><body><h1>Quote {{quoteId}}</h1></body></html>`;
 const defaultQuoteArabic = `<!DOCTYPE html><html dir="rtl"><body><h1>عرض سعر {{quoteId}}</h1></body></html>`;
 
@@ -106,17 +81,30 @@ async function renderQuote(
     status: quote.status,
     companyName: organization?.name || "",
     companyNameAr: organization?.nameAr || "",
+    companyAddress: organization?.address || "",
+    companyEmail: organization?.email || "",
+    companyPhone: organization?.phone || "",
+    companyVat: organization?.vatNumber || "",
+    companyLogo: organization?.logoUrl || "",
     clientName: customer?.name || quote.clientName || "",
+    customerNameAr: customer?.nameAr || "",
     clientAddress: customer?.address || quote.clientAddress || "",
+    clientEmail: customer?.email || "",
+    clientVat: customer?.vatNumber || "",
+    customerLogo: customer?.logoUrl || "",
     subtotal: (quote.subtotal || 0).toFixed(2),
+    taxRate: "0",
     taxAmount: (quote.taxAmount || 0).toFixed(2),
     total: (quote.total || 0).toFixed(2),
     notes: quote.notes || "",
     items: quote.items.map((item) => ({
-      ...item,
+      name: item.name,
+      description: item.description || "",
+      quantity: item.quantity,
       unitPrice: item.unitPrice.toFixed(2),
       total: item.total.toFixed(2),
     })),
+    includeQR: false,
   };
   const templateContent =
     templateObj.content ||

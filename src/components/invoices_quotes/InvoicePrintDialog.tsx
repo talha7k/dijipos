@@ -1,7 +1,13 @@
 import React, { useState, useEffect, ReactNode } from "react";
 import { Printer } from "lucide-react";
 import { toast } from "sonner";
-import { renderTemplate } from "@/lib/template-renderer"; // Assuming local file
+import { renderTemplate } from "@/lib/template-renderer";
+import { Invoice } from "@/types/invoice-quote";
+import { Item } from "@/types/product-service";
+import { Organization } from "@/types/organization-user";
+import { InvoiceTemplate, InvoiceTemplateData } from "@/types/template";
+import { Customer, Supplier } from "@/types/customer-supplier";
+import { createInvoiceQRData, generateZatcaQRCode, ZatcaQRData } from "@/lib/zatca-qr";
 
 // --- START: Self-Contained Dependencies ---
 
@@ -56,40 +62,8 @@ const Button = (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
   <button {...props} />
 );
 
-type Invoice = {
-  id: string;
-  createdAt: Date;
-  dueDate: Date;
-  status: string;
-  subtotal: number;
-  taxAmount: number;
-  total: number;
-  notes: string;
-  items: any[];
-};
-type Organization = {
-  name: string;
-  nameAr?: string;
-  address: string;
-  phone: string;
-  vatNumber: string;
-  logoUrl?: string;
-};
-type InvoiceTemplate = {
-  id: string;
-  name: string;
-  type?: string;
-  content?: string;
-};
-type Customer = { name: string; address: string; vatNumber: string };
-type Supplier = { name: string; address: string; vatNumber: string };
-type InvoiceTemplateData = { [key: string]: any };
-
 const defaultInvoiceEnglish = `<!DOCTYPE html><html><body><h1>Invoice {{invoiceId}}</h1></body></html>`;
 const defaultInvoiceArabic = `<!DOCTYPE html><html dir="rtl"><body><h1>فاتورة {{invoiceId}}</h1></body></html>`;
-const createReceiptQRData = (data: any, org: any) => ({});
-const generateZatcaQRCode = async (data: any) =>
-  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
 
 // --- END: Self-Contained Dependencies ---
 
@@ -101,7 +75,7 @@ async function renderInvoice(
   supplier?: Supplier,
 ): Promise<string> {
   const qrCodeBase64 = await generateZatcaQRCode(
-    createReceiptQRData({ ...invoice, orderType: "invoice" }, organization),
+    createInvoiceQRData(invoice, organization),
   );
   const data: InvoiceTemplateData = {
     invoiceId: invoice.id,
@@ -110,13 +84,33 @@ async function renderInvoice(
     status: invoice.status,
     companyName: organization?.name || "",
     companyNameAr: organization?.nameAr || "",
+    companyAddress: organization?.address || "",
+    companyEmail: organization?.email || "",
+    companyPhone: organization?.phone || "",
+    companyVat: organization?.vatNumber || "",
+    companyLogo: organization?.logoUrl || "",
+    companyStamp: organization?.stampUrl || "",
     clientName: customer?.name || supplier?.name || "",
+    customerNameAr: customer?.nameAr || supplier?.nameAr || "",
+    clientAddress: customer?.address || supplier?.address || "",
+    clientEmail: customer?.email || supplier?.email || "",
+    clientVat: customer?.vatNumber || supplier?.vatNumber || "",
+    customerLogo: customer?.logoUrl || "",
+    supplierName: supplier?.name || "",
+    supplierNameAr: supplier?.nameAr || "",
+    supplierAddress: supplier?.address || "",
+    supplierEmail: supplier?.email || "",
+    supplierVat: supplier?.vatNumber || "",
+    supplierLogo: supplier?.logoUrl || "",
     subtotal: (invoice.subtotal || 0).toFixed(2),
+    taxRate: "0",
     taxAmount: (invoice.taxAmount || 0).toFixed(2),
     total: (invoice.total || 0).toFixed(2),
     notes: invoice.notes || "",
     items: invoice.items.map((item) => ({
-      ...item,
+      name: item.name,
+      description: item.description || "",
+      quantity: item.quantity,
       unitPrice: item.unitPrice.toFixed(2),
       total: item.total.toFixed(2),
     })),

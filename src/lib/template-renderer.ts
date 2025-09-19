@@ -5,11 +5,7 @@ import {
 } from "@/types/template";
 
 // A generic type to accept data for any kind of template.
-type TemplateData = (
-  | ReceiptTemplateData
-  | InvoiceTemplateData
-  | QuoteTemplateData
-) & { [key: string]: any };
+type TemplateData = ReceiptTemplateData | InvoiceTemplateData | QuoteTemplateData;
 
 /**
  * A generic and robust template rendering engine.
@@ -26,8 +22,8 @@ export function renderTemplate(template: string, data: TemplateData): string {
   // The \s* handles any accidental whitespace like {{ name }}
   result = result.replace(/{{\s*(\w+)\s*}}/g, (match, key) => {
     if (Object.prototype.hasOwnProperty.call(data, key)) {
-      const value = data[key];
-      return value ?? ""; // Use the value or an empty string if null/undefined
+      const value = data[key as keyof TemplateData];
+      return String(value ?? ""); // Use the value or an empty string if null/undefined
     }
     return match; // Return the original placeholder if key not found
   });
@@ -52,12 +48,12 @@ export function renderTemplate(template: string, data: TemplateData): string {
     (match, itemTemplate) => {
       if (!data.items || !Array.isArray(data.items)) return "";
       return data.items
-        .map((item: any) =>
+        .map((item: Record<string, unknown>) =>
           itemTemplate.replace(
             /{{\s*(\w+)\s*}}/g,
             (itemMatch: string, key: string) => {
               if (Object.prototype.hasOwnProperty.call(item, key)) {
-                return item[key] ?? "";
+                return String(item[key] ?? "");
               }
               return itemMatch;
             },
@@ -71,9 +67,10 @@ export function renderTemplate(template: string, data: TemplateData): string {
   result = result.replace(
     /{{#each payments}}([\s\S]*?){{\/each}}/g,
     (match, paymentTemplate) => {
-      if (!data.payments || !Array.isArray(data.payments)) return "";
-      return data.payments
-        .map((payment: any) =>
+      const payments = (data as ReceiptTemplateData).payments;
+      if (!payments || !Array.isArray(payments)) return "";
+      return payments
+        .map((payment: { paymentType: string; amount: string }) =>
           paymentTemplate
             .replace(/{{\s*paymentType\s*}}/g, payment.paymentType)
             .replace(/{{\s*amount\s*}}/g, payment.amount),

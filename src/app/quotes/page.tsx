@@ -186,9 +186,6 @@ function QuotesContent() {
           organization={selectedOrganization}
           quoteTemplates={quoteTemplates}
           customer={customers.find(c => c.name === selectedQuote.clientName)}
-          printerSettings={printerSettings}
-          open={printDialogOpen}
-          onOpenChange={setPrintDialogOpen}
         >
           <div>Print Preview</div>
         </QuotePrintDialog>

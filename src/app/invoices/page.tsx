@@ -203,9 +203,6 @@ export default function InvoicesPage() {
           invoiceTemplates={invoiceTemplates}
           customer={selectedInvoice.type === 'sales' && selectedInvoice.clientName ? customers.find(c => c.name === selectedInvoice.clientName) : undefined}
           supplier={selectedInvoice.type === 'purchase' && selectedInvoice.supplierId ? suppliers.find(s => s.id === selectedInvoice.supplierId) : undefined}
-          printerSettings={printerSettings}
-          open={showPrint}
-          onOpenChange={setShowPrint}
         >
           <div>Print Preview</div>
         </InvoicePrintDialog>
