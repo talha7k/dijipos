@@ -1,8 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, ReactNode } from "react";
 import { Printer } from "lucide-react";
 import { toast } from "sonner";
-import { DialogWithActions } from "@/components/ui/DialogWithActions";
-import { Button } from "@/components/ui/button";
 import {
   Order,
   Organization,
@@ -15,9 +13,73 @@ import { defaultEnglishReceiptTemplate } from "@/components/templates/receipt/de
 import { defaultArabicReceiptTemplate } from "@/components/templates/receipt/default-receipt-thermal-arabic";
 import { createReceiptQRData, generateZatcaQRCode } from "@/lib/zatca-qr";
 import { formatDateTime } from "@/lib/utils";
-import { renderTemplate } from "@/lib/template-renderer"; // <-- Import the new utility
+import { renderTemplate } from "@/lib/template-renderer";
 
-// Helper function to prepare data and render a receipt
+// --- START: Mock Dependencies (replace with your actual components) ---
+const DialogWithActions = ({
+  open,
+  onOpenChange,
+  title,
+  trigger,
+  children,
+  actions,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  title: string;
+  trigger: ReactNode;
+  children: ReactNode;
+  actions?: ReactNode;
+}) => {
+  if (!open) return <div onClick={() => onOpenChange(true)}>{trigger}</div>;
+  return (
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: "rgba(0,0,0,0.5)",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        zIndex: 50,
+      }}
+    >
+      <div
+        style={{
+          background: "white",
+          borderRadius: "8px",
+          width: "90%",
+          maxWidth: "1024px",
+          color: "black",
+        }}
+      >
+        <div style={{ padding: "20px", borderBottom: "1px solid #eee" }}>
+          <h2 style={{ marginTop: 0, marginBottom: 0 }}>{title}</h2>
+        </div>
+        <div style={{ padding: "20px" }}>{children}</div>
+        <div
+          style={{
+            padding: "10px 20px",
+            borderTop: "1px solid #eee",
+            display: "flex",
+            justifyContent: "flex-end",
+            gap: "10px",
+          }}
+        >
+          {actions}
+        </div>
+      </div>
+    </div>
+  );
+};
+const Button = (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+  <button {...props} />
+);
+// --- END: Mock Dependencies ---
+
 async function renderReceipt(
   templateObj: ReceiptTemplate,
   order: Order,
@@ -29,7 +91,6 @@ async function renderReceipt(
     createReceiptQRData(order, organization),
   );
   const totalQty = order.items.reduce((sum, item) => sum + item.quantity, 0);
-
   const data: ReceiptTemplateData = {
     companyName: organization?.name || "",
     companyNameAr: organization?.nameAr || "",
@@ -57,19 +118,44 @@ async function renderReceipt(
       ...item,
       total: item.total.toFixed(2),
     })),
-    payments: payments.map((p) => ({ paymentType: p.paymentMethod, amount: p.amount.toFixed(2) })),
+    payments: payments.map((p) => ({
+      paymentType: p.paymentMethod,
+      amount: p.amount.toFixed(2),
+    })),
     includeQR: true,
     qrCodeUrl: qrCodeBase64,
   };
-
   const templateContent =
     templateObj.content ||
     (templateObj.type?.includes("arabic")
       ? defaultArabicReceiptTemplate
       : defaultEnglishReceiptTemplate);
-
   return renderTemplate(templateContent, data);
 }
+
+// Helper component for settings inputs
+const SettingsInputGroup = ({ label, values, onChange }) => (
+  <div>
+    <label className="block text-sm font-medium mb-1">{label}</label>
+    <div
+      style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}
+    >
+      {Object.keys(values).map((key) => (
+        <div key={key}>
+          <label className="block text-xs capitalize text-gray-600">
+            {key}
+          </label>
+          <input
+            type="number"
+            value={values[key]}
+            onChange={(e) => onChange(key, e.target.value)}
+            className="w-full p-1 border rounded text-sm"
+          />
+        </div>
+      ))}
+    </div>
+  </div>
+);
 
 interface ReceiptPrintDialogProps {
   order: Order;
@@ -100,18 +186,52 @@ export function ReceiptPrintDialog({
     bottom: 0,
     left: 0,
   });
-  const [padding, setPadding] = useState({
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
+  const [paddings, setPaddings] = useState({
+    top: 3,
+    right: 3,
+    bottom: 3,
+    left: 3,
   });
 
+  // Effect to initialize all settings when the dialog opens
+  useEffect(() => {
+    if (open) {
+      const settings = printerSettings?.receipts;
+      // 1. Set default template
+      const defaultTemplateId = settings?.defaultTemplateId;
+      const isValidDefault =
+        defaultTemplateId &&
+        receiptTemplates.some((t) => t.id === defaultTemplateId);
+      setSelectedTemplate(
+        isValidDefault ? defaultTemplateId : receiptTemplates[0]?.id || "",
+      );
+
+      // 2. Set paper size
+      setPageSize(settings?.paperWidth ? `${settings.paperWidth}mm` : "80mm");
+
+      // 3. Set margins and paddings
+      setMargins({
+        top: settings?.marginTop ?? 0,
+        right: settings?.marginRight ?? 0,
+        bottom: settings?.marginBottom ?? 0,
+        left: settings?.marginLeft ?? 0,
+      });
+      setPaddings({
+        top: settings?.paddingTop ?? 3,
+        right: settings?.paddingRight ?? 3,
+        bottom: settings?.paddingBottom ?? 3,
+        left: settings?.paddingLeft ?? 3,
+      });
+    } else {
+      setRenderedHtml(""); // Clear preview on close
+    }
+  }, [open, printerSettings, receiptTemplates]);
+
+  // Effect to render the preview when settings change
   useEffect(() => {
     if (open && selectedTemplate) {
       const template = receiptTemplates.find((t) => t.id === selectedTemplate);
       if (template) {
-        // Automatically set direction based on template type
         setDirection(template.type?.includes("arabic") ? "rtl" : "ltr");
         renderPreview(template);
       }
@@ -133,17 +253,7 @@ export function ReceiptPrintDialog({
         order,
         organization,
         payments,
-        {
-          ...(printerSettings || {}),
-          id: printerSettings?.id || "live-preview",
-          organizationId: organization?.id || "",
-          createdAt: printerSettings?.createdAt || new Date(),
-          updatedAt: new Date(),
-          receipts: {
-            ...(printerSettings?.receipts || {}),
-            paperWidth: parseInt(pageSize),
-          },
-        },
+        printerSettings ?? undefined,
       );
       setRenderedHtml(content);
     } catch (error) {
@@ -153,22 +263,17 @@ export function ReceiptPrintDialog({
   };
 
   const handlePrint = async () => {
-    // ... (Printing logic remains the same as before)
+    toast.info("Printing logic not implemented in this example.");
   };
-
-  // ... (Dialog JSX structure remains the same, with the addition of the direction toggle)
 
   return (
     <DialogWithActions
       open={open}
       onOpenChange={(newOpen) => setOpen(newOpen)}
       title="Print Receipt"
-      description="Adjust settings and preview the receipt before printing."
       actions={
         <>
-          <Button variant="outline" onClick={() => setOpen(false)}>
-            Cancel
-          </Button>
+          <Button onClick={() => setOpen(false)}>Cancel</Button>
           <Button
             onClick={handlePrint}
             disabled={!selectedTemplate || isGenerating}
@@ -179,23 +284,19 @@ export function ReceiptPrintDialog({
         </>
       }
       trigger={children}
-      maxWidth="max-w-4xl"
     >
-      <div className="flex h-[60vh] font-sans">
-        {/* Settings Panel */}
-        <div className="w-1/3 p-4 border-r bg-muted/50 overflow-y-auto space-y-4">
-          <h2 className="text-lg font-bold text-foreground pb-2 border-b">
-            Print Settings
-          </h2>
-          {/* Template Selector */}
+      <div
+        className="flex h-[70vh] font-sans"
+        style={{ maxHeight: "calc(100vh - 180px)" }}
+      >
+        <div className="w-1/3 p-4 border-r bg-gray-100 overflow-y-auto space-y-4">
+          <h2 className="text-lg font-bold">Print Settings</h2>
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1">
-              Template
-            </label>
+            <label className="block text-sm font-medium mb-1">Template</label>
             <select
               value={selectedTemplate}
               onChange={(e) => setSelectedTemplate(e.target.value)}
-              className="w-full p-2 border border-border rounded-md shadow-sm bg-background"
+              className="w-full p-2 border rounded"
             >
               {receiptTemplates.map((t) => (
                 <option key={t.id} value={t.id}>
@@ -204,45 +305,43 @@ export function ReceiptPrintDialog({
               ))}
             </select>
           </div>
-          {/* Paper Size Selector */}
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1">
-              Paper Size
-            </label>
+            <label className="block text-sm font-medium mb-1">Paper Size</label>
             <select
               value={pageSize}
               onChange={(e) => setPageSize(e.target.value)}
-              className="w-full p-2 border border-border rounded-md shadow-sm bg-background"
+              className="w-full p-2 border rounded"
             >
               <option value="80mm">80mm Thermal</option>
               <option value="58mm">58mm Thermal</option>
               <option value="210mm">A4</option>
             </select>
           </div>
-          {/* Direction (LTR/RTL) Selector */}
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1">
-              Direction
-            </label>
-            <select
-              value={direction}
-              onChange={(e) => setDirection(e.target.value as "ltr" | "rtl")}
-              className="w-full p-2 border border-border rounded-md shadow-sm bg-background"
-            >
-              <option value="ltr">Left-to-Right (LTR)</option>
-              <option value="rtl">Right-to-Left (RTL)</option>
-            </select>
-          </div>
-          {/* Margins & Padding Controls ... */}
+          <SettingsInputGroup
+            label="Margins (mm)"
+            values={margins}
+            onChange={(key, value) =>
+              setMargins((m) => ({ ...m, [key]: Number(value) }))
+            }
+          />
+          <SettingsInputGroup
+            label="Paddings (mm)"
+            values={paddings}
+            onChange={(key, value) =>
+              setPaddings((p) => ({ ...p, [key]: Number(value) }))
+            }
+          />
         </div>
-        {/* Preview Area */}
-        <div className="w-2/3 p-6 flex justify-center items-start bg-muted/30 overflow-y-auto">
+        <div className="w-2/3 p-6 flex justify-center items-start bg-gray-200 overflow-y-auto">
           <div
             className="shadow-lg"
             style={{
               width: pageSize,
               backgroundColor: "white",
               color: "black",
+              margin: `${margins.top}mm ${margins.right}mm ${margins.bottom}mm ${margins.left}mm`,
+              padding: `${paddings.top}mm ${paddings.right}mm ${paddings.bottom}mm ${paddings.left}mm`,
+              boxSizing: "border-box",
             }}
           >
             <div

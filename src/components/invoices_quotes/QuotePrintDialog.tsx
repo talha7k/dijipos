@@ -1,29 +1,24 @@
 import React, { useState, useEffect, ReactNode } from "react";
-import { Printer } from "lucide-react";
-import { toast } from "sonner";
 import { renderTemplate } from "@/lib/template-renderer";
 import { Quote } from "@/types/invoice-quote";
-import { Item } from "@/types/product-service";
 import { Organization } from "@/types/organization-user";
 import { QuoteTemplate, QuoteTemplateData } from "@/types/template";
 import { Customer } from "@/types/customer-supplier";
+import { DocumentPrintSettings } from "@/types"; // Assuming types are in @/types
 
-// --- START: Self-Contained Dependencies ---
-
+// --- START: Mock Dependencies (replace with your actual components) ---
 const DialogWithActions = ({
   open,
   onOpenChange,
   title,
   trigger,
   children,
-  maxWidth,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: string;
   trigger: ReactNode;
   children: ReactNode;
-  maxWidth?: string;
 }) => {
   if (!open) return <div onClick={() => onOpenChange(true)}>{trigger}</div>;
   return (
@@ -47,24 +42,19 @@ const DialogWithActions = ({
           padding: "20px",
           borderRadius: "8px",
           width: "90%",
-          maxWidth: "800px",
+          maxWidth: "1024px",
           color: "black",
         }}
       >
-        <h2>{title}</h2>
+        <h2 style={{ marginTop: 0 }}>{title}</h2>
         {children}
       </div>
     </div>
   );
 };
-const Button = (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
-  <button {...props} />
-);
-
 const defaultQuoteEnglish = `<!DOCTYPE html><html><body><h1>Quote {{quoteId}}</h1></body></html>`;
 const defaultQuoteArabic = `<!DOCTYPE html><html dir="rtl"><body><h1>عرض سعر {{quoteId}}</h1></body></html>`;
-
-// --- END: Self-Contained Dependencies ---
+// --- END: Mock Dependencies ---
 
 async function renderQuote(
   templateObj: QuoteTemplate,
@@ -114,12 +104,37 @@ async function renderQuote(
   return renderTemplate(templateContent, data);
 }
 
+// Helper component for settings inputs
+const SettingsInputGroup = ({ label, values, onChange }) => (
+  <div>
+    <label className="block text-sm font-medium mb-1">{label}</label>
+    <div
+      style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}
+    >
+      {Object.keys(values).map((key) => (
+        <div key={key}>
+          <label className="block text-xs capitalize text-gray-600">
+            {key}
+          </label>
+          <input
+            type="number"
+            value={values[key]}
+            onChange={(e) => onChange(key, e.target.value)}
+            className="w-full p-1 border rounded text-sm"
+          />
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
 interface QuotePrintDialogProps {
   quote: Quote;
   organization: Organization | null;
   quoteTemplates: QuoteTemplate[];
   customer?: Customer;
   children: React.ReactNode;
+  settings?: DocumentPrintSettings | null; // Use the new settings type
 }
 
 export function QuotePrintDialog({
@@ -128,18 +143,60 @@ export function QuotePrintDialog({
   quoteTemplates,
   customer,
   children,
+  settings,
 }: QuotePrintDialogProps) {
   const [open, setOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
   const [renderedHtml, setRenderedHtml] = useState("");
   const [direction, setDirection] = useState<"ltr" | "rtl">("ltr");
+  const [pageSize, setPageSize] = useState("210mm"); // A4 default
+  const [margins, setMargins] = useState({
+    top: 10,
+    right: 10,
+    bottom: 10,
+    left: 10,
+  });
+  const [paddings, setPaddings] = useState({
+    top: 15,
+    right: 15,
+    bottom: 15,
+    left: 15,
+  });
 
+  // Effect to initialize all settings when the dialog opens
   useEffect(() => {
-    if (open && quoteTemplates.length > 0 && !selectedTemplate) {
-      setSelectedTemplate(quoteTemplates[0].id);
-    }
-  }, [open, quoteTemplates, selectedTemplate]);
+    if (open) {
+      // 1. Set default template
+      const defaultTemplateId = settings?.defaultTemplateId;
+      const isValidDefault =
+        defaultTemplateId &&
+        quoteTemplates.some((t) => t.id === defaultTemplateId);
+      setSelectedTemplate(
+        isValidDefault ? defaultTemplateId : quoteTemplates[0]?.id || "",
+      );
 
+      // 2. Set paper size
+      setPageSize(settings?.paperWidth ? `${settings.paperWidth}mm` : "210mm");
+
+      // 3. Set margins and paddings
+      setMargins({
+        top: settings?.marginTop ?? 10,
+        right: settings?.marginRight ?? 10,
+        bottom: settings?.marginBottom ?? 10,
+        left: settings?.marginLeft ?? 10,
+      });
+      setPaddings({
+        top: settings?.paddingTop ?? 15,
+        right: settings?.paddingRight ?? 15,
+        bottom: settings?.paddingBottom ?? 15,
+        left: settings?.paddingLeft ?? 15,
+      });
+    } else {
+      setRenderedHtml(""); // Clear preview on close
+    }
+  }, [open, settings, quoteTemplates]);
+
+  // Effect to render the preview when settings change
   useEffect(() => {
     if (open && selectedTemplate) {
       const template = quoteTemplates.find((t) => t.id === selectedTemplate);
@@ -161,13 +218,15 @@ export function QuotePrintDialog({
       onOpenChange={setOpen}
       title="Print Quote"
       trigger={children}
-      maxWidth="max-w-4xl"
     >
-      <div className="flex h-[80vh] font-sans">
+      <div
+        className="flex h-[80vh] font-sans"
+        style={{ maxHeight: "calc(100vh - 100px)" }}
+      >
         <div className="w-1/4 p-4 border-r bg-gray-100 overflow-y-auto space-y-4">
           <h2 className="text-lg font-bold">Settings</h2>
           <div>
-            <label className="block text-sm font-medium">Quote Template</label>
+            <label className="block text-sm font-medium">Template</label>
             <select
               value={selectedTemplate}
               onChange={(e) => setSelectedTemplate(e.target.value)}
@@ -181,19 +240,43 @@ export function QuotePrintDialog({
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium">Direction</label>
+            <label className="block text-sm font-medium">Paper Size</label>
             <select
-              value={direction}
-              onChange={(e) => setDirection(e.target.value as "ltr" | "rtl")}
+              value={pageSize}
+              onChange={(e) => setPageSize(e.target.value)}
               className="w-full p-2 border rounded"
             >
-              <option value="ltr">Left-to-Right (LTR)</option>
-              <option value="rtl">Right-to-Left (RTL)</option>
+              <option value="210mm">A4 (210mm)</option>
+              <option value="80mm">80mm Thermal</option>
+              <option value="58mm">58mm Thermal</option>
             </select>
           </div>
+          <SettingsInputGroup
+            label="Margins (mm)"
+            values={margins}
+            onChange={(key, value) =>
+              setMargins((m) => ({ ...m, [key]: Number(value) }))
+            }
+          />
+          <SettingsInputGroup
+            label="Paddings (mm)"
+            values={paddings}
+            onChange={(key, value) =>
+              setPaddings((p) => ({ ...p, [key]: Number(value) }))
+            }
+          />
         </div>
         <div className="w-3/4 p-6 bg-gray-200 overflow-y-auto flex justify-center items-start">
-          <div className="w-[210mm] min-h-[297mm] bg-white shadow-lg p-8">
+          <div
+            className="bg-white shadow-lg"
+            style={{
+              width: pageSize,
+              minHeight: pageSize === "210mm" ? "297mm" : "auto",
+              margin: `${margins.top}mm ${margins.right}mm ${margins.bottom}mm ${margins.left}mm`,
+              padding: `${paddings.top}mm ${paddings.right}mm ${paddings.bottom}mm ${paddings.left}mm`,
+              boxSizing: "border-box",
+            }}
+          >
             <div
               dir={direction}
               dangerouslySetInnerHTML={{ __html: renderedHtml }}
