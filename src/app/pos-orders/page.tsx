@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useAtom } from "jotai";
-import { selectedOrganizationAtom } from "@/atoms";
+import { selectedOrganizationAtom, organizationUserRoleAtom } from "@/atoms";
 import { Order, OrderPayment, OrderStatus } from "@/types";
 import { useOrders } from "@/lib/hooks/useOrders";
 import { useRealtimeCollection } from "@/lib/hooks/useRealtimeCollection";
@@ -40,14 +40,18 @@ import {
 import { Receipt, User, CheckCircle, Save, Settings } from "lucide-react";
 
 import { OrderActionsDialog } from "@/components/orders/OrderStatusActionsDialog";
+import { ActionButtons } from "@/components/ui/action-buttons";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 
 function OrdersContent() {
   const [selectedOrganization] = useAtom(selectedOrganizationAtom);
+  const [organizationUserRole] = useAtom(organizationUserRoleAtom);
   const organizationId = selectedOrganization?.id || "";
   const {
     orders: fetchedOrders,
     loading: ordersLoading,
     updateExistingOrder,
+    deleteExistingOrder,
   } = useOrders();
   const { data: paymentsData, loading: paymentsLoading } =
     useRealtimeCollection<OrderPayment>("orderPayments", organizationId);
@@ -62,6 +66,9 @@ function OrdersContent() {
   }, [paymentsData]);
 
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const orders = fetchedOrders || [];
 
@@ -102,6 +109,38 @@ function OrdersContent() {
     await updateExistingOrder(orderId, { status: newStatus });
     clearSelection();
   };
+
+  const handleDeleteOrder = (order: Order) => {
+    setOrderToDelete(order);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteOrder = async () => {
+    if (!orderToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      await deleteExistingOrder(orderToDelete.id);
+      console.log("Successfully deleted order:", orderToDelete.id);
+
+      // Close the dialog and clear selection
+      setDeleteDialogOpen(false);
+      setOrderToDelete(null);
+      clearSelection();
+    } catch (error) {
+      console.error("Error deleting order:", error);
+      // Keep the dialog open so user can try again or cancel
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const cancelDeleteOrder = () => {
+    setDeleteDialogOpen(false);
+    setOrderToDelete(null);
+  };
+
+  const isAdmin = organizationUserRole?.role === "admin";
 
   if (ordersLoading || paymentsLoading)
     return (
@@ -539,17 +578,28 @@ function OrdersContent() {
                           </DialogContent>
                         </Dialog>
 
-                        <OrderActionsDialog
-                          order={order}
-                          payments={orderPayments[order.id] || []}
-                          onMarkAsPaid={handleMarkAsPaid}
-                          onUpdateStatus={handleUpdateOrderStatus}
-                        >
-                          <Button variant="outline" size="sm">
-                            <Settings className="h-4 w-4 mr-1" />
-                            Status
-                          </Button>
-                        </OrderActionsDialog>
+                        <div className="flex items-center gap-2">
+                          <OrderActionsDialog
+                            order={order}
+                            payments={orderPayments[order.id] || []}
+                            onMarkAsPaid={handleMarkAsPaid}
+                            onUpdateStatus={handleUpdateOrderStatus}
+                          >
+                            <Button variant="outline" size="sm">
+                              <Settings className="h-4 w-4 mr-1" />
+                              Status
+                            </Button>
+                          </OrderActionsDialog>
+
+                          {isAdmin && (
+                            <ActionButtons
+                              onDelete={() => handleDeleteOrder(order)}
+                              showEdit={false}
+                              showDelete={true}
+                              className="flex"
+                            />
+                          )}
+                        </div>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -575,6 +625,19 @@ function OrdersContent() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={deleteDialogOpen}
+        onClose={cancelDeleteOrder}
+        onConfirm={confirmDeleteOrder}
+        title="Delete Order"
+        description={`Are you sure you want to delete order #${orderToDelete?.orderNumber}? This action cannot be undone and will permanently remove the order and all associated data.`}
+        confirmText="Delete Order"
+        cancelText="Cancel"
+        variant="destructive"
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

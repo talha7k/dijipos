@@ -51,7 +51,7 @@ const navigationItems: NavigationItem[] = [
     icon: Receipt,
     children: [
       {
-        title: "Orders",
+        title: "POS Orders",
         href: "/pos-orders",
         icon: Receipt,
       },
