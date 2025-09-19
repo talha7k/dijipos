@@ -20,6 +20,8 @@ export function OrderActions({
   onCompleteOrder,
   onUpdateStatus
 }: OrderActionsProps) {
+  const paymentStatus = order.paymentStatus || PaymentStatus.UNPAID;
+
   const isOrderFullyPaid = () => {
     const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
     return totalPaid >= order.total;
@@ -28,7 +30,7 @@ export function OrderActions({
   return (
     <div className="space-y-4">
       {/* Payment Actions */}
-      {order.paymentStatus !== PaymentStatus.PAID && isOrderFullyPaid() && (
+      {paymentStatus !== PaymentStatus.PAID && isOrderFullyPaid() && (
         <div className="p-4 bg-green-100 border border-green-200 rounded-lg">
           <h3 className="text-sm font-medium text-green-900 mb-3">
             Payment Complete:
@@ -55,7 +57,7 @@ export function OrderActions({
       )}
 
       {/* Order Status Actions */}
-      {order.paymentStatus === PaymentStatus.PAID &&
+      {paymentStatus === PaymentStatus.PAID &&
         order.status !== OrderStatus.COMPLETED && (
           <div className="p-4 bg-blue-100 border border-blue-200 rounded-lg">
             <h3 className="text-sm font-medium text-blue-900 mb-3">

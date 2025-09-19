@@ -74,7 +74,8 @@ export function OrderSummaryCard({
       ? totalPaid
       : payments.reduce((sum, payment) => sum + payment.amount, 0);
 
-  const isActuallyPaid = order.paymentStatus === PaymentStatus.PAID;
+  const paymentStatus = order.paymentStatus || PaymentStatus.UNPAID;
+  const isActuallyPaid = paymentStatus === PaymentStatus.PAID;
 
   // Get color for UI indicators using the new status color system
   const statusColor = getOrderStatusColor(order.status as OrderStatus);

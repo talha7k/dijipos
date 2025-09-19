@@ -20,7 +20,8 @@ export function OrderDetail({
   onReopenOrder, 
   onPayOrder 
 }: OrderDetailProps) {
-  const isActuallyPaid = order.paymentStatus === PaymentStatus.PAID;
+  const paymentStatus = order.paymentStatus || PaymentStatus.UNPAID;
+  const isActuallyPaid = paymentStatus === PaymentStatus.PAID;
 
   return (
     <div className="h-screen flex flex-col bg-background pb-15">

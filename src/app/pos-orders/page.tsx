@@ -177,9 +177,10 @@ function OrdersContent() {
             </TableHeader>
             <TableBody>
               {orders.map((order) => {
-                const totalPaid = getOrderTotalPaid(order.id);
+                 const totalPaid = getOrderTotalPaid(order.id);
+                 const paymentStatus = order.paymentStatus || PaymentStatus.UNPAID;
 
-                return (
+                 return (
                   <TableRow key={order.id}>
                     <TableCell className="font-medium">
                       {order.orderNumber}
@@ -199,17 +200,17 @@ function OrdersContent() {
                     </TableCell>
                     <TableCell>{formatCurrency(order.total)}</TableCell>
                     <TableCell>
-                      <span
-                        className={
-                          order.paymentStatus === PaymentStatus.PAID
-                            ? "text-green-600 font-medium"
-                            : "text-orange-600"
-                        }
-                      >
-                        {order.paymentStatus === PaymentStatus.PAID
-                          ? formatCurrency(order.total)
-                          : formatCurrency(totalPaid)}
-                      </span>
+                       <span
+                         className={
+                           paymentStatus === PaymentStatus.PAID
+                             ? "text-green-600 font-medium"
+                             : "text-orange-600"
+                         }
+                       >
+                         {paymentStatus === PaymentStatus.PAID
+                           ? formatCurrency(order.total)
+                           : formatCurrency(totalPaid)}
+                       </span>
                     </TableCell>
                     <TableCell>
                       <Badge

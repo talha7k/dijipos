@@ -33,10 +33,13 @@ export function OrderActionsDialog({
   onUpdateStatus
 }: OrderActionsDialogProps) {
   const [open, setOpen] = useState(false);
-  
+
+  // Provide default payment status if undefined
+  const paymentStatus = order.paymentStatus || PaymentStatus.UNPAID;
+
   const isOrderFullyPaid = () => {
     // If order is already marked as paid, trust that status
-    if (order.paymentStatus === PaymentStatus.PAID) return true;
+    if (paymentStatus === PaymentStatus.PAID) return true;
     
     // Otherwise check payments if available
     if (payments && payments.length > 0) {
@@ -76,15 +79,15 @@ export function OrderActionsDialog({
             Manage order status and actions for Order #{order.orderNumber}
             <div className="mt-2 flex items-center gap-2">
               <span className="text-sm">Payment Status:</span>
-              <span className={`text-sm font-medium px-2 py-1 rounded ${
-                order.paymentStatus === PaymentStatus.PAID
-                  ? 'bg-green-100 text-green-800'
-                  : order.paymentStatus === PaymentStatus.PARTIAL
-                  ? 'bg-yellow-100 text-yellow-800'
-                  : 'bg-red-100 text-red-800'
-              }`}>
-                {order.paymentStatus.replace('_', ' ')}
-              </span>
+               <span className={`text-sm font-medium px-2 py-1 rounded ${
+                 paymentStatus === PaymentStatus.PAID
+                   ? 'bg-green-100 text-green-800'
+                   : paymentStatus === PaymentStatus.PARTIAL
+                   ? 'bg-yellow-100 text-yellow-800'
+                   : 'bg-red-100 text-red-800'
+               }`}>
+                 {paymentStatus.replace('_', ' ')}
+               </span>
             </div>
           </DialogDescription>
         </DialogHeader>
@@ -120,7 +123,7 @@ export function OrderActionsDialog({
                "flex flex-col h-20 gap-2",
                order.status === OrderStatus.COMPLETED ? "bg-green-600 hover:bg-green-700 text-white" : "text-green-600"
              )}
-              disabled={updatingStatus || order.paymentStatus !== PaymentStatus.PAID}
+              disabled={updatingStatus || paymentStatus !== PaymentStatus.PAID}
            >
             <CheckCircle className="h-6 w-6" />
              <span className="text-sm">Completed</span>
@@ -139,7 +142,7 @@ export function OrderActionsDialog({
           </Button>
         </div>
         <DialogFooter>
-          {order.paymentStatus !== PaymentStatus.PAID && isOrderFullyPaid() && (
+           {paymentStatus !== PaymentStatus.PAID && isOrderFullyPaid() && (
             <Button
               onClick={() => handleAction(() => onMarkAsPaid?.(order.id))}
               className="w-full"
