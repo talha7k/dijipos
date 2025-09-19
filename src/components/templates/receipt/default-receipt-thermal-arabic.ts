@@ -103,13 +103,13 @@ export const defaultArabicReceiptTemplate = `<!DOCTYPE html>
            </tr>
          </thead>
         <tbody>
-          {{#each items}}
-          <tr>
-            <td>{{name}}</td>
-            <td class="qty-col">{{quantity}}</td>
-            <td class="amount-col">{{total}}</td>
-          </tr>
-          {{/each}}
+           {{#each items}}
+           <tr>
+             <td>{{name}}</td>
+             <td class="qty-col">{{quantity}}</td>
+             <td class="amount-col">{{lineTotal}}</td>
+           </tr>
+           {{/each}}
         </tbody>
       </table>
     </div>
