@@ -242,7 +242,6 @@ const generateOrders = (count: number, customers: Omit<Customer, 'organizationId
             total,
             status,
             paymentStatus: status === OrderStatus.COMPLETED ? PaymentStatus.PAID : PaymentStatus.UNPAID,
-            paid: status === OrderStatus.COMPLETED, // Completed orders are paid
              orderType: getRandomElement(orderTypes).name,
             createdById: 'temp-user-id', // Will be replaced with actual userId
             createdByName: 'System Generated',

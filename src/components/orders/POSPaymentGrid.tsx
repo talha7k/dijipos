@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 
 import { ArrowLeft, CreditCard } from 'lucide-react';
-import { Order, OrderPayment, PaymentType } from '@/types';
+import { Order, OrderPayment, PaymentType, PaymentStatus } from '@/types';
 import { toast } from 'sonner';
 import { OrderSummaryCard } from './OrderSummaryCard';
 import { PaymentList } from './PaymentList';
@@ -47,7 +47,7 @@ export function POSPaymentGrid({ order, paymentTypes, onPaymentProcessed, onBack
   }, [paymentMethod, remainingAmount, amount]);
 
   // Prevent payment processing for already paid orders
-  if (order.paid) {
+  if (order.paymentStatus === PaymentStatus.PAID) {
     return (
       <div className="h-full flex flex-col bg-background">
         <div className="flex items-center gap-4 p-4 border-b">

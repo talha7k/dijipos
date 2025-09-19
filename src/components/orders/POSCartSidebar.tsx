@@ -88,7 +88,6 @@ export function POSCartSidebar({
         total: 0,
         status: OrderStatus.OPEN,
         paymentStatus: PaymentStatus.UNPAID,
-        paid: false,
         orderType: "dine-in",
         createdById: "temp-user",
         createdByName: userName || "POS User",
@@ -153,7 +152,6 @@ export function POSCartSidebar({
       total: total,
       status: OrderStatus.OPEN,
       paymentStatus: PaymentStatus.UNPAID,
-      paid: false,
       orderType: selectedOrderType?.name || "dine-in",
       ...(selectedCustomer?.name !== undefined && {
         customerName: selectedCustomer.name,

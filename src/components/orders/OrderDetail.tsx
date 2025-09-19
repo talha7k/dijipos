@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { Order, OrderPayment } from "@/types";
+import { Order, OrderPayment, PaymentStatus } from "@/types";
 import { OrderSummaryCard } from "@/components/orders/OrderSummaryCard";
 import { PaymentList } from "@/components/orders/PaymentList";
 import { OrderItemList } from "@/components/orders/OrderItemList";
@@ -20,7 +20,7 @@ export function OrderDetail({
   onReopenOrder, 
   onPayOrder 
 }: OrderDetailProps) {
-  const isActuallyPaid = order.paid;
+  const isActuallyPaid = order.paymentStatus === PaymentStatus.PAID;
 
   return (
     <div className="h-screen flex flex-col bg-background pb-15">

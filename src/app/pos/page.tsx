@@ -288,7 +288,6 @@ export default function SimplifiedPOSPage() {
         total,
         status: OrderStatus.OPEN,
         paymentStatus: PaymentStatus.UNPAID,
-        paid: false,
         orderType: selectedOrderType?.name || 'dine-in',
         ...(selectedCustomer?.name && { customerName: selectedCustomer.name }),
         ...(selectedCustomer?.phone && { customerPhone: selectedCustomer.phone }),
@@ -333,8 +332,7 @@ export default function SimplifiedPOSPage() {
     if (selectedOrder) {
       try {
         await updateExistingOrder(selectedOrder.id, {
-          paymentStatus: PaymentStatus.PAID,
-          paid: true
+          paymentStatus: PaymentStatus.PAID
         });
       } catch (error) {
         console.error('Error updating order payment status:', error);

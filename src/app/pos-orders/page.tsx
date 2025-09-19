@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { useAtom } from "jotai";
 import { selectedOrganizationAtom, organizationUserRoleAtom } from "@/atoms";
-import { Order, OrderPayment, OrderStatus } from "@/types";
+import { Order, OrderPayment, OrderStatus, PaymentStatus } from "@/types";
 import { useOrders } from "@/lib/hooks/useOrders";
 import { useRealtimeCollection } from "@/lib/hooks/useRealtimeCollection";
 import { useCurrency } from "@/lib/hooks/useCurrency";
@@ -98,7 +98,7 @@ function OrdersContent() {
   const clearSelection = () => setSelectedOrder(null);
 
   const handleMarkAsPaid = async (orderId: string) => {
-    await updateExistingOrder(orderId, { paid: true });
+    await updateExistingOrder(orderId, { paymentStatus: PaymentStatus.PAID });
     clearSelection();
   };
 
@@ -201,12 +201,12 @@ function OrdersContent() {
                     <TableCell>
                       <span
                         className={
-                          order.paid
+                          order.paymentStatus === PaymentStatus.PAID
                             ? "text-green-600 font-medium"
                             : "text-orange-600"
                         }
                       >
-                        {order.paid
+                        {order.paymentStatus === PaymentStatus.PAID
                           ? formatCurrency(order.total)
                           : formatCurrency(totalPaid)}
                       </span>
@@ -414,17 +414,17 @@ function OrdersContent() {
                                         <span>Payment Status:</span>
                                         <Badge
                                           variant={
-                                            selectedOrder.paid
+                                            selectedOrder.paymentStatus === PaymentStatus.PAID
                                               ? "default"
                                               : "secondary"
                                           }
                                           className={
-                                            selectedOrder.paid
+                                            selectedOrder.paymentStatus === PaymentStatus.PAID
                                               ? "bg-green-500"
                                               : ""
                                           }
                                         >
-                                          {selectedOrder.paid
+                                          {selectedOrder.paymentStatus === PaymentStatus.PAID
                                             ? "Paid"
                                             : "Unpaid"}
                                         </Badge>
@@ -492,7 +492,7 @@ function OrdersContent() {
                                 )}
 
                                 {/* Action Buttons - Only show when fully paid */}
-                                {selectedOrder.paid &&
+                                {selectedOrder.paymentStatus === PaymentStatus.PAID &&
                                   selectedOrder.status !==
                                     OrderStatus.COMPLETED && (
                                     <div className="flex gap-3 pt-4 border-t">

@@ -68,7 +68,7 @@ export function OrderSummaryCard({
   const printerSettings = storeSettings?.printerSettings;
   const { formatCurrency } = useCurrency();
 
-  // Calculate payment amounts for display, but use order.paid for status
+  // Calculate payment amounts for display, but use order.paymentStatus for status
   const calculatedTotalPaid =
     totalPaid !== undefined
       ? totalPaid

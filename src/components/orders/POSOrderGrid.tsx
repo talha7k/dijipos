@@ -41,8 +41,7 @@ export function POSOrderGrid({
   const markOrderAsPaid = async (orderId: string) => {
     try {
       await updateExistingOrder(orderId, {
-        paymentStatus: PaymentStatus.PAID,
-        paid: true
+        paymentStatus: PaymentStatus.PAID
       });
       onOrderUpdate?.();
       return true;

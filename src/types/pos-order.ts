@@ -36,7 +36,6 @@ export interface Order {
   total: number;
   status: OrderStatus;
   paymentStatus: PaymentStatus;
-  paid: boolean; // Whether the order has been fully paid
   customerName?: string;
   customerPhone?: string;
   customerEmail?: string;

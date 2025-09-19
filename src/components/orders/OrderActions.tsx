@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Save } from "lucide-react";
-import { Order, OrderStatus, OrderPayment } from "@/types";
+import { Order, OrderStatus, OrderPayment, PaymentStatus } from "@/types";
 import { OrderActionsDialog } from "./OrderStatusActionsDialog";
 
 interface OrderActionsProps {
@@ -28,7 +28,7 @@ export function OrderActions({
   return (
     <div className="space-y-4">
       {/* Payment Actions */}
-      {!order.paid && isOrderFullyPaid() && (
+      {order.paymentStatus !== PaymentStatus.PAID && isOrderFullyPaid() && (
         <div className="p-4 bg-green-100 border border-green-200 rounded-lg">
           <h3 className="text-sm font-medium text-green-900 mb-3">
             Payment Complete:
@@ -55,7 +55,7 @@ export function OrderActions({
       )}
 
       {/* Order Status Actions */}
-      {order.paid &&
+      {order.paymentStatus === PaymentStatus.PAID &&
         order.status !== OrderStatus.COMPLETED && (
           <div className="p-4 bg-blue-100 border border-blue-200 rounded-lg">
             <h3 className="text-sm font-medium text-blue-900 mb-3">

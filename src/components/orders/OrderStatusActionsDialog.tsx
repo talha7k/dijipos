@@ -36,7 +36,7 @@ export function OrderActionsDialog({
   
   const isOrderFullyPaid = () => {
     // If order is already marked as paid, trust that status
-    if (order.paid) return true;
+    if (order.paymentStatus === PaymentStatus.PAID) return true;
     
     // Otherwise check payments if available
     if (payments && payments.length > 0) {
@@ -139,7 +139,7 @@ export function OrderActionsDialog({
           </Button>
         </div>
         <DialogFooter>
-          {!order.paid && isOrderFullyPaid() && (
+          {order.paymentStatus !== PaymentStatus.PAID && isOrderFullyPaid() && (
             <Button
               onClick={() => handleAction(() => onMarkAsPaid?.(order.id))}
               className="w-full"
