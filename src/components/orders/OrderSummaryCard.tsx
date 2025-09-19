@@ -185,18 +185,18 @@ export function OrderSummaryCard({
               {showOrderDetails && order.tableName && (
                 <Badge
                   variant="outline"
-                  className="text-sm flex items-center gap-1 border-2 border-red-800/20 justify-center py-1"
+                  className="text-sm flex items-center gap-1 border-2 border-muted justify-center py-1"
                 >
-                  <Sofa className="h-4 w-4" />
+                  <Sofa className="h-5 w-5 text-red-800" />
                   {order.tableName}
                 </Badge>
               )}
               {showItemCount && (
                 <Badge
                   variant="outline"
-                  className="text-sm flex items-center gap-1 border-2 border-green-500/20 justify-center py-1"
+                  className="text-sm flex items-center gap-1 border-2 border-muted justify-center py-1"
                 >
-                  <Package className="h-4 w-4" />
+                  <Package className="h-5 w-5 text-green-500" />
                   {order.items.length}
                 </Badge>
               )}
