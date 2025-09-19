@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CardFooter } from "@/components/ui/CardFooter";
-import { ShoppingCart, Save, Printer, RotateCcw } from "lucide-react";
+import { ShoppingCart, Save, Printer, RotateCcw, Hash } from "lucide-react";
 import { ClearOrderDialog } from "@/components/ui/clear-order-dialog";
 import { POSCartItem } from "./POSCartItem";
 import { ReceiptPrintDialog } from "@/components/ReceiptPrintDialog";
@@ -53,6 +53,10 @@ export function POSCartSidebar({
   const selectedCustomer = useAtomValue(selectedCustomerAtom);
   const selectedOrderType = useAtomValue(selectedOrderTypeAtom);
   const currentQueueNumber = useAtomValue(currentQueueNumberAtom);
+  
+  // Debug logging
+  console.log('POSCartSidebar - currentQueueNumber:', currentQueueNumber);
+  console.log('POSCartSidebar - cartItems.length:', cartItems.length);
   const organizationId = selectedOrganization?.id || "";
 
   const { allReceiptTemplates: receiptTemplates = [] } = useSeparatedTemplates();
@@ -67,7 +71,27 @@ export function POSCartSidebar({
   const total = cartTotal;
 
   const createTempOrderForPayment = () => {
-    if (cartItems.length === 0) return null;
+    if (cartItems.length === 0) {
+      // Return a default empty order when cart is empty
+      return {
+        id: "temp-empty",
+        organizationId: organizationId || "",
+        orderNumber: "TEMP-EMPTY",
+        queueNumber: currentQueueNumber?.toString() || "1",
+        items: [],
+        subtotal: 0,
+        taxRate: 15,
+        taxAmount: 0,
+        total: 0,
+        status: OrderStatus.OPEN,
+        paid: false,
+        orderType: "dine-in",
+        createdById: "temp-user",
+        createdByName: userName || "POS User",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+    }
 
     // Calculate tax (assuming 15% VAT rate for preview)
     const taxRate = 15; // Could be made configurable
@@ -144,17 +168,19 @@ export function POSCartSidebar({
 
       <CardFooter>
         <div className="w-full">
-          <div className="flex justify-between items-start mb-4">
-            <div className="flex items-center gap-2">
-              {cartItems.length > 0 && currentQueueNumber && (
-                <Badge variant="secondary" className="text-sm">
-                  Queue #{currentQueueNumber}
-                </Badge>
-              )}
-              <Badge variant="outline" className="text-sm">
-                {cartItems.reduce((sum, item) => sum + item.quantity, 0)} items
-              </Badge>
-            </div>
+           <div className="flex justify-between items-start mb-4">
+             <div className="flex flex-col gap-2">
+               <Badge variant="outline" className="text-sm flex items-center gap-1">
+                 <ShoppingCart className="h-3 w-3" />
+                 {cartItems.reduce((sum, item) => sum + item.quantity, 0)}
+               </Badge>
+{cartItems.length > 0 && currentQueueNumber && (
+                  <Badge variant="outline" className="text-sm flex items-center gap-1 border-2 border-red-500">
+                    <Hash className="h-3 w-3" />
+                    {currentQueueNumber}
+                  </Badge>
+                )}
+             </div>
             <div className="text-right">
               <div className="text-sm text-muted-foreground">Total</div>
               <div className="font-bold text-xl text-foreground">
@@ -176,7 +202,7 @@ export function POSCartSidebar({
             )}
             {selectedOrganization && cartItems.length > 0 && (
               <ReceiptPrintDialog
-                order={createTempOrderForPayment()!}
+                order={createTempOrderForPayment()}
                 organization={selectedOrganization}
                 receiptTemplates={receiptTemplates}
                 printerSettings={printerSettings}
@@ -186,7 +212,7 @@ export function POSCartSidebar({
                     organizationId: organizationId || "",
                     orderId: "temp-checkout",
                     paymentMethod: "Cash",
-                    amount: createTempOrderForPayment()!.total,
+                    amount: createTempOrderForPayment()?.total || 0,
                     paymentDate: new Date(),
                     createdAt: new Date(),
                   },

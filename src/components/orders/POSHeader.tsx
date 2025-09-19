@@ -32,6 +32,8 @@ interface POSHeaderProps {
   onOrderTypeSelect: (orderType: OrderType) => void;
   onOrderTypeDeselect: () => void;
   onOrderToggle?: () => void;
+  isOnPOSPage?: boolean;
+  currentView?: string;
 }
 
 export function POSHeader({
@@ -49,9 +51,13 @@ export function POSHeader({
   onOrdersClick,
   onOrderTypeSelect,
   onOrderTypeDeselect,
-  onOrderToggle
+  onOrderToggle,
+  isOnPOSPage = false,
+  currentView = 'items'
 }: POSHeaderProps) {
   const { formatCurrency } = useCurrency();
+
+
 
   const handleOrderToggle = () => {
     if (onOrderToggle) onOrderToggle();
@@ -99,21 +105,32 @@ export function POSHeader({
                 </Badge>
               )
             ) : (
-              <ClearOrderDialog
-                title="Confirm New Order"
-                onConfirm={handleConfirmNewOrder}
-              >
-                {({ openDialog }) => (
-                  <Badge
-                    variant="secondary"
-                    className="flex items-center py-1 space-x-1 cursor-pointer bg-orange-100 text-orange-800 hover:bg-orange-200"
-                    onClick={openDialog}
-                  >
-                    <PlusCircle className="h-5 w-5" />
-                    <span>New Order</span>
-                  </Badge>
-                )}
-              </ClearOrderDialog>
+              currentView === 'items' && cartItems.length > 0 ? (
+                <ClearOrderDialog
+                  title="Confirm New Order"
+                  onConfirm={handleConfirmNewOrder}
+                >
+                  {({ openDialog }) => (
+                    <Badge
+                      variant="secondary"
+                      className="flex items-center py-1 space-x-1 cursor-pointer bg-orange-100 text-orange-800 hover:bg-orange-200"
+                      onClick={openDialog}
+                    >
+                      <PlusCircle className="h-5 w-5" />
+                      <span>New Order</span>
+                    </Badge>
+                  )}
+                </ClearOrderDialog>
+              ) : (
+                <Badge
+                  variant="secondary"
+                  className="flex items-center py-1 space-x-1 cursor-pointer bg-orange-100 text-orange-800 hover:bg-orange-200"
+                  onClick={handleOrderToggle}
+                >
+                  <PlusCircle className="h-5 w-5" />
+                  <span>New Order</span>
+                </Badge>
+              )
             )}
           </div>
           <div className="flex items-center w-full">

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { selectedOrganizationAtom } from '@/atoms';
 import { CartItem, ItemType, Order, OrderStatus, Product, Service, Table, Customer, OrderType, OrderPayment } from "@/types";
 import { useProducts } from "@/lib/hooks/useProducts";
@@ -34,7 +35,8 @@ import {
   currentViewAtom,
   categoryPathAtom,
   resetPOSStateAtom,
-  nextQueueNumberAtom
+  nextQueueNumberAtom,
+  currentQueueNumberAtom
 } from '@/atoms/posAtoms';
 
 import {
@@ -51,6 +53,8 @@ import { PaymentSuccessDialog } from "@/components/PaymentSuccessDialog";
 import { CartItemModal } from "@/components/orders/CartItemModal";
 
 export default function SimplifiedPOSPage() {
+  const pathname = usePathname();
+  const router = useRouter();
   const [selectedOrganization] = useAtom(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
 
@@ -76,6 +80,7 @@ export default function SimplifiedPOSPage() {
   const [categoryPath, setCategoryPath] = useAtom(categoryPathAtom);
   const resetPOSState = useSetAtom(resetPOSStateAtom);
   const [nextQueueNumber, setNextQueueNumber] = useAtom(nextQueueNumberAtom);
+  const setCurrentQueueNumber = useSetAtom(currentQueueNumberAtom);
 
 
   // Local state for UI
@@ -114,6 +119,18 @@ export default function SimplifiedPOSPage() {
     fetchUserProfile();
   }, [user]);
 
+  // Ensure POS starts with items view when pathname changes to /pos
+  React.useEffect(() => {
+    if (pathname === '/pos') {
+      setCurrentView('items');
+      setCategoryPath([]);
+    }
+  }, [pathname, setCurrentView, setCategoryPath]);
+
+
+
+
+
   // Handler functions
   const handleAddToCart = useCallback((item: Product | Service, type: 'product' | 'service') => {
     if (!item) return;
@@ -141,7 +158,11 @@ export default function SimplifiedPOSPage() {
       };
       setCartItems([...currentCartItems, newItem]);
     }
-  }, [cartItems, setCartItems]);
+    
+    // Set current queue number when adding items to cart
+    console.log('Setting current queue number to:', nextQueueNumber);
+    setCurrentQueueNumber(nextQueueNumber);
+  }, [cartItems, setCartItems, nextQueueNumber, setCurrentQueueNumber]);
 
   const handleTableSelected = useCallback((table: Table) => {
     setSelectedTable(table);
@@ -275,11 +296,35 @@ export default function SimplifiedPOSPage() {
 
   const handleClearCart = useCallback(() => {
     setCartItems([]);
-  }, [setCartItems]);
+    setCurrentQueueNumber(null);
+  }, [setCartItems, setCurrentQueueNumber]);
 
   const handleBackToItems = useCallback(() => {
     resetPOSState();
   }, [resetPOSState]);
+
+  // New function that preserves cart when navigating back to POS
+  const handleBackToItemsPreserveCart = useCallback(() => {
+    setCurrentView('items');
+    setCategoryPath([]);
+    setSelectedTable(null);
+    setSelectedCustomer(null);
+    setSelectedOrder(null);
+  }, [setCurrentView, setCategoryPath, setSelectedTable, setSelectedCustomer, setSelectedOrder]);
+
+  // Function to handle new order creation
+  const handleNewOrder = useCallback(() => {
+    const currentPathname = pathname || '';
+    const isOnPOSPage = currentPathname === '/pos' || currentPathname.startsWith('/pos');
+
+    if (!isOnPOSPage) {
+      // Navigate to POS page
+      router.push('/pos');
+    } else {
+      // Already on POS page, reset state
+      resetPOSState();
+    }
+  }, [pathname, router, resetPOSState]);
 
   const handleTableDeselect = useCallback(() => {
     setSelectedTable(null);
@@ -411,8 +456,10 @@ export default function SimplifiedPOSPage() {
             onCustomerDeselect={handleCustomerDeselect}
             onOrderTypeDeselect={handleOrderTypeDeselect}
             onOrdersClick={handleOrdersClick}
-            onOrderToggle={handleBackToItems}
-          />
+            onOrderToggle={handleNewOrder}
+            isOnPOSPage={true}
+            currentView={currentView}
+           />
         </POSHeaderContainer>
 
         <POSMainContent>
@@ -437,7 +484,7 @@ export default function SimplifiedPOSPage() {
              onCustomerSelect={handleCustomerSelected}
              onOrderSelect={handleOrderReopen}
              onPayOrder={() => {}}
-             onBackToItems={handleBackToItems}
+              onBackToItems={handleBackToItemsPreserveCart}
              onPaymentProcessed={async (payments) => {
                await handlePaymentProcessed(payments);
              }}

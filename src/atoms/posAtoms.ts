@@ -80,4 +80,5 @@ export const resetPOSStateAtom = atom(null, (get, set) => {
   set(currentViewAtom, 'items');
   set(categoryPathAtom, []);
   set(selectedCartOrderAtom, null);
+  set(currentQueueNumberAtom, null);
 });
