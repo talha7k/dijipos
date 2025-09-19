@@ -446,28 +446,29 @@ export default function SimplifiedPOSPage() {
       </POSLeftColumn>
 
       <POSRightColumn>
-        <POSCartSidebar
-          cartItems={cartForComponents}
-          cartTotal={cartTotal}
-          cartSubtotal={cartSubtotal}
-          onItemClick={(item) => {
-            // Transform CartItem back to CartItem for state management
-            const cartItem: CartItem = {
-              id: item.id,
-              type:
-                item.type === "product" ? ItemType.PRODUCT : ItemType.SERVICE,
-              name: item.name,
-              quantity: item.quantity,
-              unitPrice: item.price,
-              total: item.total,
-            };
-            setEditingCartItem(cartItem);
-            setShowCartItemModal(true);
-          }}
-           onPayOrder={handlePayOrder}
-           onSaveOrder={handleSaveOrder}
-           onClearCart={handleClearCart}
-        />
+         <POSCartSidebar
+           cartItems={cartForComponents}
+           cartTotal={cartTotal}
+           cartSubtotal={cartSubtotal}
+           onItemClick={(item) => {
+             // Transform CartItem back to CartItem for state management
+             const cartItem: CartItem = {
+               id: item.id,
+               type:
+                 item.type === "product" ? ItemType.PRODUCT : ItemType.SERVICE,
+               name: item.name,
+               quantity: item.quantity,
+               unitPrice: item.price,
+               total: item.total,
+             };
+             setEditingCartItem(cartItem);
+             setShowCartItemModal(true);
+           }}
+            onPayOrder={handlePayOrder}
+            onSaveOrder={handleSaveOrder}
+            onClearCart={handleClearCart}
+            userName={userName}
+         />
       </POSRightColumn>
 
       {/* Order Confirmation Dialog */}

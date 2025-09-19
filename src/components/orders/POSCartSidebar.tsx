@@ -35,6 +35,7 @@ interface POSCartSidebarProps {
   onSaveOrder?: () => void;
   onClearCart?: () => void;
   onItemClick?: (item: CartItem) => void;
+  userName?: string;
 }
 
 export function POSCartSidebar({
@@ -45,6 +46,7 @@ export function POSCartSidebar({
   onSaveOrder,
   onClearCart,
   onItemClick,
+  userName,
 }: POSCartSidebarProps) {
   const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const selectedTable = useAtomValue(selectedTableAtom);
@@ -113,8 +115,8 @@ export function POSCartSidebar({
       ...(selectedTable?.name !== undefined && {
         tableName: selectedTable.name,
       }),
-      createdById: "temp-user",
-      createdByName: "POS User",
+       createdById: "temp-user",
+       createdByName: userName || "POS User",
       createdAt: new Date(),
       updatedAt: new Date(),
     };

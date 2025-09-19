@@ -781,20 +781,17 @@ function CompanyContent() {
                  </div>
                </div>
 
-               <div className="space-y-4 pt-4">
-                 <div className="space-y-2">
-                   <Label htmlFor="userDisplayName">Display Name</Label>
-                   <Input
-                     id="userDisplayName"
-                     value={userDisplayName}
-                     onChange={(e) => setUserDisplayName(e.target.value)}
-                     placeholder="Enter your display name"
-                   />
-                 </div>
-                 <Button onClick={handleUpdateUserDisplayName} loading={saving} className="w-full">
-                   Update Display Name
-                 </Button>
-               </div>
+<div className="space-y-4 pt-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="userDisplayName">Display Name</Label>
+                    <Input
+                      id="userDisplayName"
+                      value={userDisplayName}
+                      disabled
+                      placeholder="Display name cannot be changed"
+                    />
+                  </div>
+                </div>
 
                <div className="grid grid-cols-2 gap-4 pt-4">
                  <div className="flex items-center space-x-2">
