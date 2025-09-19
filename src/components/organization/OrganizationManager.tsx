@@ -6,7 +6,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useOrganization } from "@/lib/hooks/useOrganization";
@@ -35,14 +35,10 @@ import {
 } from "lucide-react";
 import {
   collection,
-  query,
-  where,
-  getDocs,
   addDoc,
   serverTimestamp,
   doc,
   getDoc,
-  updateDoc,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
 import { Organization, UserRole } from "@/types";
@@ -155,125 +151,12 @@ export function OrganizationManager() {
         return;
       }
 
-      // Code validation and joining is now handled by the validateAndUseInvitation hook
-      console.log(
-        "OrganizationManager: Searching for code:",
-        joinCode.toLowerCase(),
-      );
-      const codesQuery = query(
-        collection(db, "invitations"),
-        where("code", "==", joinCode.toLowerCase()),
-      );
-      console.log("OrganizationManager: Query created, executing...");
-      const codesSnapshot = await getDocs(codesQuery);
-      console.log(
-        "OrganizationManager: Raw query results:",
-        codesSnapshot.size,
-        "documents found",
-      );
-
-      // Filter by isUsed in code to avoid composite index issues
-      const availableCodes = codesSnapshot.docs.filter((doc) => {
-        const data = doc.data();
-        console.log(
-          "OrganizationManager: Checking code:",
-          data.code,
-          "isUsed:",
-          data.isUsed,
-        );
-        return data.isUsed === false;
-      });
-
-      console.log(
-        "OrganizationManager: Available codes after filtering:",
-        availableCodes.length,
-      );
-
-      if (availableCodes.length === 0) {
-        console.log("OrganizationManager: No available invitation codes found");
-        setJoinError("Invalid or expired invitation code");
-        return;
-      }
-
-      const invitationCode = availableCodes[0].data();
-      const codeId = availableCodes[0].id;
-
-      console.log("OrganizationManager: Found invitation code:", {
-        id: codeId,
-        code: invitationCode.code,
-        organizationId: invitationCode.organizationId,
-        role: invitationCode.role,
-        isUsed: invitationCode.isUsed,
-        expiresAt: invitationCode.expiresAt?.toDate(),
-        createdAt: invitationCode.createdAt?.toDate(),
-      });
-
-      // Check if code is expired
-      const expiresAt = invitationCode.expiresAt?.toDate();
-      const now = new Date();
-      console.log("OrganizationManager: Expiration check:", {
-        expiresAt,
-        now,
-        isExpired: expiresAt < now,
-      });
-
-      if (expiresAt < now) {
-        console.log("OrganizationManager: Code has expired");
-        setJoinError("Invitation code has expired");
-        return;
-      }
-
-      // Check if user is already a member
-      console.log(
-        "OrganizationManager: Checking if user is already a member of organization:",
-        invitationCode.organizationId,
-      );
-      const existingMembershipQuery = query(
-        collection(db, "organizationUsers"),
-        where("userId", "==", user.uid),
-        where("organizationId", "==", invitationCode.organizationId),
-      );
-      const existingMembershipSnapshot = await getDocs(existingMembershipQuery);
-      console.log(
-        "OrganizationManager: Existing membership check:",
-        existingMembershipSnapshot.size,
-        "documents found",
-      );
-
-      if (!existingMembershipSnapshot.empty) {
-        console.log(
-          "OrganizationManager: User is already a member of this organization",
-        );
-        setJoinError("You are already a member of this organization");
-        return;
-      }
-
-      // Add user to organization
-      await addDoc(collection(db, "organizationUsers"), {
-        userId: user.uid,
-        organizationId: invitationCode.organizationId,
-        role: invitationCode.role,
-        isActive: true,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      });
-
-      // Mark invitation code as used
-      const codeDocRef = doc(db, "invitations", codeId);
-      await updateDoc(codeDocRef, {
-        isUsed: true,
-        usedBy: user.uid,
-        usedAt: serverTimestamp(),
-      });
-
-      // Organization data will be refreshed automatically by the hook
-
-      // Switch to the new organization
+      // Join was successful, switch to the new organization
       console.log(
         "OrganizationManager: Switching to organization:",
-        invitationCode.organizationId,
+        result.organizationId,
       );
-      await selectOrganization(invitationCode.organizationId);
+      await selectOrganization(result.organizationId!);
 
       console.log("OrganizationManager: Successfully joined organization!");
       setShowJoinForm(false);
