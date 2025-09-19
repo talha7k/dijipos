@@ -24,7 +24,6 @@ import {
   Building2,
   Plus,
   Users,
-  ArrowRight,
   Crown,
   Mail,
   LogOut,
@@ -65,6 +64,7 @@ export function OrganizationManager() {
 
   const selectOrganization = (orgId: string) => {
     setOrganizationId(orgId);
+    router.push("/dashboard");
   };
 
   const toggleTheme = () => {
@@ -340,20 +340,7 @@ export function OrganizationManager() {
             </p>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex gap-3">
-            {organizationId && (
-              <Button
-                onClick={() => router.push("/dashboard")}
-                variant="gradient"
-                size="lg"
-                className="flex items-center gap-2"
-              >
-                <ArrowRight className="h-4 w-4" />
-                Continue to Dashboard
-              </Button>
-            )}
-          </div>
+
         </div>
 
         {/* Content Section Separator */}
