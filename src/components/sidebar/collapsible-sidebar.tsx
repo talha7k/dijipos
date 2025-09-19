@@ -1,13 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 import { useAuth } from "@/lib/hooks/useAuth";
-import { useAtom } from 'jotai';
-import { selectedOrganizationAtom } from '@/atoms';
+import { useAtom, useSetAtom } from 'jotai';
+import { selectedOrganizationAtom, logoutAtom } from '@/atoms';
 import { themeAtom, sidebarCollapsedAtom } from '@/atoms/uiAtoms';
-import { auth } from "@/lib/firebase/config";
+
 import { DesktopSidebar } from "./desktop-sidebar";
 import { MobileSidebar } from "./mobile-sidebar";
 import { SidebarProps } from "./sidebar-types";
@@ -22,7 +22,6 @@ export function CollapsibleSidebar({ className }: SidebarProps) {
     Purchases: true,
   });
   const pathname = usePathname();
-  const router = useRouter();
   const { user } = useAuth();
   const [selectedOrganization] = useAtom(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
@@ -37,13 +36,10 @@ export function CollapsibleSidebar({ className }: SidebarProps) {
     }));
   };
 
-  const handleLogout = async () => {
-    try {
-      await auth.signOut();
-      router.push("/login");
-    } catch (error) {
-      console.error("Error signing out:", error);
-    }
+  const logout = useSetAtom(logoutAtom);
+
+  const handleLogout = () => {
+    logout();
   };
 
   const sidebarProps = {

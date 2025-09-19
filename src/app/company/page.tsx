@@ -48,8 +48,8 @@ function CompanyContent() {
   const [selectedOrganizationId, setSelectedOrganizationId] = useAtom(selectedOrganizationIdAtom);
   const organizationId = selectedOrganization?.id;
   const organization = selectedOrganization;
-  const { invitationCodes, loading: codesLoading } = useInvitationCodesData(organizationId || undefined);
-  const { createInvitationCodeSimple, deleteInvitationCode } = useInvitationCodesActions(organizationId || undefined);
+  const { invitationCodes, loading: codesLoading, refetch: refetchInvitationCodes } = useInvitationCodesData(organizationId || undefined);
+  const { createInvitationCodeSimple, deleteInvitationCode } = useInvitationCodesActions(organizationId || undefined, refetchInvitationCodes);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -170,8 +170,11 @@ function CompanyContent() {
   const handleCreateInvitationCode = async () => {
     if (!organizationId) return;
 
+    console.log('handleCreateInvitationCode: Creating invitation code with role', invitationFormData.role);
+
     try {
       await createInvitationCodeSimple(invitationFormData.role, invitationFormData.expiresAt);
+      console.log('handleCreateInvitationCode: Successfully created invitation code');
 
       setInvitationDialogOpen(false);
       setInvitationFormData({
@@ -208,6 +211,8 @@ function CompanyContent() {
   const handleUpdateUser = async () => {
     if (!editingUser || !organizationId) return;
 
+    console.log('handleUpdateUser: Updating user', editingUser.id, 'with role', formData.role, 'and status', formData.isActive);
+
     try {
       await updateOrganizationUser(editingUser.id, {
         role: formData.role === 'admin' ? UserRole.ADMIN :
@@ -216,6 +221,7 @@ function CompanyContent() {
         isActive: formData.isActive,
       });
 
+      console.log('handleUpdateUser: Successfully updated user in database');
       setDialogOpen(false);
       setEditingUser(null);
       setFormData({
@@ -229,8 +235,11 @@ function CompanyContent() {
   };
 
   const handleToggleUserStatus = async (userId: string, isActive: boolean) => {
+    console.log('handleToggleUserStatus: Toggling user', userId, 'to status', isActive);
+
     try {
       await updateUserStatus(userId, isActive);
+      console.log('handleToggleUserStatus: Successfully updated user status in database');
       toast.success('User status updated successfully');
     } catch (error) {
       console.error('Error updating user status:', error);

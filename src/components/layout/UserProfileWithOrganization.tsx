@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAtomValue } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { selectedOrganizationAtom } from '@/atoms';
+import { selectedOrganizationAtom, logoutAtom } from '@/atoms';
 import { Button } from '@/components/ui/button';
 import { Building2, LogOut, ChevronDown, ChevronUp, User } from 'lucide-react';
 
@@ -18,19 +18,12 @@ export function UserProfileWithOrganization({
   const [isOpen, setIsOpen] = useState(false);
   const { user } = useAuth();
   const selectedOrganization = useAtomValue(selectedOrganizationAtom);
-  const logout = () => {
-    // TODO: implement logout
-    console.log('Logout not implemented');
-  };
+  const logout = useSetAtom(logoutAtom);
   const router = useRouter();
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-      setIsOpen(false);
-    } catch (error) {
-      console.error("Error signing out:", error);
-    }
+  const handleLogout = () => {
+    logout();
+    setIsOpen(false);
   };
 
   const handleProfileClick = () => {

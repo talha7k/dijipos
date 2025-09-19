@@ -68,6 +68,9 @@ export function TeamTab({
   invitationDialogOpen,
   setInvitationDialogOpen,
 }: TeamTabProps) {
+  // Debug logging
+  console.log('TeamTab: Received', organizationUsers.length, 'users and', invitationCodes.length, 'invitation codes');
+
   const getRoleBadgeColor = (role: OrganizationUser['role']) => {
     switch (role) {
       case 'admin':

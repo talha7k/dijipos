@@ -1,13 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { signOut } from 'firebase/auth';
-import { auth } from '@/lib/firebase/config';
-import { useRouter } from 'next/navigation';
 import { useQuotes } from '@/lib/hooks/useQuotes';
 import { useInvoices } from '@/lib/hooks/useInvoices';
 import { usePayments } from '@/lib/hooks/usePayments';
@@ -18,10 +12,6 @@ import { useCurrency } from '@/lib/hooks/useCurrency';
 import { TableStatus, Payment } from '@/types';
 
 function DashboardContent() {
-
-  const router = useRouter();
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
-
   const { quotes } = useQuotes();
   const { salesInvoices: invoices } = useInvoices();
   const { payments } = usePayments();
@@ -30,25 +20,12 @@ function DashboardContent() {
   const { tables } = useTables();
   const { formatCurrency } = useCurrency();
 
-  const handleLogout = async () => {
-    setIsLoggingOut(true);
-    try {
-      await signOut(auth);
-      router.push('/login');
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      setIsLoggingOut(false);
-    }
-  };
-
   
 
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Dashboard</h1>
-        <Button onClick={handleLogout} variant="outline" loading={isLoggingOut}>Logout</Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">

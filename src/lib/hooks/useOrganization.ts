@@ -15,7 +15,7 @@ import { getOrganization, getOrganizationsForUser, getOrganizationUsers } from '
 import { useAuth } from './useAuth';
 import { useRealtimeCollection } from './useRealtimeCollection';
 import { OrganizationUser } from '@/types';
-import { collection, query, where, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, where, getDocs, addDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase/config';
 
 /**
@@ -319,9 +319,10 @@ export function useOrganizationActions() {
       });
 
       // Mark invitation code as used
-      await addDoc(collection(db, 'usedInvitationCodes'), {
-        codeId,
-        userId: user.uid,
+      const codeDocRef = doc(db, 'invitationCodes', codeId);
+      await updateDoc(codeDocRef, {
+        isUsed: true,
+        usedBy: user.uid,
         usedAt: serverTimestamp(),
       });
 

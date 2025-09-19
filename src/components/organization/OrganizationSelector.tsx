@@ -12,7 +12,7 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import { selectedOrganizationAtom, userOrganizationsAtom, organizationUsersAtom, selectedOrganizationIdAtom } from '@/atoms';
 import { getOrganizationsForUser } from '@/lib/firebase/firestore/organizations';
 import { Building2, Plus, Users } from 'lucide-react';
-import { collection, query, where, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, where, getDocs, addDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { toast } from 'sonner';
 
@@ -106,9 +106,10 @@ export function OrganizationSelector({ children }: OrganizationSelectorProps) {
       });
       
       // Mark invitation code as used
-      await addDoc(collection(db, 'usedInvitationCodes'), {
-        codeId,
-        userId: user.uid,
+      const codeDocRef = doc(db, 'invitationCodes', codeId);
+      await updateDoc(codeDocRef, {
+        isUsed: true,
+        usedBy: user.uid,
         usedAt: serverTimestamp(),
       });
       

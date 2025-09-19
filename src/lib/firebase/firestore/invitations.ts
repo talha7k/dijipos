@@ -13,7 +13,7 @@ import { db } from '../config';
 import { InvitationCode, UserRole } from '@/types';
 
 // Collection references
-const invitationsRef = collection(db, 'invitations');
+const invitationsRef = collection(db, 'invitationCodes');
 
 /**
  * Create a new invitation code
