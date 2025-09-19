@@ -107,23 +107,40 @@ export async function updateOrder(orderId: string, updates: Partial<Omit<Order, 
 }
 
 /**
- * Delete an order and all its payments
- */
+  * Delete an order and all its payments
+  */
 export async function deleteOrder(orderId: string): Promise<void> {
   try {
+    console.log('Attempting to delete order with ID:', orderId);
+
+    // First check if the order document exists
+    const orderDocRef = doc(ordersRef, orderId);
+    const orderDoc = await getDoc(orderDocRef);
+
+    if (!orderDoc.exists()) {
+      console.error('Order document does not exist:', orderId);
+      throw new Error(`Order with ID ${orderId} does not exist`);
+    }
+
+    console.log('Order document exists, proceeding with deletion');
+
     const batch = writeBatch(db);
 
     // Delete order document
-    batch.delete(doc(ordersRef, orderId));
+    batch.delete(orderDocRef);
 
     // Delete all order payments
-    const paymentsRef = collection(doc(ordersRef, orderId), 'payments');
+    const paymentsRef = collection(orderDocRef, 'payments');
     const paymentsSnapshot = await getDocs(paymentsRef);
+    console.log(`Found ${paymentsSnapshot.docs.length} payment documents to delete`);
+
     paymentsSnapshot.docs.forEach(paymentDoc => {
       batch.delete(paymentDoc.ref);
     });
 
+    console.log('Committing batch delete operation');
     await batch.commit();
+    console.log('Successfully deleted order and payments');
   } catch (error) {
     console.error('Error deleting order:', error);
     throw error;
