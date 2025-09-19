@@ -64,7 +64,7 @@ import {
   Link,
 } from "lucide-react";
 import { toast } from "sonner";
-import { DateTimePicker } from "@/components/ui/date-time-picker";
+import { DatePicker } from "@/components/ui/date-picker";
 
 function UsersContent() {
   const selectedOrganization = useAtomValue(selectedOrganizationAtom);
@@ -248,16 +248,16 @@ function UsersContent() {
                     </SelectContent>
                   </Select>
                 </div>
-                <DateTimePicker
-                  label="Expires At"
-                  value={invitationFormData.expiresAt}
-                  onChange={(date) =>
-                    setInvitationFormData({
-                      ...invitationFormData,
-                      expiresAt: date,
-                    })
-                  }
-                />
+                 <DatePicker
+                   label="Expires At"
+                   value={invitationFormData.expiresAt}
+                   onChange={(date) =>
+                     setInvitationFormData({
+                       ...invitationFormData,
+                       expiresAt: date || new Date(),
+                     })
+                   }
+                 />
                 <div className="flex justify-end space-x-2 pt-4">
                   <Button
                     variant="outline"
