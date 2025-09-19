@@ -134,37 +134,7 @@ export default function SimplifiedPOSPage() {
     }
   }, [pathname, setCurrentView, setCategoryPath]);
 
-  // Fetch payments for orders when viewing orders
-  React.useEffect(() => {
-    const fetchOrderPayments = async () => {
-      if (currentView === 'orders' && orders.length > 0) {
-        setOrderPaymentsLoading(true);
-        try {
-          const paymentsMap: { [orderId: string]: OrderPayment[] } = {};
 
-          await Promise.all(
-            orders.map(async (order) => {
-              try {
-                const payments = await getPaymentsForOrder(order.id);
-                paymentsMap[order.id] = payments;
-              } catch (error) {
-                console.error(`Error fetching payments for order ${order.id}:`, error);
-                paymentsMap[order.id] = [];
-              }
-            })
-          );
-
-          setOrderPayments(paymentsMap);
-        } catch (error) {
-          console.error('Error fetching order payments:', error);
-        } finally {
-          setOrderPaymentsLoading(false);
-        }
-      }
-    };
-
-    fetchOrderPayments();
-  }, [currentView, orders, getPaymentsForOrder]);
 
   // Update VAT settings atom when store settings change
   React.useEffect(() => {
@@ -581,7 +551,6 @@ export default function SimplifiedPOSPage() {
              tables={tables}
              customers={customers}
              orders={orders}
-              orderPayments={orderPayments}
              paymentTypes={paymentTypes}
              selectedOrder={selectedOrder}
              categoryPath={categoryPath}

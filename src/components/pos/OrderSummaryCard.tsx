@@ -31,7 +31,6 @@ import { formatDateTime, truncateTextByType } from "@/lib/utils";
 
 interface OrderSummaryCardProps {
   order: Order;
-  payments?: OrderPayment[];
   showPaymentStatus?: boolean;
   showOrderDetails?: boolean;
   showItemCount?: boolean;
@@ -48,7 +47,6 @@ interface OrderSummaryCardProps {
 
 export function OrderSummaryCard({
   order,
-  payments = [],
   showOrderDetails = true,
   showItemCount = false,
   showCreatedDate = false,
@@ -150,7 +148,6 @@ export function OrderSummaryCard({
                 order={order}
                 organization={selectedOrganization}
                 receiptTemplates={receiptTemplates}
-                payments={payments}
                 printerSettings={printerSettings}
               >
                 <Button variant="outline" size="sm" className="flex-1">

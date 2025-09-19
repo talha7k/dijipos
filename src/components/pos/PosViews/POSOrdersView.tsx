@@ -1,16 +1,15 @@
 import { Order, OrderPayment, OrderStatus, PaymentStatus } from "@/types";
 
-import { OrderDetailView } from "@/components/orders/OrderDetail/OrderDetailView";
+import { OrderDetailView } from "./OrderDetailView";
 import { useOrders } from "@/lib/hooks/useOrders";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { ArrowLeft, Clock, Loader2 } from "lucide-react";
-import { OrderSummaryCard } from "./OrderSummaryCard";
+import { OrderSummaryCard } from "@/components/pos/OrderSummaryCard";
 
 interface POSOrderGridProps {
   orders: Order[];
-  payments: { [orderId: string]: OrderPayment[] };
   onOrderSelect: (order: Order) => void;
   onPayOrder: (order: Order) => void;
   onBack: () => void;
@@ -19,7 +18,6 @@ interface POSOrderGridProps {
 
 export function POSOrderGrid({
   orders,
-  payments,
   onOrderSelect,
   onPayOrder,
   onBack,
@@ -31,23 +29,7 @@ export function POSOrderGrid({
     "all" | "open" | "completed" | "preparing" | "cancelled" | "on_hold"
   >("open");
 
-  // Fetch payments for selected order if not available
-  useEffect(() => {
-    const fetchPaymentsForSelectedOrder = async () => {
-      if (selectedOrder && (!payments[selectedOrder.id] || payments[selectedOrder.id].length === 0)) {
-        try {
-          const orderPayments = await getPaymentsForOrder(selectedOrder.id);
-          // Update payments state - but we need to pass this up to parent
-          // For now, let's trigger a refresh of the parent component
-          onOrderUpdate?.();
-        } catch (error) {
-          console.error(`Error fetching payments for order ${selectedOrder.id}:`, error);
-        }
-      }
-    };
 
-    fetchPaymentsForSelectedOrder();
-  }, [selectedOrder, payments, getPaymentsForOrder, onOrderUpdate]);
 
   // Helper functions to replace the legacy hook functionality
   const selectOrder = (order: Order) => {
@@ -175,7 +157,6 @@ export function POSOrderGrid({
     return (
       <OrderDetailView
         order={selectedOrder}
-        payments={payments[selectedOrder.id] || []}
         onBack={handleBackToList}
         onReopenOrder={handleReopenOrder}
       />
@@ -281,7 +262,6 @@ export function POSOrderGrid({
               <OrderSummaryCard
                 key={order.id}
                 order={order}
-                payments={payments[order.id] || []}
                 onClick={handleOrderSelect}
                 showPaymentStatus={true}
                 showOrderDetails={true}

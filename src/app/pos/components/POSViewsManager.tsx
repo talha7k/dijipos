@@ -1,14 +1,28 @@
-import React from 'react';
-import { POSItemsGrid } from '@/components/orders/POSItemsGrid';
-import { POSCategoriesGrid } from '@/components/orders/POSCategoriesGrid';
-import { POSBreadcrumb } from '@/components/orders/POSBreadcrumb';
-import { POSTableGrid } from '@/components/orders/POSTableGrid';
-import { POSCustomerGrid } from '@/components/orders/POSCustomerGrid';
-import { POSOrderGrid } from '@/components/orders/POSOrderGrid';
-import { POSPaymentGrid } from '@/components/orders/POSPaymentGrid';
-import { Category, Product, Service, Table, Customer, Order, OrderPayment, PaymentType } from '@/types';
+import React from "react";
+import { POSItemsGrid } from "@/components/orders/POSItemsGrid";
+import { POSCategoriesGrid } from "@/components/orders/POSCategoriesGrid";
+import { POSBreadcrumb } from "@/components/orders/POSBreadcrumb";
+import { POSTableGrid } from "@/components/orders/POSTableGrid";
+import { POSCustomerGrid } from "@/components/orders/POSCustomerGrid";
+import { POSOrderGrid } from "@/components/orders/POSOrderGrid";
+import { POSPaymentGrid } from "@/components/orders/POSPaymentGrid";
+import {
+  Category,
+  Product,
+  Service,
+  Table,
+  Customer,
+  Order,
+  OrderPayment,
+  PaymentType,
+} from "@/types";
 
-export type POSViewType = 'items' | 'tables' | 'customers' | 'orders' | 'payment';
+export type POSViewType =
+  | "items"
+  | "tables"
+  | "customers"
+  | "orders"
+  | "payment";
 
 interface POSViewsManagerProps {
   currentView: POSViewType;
@@ -18,7 +32,6 @@ interface POSViewsManagerProps {
   tables: Table[];
   customers: Customer[];
   orders: Order[];
-  orderPayments: { [orderId: string]: OrderPayment[] };
   paymentTypes: PaymentType[];
   selectedOrder: Order | null;
   categoryPath: string[];
@@ -26,7 +39,7 @@ interface POSViewsManagerProps {
   onCategoryClick: (categoryId: string) => void;
   onNavigateToRoot: () => void;
   onNavigateToPath: (path: string[]) => void;
-  onItemClick: (item: Product | Service, type: 'product' | 'service') => void;
+  onItemClick: (item: Product | Service, type: "product" | "service") => void;
   onTableSelect: (table: Table) => void;
   onCustomerSelect: (customer: Customer) => void;
   onOrderSelect: (order: Order) => void;
@@ -43,7 +56,6 @@ export function POSViewsManager({
   tables,
   customers,
   orders,
-  orderPayments,
   paymentTypes,
   selectedOrder,
   categoryPath,
@@ -60,7 +72,7 @@ export function POSViewsManager({
   onPaymentProcessed,
 }: POSViewsManagerProps) {
   switch (currentView) {
-    case 'items':
+    case "items":
       return (
         <div className="h-full grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-0">
           {/* Items Grid */}
@@ -87,12 +99,13 @@ export function POSViewsManager({
                   </div>
 
                   {/* Uncategorized Items Section at Root Level */}
-                  {(products.filter(p => !p.categoryId).length > 0 || services.filter(s => !s.categoryId).length > 0) && (
+                  {(products.filter((p) => !p.categoryId).length > 0 ||
+                    services.filter((s) => !s.categoryId).length > 0) && (
                     <POSItemsGrid
                       categories={categories}
                       products={products}
                       services={services}
-                      categoryPath={['uncategorized']}
+                      categoryPath={["uncategorized"]}
                       onCategoryClick={onCategoryClick}
                       onItemClick={onItemClick}
                     />
@@ -113,7 +126,7 @@ export function POSViewsManager({
         </div>
       );
 
-    case 'tables':
+    case "tables":
       return (
         <POSTableGrid
           tables={tables}
@@ -123,7 +136,7 @@ export function POSViewsManager({
         />
       );
 
-    case 'customers':
+    case "customers":
       return (
         <POSCustomerGrid
           customers={customers}
@@ -132,18 +145,17 @@ export function POSViewsManager({
         />
       );
 
-    case 'orders':
+    case "orders":
       return (
         <POSOrderGrid
-          orders={orders.filter(order => order.status !== 'cancelled')}
-          payments={orderPayments}
+          orders={orders.filter((order) => order.status !== "cancelled")}
           onOrderSelect={onOrderSelect}
           onPayOrder={onPayOrder}
           onBack={onBackToItems}
         />
       );
 
-    case 'payment':
+    case "payment":
       if (!selectedOrder) return null;
       return (
         <POSPaymentGrid

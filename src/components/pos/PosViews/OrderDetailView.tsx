@@ -1,16 +1,14 @@
-import { Order, OrderPayment } from "@/types";
-import { OrderDetail } from "@/components/orders/OrderDetail/OrderDetail";
+import { Order } from "@/types";
+import { OrderDetail } from "@/components/pos/OrderDetailView/OrderDetail";
 
 interface OrderDetailViewProps {
   order: Order;
-  payments: OrderPayment[];
   onBack: () => void;
   onReopenOrder: (order: Order) => void;
 }
 
 export function OrderDetailView({
   order,
-  payments,
   onBack,
   onReopenOrder,
 }: OrderDetailViewProps) {
@@ -18,7 +16,6 @@ export function OrderDetailView({
     <div className="flex-1 flex flex-col bg-background">
       <OrderDetail
         order={order}
-        payments={payments}
         onBack={onBack}
         onReopenOrder={onReopenOrder}
       />

@@ -1,20 +1,18 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { Order, OrderPayment } from "@/types";
+import { Order } from "@/types";
 import { OrderSummaryCard } from "@/components/pos/OrderSummaryCard";
 import { PaymentList } from "@/components/pos/PaymentList";
 import { OrderDetailItemList } from "./OrderDetailItemList";
 
 interface OrderDetailProps {
   order: Order;
-  payments: OrderPayment[];
   onBack: () => void;
   onReopenOrder: (order: Order) => void;
 }
 
 export function OrderDetail({
   order,
-  payments,
   onBack,
   onReopenOrder,
 }: OrderDetailProps) {
@@ -34,7 +32,6 @@ export function OrderDetail({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <OrderSummaryCard
               order={order}
-              payments={payments} //due to print dialog display of payments.
               showPaymentStatus={true}
               showOrderDetails={true}
             />
@@ -52,7 +49,7 @@ export function OrderDetail({
             />
           </div>
           <div className="mb-6">
-            <PaymentList payments={payments} orderTotal={order.total} />
+            <PaymentList orderId={order.id} orderTotal={order.total} />
           </div>
         </div>
       </div>

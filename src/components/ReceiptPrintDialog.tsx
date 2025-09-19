@@ -16,6 +16,7 @@ import { createReceiptQRData, generateZatcaQRCode } from "@/lib/zatca-qr";
 import { formatDateTime } from "@/lib/utils";
 import { renderTemplate } from "@/lib/template-renderer";
 import { DialogWithActions } from "@/components/ui/DialogWithActions";
+import { useOrders } from "@/lib/hooks/useOrders";
 
 async function renderReceipt(
   templateObj: ReceiptTemplate,
@@ -118,16 +119,19 @@ export function ReceiptPrintDialog({
   order,
   organization,
   receiptTemplates,
-  payments = [],
+  payments: initialPayments = [],
   printerSettings,
   children,
 }: ReceiptPrintDialogProps) {
+  const { getPaymentsForOrder } = useOrders();
   const [open, setOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
   const [renderedHtml, setRenderedHtml] = useState("");
   const [pageSize, setPageSize] = useState("80mm");
   const [direction, setDirection] = useState<"ltr" | "rtl">("ltr");
+  const [payments, setPayments] = useState<OrderPayment[]>(initialPayments);
+  const [paymentsLoading, setPaymentsLoading] = useState(false);
   const [margins, setMargins] = useState({
     top: 0,
     right: 0,
@@ -175,9 +179,31 @@ export function ReceiptPrintDialog({
     }
   }, [open, printerSettings, receiptTemplates]);
 
+  // Effect to fetch payments when dialog opens
+  useEffect(() => {
+    if (open && initialPayments.length === 0) {
+      const fetchPayments = async () => {
+        try {
+          setPaymentsLoading(true);
+          const orderPayments = await getPaymentsForOrder(order.id);
+          setPayments(orderPayments);
+        } catch (error) {
+          console.error('Error fetching payments for receipt:', error);
+          setPayments([]);
+        } finally {
+          setPaymentsLoading(false);
+        }
+      };
+
+      fetchPayments();
+    } else if (open && initialPayments.length > 0) {
+      setPayments(initialPayments);
+    }
+  }, [open, order.id, initialPayments, getPaymentsForOrder]);
+
   // Effect to render the preview when settings change
   useEffect(() => {
-    if (open && selectedTemplate) {
+    if (open && selectedTemplate && !paymentsLoading) {
       const template = receiptTemplates.find((t) => t.id === selectedTemplate);
       if (template) {
         setDirection(template.type?.includes("arabic") ? "rtl" : "ltr");
@@ -192,9 +218,15 @@ export function ReceiptPrintDialog({
     organization,
     payments,
     printerSettings,
+    paymentsLoading,
   ]);
 
   const renderPreview = async (template: ReceiptTemplate) => {
+    if (paymentsLoading) {
+      setRenderedHtml("<p style='color: gray;'>Loading payment information...</p>");
+      return;
+    }
+
     try {
       const content = await renderReceipt(
         template,
@@ -224,10 +256,10 @@ export function ReceiptPrintDialog({
           <Button onClick={() => setOpen(false)}>Cancel</Button>
           <Button
             onClick={handlePrint}
-            disabled={!selectedTemplate || isGenerating}
+            disabled={!selectedTemplate || isGenerating || paymentsLoading}
           >
             <Printer className="h-4 w-4 mr-2" />
-            {isGenerating ? "Processing..." : "Print Receipt"}
+            {paymentsLoading ? "Loading payments..." : isGenerating ? "Processing..." : "Print Receipt"}
           </Button>
         </>
       }
