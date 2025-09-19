@@ -127,7 +127,7 @@ export const defaultEnglishReceiptTemplate = `<!DOCTYPE html>
       <div style="text-align: center; margin-top: 15px; padding-top: 10px; border-top: 1px dashed #000;">
         <p style="font-size: 0.75rem; color: #666; margin-bottom: 5px;">ZATCA Compliant QR Code</p>
         <div style="display: inline-block; padding: 5px; background: white; border: 1px solid #ddd;">
-          <img src="{{qrCodeUrl}}" alt="ZATCA QR Code" style="width: 80px; height: 80px;" />
+          <img src="{{qrCodeUrl}}" alt="ZATCA QR Code" style="max-width: 90%; padding: 2%;" />
         </div>
       </div>
       {{/includeQR}}
