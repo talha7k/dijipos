@@ -1,27 +1,137 @@
-'use client';
+import React, { useState, useEffect, ReactNode } from "react";
+import { Printer } from "lucide-react";
+import { toast } from "sonner";
+import { renderTemplate } from "@/lib/template-renderer"; // Assuming local file
 
-import { useState } from 'react';
-import { DialogWithActions } from '@/components/ui/DialogWithActions';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Label } from '@/components/ui/label';
-import { TemplateSelector } from '@/components/ui/TemplateSelector';
-import { PrinterSettingsPreview } from '@/components/ui/printer-settings-preview';
-import { Printer } from 'lucide-react';
-import { Quote, Organization, Customer, QuoteTemplate, PrinterSettings } from '@/types';
-import { renderQuoteTemplate } from '@/lib/template-renderer';
-import { toast } from 'sonner';
+// --- START: Self-Contained Dependencies ---
+
+const DialogWithActions = ({
+  open,
+  onOpenChange,
+  title,
+  trigger,
+  children,
+  maxWidth,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  title: string;
+  trigger: ReactNode;
+  children: ReactNode;
+  maxWidth?: string;
+}) => {
+  if (!open) return <div onClick={() => onOpenChange(true)}>{trigger}</div>;
+  return (
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: "rgba(0,0,0,0.5)",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        zIndex: 50,
+      }}
+    >
+      <div
+        style={{
+          background: "white",
+          padding: "20px",
+          borderRadius: "8px",
+          width: "90%",
+          maxWidth: "800px",
+          color: "black",
+        }}
+      >
+        <h2>{title}</h2>
+        {children}
+      </div>
+    </div>
+  );
+};
+const Button = (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+  <button {...props} />
+);
+
+type Quote = {
+  id: string;
+  createdAt: Date;
+  validUntil?: Date;
+  status: string;
+  clientName: string;
+  clientAddress: string;
+  subtotal: number;
+  taxAmount: number;
+  total: number;
+  notes: string;
+  items: any[];
+};
+type Organization = {
+  name: string;
+  nameAr?: string;
+  address: string;
+  phone: string;
+  vatNumber: string;
+  logoUrl?: string;
+};
+type QuoteTemplate = {
+  id: string;
+  name: string;
+  type?: string;
+  content?: string;
+};
+type Customer = { name: string; address: string; vatNumber: string };
+type QuoteTemplateData = { [key: string]: any };
+
+const defaultQuoteEnglish = `<!DOCTYPE html><html><body><h1>Quote {{quoteId}}</h1></body></html>`;
+const defaultQuoteArabic = `<!DOCTYPE html><html dir="rtl"><body><h1>عرض سعر {{quoteId}}</h1></body></html>`;
+
+// --- END: Self-Contained Dependencies ---
+
+async function renderQuote(
+  templateObj: QuoteTemplate,
+  quote: Quote,
+  organization: Organization | null,
+  customer?: Customer,
+): Promise<string> {
+  const data: QuoteTemplateData = {
+    quoteId: quote.id,
+    quoteDate: new Date(quote.createdAt).toLocaleDateString(),
+    validUntil: quote.validUntil
+      ? new Date(quote.validUntil).toLocaleDateString()
+      : "N/A",
+    status: quote.status,
+    companyName: organization?.name || "",
+    companyNameAr: organization?.nameAr || "",
+    clientName: customer?.name || quote.clientName || "",
+    clientAddress: customer?.address || quote.clientAddress || "",
+    subtotal: (quote.subtotal || 0).toFixed(2),
+    taxAmount: (quote.taxAmount || 0).toFixed(2),
+    total: (quote.total || 0).toFixed(2),
+    notes: quote.notes || "",
+    items: quote.items.map((item) => ({
+      ...item,
+      unitPrice: item.unitPrice.toFixed(2),
+      total: item.total.toFixed(2),
+    })),
+  };
+  const templateContent =
+    templateObj.content ||
+    (templateObj.type?.includes("arabic")
+      ? defaultQuoteArabic
+      : defaultQuoteEnglish);
+  return renderTemplate(templateContent, data);
+}
 
 interface QuotePrintDialogProps {
   quote: Quote;
   organization: Organization | null;
   quoteTemplates: QuoteTemplate[];
   customer?: Customer;
-  printerSettings?: PrinterSettings | null;
   children: React.ReactNode;
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
 }
 
 export function QuotePrintDialog({
@@ -29,244 +139,80 @@ export function QuotePrintDialog({
   organization,
   quoteTemplates,
   customer,
-  printerSettings,
   children,
-  open: controlledOpen,
-  onOpenChange: controlledOnOpenChange
 }: QuotePrintDialogProps) {
-  const [internalOpen, setInternalOpen] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState<string>('');
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<string>("");
+  const [renderedHtml, setRenderedHtml] = useState("");
+  const [direction, setDirection] = useState<"ltr" | "rtl">("ltr");
 
-  const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
-  const setOpen = controlledOnOpenChange || setInternalOpen;
-
-  // Set default template on open
-  const handleOpenChange = (newOpen: boolean) => {
-    if (newOpen) {
-      console.log(`[QuotePrintDialog] Opening dialog with:`, {
-        templatesCount: quoteTemplates.length,
-        printerSettings: printerSettings ? {
-          receipts: printerSettings.receipts?.defaultTemplateId,
-          invoices: printerSettings.invoices?.defaultTemplateId,
-          quotes: printerSettings.quotes?.defaultTemplateId,
-        } : null,
-        templates: quoteTemplates.map(t => ({ id: t.id, name: t.name }))
-      });
-
-      // First try to get default template from printer settings
-      const printerDefaultId = printerSettings?.quotes?.defaultTemplateId;
-      let selectedId = "";
-      
-      if (printerDefaultId) {
-        const printerDefaultTemplate = quoteTemplates.find((t) => t.id === printerDefaultId);
-        if (printerDefaultTemplate) {
-          selectedId = printerDefaultTemplate.id;
-          console.log(`[QuotePrintDialog] Using printer default template: ${printerDefaultTemplate.name}`);
-        } else {
-          console.log(`[QuotePrintDialog] Printer default template not found: ${printerDefaultId}`);
-        }
-      }
-      
-      
-      
-      // Final fallback to first template
-      if (!selectedId && quoteTemplates.length > 0) {
-        selectedId = quoteTemplates[0].id;
-        console.log(`[QuotePrintDialog] Using first template as fallback: ${quoteTemplates[0].name}`);
-      }
-      
-      setSelectedTemplate(selectedId);
+  useEffect(() => {
+    if (open && quoteTemplates.length > 0 && !selectedTemplate) {
+      setSelectedTemplate(quoteTemplates[0].id);
     }
-    setOpen(newOpen);
-  };
+  }, [open, quoteTemplates, selectedTemplate]);
 
-  const generateQuote = async () => {
-    const template = quoteTemplates.find(t => t.id === selectedTemplate);
-    if (!template) return;
-
-    setIsGenerating(true);
-
-    try {
-      // Render the quote using template
-      const renderedContent = await renderQuoteTemplate(template, quote, organization, customer, printerSettings || undefined);
-
-      // Calculate appropriate window width based on paper width
-      const paperWidthMm = printerSettings?.quotes?.paperWidth || 210;
-      // Convert mm to pixels (assuming 96 DPI) and add some padding for UI
-      const windowWidth = Math.max(600, Math.min(1200, paperWidthMm * 3.78 + 200));
-      const windowHeight = 800;
-
-      // Create a new window for printing (safer than manipulating current DOM)
-      const printWindow = window.open('', '_blank', `width=${windowWidth},height=${windowHeight}`);
-      if (!printWindow) {
-        throw new Error('Unable to open print window. Please check your popup blocker.');
+  useEffect(() => {
+    if (open && selectedTemplate) {
+      const template = quoteTemplates.find((t) => t.id === selectedTemplate);
+      if (template) {
+        setDirection(template.type?.includes("arabic") ? "rtl" : "ltr");
+        renderPreview(template);
       }
-
-      // Write the quote content to the new window
-      printWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <title>Quote - ${quote.id}</title>
-            <style>
-              body {
-                margin: 0;
-                padding: 0;
-                font-family: Arial, sans-serif;
-              }
-              @media print {
-                body {
-                  margin: 0;
-                  padding: 0;
-                }
-              }
-            </style>
-          </head>
-          <body>
-            ${renderedContent}
-          </body>
-        </html>
-      `);
-
-      printWindow.document.close();
-
-      // Wait for content to load then print
-      printWindow.onload = () => {
-        printWindow.print();
-        // Close the window after printing (with a delay to allow print dialog)
-        setTimeout(() => {
-          printWindow.close();
-          setIsGenerating(false);
-          setOpen(false);
-          toast.success('Quote sent to printer!');
-        }, 1000);
-      };
-
-    } catch (error) {
-      console.error('Error generating quote:', error);
-      setIsGenerating(false);
-      toast.error(error instanceof Error ? error.message : 'Error generating quote. Please try again.');
     }
+  }, [open, selectedTemplate, quote, organization, customer]);
+
+  const renderPreview = async (template: QuoteTemplate) => {
+    const content = await renderQuote(template, quote, organization, customer);
+    setRenderedHtml(content);
   };
-
-
-
-  const actions = (
-    <>
-      <Button
-        variant="outline"
-        onClick={() => setOpen(false)}
-      >
-        Cancel
-      </Button>
-      <Button
-        onClick={generateQuote}
-        disabled={!selectedTemplate || quoteTemplates.length === 0 || isGenerating}
-        className="flex items-center gap-2"
-      >
-        <Printer className="h-4 w-4" />
-        {isGenerating ? 'Generating...' : 'Print Quote'}
-      </Button>
-    </>
-  );
 
   return (
     <DialogWithActions
       open={open}
-      onOpenChange={handleOpenChange}
+      onOpenChange={setOpen}
       title="Print Quote"
-      description="Select a quote template and print your quote"
-      actions={actions}
-      trigger={controlledOpen === undefined ? children : undefined}
-      
+      trigger={children}
+      maxWidth="max-w-4xl"
     >
-      <div className="grid grid-cols-2 gap-6">
-        {/* Left Column - Quote & Settings */}
-        <div className="space-y-6">
-          {/* Quote Summary */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Quote Summary</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <table className="w-full text-sm">
-                <tbody>
-                  <tr>
-                    <td className="font-medium py-1">Quote #:</td>
-                    <td className="py-1">{quote.id}</td>
-                  </tr>
-                  <tr>
-                    <td className="font-medium py-1">Date:</td>
-                    <td className="py-1">{new Date(quote.createdAt).toLocaleString()}</td>
-                  </tr>
-                  {quote.validUntil && (
-                    <tr>
-                      <td className="font-medium py-1">Valid Until:</td>
-                      <td className="py-1">{new Date(quote.validUntil).toLocaleDateString()}</td>
-                    </tr>
-                  )}
-                  {customer && (
-                    <>
-                      <tr>
-                        <td className="font-medium py-1">Customer:</td>
-                        <td className="py-1">{customer.name}</td>
-                      </tr>
-                      {customer.email && (
-                        <tr>
-                          <td className="font-medium py-1">Email:</td>
-                          <td className="py-1">{customer.email}</td>
-                        </tr>
-                      )}
-                    </>
-                  )}
-                  <tr>
-                    <td className="font-medium py-1">Total:</td>
-                    <td className="py-1 font-bold">${(quote.total || 0).toFixed(2)}</td>
-                  </tr>
-                  <tr>
-                    <td className="font-medium py-1">Status:</td>
-                    <td className="py-1">
-                      <Badge variant="outline" className="ml-0">{quote.status}</Badge>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-             </CardContent>
-            </Card>
-
-            {/* Printer Settings Preview */}
-            <PrinterSettingsPreview
-              printerSettings={printerSettings}
-              documentType="quotes"
+      <div className="flex h-[80vh] font-sans">
+        <div className="w-1/4 p-4 border-r bg-gray-100 overflow-y-auto space-y-4">
+          <h2 className="text-lg font-bold">Settings</h2>
+          <div>
+            <label className="block text-sm font-medium">Quote Template</label>
+            <select
+              value={selectedTemplate}
+              onChange={(e) => setSelectedTemplate(e.target.value)}
+              className="w-full p-2 border rounded"
+            >
+              {quoteTemplates.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium">Direction</label>
+            <select
+              value={direction}
+              onChange={(e) => setDirection(e.target.value as "ltr" | "rtl")}
+              className="w-full p-2 border rounded"
+            >
+              <option value="ltr">Left-to-Right (LTR)</option>
+              <option value="rtl">Right-to-Left (RTL)</option>
+            </select>
+          </div>
+        </div>
+        <div className="w-3/4 p-6 bg-gray-200 overflow-y-auto flex justify-center items-start">
+          <div className="w-[210mm] min-h-[297mm] bg-white shadow-lg p-8">
+            <div
+              dir={direction}
+              dangerouslySetInnerHTML={{ __html: renderedHtml }}
             />
           </div>
-
-         {/* Right Column - Template Selection */}
-         <div className="space-y-6">
-           {/* Template Selection */}
-            <Card>
-             <CardHeader>
-               <CardTitle className="text-lg">Select Quote Template</CardTitle>
-             </CardHeader>
-             <CardContent>
-               {quoteTemplates.length === 0 ? (
-                 <p className="text-muted-foreground">No quote templates available. Please create templates in Settings.</p>
-               ) : (
-                 <TemplateSelector
-                   templates={quoteTemplates}
-                   selectedTemplate={selectedTemplate}
-                   onTemplateChange={setSelectedTemplate}
-                   label="Select Quote Template"
-                   variant="radio"
-                   printerSettings={printerSettings}
-                   templateType="quotes"
-                 />
-               )}
-             </CardContent>
-           </Card>
-         </div>
-       </div>
+        </div>
+      </div>
     </DialogWithActions>
   );
 }
