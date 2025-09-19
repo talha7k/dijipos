@@ -32,6 +32,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ImageUpload } from '@/components/ui/image-upload';
 import { toast } from 'sonner';
 import { DatePicker } from '@/components/ui/date-picker';
+import { CompanyInfoTab } from '@/components/company/CompanyInfoTab';
+import { BrandingTab } from '@/components/company/BrandingTab';
+import { TeamTab } from '@/components/company/TeamTab';
+import { AccountTab } from '@/components/company/AccountTab';
 
 
 
@@ -310,424 +314,59 @@ function CompanyContent() {
         </TabsList>
 
         <TabsContent value="company" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Company Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="companyName">Company Name (English)</Label>
-                  <Input
-                    id="companyName"
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                    placeholder="Enter company name in English"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="companyNameAr">Company Name (Arabic)</Label>
-                  <Input
-                    id="companyNameAr"
-                    value={companyNameAr}
-                    onChange={(e) => setCompanyNameAr(e.target.value)}
-                    placeholder="Enter company name in Arabic"
-                    dir="rtl"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="companyEmail">Company Email</Label>
-                  <Input
-                    id="companyEmail"
-                    type="email"
-                    value={companyEmail}
-                    onChange={(e) => setCompanyEmail(e.target.value)}
-                    placeholder="Enter company email"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="companyPhone">Phone Number</Label>
-                  <Input
-                    id="companyPhone"
-                    value={companyPhone}
-                    onChange={(e) => setCompanyPhone(e.target.value)}
-                    placeholder="Enter phone number"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="companyAddress">Company Address</Label>
-                  <Input
-                    id="companyAddress"
-                    value={companyAddress}
-                    onChange={(e) => setCompanyAddress(e.target.value)}
-                    placeholder="Enter company address"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="vatNumber">VAT Number</Label>
-                  <Input
-                    id="vatNumber"
-                    value={vatNumber}
-                    onChange={(e) => setVatNumber(e.target.value)}
-                    placeholder="Enter VAT number"
-                  />
-                </div>
-              </div>
-
-              <Button onClick={handleSaveCompanyInfo} loading={saving}>
-                Save Changes
-              </Button>
-            </CardContent>
-          </Card>
+          <CompanyInfoTab
+            companyName={companyName}
+            setCompanyName={setCompanyName}
+            companyNameAr={companyNameAr}
+            setCompanyNameAr={setCompanyNameAr}
+            companyEmail={companyEmail}
+            setCompanyEmail={setCompanyEmail}
+            companyAddress={companyAddress}
+            setCompanyAddress={setCompanyAddress}
+            companyPhone={companyPhone}
+            setCompanyPhone={setCompanyPhone}
+            vatNumber={vatNumber}
+            setVatNumber={setVatNumber}
+            handleSaveCompanyInfo={handleSaveCompanyInfo}
+            saving={saving}
+          />
         </TabsContent>
 
         <TabsContent value="branding" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Company Branding</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <Label>Company Logo</Label>
-                  <div className="flex flex-col items-center space-y-4">
-                    {logoUrl ? (
-                      <div className="relative">
-                        <Image
-                          src={logoUrl}
-                          alt="Company Logo"
-                          width={96}
-                          height={96}
-                          className="w-24 h-24 object-contain border rounded"
-                        />
-                        <Button 
-                          variant="destructive" 
-                          size="icon" 
-                          className="absolute -top-2 -right-2 h-6 w-6"
-                          onClick={handleRemoveLogo}
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="w-24 h-24 border-2 border-dashed border-gray-300 rounded flex items-center justify-center">
-                        <span className="text-gray-400 text-xs">No Logo</span>
-                      </div>
-                    )}
-                    <ImageUpload
-                      value={logoUrl}
-                      onChange={(url) => setLogoUrl(url || '')}
-                      path={`organizations/${organizationId}`}
-                      placeholder="Upload company logo"
-                      maxSize={2}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <Label>Company Stamp</Label>
-                  <div className="flex flex-col items-center space-y-4">
-                    {stampUrl ? (
-                      <div className="relative">
-                        <Image
-                          src={stampUrl}
-                          alt="Company Stamp"
-                          width={96}
-                          height={96}
-                          className="w-24 h-24 object-contain border rounded"
-                        />
-                        <Button 
-                          variant="destructive" 
-                          size="icon" 
-                          className="absolute -top-2 -right-2 h-6 w-6"
-                          onClick={handleRemoveStamp}
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="w-24 h-24 border-2 border-dashed border-gray-300 rounded flex items-center justify-center">
-                        <span className="text-gray-400 text-xs">No Stamp</span>
-                      </div>
-                    )}
-                    <ImageUpload
-                      value={stampUrl}
-                      onChange={(url) => setStampUrl(url || '')}
-                      path={`organizations/${organizationId}`}
-                      placeholder="Upload company stamp"
-                      maxSize={2}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <Button onClick={handleSaveCompanyInfo} loading={saving}>
-                Save Changes
-              </Button>
-            </CardContent>
-          </Card>
+          <BrandingTab
+            logoUrl={logoUrl}
+            setLogoUrl={setLogoUrl}
+            stampUrl={stampUrl}
+            setStampUrl={setStampUrl}
+            handleRemoveLogo={handleRemoveLogo}
+            handleRemoveStamp={handleRemoveStamp}
+            handleSaveCompanyInfo={handleSaveCompanyInfo}
+            saving={saving}
+            organizationId={organizationId}
+          />
         </TabsContent>
 
         <TabsContent value="team" className="space-y-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold">Team Management</h2>
-            <Dialog open={invitationDialogOpen} onOpenChange={setInvitationDialogOpen}>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Generate Invitation Code
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Generate Invitation Code</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="role">Role</Label>
-                   <Select value={invitationFormData.role} onValueChange={(value: string) => setInvitationFormData({ ...invitationFormData, role: value as UserRole })}>
-                     <SelectTrigger>
-                       <SelectValue placeholder="Select role" />
-                     </SelectTrigger>
-                     <SelectContent>
-                       <SelectItem value={UserRole.ADMIN}>Admin</SelectItem>
-                       <SelectItem value={UserRole.MANAGER}>Manager</SelectItem>
-                       <SelectItem value={UserRole.WAITER}>Waiter</SelectItem>
-                       <SelectItem value={UserRole.CASHIER}>Cashier</SelectItem>
-                     </SelectContent>
-                   </Select>
-                  </div>
-                   <DatePicker
-                     label="Expires At"
-                     value={invitationFormData.expiresAt}
-                      onChange={(date) =>
-                        setInvitationFormData({
-                          ...invitationFormData,
-                          expiresAt: date || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-                        })
-                      }
-                   />
-                  <div className="flex justify-end space-x-2 pt-4">
-                    <Button variant="outline" onClick={() => setInvitationDialogOpen(false)}>
-                      Cancel
-                    </Button>
-                    <Button onClick={handleCreateInvitationCode}>
-                      Generate Code
-                    </Button>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </div>
-
-          {/* Invitation Codes Section */}
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Invitation Codes</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Code</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Expires At</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {invitationCodes.map((invitationCode) => {
-                    const RoleIcon = getRoleIcon(invitationCode.role);
-                    
-                    return (
-                      <TableRow key={invitationCode.id}>
-                        <TableCell className="font-medium font-mono">{invitationCode.code}</TableCell>
-                        <TableCell>
-                          <Badge variant={getRoleBadgeColor(invitationCode.role)} className="capitalize">
-                            <RoleIcon className="h-3 w-3 mr-1" />
-                            {invitationCode.role}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{invitationCode.expiresAt.toLocaleDateString()}</TableCell>
-                        <TableCell>
-                          <Badge variant={invitationCode.isUsed ? 'secondary' : 'default'}>
-                            {invitationCode.isUsed ? 'Used' : 'Available'}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{invitationCode.createdAt.toLocaleDateString()}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center space-x-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleCopyInvitationCode(invitationCode.code)}
-                              disabled={invitationCode.isUsed}
-                            >
-                              <Copy className="h-4 w-4" />
-                            </Button>
-                            
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  disabled={invitationCode.isUsed}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Delete Invitation Code</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Are you sure you want to delete this invitation code? This action cannot be undone.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction onClick={() => handleDeleteInvitationCode(invitationCode.id)}>
-                                    Delete
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                  {invitationCodes.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
-                        <div className="flex flex-col items-center">
-                          <Link className="h-12 w-12 mb-4 text-gray-400" />
-                          <p>No invitation codes found. Generate your first invitation code to get started.</p>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-
-          {/* Organization Users Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Team Members</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>User ID</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {organizationUsers.map((organizationUser) => {
-                    const RoleIcon = getRoleIcon(organizationUser.role);
-                    
-                    return (
-                      <TableRow key={organizationUser.id}>
-                        <TableCell className="font-medium">{organizationUser.userId}</TableCell>
-                        <TableCell>
-                          <Badge variant={getRoleBadgeColor(organizationUser.role)} className="capitalize">
-                            <RoleIcon className="h-3 w-3 mr-1" />
-                            {organizationUser.role}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={organizationUser.isActive ? 'default' : 'secondary'}>
-                            {organizationUser.isActive ? 'Active' : 'Inactive'}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{organizationUser.createdAt?.toLocaleDateString()}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center space-x-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => openEditDialog(organizationUser)}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            
-                            <Switch
-                              checked={organizationUser.isActive}
-                              onCheckedChange={() => handleToggleUserStatus(organizationUser.id, organizationUser.isActive)}
-                            />
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                  {organizationUsers.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
-                        <div className="flex flex-col items-center">
-                          <Users className="h-12 w-12 mb-4 text-gray-400" />
-                          <p>No team members found. Users will appear here when they join using invitation codes.</p>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-
-          {/* Edit User Dialog */}
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle>Edit User Role</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="role">Role</Label>
-                   <Select value={formData.role} onValueChange={(value: string) => setFormData({ ...formData, role: value as UserRole })}>
-                     <SelectTrigger>
-                       <SelectValue placeholder="Select role" />
-                     </SelectTrigger>
-                     <SelectContent>
-                       <SelectItem value={UserRole.ADMIN}>Admin</SelectItem>
-                       <SelectItem value={UserRole.MANAGER}>Manager</SelectItem>
-                       <SelectItem value={UserRole.WAITER}>Waiter</SelectItem>
-                       <SelectItem value={UserRole.CASHIER}>Cashier</SelectItem>
-                     </SelectContent>
-                   </Select>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="isActive"
-                    checked={formData.isActive}
-                    onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
-                  />
-                  <Label htmlFor="isActive">Active User</Label>
-                </div>
-                <div className="flex justify-end space-x-2 pt-4">
-                  <Button variant="outline" onClick={() => setDialogOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleUpdateUser}>
-                    Update User
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <TeamTab
+            invitationCodes={invitationCodes}
+            organizationUsers={organizationUsers}
+            handleCreateInvitationCode={handleCreateInvitationCode}
+            handleDeleteInvitationCode={handleDeleteInvitationCode}
+            handleCopyInvitationCode={handleCopyInvitationCode}
+            handleUpdateUser={handleUpdateUser}
+            handleToggleUserStatus={handleToggleUserStatus}
+            openEditDialog={openEditDialog}
+            editingUser={editingUser}
+            setEditingUser={setEditingUser}
+            formData={formData}
+            setFormData={setFormData}
+            invitationFormData={invitationFormData}
+            setInvitationFormData={setInvitationFormData}
+            dialogOpen={dialogOpen}
+            setDialogOpen={setDialogOpen}
+            invitationDialogOpen={invitationDialogOpen}
+            setInvitationDialogOpen={setInvitationDialogOpen}
+          />
         </TabsContent>
 
         <TabsContent value="subscription" className="space-y-6">
@@ -768,58 +407,12 @@ function CompanyContent() {
         </TabsContent>
 
         <TabsContent value="account" className="space-y-6">
-           <Card>
-             <CardHeader>
-               <CardTitle>Account Information</CardTitle>
-             </CardHeader>
-             <CardContent className="space-y-4">
-               <div className="flex items-center space-x-4">
-                 <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-                   <User className="h-8 w-8" />
-                 </div>
-                 <div>
-                   <h3 className="text-lg font-semibold">{userDisplayName || user?.email}</h3>
-                   <p className="text-muted-foreground">{user?.email}</p>
-                 </div>
-               </div>
-
-<div className="space-y-4 pt-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="userDisplayName">Display Name</Label>
-                    <Input
-                      id="userDisplayName"
-                      value={userDisplayName}
-                      disabled
-                      placeholder="Display name cannot be changed"
-                    />
-                  </div>
-                </div>
-
-               <div className="grid grid-cols-2 gap-4 pt-4">
-                 <div className="flex items-center space-x-2">
-                   <Mail className="h-4 w-4 text-muted-foreground" />
-                   <span>{user?.email}</span>
-                 </div>
-                 <div className="flex items-center space-x-2">
-                   <Calendar className="h-4 w-4 text-muted-foreground" />
-                   <span>Joined {organization?.createdAt?.toLocaleDateString()}</span>
-                 </div>
-               </div>
-
-               <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-                 <Button variant="outline" className="w-full justify-start">
-                   Change Password
-                 </Button>
-                 <Button variant="outline" className="w-full justify-start">
-                   Two-Factor Authentication
-                 </Button>
-                 <Button variant="destructive" className="w-full justify-start col-span-2">
-                   Delete Account
-                 </Button>
-               </div>
-             </CardContent>
-           </Card>
-         </TabsContent>
+          <AccountTab
+            userDisplayName={userDisplayName}
+            userEmail={user?.email}
+            organizationCreatedAt={organization?.createdAt}
+          />
+        </TabsContent>
       </Tabs>
     </div>
   );
