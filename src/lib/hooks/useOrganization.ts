@@ -120,10 +120,13 @@ export function useOrganizationManager() {
         }
         setUserOrganizationAssociations(associations);
 
-        // If no org is selected, select the first one.
-        // Only reset selection if selectedOrgId is explicitly null/undefined, not if it's just not in the current list
-        if (orgs.length > 0 && !selectedOrgId) {
+        // If no org is selected, or if the selected org is not in the user's orgs, select the first one
+        const selectedOrgExists = orgs.some(org => org.id === selectedOrgId);
+        if (orgs.length > 0 && (!selectedOrgId || !selectedOrgExists)) {
           setSelectedOrgId(orgs[0].id);
+        } else if (orgs.length === 0) {
+          // No organizations, clear selection
+          setSelectedOrgId(null);
         }
       } catch (err) {
         console.error('Error fetching organizations:', err);
@@ -173,24 +176,26 @@ export function useOrganizationManager() {
           setOrganizationUserRole(userRole || null);
           console.log('Set user role:', userRole);
         }
-      } catch (err) {
-        console.error('Error fetching organization details:', err);
-        if (err instanceof Error) {
-          if (err.message === 'Operation timed out') {
-            setError('Organization details loading timed out. Please check your connection and try again.');
-          } else {
-            setError('Failed to fetch organization details: ' + err.message);
-          }
-        } else {
-          setError('Failed to fetch organization details: Unknown error');
-        }
-      } finally {
-        setOrganizationDetailsLoading(false);
-      }
+       } catch (err) {
+         console.error('Error fetching organization details:', err);
+         if (err instanceof Error) {
+           if (err.message === 'Operation timed out') {
+             setError('Organization details loading timed out. Please check your connection and try again.');
+           } else {
+             setError('Failed to fetch organization details: ' + err.message);
+           }
+         } else {
+           setError('Failed to fetch organization details: Unknown error');
+         }
+         // Clear the selected organization ID if we can't fetch the organization
+         setSelectedOrgId(null);
+       } finally {
+         setOrganizationDetailsLoading(false);
+       }
     };
 
     fetchOrgDetails();
-  }, [selectedOrgId, setSelectedOrganization, setOrganizationUserRole, setError, setOrganizationDetailsLoading, user?.uid]);
+   }, [selectedOrgId, setSelectedOrganization, setOrganizationUserRole, setError, setOrganizationDetailsLoading, user?.uid, setSelectedOrgId]);
 
   // Use the real-time hook to listen to users of the selected organization
   // and sync the result directly to its atom.

@@ -11,6 +11,7 @@ import { defaultQuoteArabic } from '@/components/templates/quotes/default-quote-
 import { createReceiptQRData, generateZatcaQRCode } from '@/lib/zatca-qr';
 import { ReceiptTemplateData, InvoiceTemplateData, QuoteTemplateData, TemplateData } from '@/types/template';
 import { PrinterSettings } from '@/types';
+import { formatDateTime } from '@/lib/utils';
 
 // Utility function to convert image URL to base64
 async function convertImageToBase64(imageUrl: string): Promise<string> {
@@ -75,10 +76,11 @@ export async function renderReceiptTemplate(
      companyPhone: organization?.phone || '',
      companyVat: organization?.vatNumber || '',
      companyLogo: companyLogoUrl,
-     orderNumber: order.orderNumber,
-     queueNumber: order.queueNumber || '',
-     orderDate: new Date(order.createdAt).toLocaleString(),
-     tableName: order.tableName || '',
+      orderNumber: order.orderNumber,
+      queueNumber: order.queueNumber || '',
+      orderDate: new Date(order.createdAt).toLocaleString(),
+      formattedDate: formatDateTime(order.createdAt),
+      tableName: order.tableName || '',
      customerName: order.customerName || '',
      createdByName: order.createdByName || '',
      orderType: order.orderType || 'dine-in',

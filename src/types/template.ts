@@ -82,10 +82,11 @@ export interface ReceiptTemplateData {
   companyPhone: string;
   companyVat: string;
   companyLogo: string;
-  orderNumber: string;
-  queueNumber?: string;
-  orderDate: string;
-  tableName: string;
+   orderNumber: string;
+   queueNumber?: string;
+   orderDate: string;
+   formattedDate: string;
+   tableName: string;
   customerName: string;
   createdByName: string;
   orderType: string;

@@ -37,6 +37,33 @@ export function formatDate(
   }).format(dateObj);
 }
 
+export function formatDateTime(
+  date: Date | string | number | null | undefined,
+  includeTime: boolean = true,
+): string {
+  if (!date) return "";
+
+  const dateObj = date instanceof Date ? date : new Date(date);
+
+  if (includeTime) {
+    const dateStr = new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    }).format(dateObj);
+
+    const timeStr = new Intl.DateTimeFormat("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    }).format(dateObj);
+
+    return `${dateStr} (${timeStr.toLowerCase()})`;
+  }
+
+  return formatDate(dateObj);
+}
+
 // Table status colors
 export const tableStatusColors = {
   available: "bg-green-100 text-green-800 border-green-200",

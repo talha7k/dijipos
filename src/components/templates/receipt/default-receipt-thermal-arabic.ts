@@ -37,67 +37,69 @@ export const defaultArabicReceiptTemplate = `<!DOCTYPE html>
     </div>
     {{/customHeader}}
 
-    <div class="header">
-      {{#companyLogo}}
-      <div style="text-align: center; margin-bottom: 10px;">
-        <img src="{{companyLogo}}" alt="شعار الشركة" style="max-width: 100px; max-height: 50px;" />
-      </div>
-      {{/companyLogo}}
-      <div class="bilingual">
-        <div class="english"><h2>{{companyName}}</h2></div>
-        <div class="arabic"><h2>{{companyNameAr}}</h2></div>
-      </div>
-      <div class="bilingual">
-        <p><strong>Address (العنوان):</strong>  {{companyAddress}}</p>
-      </div>
-      <div class="bilingual">
-        <p><strong>Tel (الهاتف):</strong>  {{companyPhone}}</p>
-      </div>
-      {{#companyVat}}
-      <div class="bilingual">
-        <p><strong>VAT Number (الرقم الضريبي):</strong>  {{companyVat}}</p>
-      </div>
-      {{/companyVat}}
-      <hr>
-      <div class="bilingual">
-        <p><strong>Order # (طلب #):</strong>  {{orderNumber}}</p>
-        {{#queueNumber}}<p><strong>Queue # (رقم الدور):</strong>  {{queueNumber}}</p>{{/queueNumber}}
-        <p><strong>Type (النوع):</strong>  {{orderType}}</p>
-        <p><strong>Date (التاريخ):</strong>  {{orderDate}}</p>
-      </div>
-      {{#tableName}}
-      <div class="bilingual">
-        <p><strong>Table (الطاولة):</strong>  {{tableName}}</p>
-      </div>
-      {{/tableName}}
-      {{#customerName}}
-      <div class="bilingual">
-        <p><strong>Customer (العميل):</strong>  {{customerName}}</p>
-      </div>
-      {{/customerName}}
-      {{#createdByName}}
-      <div class="bilingual">
-        <p><strong>Served by (خدم من قبل):</strong>  {{createdByName}}</p>
-      </div>
-      {{/createdByName}}
+     <div class="header">
+       {{#companyLogo}}
+       <div style="text-align: center; margin-bottom: 10px;">
+         <img src="{{companyLogo}}" alt="شعار الشركة" style="max-width: 100px; max-height: 50px;" />
+       </div>
+       {{/companyLogo}}
+        <div style="text-align: center; margin-bottom: 10px;">
+          <div class="english"><h2>{{companyName}}</h2></div>
+          {{#companyNameAr}}
+          <div class="arabic"><h2>{{companyNameAr}}</h2></div>
+          {{/companyNameAr}}
+        </div>
+       <div class="bilingual">
+         <p><strong>Address</strong> <span style="color: #666;">(العنوان)</span>: {{companyAddress}}</p>
+       </div>
+       <div class="bilingual">
+         <p><strong>Tel</strong> <span style="color: #666;">(الهاتف)</span>: {{companyPhone}}</p>
+       </div>
+       {{#companyVat}}
+       <div class="bilingual">
+         <p><strong>VAT Number</strong> <span style="color: #666;">(الرقم الضريبي)</span>: {{companyVat}}</p>
+       </div>
+       {{/companyVat}}
+       <hr>
+       <div class="bilingual">
+         <p><strong>Order #</strong> <span style="color: #666;">(طلب #)</span>: {{orderNumber}}</p>
+         {{#queueNumber}}<p><strong>Queue #</strong> <span style="color: #666;">(رقم الدور)</span>: {{queueNumber}}</p>{{/queueNumber}}
+         <p><strong>Type</strong> <span style="color: #666;">(النوع)</span>: {{orderType}}</p>
+         <p><strong>Date</strong> <span style="color: #666;">(التاريخ)</span>: {{formattedDate}}</p>
+       </div>
+       {{#tableName}}
+       <div class="bilingual">
+         <p><strong>Table</strong> <span style="color: #666;">(الطاولة)</span>: {{tableName}}</p>
+       </div>
+       {{/tableName}}
+       {{#customerName}}
+       <div class="bilingual">
+         <p><strong>Customer</strong> <span style="color: #666;">(العميل)</span>: {{customerName}}</p>
+       </div>
+       {{/customerName}}
+       {{#createdByName}}
+       <div class="bilingual">
+         <p><strong>Served by</strong> <span style="color: #666;">(خدم من قبل)</span>: {{createdByName}}</p>
+       </div>
+       {{/createdByName}}
       <hr>
     </div>
 
     <div class="content">
       <table>
-        <thead>
-          <tr>
-            <th class="item-col">
-              <strong>Item<br>(الصنف)</strong>
-            </th>
-            <th class="qty-col">
-              <strong>Qty<br>(الكمية)</strong>
-            </th>
-            <th class="amount-col">
-              <strong>Amount<br>(المبلغ)</strong>
-            </th>
-          </tr>
-        </thead>
+         <thead>
+           <tr>
+             <th class="item-col">
+               <strong>Item</strong><br><span style="color: #666; font-size: 11px;">(الصنف)</span>
+             </th>
+             <th class="qty-col">
+               <strong>Qty</strong><br><span style="color: #666; font-size: 11px;">(الكمية)</span>
+             </th>
+             <th class="amount-col">
+               <strong>Amount</strong><br><span style="color: #666; font-size: 11px;">(المبلغ)</span>
+             </th>
+           </tr>
+         </thead>
         <tbody>
           {{#each items}}
           <tr>
@@ -110,50 +112,46 @@ export const defaultArabicReceiptTemplate = `<!DOCTYPE html>
       </table>
     </div>
 
-    <div class="total">
-       <div class="bilingual">
-         <div style="display: flex; justify-content: space-between; align-items: center;">
-           <span><strong>Total Qty</strong></span>
-           <span><strong>إجمالي الكمية</strong></span>
-         </div>
-         <div style="text-align: right; font-weight: bold;">{{totalQty}}</div>
-       </div>
-       <div class="bilingual">
-         <div style="display: flex; justify-content: space-between; align-items: center;">
-           <span><strong>Items Value</strong></span>
-           <span><strong>قيمة الأصناف</strong></span>
-         </div>
-         <div style="text-align: right; font-weight: bold;">{{subtotal}}</div>
-       </div>
-       <div class="bilingual">
-         <div style="display: flex; justify-content: space-between; align-items: center;">
-           <span><strong>Total VAT ({{vatRate}}%)</strong></span>
-           <span><strong>إجمالي الضريبة ({{vatRate}}%)</strong></span>
-         </div>
-         <div style="text-align: right; font-weight: bold;">{{vatAmount}}</div>
-       </div>
-<div class="bilingual total-amount">
+     <div class="total">
+        <div class="bilingual">
           <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span><strong>TOTAL</strong></span>
-            <span><strong>المبلغ الإجمالي</strong></span>
+            <span><strong>Qty</strong> <span style="color: #666;">(إجمالي الكمية)</span></span>
           </div>
-          <div style="text-align: right; font-weight: bold; font-size: 16px;">{{total}}</div>
+          <div style="text-align: right; font-weight: bold;">{{totalQty}}</div>
         </div>
-    </div>
+         <div class="bilingual">
+           <div style="display: flex; justify-content: space-between; align-items: center;">
+             <span><strong>Subtotal</strong> <span style="color: #666;">(المجموع الفرعي)</span></span>
+           </div>
+           <div style="text-align: right; font-weight: bold;">{{subtotal}}</div>
+         </div>
+         <div class="bilingual">
+           <div style="display: flex; justify-content: space-between; align-items: center;">
+             <span><strong>VAT ({{vatRate}}%)</strong> <span style="color: #666;">(ضريبة)</span></span>
+           </div>
+           <div style="text-align: right; font-weight: bold;">{{vatAmount}}</div>
+         </div>
+ <div class="bilingual total-amount">
+           <div style="display: flex; justify-content: space-between; align-items: center;">
+             <span><strong>TOTAL</strong> <span style="color: #666;">(المبلغ الإجمالي)</span></span>
+           </div>
+           <div style="text-align: right; font-weight: bold; font-size: 16px;">{{total}}</div>
+         </div>
+     </div>
 
     {{#payments}}
     <div style="margin-top: 15px;">
       <table style="width: 100%; border-collapse: collapse;">
-        <thead>
-          <tr>
-             <th style="text-align: right; border-bottom: 1px solid #000; padding: 2px 10px;">
-               <strong>Payment<br>(نوع الدفع)</strong>
-             </th>
-             <th style="text-align: right; border-bottom: 1px solid #000; padding: 2px 10px;">
-               <strong>Amount<br>(المبلغ)</strong>
-             </th>
-          </tr>
-        </thead>
+         <thead>
+           <tr>
+              <th style="text-align: right; border-bottom: 1px solid #000; padding: 2px 10px;">
+                <strong>Payment</strong><br><span style="color: #666; font-size: 11px;">(نوع الدفع)</span>
+              </th>
+              <th style="text-align: right; border-bottom: 1px solid #000; padding: 2px 10px;">
+                <strong>Amount</strong><br><span style="color: #666; font-size: 11px;">(المبلغ)</span>
+              </th>
+           </tr>
+         </thead>
         <tbody>
           {{#each payments}}
           <tr>
@@ -174,7 +172,7 @@ export const defaultArabicReceiptTemplate = `<!DOCTYPE html>
 
     <div class="footer" style="border-top: 1px dashed #000">
       <div class="bilingual">
-        <p>{{companyAddress}}</p> 
+        <p>{{companyAddress}}</p>
       </div>
       {{#includeQR}}
       <div style="text-align: center; margin-top: 15px; padding-top: 10px; border-top: 1px dashed #000;">
