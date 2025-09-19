@@ -2,7 +2,7 @@ import { Order, OrderPayment, OrderStatus, PaymentStatus } from "@/types";
 
 import { OrderDetailView } from "@/components/orders/OrderDetail/OrderDetailView";
 import { useOrders } from "@/lib/hooks/useOrders";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { ArrowLeft, Clock, Loader2 } from "lucide-react";
@@ -25,11 +25,29 @@ export function POSOrderGrid({
   onBack,
   onOrderUpdate,
 }: POSOrderGridProps) {
-  const { loading, updateExistingOrder } = useOrders();
+  const { loading, updateExistingOrder, getPaymentsForOrder } = useOrders();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [filterStatus, setFilterStatus] = useState<
     "all" | "open" | "completed" | "preparing" | "cancelled" | "on_hold"
   >("open");
+
+  // Fetch payments for selected order if not available
+  useEffect(() => {
+    const fetchPaymentsForSelectedOrder = async () => {
+      if (selectedOrder && (!payments[selectedOrder.id] || payments[selectedOrder.id].length === 0)) {
+        try {
+          const orderPayments = await getPaymentsForOrder(selectedOrder.id);
+          // Update payments state - but we need to pass this up to parent
+          // For now, let's trigger a refresh of the parent component
+          onOrderUpdate?.();
+        } catch (error) {
+          console.error(`Error fetching payments for order ${selectedOrder.id}:`, error);
+        }
+      }
+    };
+
+    fetchPaymentsForSelectedOrder();
+  }, [selectedOrder, payments, getPaymentsForOrder, onOrderUpdate]);
 
   // Helper functions to replace the legacy hook functionality
   const selectOrder = (order: Order) => {
@@ -270,8 +288,6 @@ export function POSOrderGrid({
                 showItemCount={true}
                 showCreatedDate={true}
                 onStatusChange={wrapUpdateStatus}
-                onMarkAsPaid={wrapMarkAsPaid}
-                onCompleteOrder={wrapCompleteOrder}
                 onReopenOrder={handleReopenOrder}
               />
             ))}

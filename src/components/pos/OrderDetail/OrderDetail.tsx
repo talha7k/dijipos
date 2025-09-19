@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { Order, OrderPayment } from "@/types";
-import { OrderSummaryCard } from "@/components/orders/OrderSummaryCard";
-import { PaymentList } from "@/components/orders/PaymentList";
+import { OrderSummaryCard } from "@/components/pos/OrderSummaryCard";
+import { PaymentList } from "@/components/pos/PaymentList";
 import { OrderDetailItemList } from "./OrderDetailItemList";
 
 interface OrderDetailProps {
@@ -30,11 +30,11 @@ export function OrderDetail({
         </div>
       </div>
       <div className="flex-1 overflow-y-auto">
-        <div className="p-4">
+        <div className="p-4 pb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <OrderSummaryCard
               order={order}
-              payments={payments}
+              payments={payments} //due to print dialog display of payments.
               showPaymentStatus={true}
               showOrderDetails={true}
             />
@@ -51,7 +51,9 @@ export function OrderDetail({
               }
             />
           </div>
-          <PaymentList payments={payments} orderTotal={order.total} />
+          <div className="mb-6">
+            <PaymentList payments={payments} orderTotal={order.total} />
+          </div>
         </div>
       </div>
     </div>
