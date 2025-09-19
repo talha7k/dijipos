@@ -57,6 +57,10 @@ export function POSHeader({
 }: POSHeaderProps) {
   const { formatCurrency } = useCurrency();
 
+  // Debug current state
+  console.log('[POSHeader] currentView:', currentView, 'cartItems.length:', cartItems.length, 'selectedOrder:', !!selectedOrder);
+  console.log('[POSHeader] condition check:', currentView === 'items' && cartItems.length > 0);
+
 
 
   const handleOrderToggle = () => {
@@ -105,6 +109,7 @@ export function POSHeader({
                 </Badge>
               )
             ) : (
+              // Always show New Order button when no selected order
               currentView === 'items' && cartItems.length > 0 ? (
                 <ClearOrderDialog
                   title="Confirm New Order"

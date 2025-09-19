@@ -160,7 +160,7 @@ export default function SimplifiedPOSPage() {
     }
     
     // Set current queue number when adding items to cart
-    console.log('Setting current queue number to:', nextQueueNumber);
+    console.log('Setting current queue number to:', nextQueueNumber, '(nextQueueNumber value)');
     setCurrentQueueNumber(nextQueueNumber);
   }, [cartItems, setCartItems, nextQueueNumber, setCurrentQueueNumber]);
 
@@ -281,7 +281,9 @@ export default function SimplifiedPOSPage() {
         resetPOSState();
 
         // Increment queue number for new orders
-        setNextQueueNumber(nextQueueNumber + 1);
+        const newQueueNumber = nextQueueNumber + 1;
+        console.log('Incrementing queue number from', nextQueueNumber, 'to', newQueueNumber);
+        setNextQueueNumber(newQueueNumber);
       }
     } catch (error) {
       console.error('Error saving order:', error);
@@ -370,7 +372,9 @@ export default function SimplifiedPOSPage() {
 
     // If this is a new order (not reopening existing), increment the queue counter
     if (!selectedOrder) {
-      setNextQueueNumber(nextQueueNumber + 1);
+      const newQueueNumber = nextQueueNumber + 1;
+      console.log('Payment flow: Incrementing queue number from', nextQueueNumber, 'to', newQueueNumber);
+      setNextQueueNumber(newQueueNumber);
     }
 
     const orderToPay = selectedOrder || {
