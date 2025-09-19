@@ -180,7 +180,7 @@ export const defaultArabicReceiptTemplate = `<!DOCTYPE html>
           <img src="{{qrCodeUrl}}" alt="رمز QR متوافق مع زاتكا" style="width: 110px; height: 110px;" />
         </div>
       </div>
-         <p style="font-size: 0.75rem; color: #666; margin-bottom: 5px;">Powered by DijiBill.com</p>
+         <p style="font-size: 0.75rem; color: #666; margin-bottom: 5px;">Powered by Dijitize.com</p>
 
       {{/includeQR}}
     </div>
