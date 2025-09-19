@@ -1,20 +1,225 @@
+import React, { useState, useEffect } from "react";
+import { Printer } from "lucide-react";
+import { toast } from "sonner";
+
+// --- UI Components ---
 import { DialogWithActions } from "@/components/ui/DialogWithActions";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { TemplateSelector } from "@/components/ui/TemplateSelector";
-import { PrinterSettingsPreview } from "@/components/ui/printer-settings-preview";
-import { Printer } from "lucide-react";
+
+// --- Types & Enums ---
 import {
   Order,
-  ReceiptTemplate,
   Organization,
+  ReceiptTemplate,
   OrderPayment,
   PrinterSettings,
 } from "@/types";
-import { renderReceiptTemplate } from "@/lib/template-renderer";
-import { toast } from "sonner";
-import { useState } from "react";
+import { ReceiptTemplateData } from "@/types/template";
+
+// --- Default Templates ---
+import { defaultEnglishReceiptTemplate } from "@/components/templates/receipt/default-receipt-thermal-english";
+import { defaultReceiptA4Template } from "@/components/templates/receipt/default-receipt-a4-english";
+import { defaultArabicReceiptTemplate } from "@/components/templates/receipt/default-receipt-thermal-arabic";
+import { defaultArabicReceiptA4Template } from "@/components/templates/receipt/default-receipt-a4-arabic";
+
+// --- Utility Functions ---
+import { createReceiptQRData, generateZatcaQRCode } from "@/lib/zatca-qr";
+import { formatDateTime } from "@/lib/utils";
+
+// ====================================================================================
+// SECTION: Template Rendering Logic
+// ====================================================================================
+
+/**
+ * Generates a ZATCA-compliant QR code for a given order.
+ * @param order The order object.
+ * @param organization The organization object.
+ * @returns A promise that resolves to the base64 encoded QR code image.
+ */
+async function generateZatcaQR(
+  order: Order,
+  organization: Organization | null,
+): Promise<string> {
+  try {
+    const qrData = createReceiptQRData(order, organization);
+    return await generateZatcaQRCode(qrData);
+  } catch (error) {
+    console.error("Failed to generate QR code:", error);
+    // Return a placeholder 1x1 pixel transparent PNG if generation fails
+    return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
+  }
+}
+
+/**
+ * Retrieves the default HTML template content based on the template type.
+ * @param templateType A string identifying the template type (e.g., 'english_thermal').
+ * @returns The HTML content of the default template as a string.
+ */
+function getDefaultReceiptTemplate(
+  templateType: string = "english_thermal",
+): string {
+  switch (templateType) {
+    case "english_a4":
+      return defaultReceiptA4Template;
+    case "arabic_a4":
+      return defaultArabicReceiptA4Template;
+    case "arabic_thermal":
+      return defaultArabicReceiptTemplate;
+    case "english_thermal":
+    default:
+      return defaultEnglishReceiptTemplate;
+  }
+}
+
+/**
+ * Replaces placeholders in an HTML template string with actual data.
+ * @param template The HTML template string with {{placeholders}}.
+ * @param data The data object containing values to inject.
+ * @returns The final rendered HTML string.
+ */
+function renderTemplateContent(
+  template: string,
+  data: ReceiptTemplateData,
+): string {
+  let result = template;
+
+  // Replace simple placeholders like {{companyName}}
+  result = result.replace(/{{companyName}}/g, data.companyName);
+  result = result.replace(/{{companyNameAr}}/g, data.companyNameAr);
+  result = result.replace(/{{companyAddress}}/g, data.companyAddress);
+  result = result.replace(/{{companyPhone}}/g, data.companyPhone);
+  result = result.replace(/{{companyVat}}/g, data.companyVat);
+  result = result.replace(/{{companyLogo}}/g, data.companyLogo);
+  result = result.replace(/{{orderNumber}}/g, data.orderNumber);
+  result = result.replace(/{{queueNumber}}/g, data.queueNumber || "");
+  result = result.replace(/{{orderDate}}/g, data.orderDate);
+  result = result.replace(/{{formattedDate}}/g, data.formattedDate);
+  result = result.replace(/{{tableName}}/g, data.tableName);
+  result = result.replace(/{{customerName}}/g, data.customerName);
+  result = result.replace(/{{createdByName}}/g, data.createdByName);
+  result = result.replace(/{{orderType}}/g, data.orderType);
+  result = result.replace(/{{paymentMethod}}/g, data.paymentMethod);
+  result = result.replace(/{{subtotal}}/g, data.subtotal);
+  result = result.replace(/{{vatRate}}/g, data.vatRate);
+  result = result.replace(/{{vatAmount}}/g, data.vatAmount);
+  result = result.replace(/{{total}}/g, data.total);
+  result = result.replace(/{{totalQty}}/g, data.totalQty.toString());
+  result = result.replace(/{{customHeader}}/g, data.customHeader || "");
+  result = result.replace(/{{customFooter}}/g, data.customFooter || "");
+
+  // Handle conditional QR code block
+  if (data.includeQR && data.qrCodeUrl) {
+    result = result.replace(
+      /{{#includeQR}}([\s\S]*?){{\/includeQR}}/g,
+      (match, content) => {
+        return content.replace(/{{qrCodeUrl}}/g, data.qrCodeUrl || "");
+      },
+    );
+  } else {
+    result = result.replace(/{{#includeQR}}[\s\S]*?{{\/includeQR}}/g, "");
+  }
+
+  // Handle items loop: {{#each items}}...{{/each}}
+  result = result.replace(
+    /{{#each items}}([\s\S]*?){{\/each}}/g,
+    (match, itemTemplate) => {
+      return data.items
+        .map((item) =>
+          itemTemplate
+            .replace(/{{name}}/g, item.name)
+            .replace(/{{quantity}}/g, item.quantity.toString())
+            .replace(/{{total}}/g, item.total),
+        )
+        .join("");
+    },
+  );
+
+  // Handle payments loop: {{#each payments}}...{{/each}}
+  result = result.replace(
+    /{{#each payments}}([\s\S]*?){{\/each}}/g,
+    (match, paymentTemplate) => {
+      return data.payments
+        .map((payment) =>
+          paymentTemplate
+            .replace(/{{paymentType}}/g, payment.paymentType)
+            .replace(/{{amount}}/g, payment.amount),
+        )
+        .join("");
+    },
+  );
+
+  return result;
+}
+
+/**
+ * Prepares data and renders a complete receipt template.
+ * @param template The ReceiptTemplate object.
+ * @param order The Order object.
+ * @param organization The Organization object.
+ * @param payments An array of OrderPayment objects.
+ * @param printerSettings Optional printer settings.
+ * @returns A promise that resolves to the final rendered HTML string.
+ */
+export async function renderReceiptTemplate(
+  template: ReceiptTemplate,
+  order: Order,
+  organization: Organization | null,
+  payments: OrderPayment[] = [],
+  printerSettings?: PrinterSettings,
+): Promise<string> {
+  const companyLogoUrl = organization?.logoUrl || "";
+  const qrCodeBase64 = await generateZatcaQR(order, organization);
+  const totalQty = order.items.reduce((sum, item) => sum + item.quantity, 0);
+
+  // Prepare the data object for the template
+  const data: ReceiptTemplateData = {
+    companyName: organization?.name || "",
+    companyNameAr: organization?.nameAr || "",
+    companyAddress: organization?.address || "",
+    companyPhone: organization?.phone || "",
+    companyVat: organization?.vatNumber || "",
+    companyLogo: companyLogoUrl,
+    orderNumber: order.orderNumber,
+    queueNumber: order.queueNumber || "",
+    orderDate: new Date(order.createdAt).toLocaleString(),
+    formattedDate: formatDateTime(order.createdAt),
+    tableName: order.tableName || "",
+    customerName: order.customerName || "",
+    createdByName: order.createdByName || "",
+    orderType: order.orderType || "dine-in",
+    paymentMethod: "Cash", // Default if no payments are provided
+    subtotal: (order.subtotal || 0).toFixed(2),
+    vatRate: (order.taxRate || 0).toString(),
+    vatAmount: (order.taxAmount || 0).toFixed(2),
+    total: (order.total || 0).toFixed(2),
+    totalQty: totalQty,
+    customHeader: printerSettings?.receipts?.customHeader || "",
+    customFooter: printerSettings?.receipts?.customFooter || "",
+    fontSize: printerSettings?.receipts?.fontSize,
+    items: order.items.map((item) => ({
+      name: item.name,
+      quantity: item.quantity,
+      total: item.total.toFixed(2),
+    })),
+    payments: payments.map((payment) => ({
+      paymentType: payment.paymentMethod,
+      amount: payment.amount.toFixed(2),
+    })),
+    includeQR: true, // Always include QR code for receipts
+    qrCodeUrl: qrCodeBase64,
+  };
+
+  // Use the template's content, or fall back to a default based on its type
+  const templateContent =
+    template.content || getDefaultReceiptTemplate(template.type);
+
+  // Render the final HTML
+  return renderTemplateContent(templateContent, data);
+}
+
+// ====================================================================================
+// SECTION: React Component for Print Dialog
+// ====================================================================================
 
 interface ReceiptPrintDialogProps {
   order: Order;
@@ -23,18 +228,6 @@ interface ReceiptPrintDialogProps {
   payments?: OrderPayment[];
   printerSettings?: PrinterSettings | null;
   children: React.ReactNode;
-}
-
-interface LayoutSettings {
-  paperWidth: number;
-  marginTop: number;
-  marginBottom: number;
-  marginLeft: number;
-  marginRight: number;
-  paddingTop: number;
-  paddingBottom: number;
-  paddingLeft: number;
-  paddingRight: number;
 }
 
 export function ReceiptPrintDialog({
@@ -46,208 +239,169 @@ export function ReceiptPrintDialog({
   children,
 }: ReceiptPrintDialogProps) {
   const [open, setOpen] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<string>("");
+  const [renderedHtml, setRenderedHtml] = useState("");
+  const [pageSize, setPageSize] = useState("80mm");
+  const [margins, setMargins] = useState({
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+  });
+  const [padding, setPadding] = useState({
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+  });
 
-  // Set default template on open
+  // Initialize settings when the dialog opens
+  useEffect(() => {
+    if (open) {
+      const settings = printerSettings?.receipts;
+      setPageSize(`${settings?.paperWidth || 80}mm`);
+      setMargins({
+        top: settings?.marginTop || 0,
+        right: settings?.marginRight || 0,
+        bottom: settings?.marginBottom || 0,
+        left: settings?.marginLeft || 0,
+      });
+      setPadding({
+        top: settings?.paddingTop || 0,
+        right: settings?.paddingRight || 0,
+        bottom: settings?.paddingBottom || 0,
+        left: settings?.paddingLeft || 0,
+      });
+    }
+  }, [open, printerSettings]);
+
+  // Re-render the receipt preview when settings or template change
+  useEffect(() => {
+    if (open && selectedTemplate) {
+      const renderPreview = async () => {
+        const template = receiptTemplates.find(
+          (t) => t.id === selectedTemplate,
+        );
+        if (!template) {
+          setRenderedHtml("<p>Template not found.</p>");
+          return;
+        }
+
+        // Pass live settings from the dialog to the renderer
+        const livePrinterSettings: PrinterSettings = {
+          ...printerSettings,
+          receipts: {
+            ...(printerSettings?.receipts || {}),
+            paperWidth: parseInt(pageSize),
+            // You can add more live settings here if needed, e.g., fonts, etc.
+          },
+        };
+
+        const content = await renderReceiptTemplate(
+          template,
+          order,
+          organization,
+          payments,
+          livePrinterSettings,
+        );
+        setRenderedHtml(content);
+      };
+      renderPreview();
+    }
+  }, [
+    open,
+    selectedTemplate,
+    order,
+    organization,
+    payments,
+    receiptTemplates,
+    printerSettings,
+    pageSize,
+  ]);
+
+  // Handle opening the dialog and setting the default template
   const handleOpenChange = (newOpen: boolean) => {
     if (newOpen) {
-      console.log(`[ReceiptPrintDialog] Opening dialog with:`, {
-        templatesCount: receiptTemplates.length,
-        printerSettings: printerSettings
-          ? {
-              receipts: printerSettings.receipts?.defaultTemplateId,
-              invoices: printerSettings.invoices?.defaultTemplateId,
-              quotes: printerSettings.quotes?.defaultTemplateId,
-            }
-          : null,
-        templates: receiptTemplates.map((t) => ({ id: t.id, name: t.name })),
-      });
+      const defaultTemplateId = printerSettings?.receipts?.defaultTemplateId;
+      const firstAvailableId =
+        receiptTemplates.length > 0 ? receiptTemplates[0].id : "";
 
-      // First try to get default template from printer settings
-      const printerDefaultId = printerSettings?.receipts?.defaultTemplateId;
-      let selectedId = "";
-
-      if (printerDefaultId) {
-        const printerDefaultTemplate = receiptTemplates.find(
-          (t) => t.id === printerDefaultId,
-        );
-        if (printerDefaultTemplate) {
-          selectedId = printerDefaultTemplate.id;
-          console.log(
-            `[ReceiptPrintDialog] Using printer default template: ${printerDefaultTemplate.name}`,
-          );
-        } else {
-          console.log(
-            `[ReceiptPrintDialog] Printer default template not found: ${printerDefaultId}`,
-          );
-        }
-      }
-
-      
-
-      // Final fallback to first template
-      if (!selectedId && receiptTemplates.length > 0) {
-        selectedId = receiptTemplates[0].id;
-        console.log(
-          `[ReceiptPrintDialog] Using first template as fallback: ${receiptTemplates[0].name}`,
-        );
-      }
+      const selectedId =
+        defaultTemplateId &&
+        receiptTemplates.some((t) => t.id === defaultTemplateId)
+          ? defaultTemplateId
+          : firstAvailableId;
 
       setSelectedTemplate(selectedId);
     }
     setOpen(newOpen);
   };
 
-  const generateReceipt = async () => {
-    const template = receiptTemplates.find((t) => t.id === selectedTemplate);
-    if (!template) return;
-
+  const handlePrint = async () => {
+    if (!renderedHtml) {
+      toast.error("Receipt content is not available.");
+      return;
+    }
     setIsGenerating(true);
 
+    const fullHtmlContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Receipt - ${order.orderNumber}</title>
+          <style>
+            @media print {
+              @page {
+                size: ${pageSize};
+                margin: ${margins.top}mm ${margins.right}mm ${margins.bottom}mm ${margins.left}mm;
+              }
+              body {
+                margin: 0;
+                -webkit-print-color-adjust: exact;
+              }
+            }
+            body {
+              padding: ${padding.top}mm ${padding.right}mm ${padding.bottom}mm ${padding.left}mm;
+              width: ${pageSize};
+              box-sizing: border-box;
+            }
+          </style>
+        </head>
+        <body>
+          ${renderedHtml}
+        </body>
+      </html>
+    `;
+
     try {
-      // Render the receipt using template
-      const renderedContent = await renderReceiptTemplate(
-        template,
-        order,
-        organization,
-        payments,
-        printerSettings || undefined,
-      );
-
-      console.log("=== RECEIPT PRINT DEBUG ===");
-      console.log("Template ID:", template.id);
-      console.log("Template Type:", template.type);
-      console.log("Rendered Content Length:", renderedContent.length);
-      console.log(
-        "Rendered Content Preview:",
-        renderedContent.substring(0, 300) + "...",
-      );
-
-      // Check if key fields are present in rendered content
-      const hasOrderType =
-        renderedContent.includes("Dine-in") ||
-        renderedContent.includes("dine-in");
-      const hasQueueNumber =
-        renderedContent.includes("Queue #") ||
-        renderedContent.includes("رقم الدور");
-      const hasSubtotal =
-        renderedContent.includes("Items Value") ||
-        renderedContent.includes("قيمة الأصناف");
-      const hasVAT =
-        renderedContent.includes("VAT") || renderedContent.includes("الضريبة");
-      const hasTotal =
-        renderedContent.includes("TOTAL AMOUNT") ||
-        renderedContent.includes("المبلغ الإجمالي");
-      const hasPayments =
-        renderedContent.includes("Payment Type") ||
-        renderedContent.includes("نوع الدفع");
-      const hasDijibill =
-        renderedContent.includes("Powered by") ||
-        renderedContent.includes("مشغل بواسطة");
-
-      console.log("Rendered Content Field Check:");
-      console.log("- Order Type:", hasOrderType);
-      console.log("- Queue Number:", hasQueueNumber);
-      console.log("- Subtotal:", hasSubtotal);
-      console.log("- VAT:", hasVAT);
-      console.log("- Total:", hasTotal);
-      console.log("- Payments:", hasPayments);
-      console.log("- Dijibill Branding:", hasDijibill);
-
-      // Extract layout settings
-      const layoutSettings: LayoutSettings = {
-        paperWidth: printerSettings?.receipts?.paperWidth || 80,
-        marginTop: printerSettings?.receipts?.marginTop || 0,
-        marginBottom: printerSettings?.receipts?.marginBottom || 0,
-        marginLeft: printerSettings?.receipts?.marginLeft || 0,
-        marginRight: printerSettings?.receipts?.marginRight || 0,
-        paddingTop: printerSettings?.receipts?.paddingTop || 0,
-        paddingBottom: printerSettings?.receipts?.paddingBottom || 0,
-        paddingLeft: printerSettings?.receipts?.paddingLeft || 0,
-        paddingRight: printerSettings?.receipts?.paddingRight || 0,
-      };
-
-      // Calculate appropriate window width based on paper width
-      const paperWidthMm = layoutSettings.paperWidth;
-      // Convert mm to pixels (assuming 96 DPI) and add some padding for UI
-      const windowWidth = Math.max(400, Math.min(1000, paperWidthMm * 3.78 + 200));
-      const windowHeight = 600;
-
-      // Create a new window for printing (safer than manipulating current DOM)
-      const printWindow = window.open("", "_blank", `width=${windowWidth},height=${windowHeight}`);
+      const printWindow = window.open("", "_blank", "width=600,height=800");
       if (!printWindow) {
         throw new Error(
-          "Unable to open print window. Please check your popup blocker.",
+          "Popup blocker may be preventing the print window from opening.",
         );
       }
 
-      // Write the receipt content to the new window
-      const fullHtmlContent = `
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <title>Receipt - ${order.orderNumber}</title>
-              <style>
-                body {
-                  margin: 0;
-                  padding: 0;
-                  font-family: Arial, sans-serif;
-                }
-                @media print {
-                  @page {
-                    margin: ${layoutSettings.marginTop}mm ${layoutSettings.marginRight}mm ${layoutSettings.marginBottom}mm ${layoutSettings.marginLeft}mm;
-                  }
-                  body {
-                    max-width: ${layoutSettings.paperWidth}mm;
-                    margin: 0;
-                    padding: ${layoutSettings.paddingTop}mm ${layoutSettings.paddingRight}mm ${layoutSettings.paddingBottom}mm ${layoutSettings.paddingLeft}mm;
-                  }
-                  .item-col {
-                    width: calc(${layoutSettings.paperWidth}mm - 120px);
-                  }
-                  * {
-                    box-sizing: border-box;
-                  }
-                }
-              </style>
-          </head>
-          <body>
-            ${renderedContent}
-          </body>
-        </html>
-      `;
-
-      console.log("=== PRINT WINDOW DEBUG ===");
-      console.log("Full HTML Content Length:", fullHtmlContent.length);
-      console.log(
-        "Full HTML Content Preview:",
-        fullHtmlContent.substring(0, 500) + "...",
-      );
-
       printWindow.document.write(fullHtmlContent);
-
       printWindow.document.close();
-
-      // Wait for content to load then print
       printWindow.onload = () => {
+        printWindow.focus();
         printWindow.print();
-        // Close the window after printing (with a delay to allow print dialog)
         setTimeout(() => {
           printWindow.close();
           setIsGenerating(false);
           setOpen(false);
           toast.success("Receipt sent to printer!");
-        }, 6000);
+        }, 1000);
       };
     } catch (error) {
-      console.error("Error generating receipt:", error);
-      setIsGenerating(false);
+      console.error("Error during printing:", error);
       toast.error(
         error instanceof Error
           ? error.message
-          : "Error generating receipt. Please try again.",
+          : "An unknown error occurred during print.",
       );
+      setIsGenerating(false);
     }
   };
 
@@ -257,16 +411,11 @@ export function ReceiptPrintDialog({
         Cancel
       </Button>
       <Button
-        onClick={generateReceipt}
-        disabled={
-          !selectedTemplate ||
-          receiptTemplates.length === 0 ||
-          isGenerating
-        }
-        className="flex items-center gap-2"
+        onClick={handlePrint}
+        disabled={!selectedTemplate || isGenerating}
       >
-        <Printer className="h-4 w-4" />
-        {isGenerating ? "Generating..." : "Print Receipt"}
+        <Printer className="h-4 w-4 mr-2" />
+        {isGenerating ? "Processing..." : "Print Receipt"}
       </Button>
     </>
   );
@@ -276,106 +425,123 @@ export function ReceiptPrintDialog({
       open={open}
       onOpenChange={handleOpenChange}
       title="Print Receipt"
-      description="Select a receipt template and print your order receipt"
+      description="Adjust settings and preview the receipt before printing."
       actions={actions}
       trigger={children}
-      
+      maxWidth="max-w-4xl"
     >
-      <div className="grid grid-cols-2 gap-6">
-        {/* Left Column - Order & Settings */}
-        <div className="space-y-6">
-          {/* Order Summary */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Order Summary</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <table className="w-full text-sm">
-                <tbody>
-                  <tr>
-                    <td className="font-medium py-1">Order #:</td>
-                    <td className="py-1">{order.orderNumber}</td>
-                  </tr>
-                  <tr>
-                    <td className="font-medium py-1">Date:</td>
-                    <td className="py-1">
-                      {new Date(order.createdAt).toLocaleString()}
-                    </td>
-                  </tr>
-                  {order.customerName && (
-                    <tr>
-                      <td className="font-medium py-1">Customer:</td>
-                      <td className="py-1">{order.customerName}</td>
-                    </tr>
-                  )}
-                  {order.customerPhone && (
-                    <tr>
-                      <td className="font-medium py-1">Phone:</td>
-                      <td className="py-1">{order.customerPhone}</td>
-                    </tr>
-                  )}
-                  {order.tableName && (
-                    <tr>
-                      <td className="font-medium py-1">Table:</td>
-                      <td className="py-1">{order.tableName}</td>
-                    </tr>
-                  )}
-                  <tr>
-                    <td className="font-medium py-1">Total:</td>
-                    <td className="py-1 font-bold">
-                      ${(order.total || 0).toFixed(2)}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="font-medium py-1">Status:</td>
-                    <td className="py-1">
-                      <Badge variant="outline" className="ml-0">
-                        {order.status}
-                      </Badge>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-             </CardContent>
-            </Card>
-
-            {/* Printer Settings Preview */}
-            <PrinterSettingsPreview
-              printerSettings={printerSettings}
-              documentType="receipts"
+      <div className="flex h-[60vh] font-sans">
+        {/* --- Settings Panel --- */}
+        <div className="w-1/3 p-4 border-r bg-gray-50 overflow-y-auto space-y-4">
+          <h2 className="text-lg font-bold text-gray-800 pb-2 border-b">
+            Print Settings
+          </h2>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Template
+            </label>
+            <select
+              value={selectedTemplate}
+              onChange={(e) => setSelectedTemplate(e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+            >
+              {receiptTemplates.length === 0 ? (
+                <option disabled>No templates available</option>
+              ) : (
+                receiptTemplates.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))
+              )}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Paper Size
+            </label>
+            <select
+              value={pageSize}
+              onChange={(e) => setPageSize(e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="80mm">80mm</option>
+              <option value="58mm">58mm</option>
+            </select>
+          </div>
+          <div>
+            <h3 className="text-md font-semibold mb-1 text-gray-800">
+              Margins (mm)
+            </h3>
+            <p className="text-xs text-gray-500 mb-2">
+              Controls the printer's physical unprinted border.
+            </p>
+            {Object.keys(margins).map((side) => (
+              <div
+                key={side}
+                className="flex items-center justify-between mb-1"
+              >
+                <label className="capitalize text-sm text-gray-600">
+                  {side}:
+                </label>
+                <input
+                  type="number"
+                  name={side}
+                  value={margins[side as keyof typeof margins]}
+                  onChange={(e) =>
+                    setMargins((p) => ({
+                      ...p,
+                      [e.target.name]: Number(e.target.value),
+                    }))
+                  }
+                  className="w-20 p-1 border border-gray-300 rounded-md text-center shadow-sm"
+                />
+              </div>
+            ))}
+          </div>
+          <div>
+            <h3 className="text-md font-semibold mb-1 text-gray-800">
+              Padding (mm)
+            </h3>
+            <p className="text-xs text-gray-500 mb-2">
+              Controls the internal whitespace of the content.
+            </p>
+            {Object.keys(padding).map((side) => (
+              <div
+                key={side}
+                className="flex items-center justify-between mb-1"
+              >
+                <label className="capitalize text-sm text-gray-600">
+                  {side}:
+                </label>
+                <input
+                  type="number"
+                  name={side}
+                  value={padding[side as keyof typeof padding]}
+                  onChange={(e) =>
+                    setPadding((p) => ({
+                      ...p,
+                      [e.target.name]: Number(e.target.value),
+                    }))
+                  }
+                  className="w-20 p-1 border border-gray-300 rounded-md text-center shadow-sm"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+        {/* --- Receipt Preview Area --- */}
+        <div className="w-2/3 p-6 flex justify-center bg-gray-200 overflow-y-auto">
+          <div className="bg-white shadow-lg" style={{ width: pageSize }}>
+            <div
+              style={{
+                padding: `${padding.top}mm ${padding.right}mm ${padding.bottom}mm ${padding.left}mm`,
+              }}
+              dangerouslySetInnerHTML={{ __html: renderedHtml }}
             />
           </div>
-
-         {/* Right Column - Template Selection */}
-         <div className="space-y-6">
-           {/* Template Selection */}
-            <Card>
-             <CardHeader>
-               <CardTitle className="text-lg">
-                 Select Receipt Template
-               </CardTitle>
-             </CardHeader>
-             <CardContent>
-               {receiptTemplates.length === 0 ? (
-                 <p className="text-muted-foreground">
-                   No receipt templates available. Please create templates in
-                   Settings.
-                 </p>
-               ) : (
-                 <TemplateSelector
-                   templates={receiptTemplates}
-                   selectedTemplate={selectedTemplate}
-                   onTemplateChange={setSelectedTemplate}
-                   label="Select Receipt Template"
-                   placeholder="Choose a template"
-                   printerSettings={printerSettings}
-                   templateType="receipts"
-                 />
-               )}
-             </CardContent>
-           </Card>
-         </div>
-       </div>
+        </div>
+      </div>
     </DialogWithActions>
   );
 }
