@@ -1,8 +1,21 @@
 "use client";
 
+import { useState } from "react";
+import { useAtomValue } from "jotai";
+
+import { selectedOrganizationAtom, organizationUsersAtom } from "@/atoms";
+import { organizationLoadingAtom } from "@/atoms";
+import {
+  useInvitationsData,
+  useInvitationsActions,
+} from "@/lib/hooks/useInvitations";
+import {
+  updateOrganizationUser,
+  updateUserStatus,
+} from "@/lib/firebase/firestore/organizations";
+import { OrganizationUser, UserRole } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -11,6 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -18,6 +32,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -37,74 +53,125 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Plus, Edit, Trash2, Copy, Users, Link } from "lucide-react";
-import { DatePicker } from "@/components/ui/date-picker";
-import { Label } from "@/components/ui/label";
-import { OrganizationUser } from "@/types";
-import { UserRole } from "@/types/enums";
+import {
+  Users,
+  Plus,
+  Edit,
+  Trash2,
+  Shield,
+  Settings,
+  Copy,
+  Link,
+} from "lucide-react";
+import { toast } from "sonner";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
 
-interface Invitation {
-  id: string;
-  code: string;
-  role: UserRole;
-  expiresAt: Date;
-  isUsed: boolean;
-  createdAt: Date;
-}
-
-interface TeamTabProps {
-  invitationCodes: Invitation[];
-  organizationUsers: OrganizationUser[];
-  handleCreateInvitation: () => void;
-  handleDeleteInvitation: (codeId: string) => void;
-  handleCopyInvitation: (code: string) => void;
-  handleUpdateUser: () => void;
-  handleToggleUserStatus: (userId: string, isActive: boolean) => void;
-  openEditDialog: (organizationUser: OrganizationUser) => void;
-  editingUser: OrganizationUser | null;
-  setEditingUser: (user: OrganizationUser | null) => void;
-  formData: {
-    role: UserRole;
-    isActive: boolean;
-  };
-  setFormData: (data: { role: UserRole; isActive: boolean }) => void;
-  invitationFormData: {
-    role: UserRole;
-    expiresAt: Date;
-  };
-  setInvitationFormData: (data: { role: UserRole; expiresAt: Date }) => void;
-  dialogOpen: boolean;
-  setDialogOpen: (open: boolean) => void;
-  invitationDialogOpen: boolean;
-  setInvitationDialogOpen: (open: boolean) => void;
-}
-
-export function TeamTab({
-  invitationCodes,
-  organizationUsers,
-  handleCreateInvitation,
-  handleDeleteInvitation,
-  handleCopyInvitation,
-  handleUpdateUser,
-  handleToggleUserStatus,
-  openEditDialog,
-  formData,
-  setFormData,
-  invitationFormData,
-  setInvitationFormData,
-  dialogOpen,
-  setDialogOpen,
-  invitationDialogOpen,
-  setInvitationDialogOpen,
-}: TeamTabProps) {
-  // Debug logging
-  console.log(
-    "TeamTab: Received",
-    organizationUsers.length,
-    "users and",
-    invitationCodes.length,
-    "invitation codes",
+function UsersContent() {
+  const selectedOrganization = useAtomValue(selectedOrganizationAtom);
+  const organizationUsers = useAtomValue(organizationUsersAtom);
+  const orgLoading = useAtomValue(organizationLoadingAtom);
+  const organizationId = selectedOrganization?.id;
+  const { invitationCodes, loading: codesLoading } = useInvitationsData(
+    organizationId || undefined,
   );
+  const { createInvitationSimple, deleteInvitation } = useInvitationsActions(
+    organizationId || undefined,
+  );
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [invitationDialogOpen, setInvitationDialogOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<OrganizationUser | null>(null);
+  const [formData, setFormData] = useState({
+    role: UserRole.WAITER,
+    isActive: true,
+  });
+  const [invitationFormData, setInvitationFormData] = useState({
+    role: UserRole.WAITER,
+    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+  });
+
+  const loading = orgLoading || codesLoading;
+
+  const handleCreateInvitation = async () => {
+    if (!organizationId) return;
+
+    try {
+      await createInvitationSimple(
+        invitationFormData.role,
+        invitationFormData.expiresAt,
+      );
+
+      setInvitationDialogOpen(false);
+      setInvitationFormData({
+        role: UserRole.WAITER,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      });
+    } catch (error) {
+      console.error("Error creating invitation code:", error);
+      toast.error("Failed to create invitation code. Please try again.");
+    }
+  };
+
+  const handleDeleteInvitation = async (codeId: string) => {
+    if (!organizationId) return;
+
+    try {
+      await deleteInvitation(codeId);
+    } catch (error) {
+      console.error("Error deleting invitation code:", error);
+      toast.error("Failed to delete invitation code. Please try again.");
+    }
+  };
+
+  const handleCopyInvitation = async (code: string) => {
+    try {
+      await navigator.clipboard.writeText(code);
+      toast.success("Invitation code copied to clipboard!");
+    } catch (error) {
+      console.error("Error copying code:", error);
+      toast.error("Failed to copy code to clipboard.");
+    }
+  };
+
+  const handleUpdateUser = async () => {
+    if (!editingUser || !organizationId) return;
+
+    try {
+      await updateOrganizationUser(editingUser.id, formData);
+
+      setDialogOpen(false);
+      setEditingUser(null);
+      setFormData({
+        role: UserRole.WAITER,
+        isActive: true,
+      });
+    } catch (error) {
+      console.error("Error updating user:", error);
+      toast.error("Failed to update user. Please try again.");
+    }
+  };
+
+  const handleToggleUserStatus = async (
+    userId: string,
+    currentStatus: boolean,
+  ) => {
+    if (!organizationId) return;
+
+    try {
+      await updateUserStatus(userId, !currentStatus);
+    } catch (error) {
+      console.error("Error toggling user status:", error);
+      toast.error("Failed to update user status. Please try again.");
+    }
+  };
+
+  const openEditDialog = (organizationUser: OrganizationUser) => {
+    setEditingUser(organizationUser);
+    setFormData({
+      role: organizationUser.role,
+      isActive: organizationUser.isActive,
+    });
+    setDialogOpen(true);
+  };
 
   const getRoleBadgeColor = (role: OrganizationUser["role"]) => {
     switch (role) {
@@ -124,34 +191,41 @@ export function TeamTab({
   const getRoleIcon = (role: OrganizationUser["role"]) => {
     switch (role) {
       case "admin":
-        return "Shield";
+        return Shield;
       case "manager":
-        return "Settings";
+        return Settings;
       default:
-        return "Users";
+        return Users;
     }
   };
 
+  if (loading)
+    return (
+      <div className="flex items-center justify-center h-screen">
+        Loading...
+      </div>
+    );
+
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Team Management</h2>
-        <Dialog
-          open={invitationDialogOpen}
-          onOpenChange={setInvitationDialogOpen}
-        >
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Generate Invitation Code
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-lg">
-            <DialogHeader>
-              <DialogTitle>Generate Invitation Code</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
+        <h1 className="text-3xl font-bold">Users</h1>
+        <div className="flex space-x-2">
+          <Dialog
+            open={invitationDialogOpen}
+            onOpenChange={setInvitationDialogOpen}
+          >
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Generate Invitation Code
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Generate Invitation Code</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
                 <div>
                   <Label htmlFor="role">Role</Label>
                   <Select
@@ -163,7 +237,7 @@ export function TeamTab({
                       })
                     }
                   >
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger>
                       <SelectValue placeholder="Select role" />
                     </SelectTrigger>
                     <SelectContent>
@@ -174,30 +248,31 @@ export function TeamTab({
                     </SelectContent>
                   </Select>
                 </div>
-                <DatePicker
+                <DateTimePicker
                   label="Expires At"
                   value={invitationFormData.expiresAt}
                   onChange={(date) =>
                     setInvitationFormData({
                       ...invitationFormData,
-                      expiresAt:
-                        date || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+                      expiresAt: date,
                     })
                   }
                 />
+                <div className="flex justify-end space-x-2 pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setInvitationDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button onClick={handleCreateInvitation}>
+                    Generate Code
+                  </Button>
+                </div>
               </div>
-              <div className="flex justify-end space-x-2 pt-4">
-                <Button
-                  variant="outline"
-                  onClick={() => setInvitationDialogOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button onClick={handleCreateInvitation}>Generate Code</Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {/* Invitation Codes Section */}
@@ -231,9 +306,7 @@ export function TeamTab({
                         variant={getRoleBadgeColor(invitationCode.role)}
                         className="capitalize"
                       >
-                        {RoleIcon === "Shield" && "🛡️"}
-                        {RoleIcon === "Settings" && "⚙️"}
-                        {RoleIcon === "Users" && "👥"}
+                        <RoleIcon className="h-3 w-3 mr-1" />
                         {invitationCode.role}
                       </Badge>
                     </TableCell>
@@ -326,7 +399,7 @@ export function TeamTab({
       {/* Organization Users Section */}
       <Card>
         <CardHeader>
-          <CardTitle>Team Members</CardTitle>
+          <CardTitle>Organization Users</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
@@ -353,9 +426,7 @@ export function TeamTab({
                         variant={getRoleBadgeColor(organizationUser.role)}
                         className="capitalize"
                       >
-                        {RoleIcon === "Shield" && "🛡️"}
-                        {RoleIcon === "Settings" && "⚙️"}
-                        {RoleIcon === "Users" && "👥"}
+                        <RoleIcon className="h-3 w-3 mr-1" />
                         {organizationUser.role}
                       </Badge>
                     </TableCell>
@@ -404,8 +475,8 @@ export function TeamTab({
                     <div className="flex flex-col items-center">
                       <Users className="h-12 w-12 mb-4 text-gray-400" />
                       <p>
-                        No team members found. Users will appear here when they
-                        join using invitation codes.
+                        No users found. Users will appear here when they join
+                        using invitation codes.
                       </p>
                     </div>
                   </TableCell>
@@ -431,7 +502,7 @@ export function TeamTab({
                   setFormData({ ...formData, role: value as UserRole })
                 }
               >
-                <SelectTrigger className="w-full">
+                <SelectTrigger>
                   <SelectValue placeholder="Select role" />
                 </SelectTrigger>
                 <SelectContent>
@@ -463,4 +534,8 @@ export function TeamTab({
       </Dialog>
     </div>
   );
+}
+
+export default function UsersPage() {
+  return <UsersContent />;
 }

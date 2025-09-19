@@ -1,55 +1,111 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Image from 'next/image';
-import { useSearchParams } from 'next/navigation';
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 
-import { useAtomValue } from 'jotai';
-import { useAuth } from '@/lib/hooks/useAuth';
-import { selectedOrganizationAtom, organizationUsersAtom,  } from '@/atoms';
-import { organizationLoadingAtom } from '@/atoms';
-import { useInvitationCodesData, useInvitationCodesActions } from '@/lib/hooks/useInvitationCodes';
-import { updateOrganization, updateOrganizationBranding, updateOrganizationUser, updateUserStatus } from '@/lib/firebase/firestore/organizations';
-import { updateUser } from '@/lib/firebase/firestore/users';
-import { updateProfile } from 'firebase/auth';
-import { auth } from '@/lib/firebase/config';
-import { useAtom } from 'jotai';
-import { selectedOrganizationIdAtom } from '@/atoms';
-import { OrganizationUser } from '@/types';
-import { UserRole } from '@/types/enums';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building2, CreditCard, X, Users, Plus, Edit, Trash2, Shield, Settings, Copy, Link } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ImageUpload } from '@/components/ui/image-upload';
-import { toast } from 'sonner';
-import { DatePicker } from '@/components/ui/date-picker';
-import { CompanyInfoTab } from '@/components/company/CompanyInfoTab';
-import { BrandingTab } from '@/components/company/BrandingTab';
-import { TeamTab } from '@/components/company/TeamTab';
-import { AccountTab } from '@/components/company/AccountTab';
-import { AdminOnlyGuard } from '@/components/layout/RoleGuard';
-
-
+import { useAtomValue } from "jotai";
+import { useAuth } from "@/lib/hooks/useAuth";
+import { selectedOrganizationAtom, organizationUsersAtom } from "@/atoms";
+import { organizationLoadingAtom } from "@/atoms";
+import {
+  useInvitationsData,
+  useInvitationsActions,
+} from "@/lib/hooks/useInvitations";
+import {
+  updateOrganization,
+  updateOrganizationBranding,
+  updateOrganizationUser,
+  updateUserStatus,
+} from "@/lib/firebase/firestore/organizations";
+import { updateUser } from "@/lib/firebase/firestore/users";
+import { updateProfile } from "firebase/auth";
+import { auth } from "@/lib/firebase/config";
+import { useAtom } from "jotai";
+import { selectedOrganizationIdAtom } from "@/atoms";
+import { OrganizationUser } from "@/types";
+import { UserRole } from "@/types/enums";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Building2,
+  CreditCard,
+  X,
+  Users,
+  Plus,
+  Edit,
+  Trash2,
+  Shield,
+  Settings,
+  Copy,
+  Link,
+} from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { ImageUpload } from "@/components/ui/image-upload";
+import { toast } from "sonner";
+import { DatePicker } from "@/components/ui/date-picker";
+import { CompanyInfoTab } from "@/components/company/CompanyInfoTab";
+import { BrandingTab } from "@/components/company/BrandingTab";
+import { TeamTab } from "@/components/company/TeamTab";
+import { AccountTab } from "@/components/company/AccountTab";
+import { AdminOnlyGuard } from "@/components/layout/RoleGuard";
 
 function CompanyContent() {
   const { user } = useAuth();
   const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const organizationUsers = useAtomValue(organizationUsersAtom);
   const orgLoading = useAtomValue(organizationLoadingAtom);
-  const [selectedOrganizationId, setSelectedOrganizationId] = useAtom(selectedOrganizationIdAtom);
+  const [selectedOrganizationId, setSelectedOrganizationId] = useAtom(
+    selectedOrganizationIdAtom,
+  );
   const organizationId = selectedOrganization?.id;
   const organization = selectedOrganization;
-  const { invitationCodes, loading: codesLoading, refetch: refetchInvitationCodes } = useInvitationCodesData(organizationId || undefined);
-  const { createInvitationCodeSimple, deleteInvitationCode } = useInvitationCodesActions(organizationId || undefined, refetchInvitationCodes);
+  const {
+    invitationCodes,
+    loading: codesLoading,
+    refetch: refetchInvitations,
+  } = useInvitationsData(organizationId || undefined);
+  const { createInvitationSimple, deleteInvitation } = useInvitationsActions(
+    organizationId || undefined,
+    refetchInvitations,
+  );
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -63,38 +119,40 @@ function CompanyContent() {
     role: UserRole.WAITER,
     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
   });
-  const [activeTab, setActiveTab] = useState('company');
+  const [activeTab, setActiveTab] = useState("company");
 
   // Handle URL hash for tab navigation
   useEffect(() => {
-    const hash = window.location.hash.replace('#', '');
-    if (hash && ['company', 'branding', 'team', 'subscription'].includes(hash)) {
+    const hash = window.location.hash.replace("#", "");
+    if (
+      hash &&
+      ["company", "branding", "team", "subscription"].includes(hash)
+    ) {
       setActiveTab(hash);
     }
   }, []);
 
   // Form state
-  const [companyName, setCompanyName] = useState('');
-  const [companyNameAr, setCompanyNameAr] = useState('');
-  const [companyEmail, setCompanyEmail] = useState('');
-  const [companyAddress, setCompanyAddress] = useState('');
-  const [companyPhone, setCompanyPhone] = useState('');
-  const [vatNumber, setVatNumber] = useState('');
-  const [logoUrl, setLogoUrl] = useState('');
-  const [stampUrl, setStampUrl] = useState('');
-
+  const [companyName, setCompanyName] = useState("");
+  const [companyNameAr, setCompanyNameAr] = useState("");
+  const [companyEmail, setCompanyEmail] = useState("");
+  const [companyAddress, setCompanyAddress] = useState("");
+  const [companyPhone, setCompanyPhone] = useState("");
+  const [vatNumber, setVatNumber] = useState("");
+  const [logoUrl, setLogoUrl] = useState("");
+  const [stampUrl, setStampUrl] = useState("");
 
   useEffect(() => {
     if (!organization) return;
 
-    setCompanyName(organization.name || '');
-    setCompanyNameAr(organization.nameAr || '');
-    setCompanyEmail(organization.email || '');
-    setCompanyAddress(organization.address || '');
-    setCompanyPhone(organization.phone || '');
-    setVatNumber(organization.vatNumber || '');
-    setLogoUrl(organization.logoUrl || '');
-    setStampUrl(organization.stampUrl || '');
+    setCompanyName(organization.name || "");
+    setCompanyNameAr(organization.nameAr || "");
+    setCompanyEmail(organization.email || "");
+    setCompanyAddress(organization.address || "");
+    setCompanyPhone(organization.phone || "");
+    setVatNumber(organization.vatNumber || "");
+    setLogoUrl(organization.logoUrl || "");
+    setStampUrl(organization.stampUrl || "");
   }, [organization]);
 
   useEffect(() => {
@@ -102,22 +160,18 @@ function CompanyContent() {
     setLoading(isLoading);
   }, [orgLoading, codesLoading]);
 
-
-
-  
-
   const handleRemoveLogo = async () => {
     if (!organizationId) return;
 
     try {
-      await updateOrganizationBranding(organizationId, '', stampUrl);
-      setLogoUrl('');
+      await updateOrganizationBranding(organizationId, "", stampUrl);
+      setLogoUrl("");
       // Refresh organization data
       setSelectedOrganizationId(null);
       setTimeout(() => setSelectedOrganizationId(organizationId), 100);
     } catch (error) {
-      console.error('Error removing logo:', error);
-      toast.error('Failed to remove logo.');
+      console.error("Error removing logo:", error);
+      toast.error("Failed to remove logo.");
     }
   };
 
@@ -125,14 +179,14 @@ function CompanyContent() {
     if (!organizationId) return;
 
     try {
-      await updateOrganizationBranding(organizationId, logoUrl, '');
-      setStampUrl('');
+      await updateOrganizationBranding(organizationId, logoUrl, "");
+      setStampUrl("");
       // Refresh organization data
       setSelectedOrganizationId(null);
       setTimeout(() => setSelectedOrganizationId(organizationId), 100);
     } catch (error) {
-      console.error('Error removing stamp:', error);
-      toast.error('Failed to remove stamp.');
+      console.error("Error removing stamp:", error);
+      toast.error("Failed to remove stamp.");
     }
   };
 
@@ -156,25 +210,31 @@ function CompanyContent() {
       setSelectedOrganizationId(null);
       setTimeout(() => setSelectedOrganizationId(organizationId), 100);
 
-      toast.success('Company information updated successfully!');
+      toast.success("Company information updated successfully!");
     } catch (error) {
-      console.error('Error updating company info:', error);
-      toast.error('Failed to update company information.');
+      console.error("Error updating company info:", error);
+      toast.error("Failed to update company information.");
     } finally {
       setSaving(false);
     }
   };
 
-
-
-  const handleCreateInvitationCode = async () => {
+  const handleCreateInvitation = async () => {
     if (!organizationId) return;
 
-    console.log('handleCreateInvitationCode: Creating invitation code with role', invitationFormData.role);
+    console.log(
+      "handleCreateInvitation: Creating invitation code with role",
+      invitationFormData.role,
+    );
 
     try {
-      await createInvitationCodeSimple(invitationFormData.role, invitationFormData.expiresAt);
-      console.log('handleCreateInvitationCode: Successfully created invitation code');
+      await createInvitationSimple(
+        invitationFormData.role,
+        invitationFormData.expiresAt,
+      );
+      console.log(
+        "handleCreateInvitation: Successfully created invitation code",
+      );
 
       setInvitationDialogOpen(false);
       setInvitationFormData({
@@ -182,46 +242,58 @@ function CompanyContent() {
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       });
     } catch (error) {
-      console.error('Error creating invitation code:', error);
-      toast.error('Failed to create invitation code. Please try again.');
+      console.error("Error creating invitation code:", error);
+      toast.error("Failed to create invitation code. Please try again.");
     }
   };
 
-  const handleDeleteInvitationCode = async (codeId: string) => {
+  const handleDeleteInvitation = async (codeId: string) => {
     if (!organizationId) return;
 
     try {
-      await deleteInvitationCode(codeId);
+      await deleteInvitation(codeId);
     } catch (error) {
-      console.error('Error deleting invitation code:', error);
-      toast.error('Failed to delete invitation code. Please try again.');
+      console.error("Error deleting invitation code:", error);
+      toast.error("Failed to delete invitation code. Please try again.");
     }
   };
 
-  const handleCopyInvitationCode = async (code: string) => {
+  const handleCopyInvitation = async (code: string) => {
     try {
       await navigator.clipboard.writeText(code);
-      toast.success('Invitation code copied to clipboard!');
+      toast.success("Invitation code copied to clipboard!");
     } catch (error) {
-      console.error('Error copying code:', error);
-      toast.error('Failed to copy code to clipboard.');
+      console.error("Error copying code:", error);
+      toast.error("Failed to copy code to clipboard.");
     }
   };
 
   const handleUpdateUser = async () => {
     if (!editingUser || !organizationId) return;
 
-    console.log('handleUpdateUser: Updating user', editingUser.id, 'with role', formData.role, 'and status', formData.isActive);
+    console.log(
+      "handleUpdateUser: Updating user",
+      editingUser.id,
+      "with role",
+      formData.role,
+      "and status",
+      formData.isActive,
+    );
 
     try {
       await updateOrganizationUser(editingUser.id, {
-        role: formData.role === 'admin' ? UserRole.ADMIN :
-              formData.role === 'manager' ? UserRole.MANAGER :
-              formData.role === 'waiter' ? UserRole.WAITER : UserRole.CASHIER,
+        role:
+          formData.role === "admin"
+            ? UserRole.ADMIN
+            : formData.role === "manager"
+              ? UserRole.MANAGER
+              : formData.role === "waiter"
+                ? UserRole.WAITER
+                : UserRole.CASHIER,
         isActive: formData.isActive,
       });
 
-      console.log('handleUpdateUser: Successfully updated user in database');
+      console.log("handleUpdateUser: Successfully updated user in database");
       setDialogOpen(false);
       setEditingUser(null);
       setFormData({
@@ -229,25 +301,30 @@ function CompanyContent() {
         isActive: true,
       });
     } catch (error) {
-      console.error('Error updating user:', error);
-      toast.error('Failed to update user. Please try again.');
+      console.error("Error updating user:", error);
+      toast.error("Failed to update user. Please try again.");
     }
   };
 
   const handleToggleUserStatus = async (userId: string, isActive: boolean) => {
-    console.log('handleToggleUserStatus: Toggling user', userId, 'to status', isActive);
+    console.log(
+      "handleToggleUserStatus: Toggling user",
+      userId,
+      "to status",
+      isActive,
+    );
 
     try {
       await updateUserStatus(userId, isActive);
-      console.log('handleToggleUserStatus: Successfully updated user status in database');
-      toast.success('User status updated successfully');
+      console.log(
+        "handleToggleUserStatus: Successfully updated user status in database",
+      );
+      toast.success("User status updated successfully");
     } catch (error) {
-      console.error('Error updating user status:', error);
-      toast.error('Failed to update user status. Please try again.');
+      console.error("Error updating user status:", error);
+      toast.error("Failed to update user status. Please try again.");
     }
   };
-
-
 
   const openEditDialog = (organizationUser: OrganizationUser) => {
     setEditingUser(organizationUser);
@@ -258,26 +335,26 @@ function CompanyContent() {
     setDialogOpen(true);
   };
 
-  const getRoleBadgeColor = (role: OrganizationUser['role']) => {
+  const getRoleBadgeColor = (role: OrganizationUser["role"]) => {
     switch (role) {
-      case 'admin':
-        return 'default';
-      case 'manager':
-        return 'secondary';
-      case 'waiter':
-        return 'outline';
-      case 'cashier':
-        return 'outline';
+      case "admin":
+        return "default";
+      case "manager":
+        return "secondary";
+      case "waiter":
+        return "outline";
+      case "cashier":
+        return "outline";
       default:
-        return 'outline';
+        return "outline";
     }
   };
 
-  const getRoleIcon = (role: OrganizationUser['role']) => {
+  const getRoleIcon = (role: OrganizationUser["role"]) => {
     switch (role) {
-      case 'admin':
+      case "admin":
         return Shield;
-      case 'manager':
+      case "manager":
         return Settings;
       default:
         return Users;
@@ -294,13 +371,17 @@ function CompanyContent() {
         <h1 className="text-3xl font-bold">Company & Account</h1>
       </div>
 
-       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-         <TabsList className="grid w-full grid-cols-4">
-           <TabsTrigger value="company">Company Info</TabsTrigger>
-           <TabsTrigger value="branding">Branding</TabsTrigger>
-           <TabsTrigger value="team">Team</TabsTrigger>
-           <TabsTrigger value="subscription">Subscription</TabsTrigger>
-         </TabsList>
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-6"
+      >
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="company">Company Info</TabsTrigger>
+          <TabsTrigger value="branding">Branding</TabsTrigger>
+          <TabsTrigger value="team">Team</TabsTrigger>
+          <TabsTrigger value="subscription">Subscription</TabsTrigger>
+        </TabsList>
 
         <TabsContent value="company" className="space-y-6">
           <CompanyInfoTab
@@ -339,9 +420,9 @@ function CompanyContent() {
           <TeamTab
             invitationCodes={invitationCodes}
             organizationUsers={organizationUsers}
-            handleCreateInvitationCode={handleCreateInvitationCode}
-            handleDeleteInvitationCode={handleDeleteInvitationCode}
-            handleCopyInvitationCode={handleCopyInvitationCode}
+            handleCreateInvitation={handleCreateInvitation}
+            handleDeleteInvitation={handleDeleteInvitation}
+            handleCopyInvitation={handleCopyInvitation}
             handleUpdateUser={handleUpdateUser}
             handleToggleUserStatus={handleToggleUserStatus}
             openEditDialog={openEditDialog}
@@ -369,8 +450,14 @@ function CompanyContent() {
                   <h3 className="text-lg font-semibold">Current Plan</h3>
                   <p className="text-muted-foreground">Professional Plan</p>
                 </div>
-                <Badge variant={organization?.subscriptionStatus === 'active' ? 'default' : 'secondary'}>
-                  {organization?.subscriptionStatus || 'Unknown'}
+                <Badge
+                  variant={
+                    organization?.subscriptionStatus === "active"
+                      ? "default"
+                      : "secondary"
+                  }
+                >
+                  {organization?.subscriptionStatus || "Unknown"}
                 </Badge>
               </div>
 
@@ -394,8 +481,6 @@ function CompanyContent() {
             </CardContent>
           </Card>
         </TabsContent>
-
-
       </Tabs>
     </div>
   );

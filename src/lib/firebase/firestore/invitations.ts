@@ -7,25 +7,27 @@ import {
   updateDoc,
   query,
   where,
-  Timestamp
-} from 'firebase/firestore';
-import { db } from '../config';
-import { InvitationCode, UserRole } from '@/types';
+  Timestamp,
+} from "firebase/firestore";
+import { db } from "../config";
+import { Invitation, UserRole } from "@/types";
 
 // Collection references
-const invitationsRef = collection(db, 'invitationCodes');
+const invitationsRef = collection(db, "invitations");
 
 /**
  * Create a new invitation code
  */
-export async function createInvitationCode(
+export async function createInvitation(
   organizationId: string,
   role: UserRole,
-  expiresAt: Date
+  expiresAt: Date,
 ): Promise<string> {
   try {
     // Generate a unique code (you might want to use a more sophisticated method)
-    const code = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    const code =
+      Math.random().toString(36).substring(2, 15) +
+      Math.random().toString(36).substring(2, 15);
 
     const now = Timestamp.now();
     const docRef = await addDoc(invitationsRef, {
@@ -39,7 +41,7 @@ export async function createInvitationCode(
 
     return code;
   } catch (error) {
-    console.error('Error creating invitation code:', error);
+    console.error("Error creating invitation code:", error);
     throw error;
   }
 }
@@ -47,13 +49,15 @@ export async function createInvitationCode(
 /**
  * Validate an invitation code
  */
-export async function validateInvitationCode(code: string): Promise<InvitationCode | null> {
+export async function validateInvitation(
+  code: string,
+): Promise<Invitation | null> {
   try {
     // NOTE: This query requires a composite index on (code, isUsed)
     const invitationQuery = query(
       invitationsRef,
-      where('code', '==', code),
-      where('isUsed', '==', false)
+      where("code", "==", code),
+      where("isUsed", "==", false),
     );
     const snapshot = await getDocs(invitationQuery);
 
@@ -75,9 +79,9 @@ export async function validateInvitationCode(code: string): Promise<InvitationCo
       ...data,
       expiresAt: expiresAt || new Date(),
       createdAt: data.createdAt?.toDate() || new Date(),
-    } as InvitationCode;
+    } as Invitation;
   } catch (error) {
-    console.error('Error validating invitation code:', error);
+    console.error("Error validating invitation code:", error);
     throw error;
   }
 }
@@ -85,9 +89,12 @@ export async function validateInvitationCode(code: string): Promise<InvitationCo
 /**
  * Use an invitation code (mark as used)
  */
-export async function useInvitationCode(code: string, usedBy: string): Promise<InvitationCode | null> {
+export async function useInvitation(
+  code: string,
+  usedBy: string,
+): Promise<Invitation | null> {
   try {
-    const invitation = await validateInvitationCode(code);
+    const invitation = await validateInvitation(code);
     if (!invitation) {
       return null;
     }
@@ -105,7 +112,7 @@ export async function useInvitationCode(code: string, usedBy: string): Promise<I
       usedBy,
     };
   } catch (error) {
-    console.error('Error using invitation code:', error);
+    console.error("Error using invitation code:", error);
     throw error;
   }
 }
@@ -113,25 +120,27 @@ export async function useInvitationCode(code: string, usedBy: string): Promise<I
 /**
  * Get all invitation codes for an organization
  */
-export async function getInvitationCodes(organizationId: string): Promise<InvitationCode[]> {
+export async function getInvitations(
+  organizationId: string,
+): Promise<Invitation[]> {
   try {
     const invitationQuery = query(
       invitationsRef,
-      where('organizationId', '==', organizationId)
+      where("organizationId", "==", organizationId),
     );
     const snapshot = await getDocs(invitationQuery);
 
-    return snapshot.docs.map(doc => {
+    return snapshot.docs.map((doc) => {
       const data = doc.data();
       return {
         id: doc.id,
         ...data,
         expiresAt: data.expiresAt?.toDate() || new Date(),
         createdAt: data.createdAt?.toDate() || new Date(),
-      } as InvitationCode;
+      } as Invitation;
     });
   } catch (error) {
-    console.error('Error fetching invitation codes:', error);
+    console.error("Error fetching invitation codes:", error);
     throw error;
   }
 }
@@ -139,13 +148,13 @@ export async function getInvitationCodes(organizationId: string): Promise<Invita
 /**
  * Delete an invitation code
  */
-export async function deleteInvitationCode(invitationId: string): Promise<void> {
+export async function deleteInvitation(invitationId: string): Promise<void> {
   try {
-    const { deleteDoc } = await import('firebase/firestore');
+    const { deleteDoc } = await import("firebase/firestore");
     const docRef = doc(invitationsRef, invitationId);
     await deleteDoc(docRef);
   } catch (error) {
-    console.error('Error deleting invitation code:', error);
+    console.error("Error deleting invitation code:", error);
     throw error;
   }
 }

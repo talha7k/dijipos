@@ -278,8 +278,8 @@ export function useOrganizationActions() {
     try {
       // Find the invitation code
       const codesQuery = query(
-        collection(db, 'invitationCodes'),
-        where('code', '==', invitationCode.toUpperCase()),
+        collection(db, 'invitations'),
+        where('code', '==', invitationCode.toLowerCase()),
         where('isUsed', '==', false)
       );
       const codesSnapshot = await getDocs(codesQuery);
@@ -319,7 +319,7 @@ export function useOrganizationActions() {
       });
 
       // Mark invitation code as used
-      const codeDocRef = doc(db, 'invitationCodes', codeId);
+      const codeDocRef = doc(db, 'invitations', codeId);
       await updateDoc(codeDocRef, {
         isUsed: true,
         usedBy: user.uid,

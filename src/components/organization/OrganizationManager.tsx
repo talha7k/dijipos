@@ -10,12 +10,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useOrganization } from "@/lib/hooks/useOrganization";
+import { useInvitationsActions } from "@/lib/hooks/useInvitations";
 import { useAtom } from "jotai";
 import {
   selectedOrganizationIdAtom,
   userOrganizationsAtom,
   userOrganizationAssociationsAtom,
-  organizationUsersAtom
+  organizationUsersAtom,
 } from "@/atoms";
 import { organizationsLoadingAtom } from "@/atoms";
 import { themeAtom } from "@/atoms/uiAtoms";
@@ -41,6 +42,7 @@ import {
   serverTimestamp,
   doc,
   getDoc,
+  updateDoc,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
 import { Organization, UserRole } from "@/types";
@@ -52,29 +54,37 @@ export function OrganizationManager() {
   const { user } = useAuth();
   const { selectedOrganization } = useOrganization();
 
-
-  const [organizationId, setOrganizationId] = useAtom(selectedOrganizationIdAtom);
+  const [organizationId, setOrganizationId] = useAtom(
+    selectedOrganizationIdAtom,
+  );
   const [userOrganizations] = useAtom(userOrganizationsAtom);
-  const [userOrganizationAssociations] = useAtom(userOrganizationAssociationsAtom);
+  const [userOrganizationAssociations] = useAtom(
+    userOrganizationAssociationsAtom,
+  );
   const [organizationsLoading] = useAtom(organizationsLoadingAtom);
   const [theme, setTheme] = useAtom(themeAtom);
+
+  // Use the invitation codes actions hook
+  const { validateAndUseInvitation } = useInvitationsActions(undefined);
 
   const selectOrganization = (orgId: string) => {
     setOrganizationId(orgId);
   };
 
   const toggleTheme = () => {
-    setTheme(theme === 'light' ? 'dark' : 'light');
+    setTheme(theme === "light" ? "dark" : "light");
   };
 
   // Combine organizations with their association data
-  const userOrganizationData = userOrganizations.map(org => {
-    const association = userOrganizationAssociations.find(a => a.organizationId === org.id);
+  const userOrganizationData = userOrganizations.map((org) => {
+    const association = userOrganizationAssociations.find(
+      (a) => a.organizationId === org.id,
+    );
     return {
       ...org,
       organizationId: org.id,
-      role: association?.role || 'member',
-      isActive: association?.isActive ?? true
+      role: association?.role || "member",
+      isActive: association?.isActive ?? true,
     };
   });
 
@@ -99,9 +109,7 @@ export function OrganizationManager() {
 
       for (const userOrg of userOrganizationData) {
         try {
-          const orgDoc = await getDoc(
-            doc(db, "organizations", userOrg.id)
-          );
+          const orgDoc = await getDoc(doc(db, "organizations", userOrg.id));
           if (orgDoc.exists()) {
             orgData[userOrg.organizationId] = {
               id: orgDoc.id,
@@ -124,42 +132,118 @@ export function OrganizationManager() {
   }, [userOrganizations, userOrganizationData]);
 
   const handleJoinOrganization = async () => {
-    if (!joinCode || !user) return;
+    console.log("OrganizationManager: handleJoinOrganization called with:", {
+      joinCode,
+      user: user?.uid,
+    });
+
+    if (!joinCode || !user) {
+      console.log(
+        "OrganizationManager: Early return: joinCode or user missing",
+        { joinCode: !!joinCode, user: !!user },
+      );
+      return;
+    }
 
     setLoading(true);
     setJoinError("");
     try {
-      // Find the invitation code
-      const codesQuery = query(
-        collection(db, "invitationCodes"),
-        where("code", "==", joinCode.toUpperCase()),
-        where("isUsed", "==", false)
-      );
-      const codesSnapshot = await getDocs(codesQuery);
+      const result = await validateAndUseInvitation(joinCode, user.uid);
 
-      if (codesSnapshot.empty) {
+      if (!result.success) {
+        setJoinError(result.error || "Failed to join organization");
+        return;
+      }
+
+      // Code validation and joining is now handled by the validateAndUseInvitation hook
+      console.log(
+        "OrganizationManager: Searching for code:",
+        joinCode.toLowerCase(),
+      );
+      const codesQuery = query(
+        collection(db, "invitations"),
+        where("code", "==", joinCode.toLowerCase()),
+      );
+      console.log("OrganizationManager: Query created, executing...");
+      const codesSnapshot = await getDocs(codesQuery);
+      console.log(
+        "OrganizationManager: Raw query results:",
+        codesSnapshot.size,
+        "documents found",
+      );
+
+      // Filter by isUsed in code to avoid composite index issues
+      const availableCodes = codesSnapshot.docs.filter((doc) => {
+        const data = doc.data();
+        console.log(
+          "OrganizationManager: Checking code:",
+          data.code,
+          "isUsed:",
+          data.isUsed,
+        );
+        return data.isUsed === false;
+      });
+
+      console.log(
+        "OrganizationManager: Available codes after filtering:",
+        availableCodes.length,
+      );
+
+      if (availableCodes.length === 0) {
+        console.log("OrganizationManager: No available invitation codes found");
         setJoinError("Invalid or expired invitation code");
         return;
       }
 
-      const invitationCode = codesSnapshot.docs[0].data();
-      const codeId = codesSnapshot.docs[0].id;
+      const invitationCode = availableCodes[0].data();
+      const codeId = availableCodes[0].id;
+
+      console.log("OrganizationManager: Found invitation code:", {
+        id: codeId,
+        code: invitationCode.code,
+        organizationId: invitationCode.organizationId,
+        role: invitationCode.role,
+        isUsed: invitationCode.isUsed,
+        expiresAt: invitationCode.expiresAt?.toDate(),
+        createdAt: invitationCode.createdAt?.toDate(),
+      });
 
       // Check if code is expired
-      if (invitationCode.expiresAt.toDate() < new Date()) {
+      const expiresAt = invitationCode.expiresAt?.toDate();
+      const now = new Date();
+      console.log("OrganizationManager: Expiration check:", {
+        expiresAt,
+        now,
+        isExpired: expiresAt < now,
+      });
+
+      if (expiresAt < now) {
+        console.log("OrganizationManager: Code has expired");
         setJoinError("Invitation code has expired");
         return;
       }
 
       // Check if user is already a member
+      console.log(
+        "OrganizationManager: Checking if user is already a member of organization:",
+        invitationCode.organizationId,
+      );
       const existingMembershipQuery = query(
         collection(db, "organizationUsers"),
         where("userId", "==", user.uid),
-        where("organizationId", "==", invitationCode.organizationId)
+        where("organizationId", "==", invitationCode.organizationId),
       );
       const existingMembershipSnapshot = await getDocs(existingMembershipQuery);
+      console.log(
+        "OrganizationManager: Existing membership check:",
+        existingMembershipSnapshot.size,
+        "documents found",
+      );
 
       if (!existingMembershipSnapshot.empty) {
+        console.log(
+          "OrganizationManager: User is already a member of this organization",
+        );
         setJoinError("You are already a member of this organization");
         return;
       }
@@ -174,26 +258,34 @@ export function OrganizationManager() {
         updatedAt: serverTimestamp(),
       });
 
-       // Mark invitation code as used
-       await addDoc(collection(db, "usedInvitationCodes"), {
-         codeId,
-         userId: user.uid,
-         usedAt: serverTimestamp(),
-       });
+      // Mark invitation code as used
+      const codeDocRef = doc(db, "invitations", codeId);
+      await updateDoc(codeDocRef, {
+        isUsed: true,
+        usedBy: user.uid,
+        usedAt: serverTimestamp(),
+      });
 
-       // Organization data will be refreshed automatically by the hook
+      // Organization data will be refreshed automatically by the hook
 
-       // Switch to the new organization
-       await selectOrganization(invitationCode.organizationId);
+      // Switch to the new organization
+      console.log(
+        "OrganizationManager: Switching to organization:",
+        invitationCode.organizationId,
+      );
+      await selectOrganization(invitationCode.organizationId);
 
+      console.log("OrganizationManager: Successfully joined organization!");
       setShowJoinForm(false);
       setJoinCode("");
       router.push("/dashboard");
     } catch (error) {
-      console.error("Error joining organization:", error);
-      setJoinError(
-        "Failed to join organization. Please check the code and try again."
-      );
+      console.error("OrganizationManager: Error joining organization:", error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to join organization. Please check the code and try again.";
+      setJoinError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -213,19 +305,19 @@ export function OrganizationManager() {
         subscriptionStatus: "trial",
       });
 
-       // Add creator as admin
-       await addDoc(collection(db, "organizationUsers"), {
-         userId: user.uid,
-         organizationId: organizationRef.id,
-         role: "admin",
-         isActive: true,
-         createdAt: serverTimestamp(),
-         updatedAt: serverTimestamp(),
-       });
+      // Add creator as admin
+      await addDoc(collection(db, "organizationUsers"), {
+        userId: user.uid,
+        organizationId: organizationRef.id,
+        role: "admin",
+        isActive: true,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
 
-       // Organization data will be refreshed automatically by the hook
+      // Organization data will be refreshed automatically by the hook
 
-       // Switch to the new organization
+      // Switch to the new organization
       await selectOrganization(organizationRef.id);
 
       setShowCreateForm(false);
@@ -409,8 +501,7 @@ export function OrganizationManager() {
                 <div className="space-y-4">
                   {userOrganizationData.map((organizationUser) => {
                     const org = organizations[organizationUser.id];
-                    const isSelected =
-                      organizationId === organizationUser.id;
+                    const isSelected = organizationId === organizationUser.id;
                     return (
                       <Card
                         key={organizationUser.id}
@@ -420,14 +511,10 @@ export function OrganizationManager() {
                               ? "border-purple-500 bg-gradient-to-r from-purple-600/20 to-blue-600/20 hover:ring-purple-400/50"
                               : "border-blue-500 bg-gradient-to-r from-blue-600/10 to-indigo-600/10 hover:ring-blue-400/50"
                             : isDark
-                            ? "border-slate-600 bg-gradient-to-r from-slate-700/50 to-slate-800/50 hover:border-purple-400 hover:ring-purple-400/50"
-                            : "border-slate-300 bg-gradient-to-r from-slate-50 to-blue-50/30 hover:border-blue-300 hover:ring-blue-400/50"
+                              ? "border-slate-600 bg-gradient-to-r from-slate-700/50 to-slate-800/50 hover:border-purple-400 hover:ring-purple-400/50"
+                              : "border-slate-300 bg-gradient-to-r from-slate-50 to-blue-50/30 hover:border-blue-300 hover:ring-blue-400/50"
                         }`}
-                        onClick={() =>
-                          selectOrganization(
-                            organizationUser.id
-                          )
-                        }
+                        onClick={() => selectOrganization(organizationUser.id)}
                       >
                         <CardContent className="px-12 py-4 flex flex-col justify-center items-center min-h-[140px]">
                           <div className="space-y-4">
@@ -441,8 +528,8 @@ export function OrganizationManager() {
                                       ? "bg-gradient-to-r from-purple-500 to-blue-500"
                                       : "bg-gradient-to-r from-blue-500 to-indigo-500"
                                     : isDark
-                                    ? "bg-gradient-to-r from-slate-500 to-slate-600"
-                                    : "bg-gradient-to-r from-slate-300 to-slate-400"
+                                      ? "bg-gradient-to-r from-slate-500 to-slate-600"
+                                      : "bg-gradient-to-r from-slate-300 to-slate-400"
                                 }`}
                               >
                                 <Building2 className={`h-6 w-6 text-white`} />
@@ -456,7 +543,7 @@ export function OrganizationManager() {
                               >
                                 {org?.name ||
                                   `Organization ${organizationUser.organizationId.slice(
-                                    -6
+                                    -6,
                                   )}`}
                               </h3>
                             </div>
@@ -485,8 +572,8 @@ export function OrganizationManager() {
                                                 ? "bg-gradient-to-r from-purple-500 to-blue-500 text-white"
                                                 : "bg-gradient-to-r from-blue-500 to-indigo-500 text-white"
                                               : isDark
-                                              ? "bg-slate-600 text-slate-200"
-                                              : "bg-slate-300 text-slate-700"
+                                                ? "bg-slate-600 text-slate-200"
+                                                : "bg-slate-300 text-slate-700"
                                           }`
                                     }`}
                                   >
@@ -603,7 +690,7 @@ export function OrganizationManager() {
                           placeholder="Enter invitation code"
                           value={joinCode}
                           onChange={(e) =>
-                            setJoinCode(e.target.value.toUpperCase())
+                            setJoinCode(e.target.value.toLowerCase())
                           }
                           className={`font-mono uppercase text-center py-2 ${
                             isDark

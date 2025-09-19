@@ -1,5 +1,5 @@
 // Import enums from the main enums file
-import { UserRole, SubscriptionStatus } from './enums';
+import { UserRole, SubscriptionStatus } from "./enums";
 
 export interface User {
   id: string;
@@ -20,7 +20,7 @@ export interface OrganizationUser {
   updatedAt: Date;
 }
 
-export interface InvitationCode {
+export interface Invitation {
   id: string;
   code: string;
   organizationId: string;

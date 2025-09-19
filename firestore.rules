@@ -32,13 +32,13 @@ service cloud.firestore {
       allow read, write: if isAuthenticated();
     }
 
-    // Invitation codes collection - authenticated users can read/write
-    match /invitationCodes/{document=**} {
-      allow read, write: if isAuthenticated();
-    }
+// Invitations collection - authenticated users can read/write
+match /invitations/{document=**} {
+  allow read, write: if isAuthenticated();
+}
 
     // Used invitation codes collection - authenticated users can read/write
-    match /usedInvitationCodes/{document=**} {
+    match /usedInvitations/{document=**} {
       allow read, write: if isAuthenticated();
     }
 

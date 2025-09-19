@@ -29,7 +29,7 @@
       ]
     },
     {
-      "collectionGroup": "invitationCodes",
+      "collectionGroup": "invitations",
       "queryScope": "COLLECTION",
       "fields": [
         {
