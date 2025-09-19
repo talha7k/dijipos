@@ -1,60 +1,26 @@
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Save } from "lucide-react";
-import { Order, OrderStatus, OrderPayment, PaymentStatus } from "@/types";
+import { Order, OrderStatus, PaymentStatus } from "@/types";
 import { OrderActionsDialog } from "./OrderStatusActionsDialog";
 
 interface OrderActionsProps {
   order: Order;
-  payments: OrderPayment[];
   updatingStatus: boolean;
-  onMarkAsPaid: (orderId: string) => Promise<void>;
-  onCompleteOrder: (orderId: string) => Promise<void>;
   onUpdateStatus: (orderId: string, status: OrderStatus) => Promise<void>;
 }
 
 export function OrderActions({
   order,
-  payments,
   updatingStatus,
-  onMarkAsPaid,
-  onCompleteOrder,
   onUpdateStatus
 }: OrderActionsProps) {
   const paymentStatus = order.paymentStatus || PaymentStatus.UNPAID;
 
-  const isOrderFullyPaid = () => {
-    const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
-    return totalPaid >= order.total;
-  };
+
 
   return (
     <div className="space-y-4">
-      {/* Payment Actions */}
-      {paymentStatus !== PaymentStatus.PAID && isOrderFullyPaid() && (
-        <div className="p-4 bg-green-100 border border-green-200 rounded-lg">
-          <h3 className="text-sm font-medium text-green-900 mb-3">
-            Payment Complete:
-          </h3>
-          <div className="flex gap-2">
-            <OrderActionsDialog
-              order={order}
-              payments={payments}
-              updatingStatus={updatingStatus}
-              onMarkAsPaid={onMarkAsPaid}
-              onUpdateStatus={onUpdateStatus}
-            >
-              <Button
-                size="sm"
-                className="bg-green-600 hover:bg-green-700"
-                disabled={updatingStatus}
-              >
-                <CheckCircle className="h-4 w-4 mr-2" />
-                {updatingStatus ? "Marking..." : "Mark as Paid"}
-              </Button>
-            </OrderActionsDialog>
-          </div>
-        </div>
-      )}
+
 
       {/* Order Status Actions */}
       {paymentStatus === PaymentStatus.PAID &&
@@ -64,13 +30,11 @@ export function OrderActions({
               Ready to Complete:
             </h3>
             <div className="flex gap-2">
-              <OrderActionsDialog
-                order={order}
-                payments={payments}
-                updatingStatus={updatingStatus}
-                onMarkAsPaid={onMarkAsPaid}
-                onUpdateStatus={onUpdateStatus}
-              >
+             <OrderActionsDialog
+               order={order}
+               updatingStatus={updatingStatus}
+               onUpdateStatus={onUpdateStatus}
+             >
                 <Button
                   size="sm"
                   className="bg-blue-600 hover:bg-blue-700"
@@ -90,13 +54,11 @@ export function OrderActions({
           Other Actions:
         </h3>
         <div className="flex gap-2 flex-wrap">
-          <OrderActionsDialog
-            order={order}
-            payments={payments}
-            updatingStatus={updatingStatus}
-            onMarkAsPaid={onMarkAsPaid}
-            onUpdateStatus={onUpdateStatus}
-          >
+               <OrderActionsDialog
+                 order={order}
+                 updatingStatus={updatingStatus}
+                 onUpdateStatus={onUpdateStatus}
+               >
             <Button
               size="sm"
               variant="outline"

@@ -10,26 +10,22 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { CheckCircle, CreditCard, Clock, XCircle, Save } from "lucide-react";
-import { Order, OrderStatus, PaymentStatus, OrderPayment } from "@/types";
+import { CheckCircle, Clock, XCircle, Save } from "lucide-react";
+import { Order, OrderStatus, PaymentStatus } from "@/types";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface OrderActionsDialogProps {
   order: Order;
-  payments?: OrderPayment[];
   updatingStatus?: boolean;
   children: React.ReactNode;
-  onMarkAsPaid?: (orderId: string) => Promise<void>;
   onUpdateStatus?: (orderId: string, status: OrderStatus) => Promise<void>;
 }
 
 export function OrderActionsDialog({
   order,
-  payments = [],
   updatingStatus = false,
   children,
-  onMarkAsPaid,
   onUpdateStatus
 }: OrderActionsDialogProps) {
   const [open, setOpen] = useState(false);
@@ -37,18 +33,7 @@ export function OrderActionsDialog({
   // Provide default payment status if undefined
   const paymentStatus = order.paymentStatus || PaymentStatus.UNPAID;
 
-  const isOrderFullyPaid = () => {
-    // If order is already marked as paid, trust that status
-    if (paymentStatus === PaymentStatus.PAID) return true;
-    
-    // Otherwise check payments if available
-    if (payments && payments.length > 0) {
-      const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
-      return totalPaid >= order.total;
-    }
-    
-    return false;
-  };
+
 
   const handleAction = async (action: () => Promise<void> | void) => {
     try {
@@ -142,16 +127,6 @@ export function OrderActionsDialog({
           </Button>
         </div>
         <DialogFooter>
-           {paymentStatus !== PaymentStatus.PAID && isOrderFullyPaid() && (
-            <Button
-              onClick={() => handleAction(() => onMarkAsPaid?.(order.id))}
-              className="w-full"
-              disabled={updatingStatus}
-            >
-              <CreditCard className="h-4 w-4 mr-2" />
-              {updatingStatus ? "Marking..." : "Mark as Paid"}
-            </Button>
-          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

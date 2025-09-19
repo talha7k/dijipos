@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { Order, OrderPayment, PaymentStatus } from "@/types";
+import { Order, OrderPayment } from "@/types";
 import { OrderSummaryCard } from "@/components/orders/OrderSummaryCard";
 import { PaymentList } from "@/components/orders/PaymentList";
 import { OrderItemList } from "@/components/orders/OrderItemList";
@@ -10,18 +10,15 @@ interface OrderDetailProps {
   payments: OrderPayment[];
   onBack: () => void;
   onReopenOrder: (order: Order) => void;
-  onPayOrder: (order: Order) => void;
 }
 
-export function OrderDetail({ 
-  order, 
-  payments, 
-  onBack, 
-  onReopenOrder, 
-  onPayOrder 
+export function OrderDetail({
+  order,
+  payments,
+  onBack,
+  onReopenOrder
 }: OrderDetailProps) {
-  const paymentStatus = order.paymentStatus || PaymentStatus.UNPAID;
-  const isActuallyPaid = paymentStatus === PaymentStatus.PAID;
+
 
   return (
     <div className="h-screen flex flex-col bg-background pb-15">
@@ -41,19 +38,10 @@ export function OrderDetail({
           <Button
             onClick={() => onReopenOrder(order)}
             className="flex-1 bg-orange-500 hover:bg-orange-600 text-white border-orange-500"
-          
+
           >
             Reopen Order
           </Button>
-          {!isActuallyPaid && (
-            <Button
-              onClick={() => onPayOrder(order)}
-              className="flex-1"
-              variant="outline"
-            >
-              Pay & Complete
-            </Button>
-          )}
         </div>
       </div>
       <div className="flex-1 overflow-y-auto">

@@ -8,9 +8,6 @@ interface OrderDetailViewProps {
   updatingStatus: boolean;
   onBack: () => void;
   onReopenOrder: (order: Order) => void;
-  onPayOrder: (order: Order) => void;
-  onMarkAsPaid: (orderId: string) => Promise<void>;
-  onCompleteOrder: (orderId: string) => Promise<void>;
   onUpdateStatus: (orderId: string, status: OrderStatus) => Promise<void>;
 }
 
@@ -20,9 +17,6 @@ export function OrderDetailView({
   updatingStatus,
   onBack,
   onReopenOrder,
-  onPayOrder,
-  onMarkAsPaid,
-  onCompleteOrder,
   onUpdateStatus,
 }: OrderDetailViewProps) {
   return (
@@ -32,15 +26,11 @@ export function OrderDetailView({
         payments={payments}
         onBack={onBack}
         onReopenOrder={onReopenOrder}
-        onPayOrder={onPayOrder}
       />
       <div className="flex-shrink-0 p-4 border-t bg-background">
         <OrderActions
           order={order}
-          payments={payments}
           updatingStatus={updatingStatus}
-          onMarkAsPaid={onMarkAsPaid}
-          onCompleteOrder={onCompleteOrder}
           onUpdateStatus={onUpdateStatus}
         />
       </div>
