@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import {
   Receipt,
   CheckCircle,
-  CreditCard,
   Clock,
   XCircle,
   Save,
@@ -14,11 +13,11 @@ import {
 } from "lucide-react";
 import { Order, OrderStatus, OrderPayment } from "@/types";
 import {
-  ORDER_STATUS_COLORS,
   ORDER_STATUS_BUTTON_VARIANTS,
   getOrderStatusColor,
 } from "@/types/enums";
 import { OrderActionsDialog } from "./OrderStatusActionsDialog";
+import { OrderStatusBadge } from "./OrderStatusBadge";
 import { useCurrency } from "@/lib/hooks/useCurrency";
 import { ReceiptPrintDialog } from "@/components/ReceiptPrintDialog";
 import { useAtom } from "jotai";
@@ -146,23 +145,11 @@ export function OrderSummaryCard({
 
           {/* Payment Status Badge - 1 column */}
           <div>
-            <Badge
-              className={`${
-                isActuallyPaid ? "bg-emerald-500" : "bg-destructive"
-              } text-white w-full justify-center py-2`}
-            >
-              {isActuallyPaid ? (
-                <>
-                  <CheckCircle className="h-3 w-3 mr-1" />
-                  Paid
-                </>
-              ) : (
-                <>
-                  <CreditCard className="h-3 w-3 mr-1" />
-                  Unpaid
-                </>
-              )}
-            </Badge>
+            <OrderStatusBadge
+              isPaid={isActuallyPaid}
+              queueNumber={order.queueNumber}
+              showQueueBadge={true}
+            />
           </div>
         </div>
 
@@ -189,11 +176,6 @@ export function OrderSummaryCard({
           className="space-y-2 cursor-pointer"
         >
           <div className="flex-row justify-center text-center items-center bg-muted/70 rounded-lg py-2 my-4">
-            {order.queueNumber && (
-              <div className="text-sm font-semibold text-primary mb-1">
-                Queue #: {order.queueNumber}
-              </div>
-            )}
             <span className="font-bold">{order.orderNumber}</span>
             <br />
             {showCreatedDate && (

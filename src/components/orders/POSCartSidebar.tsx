@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CardFooter } from "@/components/ui/CardFooter";
-import { ShoppingCart, Save, Printer, RotateCcw, Hash } from "lucide-react";
+import { ShoppingCart, Save, Printer, RotateCcw } from "lucide-react";
+import { QueueBadge } from "./QueueBadge";
 import { ClearOrderDialog } from "@/components/ui/clear-order-dialog";
 import { POSCartItem } from "./POSCartItem";
 import { ReceiptPrintDialog } from "@/components/ReceiptPrintDialog";
@@ -174,12 +175,9 @@ export function POSCartSidebar({
                  <ShoppingCart className="h-3 w-3" />
                  {cartItems.reduce((sum, item) => sum + item.quantity, 0)}
                </Badge>
-{cartItems.length > 0 && currentQueueNumber && (
-                  <Badge variant="outline" className="text-sm flex items-center gap-1 border-2 border-red-500">
-                    <Hash className="h-3 w-3" />
-                    {currentQueueNumber}
-                  </Badge>
-                )}
+ {cartItems.length > 0 && currentQueueNumber && (
+                   <QueueBadge queueNumber={currentQueueNumber} />
+                 )}
              </div>
             <div className="text-right">
               <div className="text-sm text-muted-foreground">Total</div>
