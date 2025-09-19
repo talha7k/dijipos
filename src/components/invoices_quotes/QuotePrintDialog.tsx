@@ -68,14 +68,7 @@ export function QuotePrintDialog({
         }
       }
       
-      // Fallback to template with isDefault flag
-      if (!selectedId) {
-        const defaultTemplate = quoteTemplates.find((t) => t.isDefault);
-        if (defaultTemplate) {
-          selectedId = defaultTemplate.id;
-          console.log(`[QuotePrintDialog] Using template with isDefault flag: ${defaultTemplate.name}`);
-        }
-      }
+      
       
       // Final fallback to first template
       if (!selectedId && quoteTemplates.length > 0) {
@@ -180,7 +173,7 @@ export function QuotePrintDialog({
       description="Select a quote template and print your quote"
       actions={actions}
       trigger={controlledOpen === undefined ? children : undefined}
-      contentClassName="max-h-[70vh]"
+      
     >
       <div className="grid grid-cols-2 gap-6">
         {/* Left Column - Quote & Settings */}
@@ -246,7 +239,7 @@ export function QuotePrintDialog({
          {/* Right Column - Template Selection */}
          <div className="space-y-6">
            {/* Template Selection */}
-           <Card className="h-full">
+            <Card>
              <CardHeader>
                <CardTitle className="text-lg">Select Quote Template</CardTitle>
              </CardHeader>

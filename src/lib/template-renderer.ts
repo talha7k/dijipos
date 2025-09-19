@@ -187,9 +187,10 @@ function renderTemplate(template: string, data: ReceiptTemplateData): string {
    result = result.replace(/{{companyPhone}}/g, data.companyPhone);
    result = result.replace(/{{companyVat}}/g, data.companyVat);
    result = result.replace(/{{companyLogo}}/g, data.companyLogo);
-   result = result.replace(/{{orderNumber}}/g, data.orderNumber);
-   result = result.replace(/{{orderDate}}/g, data.orderDate);
-   result = result.replace(/{{tableName}}/g, data.tableName);
+result = result.replace(/{{orderNumber}}/g, data.orderNumber);
+    result = result.replace(/{{orderDate}}/g, data.orderDate);
+    result = result.replace(/{{formattedDate}}/g, data.formattedDate);
+    result = result.replace(/{{tableName}}/g, data.tableName);
    result = result.replace(/{{customerName}}/g, data.customerName);
    result = result.replace(/{{createdByName}}/g, data.createdByName);
    result = result.replace(/{{paymentMethod}}/g, data.paymentMethod);

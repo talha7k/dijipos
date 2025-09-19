@@ -35,20 +35,23 @@ export function DialogWithActions({
   maxWidth = "max-w-4xl",
 }: DialogWithActionsProps) {
   const content = (
-    <DialogContent className={cn(maxWidth, className)}>
-      <DialogHeader>
-        <DialogTitle>{title}</DialogTitle>
-        {description && <DialogDescription>{description}</DialogDescription>}
-      </DialogHeader>
+    <DialogContent className={cn(maxWidth, "flex flex-col max-h-[90vh]", className)}>
+      {/* Fixed Header Section */}
+      <div className="flex-shrink-0">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          {description && <DialogDescription>{description}</DialogDescription>}
+        </DialogHeader>
+
+        {/* Fixed Actions */}
+        <div className="flex justify-end gap-2 pb-4 border-b bg-background">
+          {actions}
+        </div>
+      </div>
 
       {/* Scrollable Content Area */}
       <div className={cn("flex-1 overflow-y-auto pr-1", contentClassName)}>
         {children}
-      </div>
-
-      {/* Fixed Footer with Actions */}
-      <div className="flex justify-end gap-2 pt-4 border-t bg-background">
-        {actions}
       </div>
     </DialogContent>
   );

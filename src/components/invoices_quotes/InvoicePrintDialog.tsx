@@ -74,14 +74,7 @@ export function InvoicePrintDialog({
         }
       }
       
-      // Fallback to template with isDefault flag
-      if (!selectedId) {
-        const defaultTemplate = invoiceTemplates.find((t) => t.isDefault);
-        if (defaultTemplate) {
-          selectedId = defaultTemplate.id;
-          console.log(`[InvoicePrintDialog] Using template with isDefault flag: ${defaultTemplate.name}`);
-        }
-      }
+      
       
       // Final fallback to first template
       if (!selectedId && invoiceTemplates.length > 0) {
@@ -186,7 +179,7 @@ export function InvoicePrintDialog({
       description="Select an invoice template and print your invoice"
       actions={actions}
       trigger={controlledOpen === undefined ? children : undefined}
-      contentClassName="max-h-[70vh]"
+      
     >
       <div className="grid grid-cols-2 gap-6">
         {/* Left Column - Invoice & Settings */}
@@ -256,7 +249,7 @@ export function InvoicePrintDialog({
          {/* Right Column - Template Selection */}
          <div className="space-y-6">
            {/* Template Selection */}
-           <Card className="h-full">
+            <Card>
              <CardHeader>
                <CardTitle className="text-lg">Select Invoice Template</CardTitle>
              </CardHeader>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { useSearchParams } from 'next/navigation';
 
 import { useAtomValue } from 'jotai';
 import { useAuth } from '@/lib/hooks/useAuth';
@@ -9,6 +10,7 @@ import { selectedOrganizationAtom, organizationUsersAtom,  } from '@/atoms';
 import { organizationLoadingAtom } from '@/atoms';
 import { useInvitationCodesData, useInvitationCodesActions } from '@/lib/hooks/useInvitationCodes';
 import { updateOrganization, updateOrganizationBranding, updateOrganizationUser, updateUserStatus } from '@/lib/firebase/firestore/organizations';
+import { updateUser } from '@/lib/firebase/firestore/users';
 import { updateProfile } from 'firebase/auth';
 import { auth } from '@/lib/firebase/config';
 import { useAtom } from 'jotai';
@@ -55,6 +57,15 @@ function CompanyContent() {
     role: UserRole.WAITER,
     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
   });
+  const [activeTab, setActiveTab] = useState('company');
+
+  // Handle URL hash for tab navigation
+  useEffect(() => {
+    const hash = window.location.hash.replace('#', '');
+    if (hash && ['company', 'branding', 'team', 'account'].includes(hash)) {
+      setActiveTab(hash);
+    }
+  }, []);
 
   // Form state
   const [companyName, setCompanyName] = useState('');
@@ -225,11 +236,16 @@ function CompanyContent() {
   };
 
   const handleUpdateUserDisplayName = async () => {
-    if (!user) return;
+    if (!user?.uid) return;
 
     setSaving(true);
     try {
+      // Update Firebase Auth profile
       await updateProfile(user, { displayName: userDisplayName });
+
+      // Also update the user profile in Firestore
+      await updateUser(user.uid, { name: userDisplayName });
+
       toast.success('Display name updated successfully!');
     } catch (error) {
       console.error('Error updating display name:', error);
@@ -284,7 +300,7 @@ function CompanyContent() {
         <h1 className="text-3xl font-bold">Company & Account</h1>
       </div>
 
-      <Tabs defaultValue="company" className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="company">Company Info</TabsTrigger>
           <TabsTrigger value="branding">Branding</TabsTrigger>

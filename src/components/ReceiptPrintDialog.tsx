@@ -72,16 +72,7 @@ export function ReceiptPrintDialog({
         }
       }
 
-      // Fallback to template with isDefault flag
-      if (!selectedId) {
-        const defaultTemplate = receiptTemplates.find((t) => t.isDefault);
-        if (defaultTemplate) {
-          selectedId = defaultTemplate.id;
-          console.log(
-            `[ReceiptPrintDialog] Using template with isDefault flag: ${defaultTemplate.name}`,
-          );
-        }
-      }
+      
 
       // Final fallback to first template
       if (!selectedId && receiptTemplates.length > 0) {
@@ -247,7 +238,7 @@ export function ReceiptPrintDialog({
       description="Select a receipt template and print your order receipt"
       actions={actions}
       trigger={children}
-      contentClassName="max-h-[70vh]"
+      
     >
       <div className="grid grid-cols-2 gap-6">
         {/* Left Column - Order & Settings */}
@@ -317,7 +308,7 @@ export function ReceiptPrintDialog({
          {/* Right Column - Template Selection */}
          <div className="space-y-6">
            {/* Template Selection */}
-           <Card className="h-full">
+            <Card>
              <CardHeader>
                <CardTitle className="text-lg">
                  Select Receipt Template

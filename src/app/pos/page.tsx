@@ -10,6 +10,7 @@ import { useCustomers } from "@/lib/hooks/useCustomers";
 import { useOrders } from "@/lib/hooks/useOrders";
 import { useStoreSettings } from "@/lib/hooks/useStoreSettings";
 import { useAuth } from "@/lib/hooks/useAuth";
+import { getUser } from "@/lib/firebase/firestore/users";
 
 import {
   POSLayout,
@@ -87,6 +88,31 @@ export default function SimplifiedPOSPage() {
 
   // Get auth context
   const { user } = useAuth();
+
+  // User name state
+  const [userName, setUserName] = useState<string>('');
+
+  // Fetch user profile on mount
+  React.useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (user?.uid) {
+        try {
+          const userProfile = await getUser(user.uid);
+          if (userProfile?.name) {
+            setUserName(userProfile.name);
+          } else {
+            // Fallback to Firebase Auth displayName or email
+            setUserName(user.displayName || user.email || 'Unknown User');
+          }
+        } catch (error) {
+          console.error('Error fetching user profile:', error);
+          setUserName(user.displayName || user.email || 'Unknown User');
+        }
+      }
+    };
+
+    fetchUserProfile();
+  }, [user]);
 
   // Handler functions
   const handleAddToCart = useCallback((item: Product | Service, type: 'product' | 'service') => {
@@ -213,7 +239,7 @@ export default function SimplifiedPOSPage() {
         ...(selectedTable?.id && { tableId: selectedTable.id }),
         ...(selectedTable?.name && { tableName: selectedTable.name }),
         createdById: user?.uid || 'unknown',
-        createdByName: user?.displayName || user?.email || 'Unknown User',
+        createdByName: userName || user?.displayName || user?.email || 'Unknown User',
         createdAt: selectedOrder?.createdAt || new Date(),
         updatedAt: new Date(),
       };
@@ -316,7 +342,7 @@ export default function SimplifiedPOSPage() {
       paid: false,
       orderType: selectedOrderType?.name || 'dine-in',
       createdById: user?.uid || 'unknown',
-      createdByName: user?.displayName || user?.email || 'Unknown User',
+      createdByName: userName || user?.displayName || user?.email || 'Unknown User',
       createdAt: new Date(),
       updatedAt: new Date(),
     };
