@@ -23,7 +23,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building2, CreditCard, User, Mail, Calendar, X, Users, Plus, Edit, Trash2, Shield, Settings, Copy, Link } from 'lucide-react';
+import { Building2, X, Users, Plus, Edit, Trash2, Shield, Settings, Copy, Link } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
@@ -36,6 +36,7 @@ import { CompanyInfoTab } from '@/components/company/CompanyInfoTab';
 import { BrandingTab } from '@/components/company/BrandingTab';
 import { TeamTab } from '@/components/company/TeamTab';
 import { AccountTab } from '@/components/company/AccountTab';
+import { AdminOnlyGuard } from '@/components/layout/RoleGuard';
 
 
 
@@ -67,7 +68,7 @@ function CompanyContent() {
   // Handle URL hash for tab navigation
   useEffect(() => {
     const hash = window.location.hash.replace('#', '');
-    if (hash && ['company', 'branding', 'team', 'account'].includes(hash)) {
+    if (hash && ['company', 'branding', 'team'].includes(hash)) {
       setActiveTab(hash);
     }
   }, []);
@@ -81,7 +82,7 @@ function CompanyContent() {
   const [vatNumber, setVatNumber] = useState('');
   const [logoUrl, setLogoUrl] = useState('');
   const [stampUrl, setStampUrl] = useState('');
-  const [userDisplayName, setUserDisplayName] = useState('');
+
 
   useEffect(() => {
     if (!organization) return;
@@ -101,10 +102,7 @@ function CompanyContent() {
     setLoading(isLoading);
   }, [orgLoading, codesLoading]);
 
-  useEffect(() => {
-    if (!user) return;
-    setUserDisplayName(user.displayName || '');
-  }, [user]);
+
 
   
 
@@ -305,13 +303,12 @@ function CompanyContent() {
         <h1 className="text-3xl font-bold">Company & Account</h1>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="company">Company Info</TabsTrigger>
-          <TabsTrigger value="branding">Branding</TabsTrigger>
-          <TabsTrigger value="team">Team</TabsTrigger>
-          <TabsTrigger value="account">Account Details</TabsTrigger>
-        </TabsList>
+       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+         <TabsList className="grid w-full grid-cols-3">
+           <TabsTrigger value="company">Company Info</TabsTrigger>
+           <TabsTrigger value="branding">Branding</TabsTrigger>
+           <TabsTrigger value="team">Team</TabsTrigger>
+         </TabsList>
 
         <TabsContent value="company" className="space-y-6">
           <CompanyInfoTab
@@ -406,18 +403,16 @@ function CompanyContent() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="account" className="space-y-6">
-          <AccountTab
-            userDisplayName={userDisplayName}
-            userEmail={user?.email}
-            organizationCreatedAt={organization?.createdAt}
-          />
-        </TabsContent>
+
       </Tabs>
     </div>
   );
 }
 
 export default function CompanyPage() {
-  return <CompanyContent />;
+  return (
+    <AdminOnlyGuard>
+      <CompanyContent />
+    </AdminOnlyGuard>
+  );
 }

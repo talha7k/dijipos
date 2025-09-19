@@ -20,6 +20,7 @@ import { StoreSettingsTab } from '@/components/settings/StoreSettingsTab';
 import { PrinterSettingsTab } from '@/components/settings/PrinterSettingsTab';
 import { TemplatesTab } from '@/components/settings/TemplatesTab';
 import { TablesTab } from '@/components/settings/TablesTab';
+import { AdminOnlyGuard } from '@/components/layout/RoleGuard';
 
 function SettingsContent() {
   const {} = useAuth();
@@ -113,5 +114,9 @@ function SettingsContent() {
 }
 
 export default function SettingsPage() {
-  return <SettingsContent />;
+  return (
+    <AdminOnlyGuard>
+      <SettingsContent />
+    </AdminOnlyGuard>
+  );
 }

@@ -13,6 +13,7 @@ import { Calendar, Download, TrendingUp, Calculator } from 'lucide-react';
 
 import { useInvoices } from '@/lib/hooks/useInvoices';
 import { InvoiceType } from '@/types';
+import { AdminManagerGuard } from '@/components/layout/RoleGuard';
 
 interface ReportData {
   totalSales: number;
@@ -25,7 +26,7 @@ interface ReportData {
   profitMargin: number;
 }
 
-export default function ReportsPage() {
+function ReportsContent() {
   const { salesInvoices, purchaseInvoices, loading } = useInvoices();
 
   // Memoize invoices array to prevent unnecessary re-renders
@@ -516,5 +517,13 @@ export default function ReportsPage() {
         </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+export default function ReportsPage() {
+  return (
+    <AdminManagerGuard>
+      <ReportsContent />
+    </AdminManagerGuard>
   );
 }
