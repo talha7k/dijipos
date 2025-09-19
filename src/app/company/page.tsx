@@ -297,28 +297,17 @@ function CompanyContent() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="companyEmail">Company Email</Label>
-                <Input
-                  id="companyEmail"
-                  type="email"
-                  value={companyEmail}
-                  onChange={(e) => setCompanyEmail(e.target.value)}
-                  placeholder="Enter company email"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="companyAddress">Company Address</Label>
-                <Input
-                  id="companyAddress"
-                  value={companyAddress}
-                  onChange={(e) => setCompanyAddress(e.target.value)}
-                  placeholder="Enter company address"
-                />
-              </div>
-
               <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="companyEmail">Company Email</Label>
+                  <Input
+                    id="companyEmail"
+                    type="email"
+                    value={companyEmail}
+                    onChange={(e) => setCompanyEmail(e.target.value)}
+                    placeholder="Enter company email"
+                  />
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="companyPhone">Phone Number</Label>
                   <Input
@@ -326,6 +315,18 @@ function CompanyContent() {
                     value={companyPhone}
                     onChange={(e) => setCompanyPhone(e.target.value)}
                     placeholder="Enter phone number"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="companyAddress">Company Address</Label>
+                  <Input
+                    id="companyAddress"
+                    value={companyAddress}
+                    onChange={(e) => setCompanyAddress(e.target.value)}
+                    placeholder="Enter company address"
                   />
                 </div>
                 <div className="space-y-2">
@@ -352,75 +353,77 @@ function CompanyContent() {
               <CardTitle>Company Branding</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <Label>Company Logo</Label>
-                <div className="flex items-center space-x-4">
-                  {logoUrl ? (
-                    <div className="relative">
-                      <Image
-                        src={logoUrl}
-                        alt="Company Logo"
-                        width={96}
-                        height={96}
-                        className="w-24 h-24 object-contain border rounded"
-                      />
-                      <Button 
-                        variant="destructive" 
-                        size="icon" 
-                        className="absolute -top-2 -right-2 h-6 w-6"
-                        onClick={handleRemoveLogo}
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="w-24 h-24 border-2 border-dashed border-gray-300 rounded flex items-center justify-center">
-                      <span className="text-gray-400 text-xs">No Logo</span>
-                    </div>
-                  )}
-                  <ImageUpload
-                    value={logoUrl}
-                    onChange={(url) => setLogoUrl(url || '')}
-                    path={`organizations/${organizationId}`}
-                    placeholder="Upload company logo"
-                    maxSize={2}
-                  />
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <Label>Company Logo</Label>
+                  <div className="flex flex-col items-center space-y-4">
+                    {logoUrl ? (
+                      <div className="relative">
+                        <Image
+                          src={logoUrl}
+                          alt="Company Logo"
+                          width={96}
+                          height={96}
+                          className="w-24 h-24 object-contain border rounded"
+                        />
+                        <Button 
+                          variant="destructive" 
+                          size="icon" 
+                          className="absolute -top-2 -right-2 h-6 w-6"
+                          onClick={handleRemoveLogo}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="w-24 h-24 border-2 border-dashed border-gray-300 rounded flex items-center justify-center">
+                        <span className="text-gray-400 text-xs">No Logo</span>
+                      </div>
+                    )}
+                    <ImageUpload
+                      value={logoUrl}
+                      onChange={(url) => setLogoUrl(url || '')}
+                      path={`organizations/${organizationId}`}
+                      placeholder="Upload company logo"
+                      maxSize={2}
+                    />
+                  </div>
                 </div>
-              </div>
 
-              <div className="space-y-4">
-                <Label>Company Stamp</Label>
-                <div className="flex items-center space-x-4">
-                  {stampUrl ? (
-                    <div className="relative">
-                      <Image
-                        src={stampUrl}
-                        alt="Company Stamp"
-                        width={96}
-                        height={96}
-                        className="w-24 h-24 object-contain border rounded"
-                      />
-                      <Button 
-                        variant="destructive" 
-                        size="icon" 
-                        className="absolute -top-2 -right-2 h-6 w-6"
-                        onClick={handleRemoveStamp}
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="w-24 h-24 border-2 border-dashed border-gray-300 rounded flex items-center justify-center">
-                      <span className="text-gray-400 text-xs">No Stamp</span>
-                    </div>
-                  )}
-                  <ImageUpload
-                    value={stampUrl}
-                    onChange={(url) => setStampUrl(url || '')}
-                    path={`organizations/${organizationId}`}
-                    placeholder="Upload company stamp"
-                    maxSize={2}
-                  />
+                <div className="space-y-4">
+                  <Label>Company Stamp</Label>
+                  <div className="flex flex-col items-center space-y-4">
+                    {stampUrl ? (
+                      <div className="relative">
+                        <Image
+                          src={stampUrl}
+                          alt="Company Stamp"
+                          width={96}
+                          height={96}
+                          className="w-24 h-24 object-contain border rounded"
+                        />
+                        <Button 
+                          variant="destructive" 
+                          size="icon" 
+                          className="absolute -top-2 -right-2 h-6 w-6"
+                          onClick={handleRemoveStamp}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="w-24 h-24 border-2 border-dashed border-gray-300 rounded flex items-center justify-center">
+                        <span className="text-gray-400 text-xs">No Stamp</span>
+                      </div>
+                    )}
+                    <ImageUpload
+                      value={stampUrl}
+                      onChange={(url) => setStampUrl(url || '')}
+                      path={`organizations/${organizationId}`}
+                      placeholder="Upload company stamp"
+                      maxSize={2}
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -750,14 +753,14 @@ function CompanyContent() {
                 </div>
               </div>
 
-              <div className="pt-4 border-t space-y-2">
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t">
                 <Button variant="outline" className="w-full justify-start">
                   Change Password
                 </Button>
                 <Button variant="outline" className="w-full justify-start">
                   Two-Factor Authentication
                 </Button>
-                <Button variant="destructive" className="w-full justify-start">
+                <Button variant="destructive" className="w-full justify-start col-span-2">
                   Delete Account
                 </Button>
               </div>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DialogWithActions } from '@/components/ui/DialogWithActions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -113,137 +113,141 @@ export function AddCustomerDialog({ open, onOpenChange, onCustomerAdded, editing
     }
   };
 
+  const actions = (
+    <>
+      <Button variant="outline" onClick={handleClose} disabled={loading}>
+        Cancel
+      </Button>
+      <Button onClick={handleSave} disabled={loading}>
+        {loading ? (editingCustomer ? 'Updating...' : 'Adding...') : (editingCustomer ? 'Update' : 'Add') + ' Customer'}
+      </Button>
+    </>
+  );
+
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>
-            {editingCustomer ? 'Edit Customer' : 'Add New Customer'}
-          </DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="name">Name (English) *</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Customer name in English"
-                disabled={loading}
-              />
-            </div>
-            <div>
-              <Label htmlFor="nameAr">Name (Arabic)</Label>
-              <Input
-                id="nameAr"
-                value={formData.nameAr}
-                onChange={(e) => setFormData({ ...formData, nameAr: e.target.value })}
-                placeholder="Customer name in Arabic"
-                dir="rtl"
-                disabled={loading}
-              />
-            </div>
-          </div>
+    <DialogWithActions
+      open={open}
+      onOpenChange={handleClose}
+      title={editingCustomer ? 'Edit Customer' : 'Add New Customer'}
+      description="Enter customer information"
+      actions={actions}
+      maxWidth="max-w-2xl"
+      contentClassName="max-h-[70vh]"
+    >
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="email">Email *</Label>
+            <Label htmlFor="name">Name (English) *</Label>
             <Input
-              id="email"
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              placeholder="customer@example.com"
+              id="name"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder="Customer name in English"
               disabled={loading}
             />
           </div>
           <div>
-            <Label htmlFor="phone">Phone</Label>
+            <Label htmlFor="nameAr">Name (Arabic)</Label>
             <Input
-              id="phone"
-              value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              placeholder="+1-234-567-8900"
+              id="nameAr"
+              value={formData.nameAr}
+              onChange={(e) => setFormData({ ...formData, nameAr: e.target.value })}
+              placeholder="Customer name in Arabic"
+              dir="rtl"
               disabled={loading}
             />
-          </div>
-          <div>
-            <Label htmlFor="address">Address</Label>
-            <Input
-              id="address"
-              value={formData.address}
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              placeholder="Street address, city, country"
-              disabled={loading}
-            />
-          </div>
-          <div>
-            <Label htmlFor="vatNumber">VAT Number</Label>
-            <Input
-              id="vatNumber"
-              value={formData.vatNumber}
-              onChange={(e) => setFormData({ ...formData, vatNumber: e.target.value })}
-              placeholder="VAT number"
-              disabled={loading}
-            />
-          </div>
-          <div className="space-y-4">
-            <Label>Customer Logo</Label>
-            <div className="flex items-center space-x-4">
-              {formData.logoUrl ? (
-                <div className="relative">
-                  <Image
-                    src={formData.logoUrl}
-                    alt="Customer Logo"
-                    width={96}
-                    height={96}
-                    className="w-24 h-24 object-contain border rounded"
-                  />
-                  <Button
-                    variant="destructive"
-                    size="icon"
-                    className="absolute -top-2 -right-2 h-6 w-6"
-                    onClick={handleRemoveLogo}
-                    disabled={loading}
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                </div>
-              ) : (
-                <div className="w-24 h-24 border-2 border-dashed border-gray-300 rounded flex items-center justify-center">
-                  <span className="text-gray-400 text-xs">No Logo</span>
-                </div>
-              )}
-              <div>
-                <Label htmlFor="logo-upload" className="cursor-pointer">
-                  <Button variant="outline" loading={uploadingLogo} disabled={loading}>
-                    <Upload className="h-4 w-4 mr-2" />
-                    Upload Logo
-                  </Button>
-                </Label>
-                <Input
-                  id="logo-upload"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleLogoUpload}
-                  disabled={loading || uploadingLogo}
-                />
-                <p className="text-sm text-gray-500 mt-2">
-                  Recommended: Square image, max 2MB
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button variant="outline" onClick={handleClose} disabled={loading}>
-              Cancel
-            </Button>
-            <Button onClick={handleSave} disabled={loading}>
-              {loading ? (editingCustomer ? 'Updating...' : 'Adding...') : (editingCustomer ? 'Update' : 'Add') + ' Customer'}
-            </Button>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+        <div>
+          <Label htmlFor="email">Email *</Label>
+          <Input
+            id="email"
+            type="email"
+            value={formData.email}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            placeholder="customer@example.com"
+            disabled={loading}
+          />
+        </div>
+        <div>
+          <Label htmlFor="phone">Phone</Label>
+          <Input
+            id="phone"
+            value={formData.phone}
+            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+            placeholder="+1-234-567-8900"
+            disabled={loading}
+          />
+        </div>
+        <div>
+          <Label htmlFor="address">Address</Label>
+          <Input
+            id="address"
+            value={formData.address}
+            onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+            placeholder="Street address, city, country"
+            disabled={loading}
+          />
+        </div>
+        <div>
+          <Label htmlFor="vatNumber">VAT Number</Label>
+          <Input
+            id="vatNumber"
+            value={formData.vatNumber}
+            onChange={(e) => setFormData({ ...formData, vatNumber: e.target.value })}
+            placeholder="VAT number"
+            disabled={loading}
+          />
+        </div>
+        <div className="space-y-4">
+          <Label>Customer Logo</Label>
+          <div className="flex items-center space-x-4">
+            {formData.logoUrl ? (
+              <div className="relative">
+                <Image
+                  src={formData.logoUrl}
+                  alt="Customer Logo"
+                  width={96}
+                  height={96}
+                  className="w-24 h-24 object-contain border rounded"
+                />
+                <Button
+                  variant="destructive"
+                  size="icon"
+                  className="absolute -top-2 -right-2 h-6 w-6"
+                  onClick={handleRemoveLogo}
+                  disabled={loading}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            ) : (
+              <div className="w-24 h-24 border-2 border-dashed border-gray-300 rounded flex items-center justify-center">
+                <span className="text-gray-400 text-xs">No Logo</span>
+              </div>
+            )}
+            <div>
+              <Label htmlFor="logo-upload" className="cursor-pointer">
+                <Button variant="outline" loading={uploadingLogo} disabled={loading}>
+                  <Upload className="h-4 w-4 mr-2" />
+                  Upload Logo
+                </Button>
+              </Label>
+              <Input
+                id="logo-upload"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleLogoUpload}
+                disabled={loading || uploadingLogo}
+              />
+              <p className="text-sm text-gray-500 mt-2">
+                Recommended: Square image, max 2MB
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </DialogWithActions>
   );
 }

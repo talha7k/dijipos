@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { DialogWithActions } from '@/components/ui/DialogWithActions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -146,128 +146,121 @@ export function QuotePrintDialog({
 
 
 
+  const actions = (
+    <>
+      <Button
+        variant="outline"
+        onClick={() => setOpen(false)}
+      >
+        Cancel
+      </Button>
+      <Button
+        onClick={generateQuote}
+        disabled={!selectedTemplate || quoteTemplates.length === 0 || isGenerating}
+        className="flex items-center gap-2"
+      >
+        <Printer className="h-4 w-4" />
+        {isGenerating ? 'Generating...' : 'Print Quote'}
+      </Button>
+    </>
+  );
+
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      {controlledOpen === undefined && (
-        <DialogTrigger asChild>
-          {children}
-        </DialogTrigger>
-      )}
-      <DialogContent className="max-w-4xl">
-        <DialogHeader>
-          <div className="flex justify-between items-center">
-            <DialogTitle className="flex items-center gap-2">
-              <Printer className="h-5 w-5" />
-              Print Quote
-            </DialogTitle>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={generateQuote}
-                disabled={!selectedTemplate || quoteTemplates.length === 0 || isGenerating}
-                className="flex items-center gap-2"
-              >
-                <Printer className="h-4 w-4" />
-                {isGenerating ? 'Generating...' : 'Print Quote'}
-              </Button>
-            </div>
-          </div>
-        </DialogHeader>
-
-        <div className="grid grid-cols-2 gap-6">
-          {/* Left Column - Quote & Settings */}
-          <div className="space-y-6">
-            {/* Quote Summary */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Quote Summary</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <table className="w-full text-sm">
-                  <tbody>
+    <DialogWithActions
+      open={open}
+      onOpenChange={handleOpenChange}
+      title="Print Quote"
+      description="Select a quote template and print your quote"
+      actions={actions}
+      trigger={controlledOpen === undefined ? children : undefined}
+      contentClassName="max-h-[70vh]"
+    >
+      <div className="grid grid-cols-2 gap-6">
+        {/* Left Column - Quote & Settings */}
+        <div className="space-y-6">
+          {/* Quote Summary */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Quote Summary</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <table className="w-full text-sm">
+                <tbody>
+                  <tr>
+                    <td className="font-medium py-1">Quote #:</td>
+                    <td className="py-1">{quote.id}</td>
+                  </tr>
+                  <tr>
+                    <td className="font-medium py-1">Date:</td>
+                    <td className="py-1">{new Date(quote.createdAt).toLocaleString()}</td>
+                  </tr>
+                  {quote.validUntil && (
                     <tr>
-                      <td className="font-medium py-1">Quote #:</td>
-                      <td className="py-1">{quote.id}</td>
+                      <td className="font-medium py-1">Valid Until:</td>
+                      <td className="py-1">{new Date(quote.validUntil).toLocaleDateString()}</td>
                     </tr>
-                    <tr>
-                      <td className="font-medium py-1">Date:</td>
-                      <td className="py-1">{new Date(quote.createdAt).toLocaleString()}</td>
-                    </tr>
-                    {quote.validUntil && (
+                  )}
+                  {customer && (
+                    <>
                       <tr>
-                        <td className="font-medium py-1">Valid Until:</td>
-                        <td className="py-1">{new Date(quote.validUntil).toLocaleDateString()}</td>
+                        <td className="font-medium py-1">Customer:</td>
+                        <td className="py-1">{customer.name}</td>
                       </tr>
-                    )}
-                    {customer && (
-                      <>
+                      {customer.email && (
                         <tr>
-                          <td className="font-medium py-1">Customer:</td>
-                          <td className="py-1">{customer.name}</td>
+                          <td className="font-medium py-1">Email:</td>
+                          <td className="py-1">{customer.email}</td>
                         </tr>
-                        {customer.email && (
-                          <tr>
-                            <td className="font-medium py-1">Email:</td>
-                            <td className="py-1">{customer.email}</td>
-                          </tr>
-                        )}
-                      </>
-                    )}
-                    <tr>
-                      <td className="font-medium py-1">Total:</td>
-                      <td className="py-1 font-bold">${(quote.total || 0).toFixed(2)}</td>
-                    </tr>
-                    <tr>
-                      <td className="font-medium py-1">Status:</td>
-                      <td className="py-1">
-                        <Badge variant="outline" className="ml-0">{quote.status}</Badge>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-               </CardContent>
-             </Card>
-
-             {/* Printer Settings Preview */}
-             <PrinterSettingsPreview
-               printerSettings={printerSettings}
-               documentType="quotes"
-             />
-           </div>
-
-          {/* Right Column - Template Selection & Actions */}
-          <div className="space-y-6">
-            {/* Template Selection */}
-            <Card className="h-full">
-              <CardHeader>
-                <CardTitle className="text-lg">Select Quote Template</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {quoteTemplates.length === 0 ? (
-                  <p className="text-muted-foreground">No quote templates available. Please create templates in Settings.</p>
-                ) : (
-                  <TemplateSelector
-                    templates={quoteTemplates}
-                    selectedTemplate={selectedTemplate}
-                    onTemplateChange={setSelectedTemplate}
-                    label="Select Quote Template"
-                    variant="radio"
-                    printerSettings={printerSettings}
-                    templateType="quotes"
-                  />
-                )}
-              </CardContent>
+                      )}
+                    </>
+                  )}
+                  <tr>
+                    <td className="font-medium py-1">Total:</td>
+                    <td className="py-1 font-bold">${(quote.total || 0).toFixed(2)}</td>
+                  </tr>
+                  <tr>
+                    <td className="font-medium py-1">Status:</td>
+                    <td className="py-1">
+                      <Badge variant="outline" className="ml-0">{quote.status}</Badge>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+             </CardContent>
             </Card>
 
-
+            {/* Printer Settings Preview */}
+            <PrinterSettingsPreview
+              printerSettings={printerSettings}
+              documentType="quotes"
+            />
           </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+
+         {/* Right Column - Template Selection */}
+         <div className="space-y-6">
+           {/* Template Selection */}
+           <Card className="h-full">
+             <CardHeader>
+               <CardTitle className="text-lg">Select Quote Template</CardTitle>
+             </CardHeader>
+             <CardContent>
+               {quoteTemplates.length === 0 ? (
+                 <p className="text-muted-foreground">No quote templates available. Please create templates in Settings.</p>
+               ) : (
+                 <TemplateSelector
+                   templates={quoteTemplates}
+                   selectedTemplate={selectedTemplate}
+                   onTemplateChange={setSelectedTemplate}
+                   label="Select Quote Template"
+                   variant="radio"
+                   printerSettings={printerSettings}
+                   templateType="quotes"
+                 />
+               )}
+             </CardContent>
+           </Card>
+         </div>
+       </div>
+    </DialogWithActions>
   );
 }

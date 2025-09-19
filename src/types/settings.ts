@@ -28,6 +28,10 @@ export interface DocumentPrintSettings {
   // Receipt-specific settings
   lineSpacing?: number; // Line spacing (receipts only)
   autoPrint?: boolean; // Auto-open print dialog after transaction (receipts only)
+
+  // Custom content settings
+  customHeader?: string; // Custom header text for receipts
+  customFooter?: string; // Custom footer text for receipts
 }
 
 export interface PrinterSettings {

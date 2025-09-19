@@ -412,17 +412,36 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
                       onSave={(value) => handleUpdateSettings('receipts.lineSpacing', parseFloat(value))}
                       placeholder="Enter line spacing (e.g., 1.2)"
                     />
+                     <EditableSetting
+                       label="Auto Print"
+                       value={printerSettings?.receipts?.autoPrint ?? false}
+                       type="switch"
+                       onSave={(value) => handleUpdateSettings('receipts.autoPrint', value)}
+                     />
+                   </div>
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold mb-3">Custom Content</h2>
+                  <div className="grid grid-cols-1 gap-4">
                     <EditableSetting
-                      label="Auto Print"
-                      value={printerSettings?.receipts?.autoPrint ?? false}
-                      type="switch"
-                      onSave={(value) => handleUpdateSettings('receipts.autoPrint', value)}
+                      label="Custom Header"
+                      value={printerSettings?.receipts?.customHeader || ''}
+                      type="text"
+                      onSave={(value) => handleUpdateSettings('receipts.customHeader', value)}
+                      placeholder="Enter custom header text (optional)"
+                    />
+                    <EditableSetting
+                      label="Custom Footer"
+                      value={printerSettings?.receipts?.customFooter || ''}
+                      type="text"
+                      onSave={(value) => handleUpdateSettings('receipts.customFooter', value)}
+                      placeholder="Enter custom footer text (optional)"
                     />
                   </div>
-               </div>
-             </div>
-</div>
-          )}
+                </div>
+              </div>
+ </div>
+           )}
 
            {selectedTab === 'invoices' && (
              <div className="space-y-4">
