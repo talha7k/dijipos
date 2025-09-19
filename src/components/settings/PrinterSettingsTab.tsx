@@ -359,16 +359,21 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
                       type="switch"
                       onSave={(value) => handleUpdateSettings('receipts.includeQRCode', value)}
                     />
-                     <EditableSetting
-                       label="Paper Width (mm)"
-                       value={printerSettings?.receipts?.paperWidth?.toString() || '80'}
-                       type="number"
-                       onSave={(value) => handleUpdateSettings('receipts.paperWidth', parseInt(value))}
-                       placeholder="Enter width in mm"
-                     />
-                     <div className="col-span-1 md:col-span-3 text-xs text-muted-foreground mt-1">
-                       Controls receipt width and print preview window size. Common values: 80mm (thermal), 58mm (narrow thermal), 210mm (A4)
-                     </div>
+                      <EditableSetting
+                        label="Paper Size"
+                        value={printerSettings?.receipts?.paperWidth?.toString() || '80'}
+                        type="select"
+                        options={[
+                          { value: '58', label: '58mm (Narrow Thermal)' },
+                          { value: '80', label: '80mm (Thermal)' },
+                          { value: '210', label: '210mm (A4)' },
+                          { value: '216', label: '216mm (Letter)' },
+                        ]}
+                        onSave={(value) => handleUpdateSettings('receipts.paperWidth', parseInt(value))}
+                      />
+                      <div className="col-span-1 md:col-span-3 text-xs text-muted-foreground mt-1">
+                        Controls receipt width and print preview window size
+                      </div>
                     <EditableSetting
                       label="Font Size"
                       value={printerSettings?.receipts?.fontSize || FontSize.MEDIUM}
@@ -518,16 +523,20 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
                 <div>
                   <h2 className="text-lg font-semibold mb-3">Printer Settings</h2>
                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <EditableSetting
-                        label="Paper Width (mm)"
-                        value={printerSettings?.invoices?.paperWidth?.toString() || '210'}
-                       type="number"
-                       onSave={(value) => handleUpdateSettings('invoices.paperWidth', parseInt(value))}
-                       placeholder="Enter width in mm"
-                     />
-                     <div className="col-span-1 md:col-span-3 text-xs text-muted-foreground mt-1">
-                       Controls invoice width and print preview window size. Standard A4 is 210mm, Letter is 216mm
-                     </div>
+                       <EditableSetting
+                         label="Paper Size"
+                         value={printerSettings?.invoices?.paperWidth?.toString() || '210'}
+                        type="select"
+                        options={[
+                          { value: '210', label: '210mm (A4)' },
+                          { value: '216', label: '216mm (Letter)' },
+                          { value: '297', label: '297mm (A3)' },
+                        ]}
+                        onSave={(value) => handleUpdateSettings('invoices.paperWidth', parseInt(value))}
+                      />
+                      <div className="col-span-1 md:col-span-3 text-xs text-muted-foreground mt-1">
+                        Controls invoice width and print preview window size
+                      </div>
                     <EditableSetting
                       label="Font Size"
                       value={printerSettings?.invoices?.fontSize || FontSize.MEDIUM}
@@ -645,16 +654,20 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
                 <div>
                   <h2 className="text-lg font-semibold mb-3">Printer Settings</h2>
                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <EditableSetting
-                        label="Paper Width (mm)"
-                        value={printerSettings?.quotes?.paperWidth?.toString() || '210'}
-                       type="number"
-                       onSave={(value) => handleUpdateSettings('quotes.paperWidth', parseInt(value))}
-                       placeholder="Enter width in mm"
-                     />
-                     <div className="col-span-1 md:col-span-3 text-xs text-muted-foreground mt-1">
-                       Controls quote width and print preview window size. Standard A4 is 210mm, Letter is 216mm
-                     </div>
+                       <EditableSetting
+                         label="Paper Size"
+                         value={printerSettings?.quotes?.paperWidth?.toString() || '210'}
+                        type="select"
+                        options={[
+                          { value: '210', label: '210mm (A4)' },
+                          { value: '216', label: '216mm (Letter)' },
+                          { value: '297', label: '297mm (A3)' },
+                        ]}
+                        onSave={(value) => handleUpdateSettings('quotes.paperWidth', parseInt(value))}
+                      />
+                      <div className="col-span-1 md:col-span-3 text-xs text-muted-foreground mt-1">
+                        Controls quote width and print preview window size
+                      </div>
                     <EditableSetting
                       label="Font Size"
                       value={printerSettings?.quotes?.fontSize || FontSize.MEDIUM}
