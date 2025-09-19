@@ -10,12 +10,14 @@ import {
   XCircle,
   Save,
   Printer,
+  Sofa,
+  Package,
+  Users,
+  FileText,
+  CreditCard,
 } from "lucide-react";
 import { Order, OrderStatus, PaymentStatus, OrderPayment } from "@/types";
-import {
-  ORDER_STATUS_BUTTON_VARIANTS,
-  getOrderStatusColor,
-} from "@/types/enums";
+import { getOrderStatusColor } from "@/types/enums";
 import { OrderActionsDialog } from "./OrderStatusActionsDialog";
 import { OrderStatusBadge } from "./OrderStatusBadge";
 import { QueueBadge } from "./QueueBadge";
@@ -25,7 +27,7 @@ import { useAtom } from "jotai";
 import { selectedOrganizationAtom } from "@/atoms";
 import { useStoreSettings } from "@/lib/hooks/useStoreSettings";
 import { useSeparatedTemplates } from "@/lib/hooks/useSeparatedTemplates";
-import { formatDateTime } from "@/lib/utils";
+import { formatDateTime, truncateTextByType } from "@/lib/utils";
 
 interface OrderSummaryCardProps {
   order: Order;
@@ -39,8 +41,7 @@ interface OrderSummaryCardProps {
   changeDue?: number;
   onClick?: (order: Order) => void;
   onStatusChange?: (orderId: string, status: OrderStatus) => Promise<void>;
-  onMarkAsPaid?: (orderId: string) => Promise<void>;
-  onCompleteOrder?: (orderId: string) => Promise<void>;
+
   onReopenOrder?: (order: Order) => void;
   className?: string;
 }
@@ -56,8 +57,6 @@ export function OrderSummaryCard({
   changeDue,
   onClick,
   onStatusChange,
-  onMarkAsPaid,
-  onCompleteOrder,
   onReopenOrder,
   className = "",
 }: OrderSummaryCardProps) {
@@ -68,19 +67,8 @@ export function OrderSummaryCard({
   const printerSettings = storeSettings?.printerSettings;
   const { formatCurrency } = useCurrency();
 
-  // Calculate payment amounts for display, but use order.paymentStatus for status
-  const calculatedTotalPaid =
-    totalPaid !== undefined
-      ? totalPaid
-      : payments.reduce((sum, payment) => sum + payment.amount, 0);
-
   const paymentStatus = order.paymentStatus || PaymentStatus.UNPAID;
   const isActuallyPaid = paymentStatus === PaymentStatus.PAID;
-
-  // Get color for UI indicators using the new status color system
-  const statusColor = getOrderStatusColor(order.status as OrderStatus);
-  const statusButtonVariant =
-    ORDER_STATUS_BUTTON_VARIANTS[order.status as OrderStatus] || "secondary";
 
   // Get background color class for badges
   const getStatusBgColor = (status: OrderStatus) => {
@@ -130,10 +118,7 @@ export function OrderSummaryCard({
         <div className="grid grid-cols-3 gap-2">
           {/* Order Status Badge - spans 2 columns */}
           <div className="col-span-2">
-            <OrderActionsDialog
-              order={order}
-              onUpdateStatus={onStatusChange}
-            >
+            <OrderActionsDialog order={order} onUpdateStatus={onStatusChange}>
               <Badge
                 className={`${getStatusBgColor(
                   order.status as OrderStatus,
@@ -192,83 +177,134 @@ export function OrderSummaryCard({
           className="space-y-2 cursor-pointer"
         >
           <div className="bg-muted/70 rounded-lg py-2 my-4 px-4">
-            <div className="flex items-center gap-2 mb-1">
-              {order.queueNumber && <QueueBadge queueNumber={order.queueNumber} />}
+            {/* Badges Row */}
+            <div className="flex items-center justify-center gap-2 mb-2">
+              {order.queueNumber && (
+                <QueueBadge queueNumber={order.queueNumber} />
+              )}
+              {showOrderDetails && order.tableName && (
+                <Badge
+                  variant="outline"
+                  className="text-sm flex items-center gap-1 border-2 border-red-800/20 justify-center py-1"
+                >
+                  <Sofa className="h-4 w-4" />
+                  {order.tableName}
+                </Badge>
+              )}
+              {showItemCount && (
+                <Badge
+                  variant="outline"
+                  className="text-sm flex items-center gap-1 border-2 border-green-500/20 justify-center py-1"
+                >
+                  <Package className="h-4 w-4" />
+                  {order.items.length}
+                </Badge>
+              )}
+            </div>
+
+            {/* Total Price Row */}
+            <div className="flex items-center justify-center">
               <span className="font-bold">
                 {formatCurrency(order.total || 0)}
               </span>
             </div>
+
             {showCreatedDate && (
-              <div className="text-xs text-muted-foreground text-center">
+              <div className="text-xs text-muted-foreground text-center mt-1">
                 {formatDateTime(order.createdAt)}
               </div>
             )}
           </div>
 
-          <div className="flex justify-between text-sm">
-            <span>Order ID:</span>
-            <span>{order.orderNumber}</span>
+          {/* Order ID - Full Width */}
+          <div className="bg-muted/50 rounded-lg p-2 mb-2">
+            <div className="flex items-center justify-center gap-2 text-sm">
+              <div title="Order ID">
+                <FileText className="h-4 w-4" />
+              </div>
+              <span className="font-medium">{order.orderNumber}</span>
+            </div>
           </div>
 
-          {totalPaid !== undefined && (
-            <div className="flex justify-between">
-              <span>Total Paid:</span>
-              <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                {formatCurrency(totalPaid || 0)}
-              </span>
-            </div>
-          )}
-
-          {remainingAmount !== undefined && (
-            <div className="flex justify-between border-t pt-2 ">
-              <span className="font-bold">Remaining:</span>
-              <span
-                className={`font-bold ${
-                  remainingAmount > 0
-                    ? "text-destructive"
-                    : "text-emerald-600 dark:text-emerald-400"
-                }`}
-              >
-                {formatCurrency(remainingAmount || 0)}
-              </span>
-            </div>
-          )}
-
-          {changeDue !== undefined && changeDue > 0 && (
-            <div className="flex justify-between">
-              <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                Change Due:
-              </span>
-              <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                {formatCurrency(changeDue || 0)}
-              </span>
-            </div>
-          )}
-
-          {showOrderDetails && (
-            <>
-              <div className="flex justify-between text-sm">
-                <span>Customer:</span>
-                <span>{order.customerName || "Walk-in"}</span>
-              </div>
-
-              <div className="flex justify-between text-sm">
-                <span>Table:</span>
-                <span>{order.tableName || "N/A"}</span>
-              </div>
-
-              <div className="flex justify-between text-sm">
-                <span>Order Type:</span>
-                <span className="capitalize">{order.orderType}</span>
-              </div>
-
-              {showItemCount && (
+          {/* Payment Information */}
+          {(totalPaid !== undefined ||
+            remainingAmount !== undefined ||
+            (changeDue !== undefined && changeDue > 0)) && (
+            <div className="bg-muted/50 rounded-lg p-2 mb-2 space-y-1">
+              {totalPaid !== undefined && (
                 <div className="flex justify-between text-sm">
-                  <span>Items:</span>
-                  <span>{order.items.length}</span>
+                  <div className="flex items-center gap-1" title="Total Paid">
+                    <CreditCard className="h-4 w-4" />
+                  </div>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                    {formatCurrency(totalPaid || 0)}
+                  </span>
                 </div>
               )}
-            </>
+
+              {remainingAmount !== undefined && (
+                <div className="flex justify-between text-sm">
+                  <div
+                    className="flex items-center gap-1"
+                    title="Remaining Amount"
+                  >
+                    <CreditCard className="h-4 w-4" />
+                  </div>
+                  <span
+                    className={`font-bold ${
+                      remainingAmount > 0
+                        ? "text-destructive"
+                        : "text-emerald-600 dark:text-emerald-400"
+                    }`}
+                  >
+                    {formatCurrency(remainingAmount || 0)}
+                  </span>
+                </div>
+              )}
+
+              {changeDue !== undefined && changeDue > 0 && (
+                <div className="flex justify-between text-sm">
+                  <div className="flex items-center gap-1" title="Change Due">
+                    <CreditCard className="h-4 w-4" />
+                  </div>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                    {formatCurrency(changeDue || 0)}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Order Details - Separate Sections */}
+          {showOrderDetails && (
+            <div className="space-y-2">
+              {/* Customer Section */}
+              <div className="bg-muted/50 rounded-lg p-2">
+                <div className="flex items-center justify-center gap-2 text-sm">
+                  <div title="Customer">
+                    <Users className="h-4 w-4 flex-shrink-0" />
+                  </div>
+                  <span className="break-words">
+                    {truncateTextByType(
+                      order.customerName || "Walk-in",
+                      "short",
+                    )}
+                  </span>
+                </div>
+              </div>
+
+              {/* Order Type Section */}
+              <div className="bg-muted/50 rounded-lg p-2">
+                <div className="flex items-center justify-center gap-2 text-sm">
+                  <div title="Order Type">
+                    <Receipt className="h-4 w-4 flex-shrink-0" />
+                  </div>
+                  <span className="capitalize break-words">
+                    {truncateTextByType(order.orderType, "short")}
+                  </span>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       </CardContent>
