@@ -168,12 +168,14 @@ export const defaultArabicReceiptTemplate = `<!DOCTYPE html>
 
     {{#customFooter}}
     <div class="custom-footer">
+    <hr>
+
       {{customFooter}}
          <hr>
     </div>
     {{/customFooter}}
 
-     <div class="footer" style="border-top: 1px dashed #000">
+     <div class="footer">
        {{#includeQR}}
       <div style="text-align: center; margin-top: 15px; padding-top: 10px; border-top: 1px dashed #000;">
         <div style="display: inline-block; padding: 5px; background: white; border: 1px solid #ddd;">
