@@ -65,7 +65,7 @@ export default function SimplifiedPOSPage() {
   const { services, loading: servicesLoading } = useServices();
   const { tables, loading: tablesLoading } = useTables();
   const { customers, loading: customersLoading } = useCustomers();
-  const { orders, loading: ordersLoading, createNewOrder, updateExistingOrder } = useOrders();
+  const { orders, loading: ordersLoading, createNewOrder, updateExistingOrder, addPaymentToOrder, getPaymentsForOrder } = useOrders();
    const { storeSettings, loading: storeSettingsLoading } = useStoreSettings();
   const orderTypes = useMemo(() => storeSettings?.orderTypes || [], [storeSettings?.orderTypes]);
   const paymentTypes = storeSettings?.paymentTypes || [];
@@ -93,6 +93,10 @@ export default function SimplifiedPOSPage() {
   const [paymentSuccessData, setPaymentSuccessData] = useState<{ totalPaid: number; order?: Order } | null>(null);
   const [showCartItemModal, setShowCartItemModal] = useState(false);
   const [editingCartItem, setEditingCartItem] = useState<CartItem | null>(null);
+
+  // State for order payments
+  const [orderPayments, setOrderPayments] = useState<{ [orderId: string]: OrderPayment[] }>({});
+  const [orderPaymentsLoading, setOrderPaymentsLoading] = useState(false);
 
   // Get auth context
   const { user } = useAuth();
@@ -129,6 +133,38 @@ export default function SimplifiedPOSPage() {
       setCategoryPath([]);
     }
   }, [pathname, setCurrentView, setCategoryPath]);
+
+  // Fetch payments for orders when viewing orders
+  React.useEffect(() => {
+    const fetchOrderPayments = async () => {
+      if (currentView === 'orders' && orders.length > 0) {
+        setOrderPaymentsLoading(true);
+        try {
+          const paymentsMap: { [orderId: string]: OrderPayment[] } = {};
+
+          await Promise.all(
+            orders.map(async (order) => {
+              try {
+                const payments = await getPaymentsForOrder(order.id);
+                paymentsMap[order.id] = payments;
+              } catch (error) {
+                console.error(`Error fetching payments for order ${order.id}:`, error);
+                paymentsMap[order.id] = [];
+              }
+            })
+          );
+
+          setOrderPayments(paymentsMap);
+        } catch (error) {
+          console.error('Error fetching order payments:', error);
+        } finally {
+          setOrderPaymentsLoading(false);
+        }
+      }
+    };
+
+    fetchOrderPayments();
+  }, [currentView, orders, getPaymentsForOrder]);
 
   // Update VAT settings atom when store settings change
   React.useEffect(() => {
@@ -328,21 +364,44 @@ export default function SimplifiedPOSPage() {
   const handlePaymentProcessed = useCallback(async (payments: OrderPayment[]) => {
     const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
 
-    // Update the order's payment status if we have a selected order
-    if (selectedOrder) {
-      try {
+    try {
+      // If we have a selected order, save payments to it
+      if (selectedOrder) {
+        // Save each payment record
+        for (const payment of payments) {
+          try {
+            await addPaymentToOrder(selectedOrder.id, {
+              organizationId: selectedOrder.organizationId,
+              amount: payment.amount,
+              paymentMethod: payment.paymentMethod,
+              paymentDate: payment.paymentDate,
+              reference: payment.reference,
+              notes: payment.notes,
+            });
+          } catch (error) {
+            console.error('Error saving payment:', error);
+            throw error;
+          }
+        }
+
+        // Update order payment status based on total paid vs order total
+        const newPaymentStatus = totalPaid >= selectedOrder.total ? PaymentStatus.PAID : PaymentStatus.PARTIAL;
         await updateExistingOrder(selectedOrder.id, {
-          paymentStatus: PaymentStatus.PAID
+          paymentStatus: newPaymentStatus
         });
-      } catch (error) {
-        console.error('Error updating order payment status:', error);
+      } else {
+        // This shouldn't happen in normal flow, but handle it gracefully
+        console.warn('No selected order found during payment processing');
       }
+    } catch (error) {
+      console.error('Error processing payments:', error);
+      throw error;
     }
 
     setPaymentSuccessData({ totalPaid });
     setShowPaymentSuccessDialog(true);
     setCurrentView('items');
-  }, [setCurrentView, selectedOrder, updateExistingOrder]);
+  }, [selectedOrder, addPaymentToOrder, updateExistingOrder, setCurrentView]);
 
   const handleClearCart = useCallback(() => {
     setCartItems([]);
@@ -522,7 +581,7 @@ export default function SimplifiedPOSPage() {
              tables={tables}
              customers={customers}
              orders={orders}
-             orderPayments={{}}
+              orderPayments={orderPayments}
              paymentTypes={paymentTypes}
              selectedOrder={selectedOrder}
              categoryPath={categoryPath}

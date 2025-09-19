@@ -55,8 +55,8 @@ async function renderReceipt(
       ...item,
       unitPrice: (item.unitPrice || 0).toFixed(2),
       // --- THIS IS THE FIX ---
-      // Recalculate the line item total instead of using the existing item.total
-      total: (item.quantity * item.unitPrice).toFixed(2),
+      // Renamed 'total' to 'lineTotal' to avoid conflict with the order's grand total.
+      lineTotal: (item.quantity * item.unitPrice).toFixed(2),
     })),
     payments: payments.map((p) => ({
       paymentType: p.paymentMethod,

@@ -132,8 +132,6 @@ export function OrderSummaryCard({
           <div className="col-span-2">
             <OrderActionsDialog
               order={order}
-              payments={payments}
-              onMarkAsPaid={onMarkAsPaid}
               onUpdateStatus={onStatusChange}
             >
               <Badge

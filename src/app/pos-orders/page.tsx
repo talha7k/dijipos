@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useAtom } from "jotai";
 import { selectedOrganizationAtom, organizationUserRoleAtom } from "@/atoms";
 import { Order, OrderPayment, OrderStatus, PaymentStatus } from "@/types";
 import { useOrders } from "@/lib/hooks/useOrders";
-import { useRealtimeCollection } from "@/lib/hooks/useRealtimeCollection";
 import { useCurrency } from "@/lib/hooks/useCurrency";
 
 import { Button } from "@/components/ui/button";
@@ -52,18 +51,47 @@ function OrdersContent() {
     loading: ordersLoading,
     updateExistingOrder,
     deleteExistingOrder,
+    getPaymentsForOrder,
   } = useOrders();
-  const { data: paymentsData, loading: paymentsLoading } =
-    useRealtimeCollection<OrderPayment>("orderPayments", organizationId);
 
-  const orderPayments = useMemo(() => {
-    const map: { [orderId: string]: OrderPayment[] } = {};
-    paymentsData.forEach((payment) => {
-      if (!map[payment.orderId]) map[payment.orderId] = [];
-      map[payment.orderId].push(payment);
-    });
-    return map;
-  }, [paymentsData]);
+  const [orderPayments, setOrderPayments] = useState<{ [orderId: string]: OrderPayment[] }>({});
+  const [paymentsLoading, setPaymentsLoading] = useState(false);
+
+  // Fetch payments for all orders
+  useEffect(() => {
+    const fetchPaymentsForOrders = async () => {
+      if (!fetchedOrders || fetchedOrders.length === 0) {
+        setOrderPayments({});
+        return;
+      }
+
+      setPaymentsLoading(true);
+      try {
+        const paymentsMap: { [orderId: string]: OrderPayment[] } = {};
+
+        // Fetch payments for each order
+        await Promise.all(
+          fetchedOrders.map(async (order) => {
+            try {
+              const payments = await getPaymentsForOrder(order.id);
+              paymentsMap[order.id] = payments;
+            } catch (error) {
+              console.error(`Error fetching payments for order ${order.id}:`, error);
+              paymentsMap[order.id] = [];
+            }
+          })
+        );
+
+        setOrderPayments(paymentsMap);
+      } catch (error) {
+        console.error('Error fetching payments:', error);
+      } finally {
+        setPaymentsLoading(false);
+      }
+    };
+
+    fetchPaymentsForOrders();
+  }, [fetchedOrders, getPaymentsForOrder]);
 
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -582,8 +610,6 @@ function OrdersContent() {
                         <div className="flex items-center gap-2">
                           <OrderActionsDialog
                             order={order}
-                            payments={orderPayments[order.id] || []}
-                            onMarkAsPaid={handleMarkAsPaid}
                             onUpdateStatus={handleUpdateOrderStatus}
                           >
                             <Button variant="outline" size="sm">
