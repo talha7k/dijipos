@@ -165,6 +165,7 @@ export async function createDefaultStoreSettings(organizationId: string): Promis
     const vatSettingsData = {
       rate: 15,
       isEnabled: true,
+      isVatInclusive: false,
       organizationId,
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),

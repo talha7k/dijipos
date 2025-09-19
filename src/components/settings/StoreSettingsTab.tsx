@@ -12,13 +12,8 @@ import { Percent, FileText, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
 import { updateVATSettings, updateCurrencySettings, createVATSettings, createCurrencySettings } from '@/lib/firebase/firestore/settings/storeSettings';
 
-interface StoreSettingsTabProps {
-  vatSettings: VATSettings | null;
-  onVatSettingsUpdate: (settings: VATSettings) => void;
-}
-
-export function StoreSettingsTab({ vatSettings, onVatSettingsUpdate }: StoreSettingsTabProps) {
-  const { storeSettings, loading, error, createDefaultSettings } = useStoreSettings();
+export function StoreSettingsTab() {
+  const { storeSettings } = useStoreSettings();
   const [showSampleDataConfirm, setShowSampleDataConfirm] = useState(false);
 
   // Default VAT settings
@@ -26,6 +21,7 @@ export function StoreSettingsTab({ vatSettings, onVatSettingsUpdate }: StoreSett
     id: 'default',
     rate: 15,
     isEnabled: true,
+    isVatInclusive: false,
     organizationId: storeSettings?.organizationId || '',
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -53,6 +49,7 @@ export function StoreSettingsTab({ vatSettings, onVatSettingsUpdate }: StoreSett
           organizationId: storeSettings.organizationId,
           rate: defaultVatSettings.rate,
           isEnabled: defaultVatSettings.isEnabled,
+          isVatInclusive: defaultVatSettings.isVatInclusive,
         });
 
         // Update store settings to include the new VAT settings ID
@@ -155,13 +152,21 @@ export function StoreSettingsTab({ vatSettings, onVatSettingsUpdate }: StoreSett
               onSave={(value) => handleUpdateVatSettings('isEnabled', value)}
             />
             {(storeSettings?.vatSettings?.isEnabled ?? defaultVatSettings.isEnabled) && (
-              <EditableSetting
-                label="VAT Rate"
-                value={storeSettings?.vatSettings?.rate ?? defaultVatSettings.rate}
-                type="number"
-                onSave={(value) => handleUpdateVatSettings('rate', value)}
-                placeholder="15"
-              />
+              <>
+                <EditableSetting
+                  label="VAT Inclusive Pricing"
+                  value={storeSettings?.vatSettings?.isVatInclusive ?? defaultVatSettings.isVatInclusive}
+                  type="switch"
+                  onSave={(value) => handleUpdateVatSettings('isVatInclusive', value)}
+                />
+                <EditableSetting
+                  label="VAT Rate"
+                  value={storeSettings?.vatSettings?.rate ?? defaultVatSettings.rate}
+                  type="number"
+                  onSave={(value) => handleUpdateVatSettings('rate', value)}
+                  placeholder="15"
+                />
+              </>
             )}
           </div>
         </CardContent>

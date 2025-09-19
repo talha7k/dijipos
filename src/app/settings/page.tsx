@@ -10,7 +10,7 @@ import { useSeparatedTemplates } from '@/lib/hooks/useSeparatedTemplates';
 import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
 
 
-import { VATSettings } from '@/types';
+
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SettingsHeader } from '@/components/settings/SettingsHeader';
@@ -38,12 +38,7 @@ function SettingsContent() {
   const orderTypes = storeSettings?.orderTypes || [];
   const paymentTypes = storeSettings?.paymentTypes || [];
 
-  // Extract data from storeSettings
-  const vatSettings = storeSettings?.vatSettings || null;
-  const handleVatSettingsUpdate = async (settings: VATSettings) => {
-    // The actual update is handled in the StoreSettingsTab component
-    console.log('VAT settings updated:', settings);
-  };
+  
 
 
   // Debug logging
@@ -92,10 +87,7 @@ function SettingsContent() {
         </TabsContent>
 
         <TabsContent value="store-settings" className="space-y-4">
-          <StoreSettingsTab
-            vatSettings={vatSettings}
-            onVatSettingsUpdate={handleVatSettingsUpdate}
-          />
+          <StoreSettingsTab />
         </TabsContent>
 
         <TabsContent value="printer-settings" className="space-y-4">

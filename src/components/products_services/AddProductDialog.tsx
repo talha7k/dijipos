@@ -9,6 +9,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus } from 'lucide-react';
 import { Category, CategoryType } from '@/types';
+import { useAtomValue } from 'jotai';
+import { vatSettingsAtom } from '@/atoms/posAtoms';
+import { getVATIndicationText } from '@/lib/vat-calculator';
 
 interface AddProductDialogProps {
   open: boolean;
@@ -34,6 +37,7 @@ export function AddProductDialog({
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
   const [categoryId, setCategoryId] = useState<string>(selectedCategory || '');
+  const vatSettings = useAtomValue(vatSettingsAtom);
 
   // Update categoryId when selectedCategory changes
   useEffect(() => {
@@ -107,7 +111,14 @@ export function AddProductDialog({
             />
           </div>
           <div>
-            <Label htmlFor="productPrice">Price</Label>
+            <Label htmlFor="productPrice">
+              Price
+              {vatSettings?.isEnabled && vatSettings?.isVatInclusive && (
+                <span className="text-sm text-muted-foreground ml-2">
+                  {getVATIndicationText(true)}
+                </span>
+              )}
+            </Label>
             <Input
               id="productPrice"
               type="number"
@@ -116,6 +127,11 @@ export function AddProductDialog({
               onChange={(e) => setPrice(e.target.value)}
               required
             />
+            {vatSettings?.isEnabled && vatSettings?.isVatInclusive && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Enter price including VAT. Base price will be calculated automatically.
+              </p>
+            )}
           </div>
           <div>
             <Label htmlFor="productCategory">Category</Label>

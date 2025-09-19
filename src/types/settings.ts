@@ -51,6 +51,7 @@ export interface VATSettings {
   id: string;
   rate: number; // VAT rate in percentage (e.g., 15 for 15%)
   isEnabled: boolean;
+  isVatInclusive: boolean; // Whether prices include VAT by default
   organizationId: string;
   createdAt: Date;
   updatedAt: Date;

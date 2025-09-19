@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { selectedOrganizationAtom } from '@/atoms';
 import { CartItem, ItemType, Order, OrderStatus, Product, Service, Table, Customer, OrderType, OrderPayment } from "@/types";
@@ -12,6 +12,7 @@ import { useOrders } from "@/lib/hooks/useOrders";
 import { useStoreSettings } from "@/lib/hooks/useStoreSettings";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { getUser } from "@/lib/firebase/firestore/users";
+import { calculateCartTotals } from "@/lib/vat-calculator";
 
 import {
   POSLayout,
@@ -28,6 +29,7 @@ import {
   safeCartItemsAtom,
   cartTotalAtom,
   cartSubtotalAtom,
+  vatSettingsAtom,
   selectedTableAtom,
   selectedCustomerAtom,
   selectedOrderTypeAtom,
@@ -65,13 +67,14 @@ export default function SimplifiedPOSPage() {
   const { customers, loading: customersLoading } = useCustomers();
   const { orders, loading: ordersLoading, createNewOrder, updateExistingOrder } = useOrders();
    const { storeSettings, loading: storeSettingsLoading } = useStoreSettings();
-  const orderTypes = storeSettings?.orderTypes || [];
+  const orderTypes = useMemo(() => storeSettings?.orderTypes || [], [storeSettings?.orderTypes]);
   const paymentTypes = storeSettings?.paymentTypes || [];
 
   // Use POS atoms directly
   const [cartItems, setCartItems] = useAtom(safeCartItemsAtom);
   const cartTotal = useAtomValue(cartTotalAtom);
   const cartSubtotal = useAtomValue(cartSubtotalAtom);
+  const [vatSettings, setVatSettings] = useAtom(vatSettingsAtom);
   const [selectedTable, setSelectedTable] = useAtom(selectedTableAtom);
   const [selectedCustomer, setSelectedCustomer] = useAtom(selectedCustomerAtom);
   const [selectedOrderType, setSelectedOrderType] = useAtom(selectedOrderTypeAtom);
@@ -126,6 +129,13 @@ export default function SimplifiedPOSPage() {
       setCategoryPath([]);
     }
   }, [pathname, setCurrentView, setCategoryPath]);
+
+  // Update VAT settings atom when store settings change
+  React.useEffect(() => {
+    if (storeSettings?.vatSettings) {
+      setVatSettings(storeSettings.vatSettings);
+    }
+  }, [storeSettings, setVatSettings]);
 
 
 
@@ -237,10 +247,35 @@ export default function SimplifiedPOSPage() {
     if (!organizationId || (cartItems || []).length === 0) return;
 
     try {
-      const taxRate = 15; // Could be made configurable
-      const subtotal = cartSubtotal;
-      const taxAmount = (subtotal * taxRate) / 100;
-      const total = subtotal + taxAmount;
+      // Use VAT settings from store or defaults
+      const taxRate = vatSettings?.rate || 15;
+      const isVatEnabled = vatSettings?.isEnabled || false;
+      const isVatInclusive = vatSettings?.isVatInclusive || false;
+      
+      let subtotal, taxAmount, total;
+      
+      if (isVatEnabled) {
+        // VAT is enabled, use proper calculation
+        const itemsForCalculation = (cartItems || []).map(item => ({
+          price: item.total / item.quantity, // Get unit price
+          quantity: item.quantity
+        }));
+        
+        const result = calculateCartTotals(
+          itemsForCalculation,
+          taxRate,
+          isVatInclusive
+        );
+        
+        subtotal = result.subtotal;
+        taxAmount = result.vatAmount;
+        total = result.total;
+      } else {
+        // VAT is disabled, simple calculation
+        subtotal = cartSubtotal;
+        taxAmount = 0;
+        total = subtotal;
+      }
 
       const orderData = {
         organizationId,
@@ -288,7 +323,7 @@ export default function SimplifiedPOSPage() {
     } catch (error) {
       console.error('Error saving order:', error);
     }
-  }, [organizationId, cartItems, cartSubtotal, selectedOrder, selectedOrderType, selectedCustomer, selectedTable, user, nextQueueNumber, createNewOrder, updateExistingOrder, resetPOSState, setNextQueueNumber]);
+  }, [organizationId, cartItems, cartSubtotal, selectedOrder, selectedOrderType, selectedCustomer, selectedTable, user, userName, nextQueueNumber, createNewOrder, updateExistingOrder, resetPOSState, setNextQueueNumber, vatSettings?.isEnabled, vatSettings?.isVatInclusive, vatSettings?.rate]);
 
   const handlePaymentProcessed = useCallback(async (payments: OrderPayment[]) => {
     setPaymentSuccessData({ totalPaid: payments.reduce((sum, payment) => sum + payment.amount, 0) });
@@ -313,20 +348,6 @@ export default function SimplifiedPOSPage() {
     setSelectedCustomer(null);
     setSelectedOrder(null);
   }, [setCurrentView, setCategoryPath, setSelectedTable, setSelectedCustomer, setSelectedOrder]);
-
-  // Function to handle new order creation
-  const handleNewOrder = useCallback(() => {
-    const currentPathname = pathname || '';
-    const isOnPOSPage = currentPathname === '/pos' || currentPathname.startsWith('/pos');
-
-    if (!isOnPOSPage) {
-      // Navigate to POS page
-      router.push('/pos');
-    } else {
-      // Already on POS page, reset state
-      resetPOSState();
-    }
-  }, [pathname, router, resetPOSState]);
 
   // Function to handle order toggle
   const handleOrderToggle = useCallback(() => {
@@ -410,7 +431,7 @@ export default function SimplifiedPOSPage() {
 
     setSelectedOrder(orderToPay);
     setCurrentView('payment');
-  }, [cartItems, cartTotal, cartSubtotal, selectedOrder, selectedOrderType, organizationId, user, setSelectedOrder, setCurrentView, nextQueueNumber, setNextQueueNumber]);
+  }, [cartItems, cartTotal, cartSubtotal, selectedOrder, selectedOrderType, organizationId, user, userName, setSelectedOrder, setCurrentView, nextQueueNumber, setNextQueueNumber]);
 
   const updateCartItem = useCallback((itemId: string, type: string, updates: Partial<CartItem>) => {
     const updatedCart = cartItems.map(item =>

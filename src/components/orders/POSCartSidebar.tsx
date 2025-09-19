@@ -14,10 +14,12 @@ import {
   selectedCustomerAtom,
   selectedOrderTypeAtom,
   currentQueueNumberAtom,
+  vatSettingsAtom,
 } from "@/atoms/posAtoms";
 import { useSeparatedTemplates } from "@/lib/hooks/useSeparatedTemplates";
 import { useStoreSettings } from "@/lib/hooks/useStoreSettings";
 import { useCurrency } from "@/lib/hooks/useCurrency";
+import { calculateCartTotals } from "@/lib/vat-calculator";
 
 interface CartItem {
   id: string;
@@ -42,7 +44,6 @@ interface POSCartSidebarProps {
 export function POSCartSidebar({
   cartItems,
   cartTotal,
-  cartSubtotal,
   onPayOrder,
   onSaveOrder,
   onClearCart,
@@ -54,6 +55,7 @@ export function POSCartSidebar({
   const selectedCustomer = useAtomValue(selectedCustomerAtom);
   const selectedOrderType = useAtomValue(selectedOrderTypeAtom);
   const currentQueueNumber = useAtomValue(currentQueueNumberAtom);
+  const vatSettings = useAtomValue(vatSettingsAtom);
   
   // Debug logging
   console.log('POSCartSidebar - currentQueueNumber:', currentQueueNumber);
@@ -94,11 +96,35 @@ export function POSCartSidebar({
       };
     }
 
-    // Calculate tax (assuming 15% VAT rate for preview)
-    const taxRate = 15; // Could be made configurable
-    const subtotal = cartTotal;
-    const taxAmount = (subtotal * taxRate) / 100;
-    const total = subtotal + taxAmount;
+    // Calculate tax based on VAT settings
+    const taxRate = vatSettings?.rate || 15;
+    const isVatEnabled = vatSettings?.isEnabled || false;
+    const isVatInclusive = vatSettings?.isVatInclusive || false;
+    
+    let subtotal, taxAmount, total;
+    
+    if (isVatEnabled) {
+      // VAT is enabled, use proper calculation
+      const itemsForCalculation = cartItems.map(item => ({
+        price: item.total / item.quantity, // Get unit price
+        quantity: item.quantity
+      }));
+      
+      const result = calculateCartTotals(
+        itemsForCalculation,
+        taxRate,
+        isVatInclusive
+      );
+      
+      subtotal = result.subtotal;
+      taxAmount = result.vatAmount;
+      total = result.total;
+    } else {
+      // VAT is disabled, simple calculation
+      subtotal = cartTotal;
+      taxAmount = 0;
+      total = subtotal;
+    }
 
     // Use current queue number for preview
     const queueNumber = currentQueueNumber || 1;
