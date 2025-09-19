@@ -424,16 +424,16 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
                   <h2 className="text-lg font-semibold mb-3">Custom Content</h2>
                   <div className="grid grid-cols-1 gap-4">
                     <EditableSetting
-                      label="Custom Header"
+                      label="Receipt Header Text"
                       value={printerSettings?.receipts?.customHeader || ''}
-                      type="text"
+                      type="textarea"
                       onSave={(value) => handleUpdateSettings('receipts.customHeader', value)}
                       placeholder="Enter custom header text (optional)"
                     />
                     <EditableSetting
-                      label="Custom Footer"
+                      label="Receipt Footer Text"
                       value={printerSettings?.receipts?.customFooter || ''}
-                      type="text"
+                      type="textarea"
                       onSave={(value) => handleUpdateSettings('receipts.customFooter', value)}
                       placeholder="Enter custom footer text (optional)"
                     />

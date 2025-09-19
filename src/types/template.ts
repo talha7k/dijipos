@@ -71,6 +71,7 @@ export interface ReceiptTemplate {
   customHeader?: string;
   customFooter?: string;
   organizationId: string;
+  isDefault?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

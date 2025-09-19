@@ -68,7 +68,14 @@ export function QuotePrintDialog({
         }
       }
       
-      // No fallback to template's isDefault flag - rely only on printer settings
+      // Fallback to template with isDefault flag
+      if (!selectedId) {
+        const defaultTemplate = quoteTemplates.find((t) => t.isDefault);
+        if (defaultTemplate) {
+          selectedId = defaultTemplate.id;
+          console.log(`[QuotePrintDialog] Using template with isDefault flag: ${defaultTemplate.name}`);
+        }
+      }
       
       // Final fallback to first template
       if (!selectedId && quoteTemplates.length > 0) {

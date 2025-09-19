@@ -5,6 +5,7 @@ import { Check, X, Edit2 } from "lucide-react";
 import { Loader } from "@/components/ui/loader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import {
   Select,
@@ -19,7 +20,7 @@ import { cn } from "@/lib/utils";
 interface EditableSettingProps<T = string | number | boolean> {
   label: string;
   value: T;
-  type: "text" | "number" | "switch" | "select";
+  type: "text" | "number" | "switch" | "select" | "textarea";
   options?: { value: string; label: string }[];
   onSave: (value: T) => Promise<void>;
   displayValue?: (value: T) => string;
@@ -143,6 +144,20 @@ export function EditableSetting<T extends string | number | boolean>({
             {isSaving && <Loader size="sm" className="text-muted-foreground" />}
           </div>
         );
+      case "textarea":
+        return (
+          <div className="flex items-center gap-2">
+            <Textarea
+              value={String(editValue)}
+              onChange={(e) => setEditValue(e.target.value as T)}
+              placeholder={placeholder}
+              autoFocus
+              disabled={isSaving}
+              className="min-h-20 px-4 py-2 border-2 border-input focus:border-ring bg-muted w-full resize-none"
+            />
+            {isSaving && <Loader size="sm" className="text-muted-foreground" />}
+          </div>
+        );
       case "number":
         return (
           <div className="flex items-center gap-2">
@@ -207,14 +222,14 @@ export function EditableSetting<T extends string | number | boolean>({
       <span className="text-sm font-medium">{label}:</span>
 
       {isEditing && type !== "select" ? (
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 flex-1">
           {renderEditInput()}
           <Button
             size="sm"
             variant="outline"
             onClick={handleSave}
             disabled={isSaving}
-            className="h-8 w-8 p-0"
+            className="h-8 w-8 p-0 flex-shrink-0"
           >
             <Check className="h-3 w-3" />
           </Button>
@@ -223,20 +238,20 @@ export function EditableSetting<T extends string | number | boolean>({
             variant="outline"
             onClick={handleCancel}
             disabled={isSaving}
-            className="h-8 w-8 p-0"
+            className="h-8 w-8 p-0 flex-shrink-0"
           >
             <X className="h-3 w-3" />
           </Button>
         </div>
       ) : isEditing && type === "select" ? (
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 flex-1">
           {renderEditInput()}
           <Button
             size="sm"
             variant="outline"
             onClick={handleSave}
             disabled={isSaving}
-            className="h-8 w-8 p-0"
+            className="h-8 w-8 p-0 flex-shrink-0"
           >
             <Check className="h-3 w-3" />
           </Button>
@@ -245,7 +260,7 @@ export function EditableSetting<T extends string | number | boolean>({
             variant="outline"
             onClick={handleCancel}
             disabled={isSaving}
-            className="h-8 w-8 p-0"
+            className="h-8 w-8 p-0 flex-shrink-0"
           >
             <X className="h-3 w-3" />
           </Button>

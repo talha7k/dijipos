@@ -9,6 +9,8 @@ import { selectedOrganizationAtom, organizationUsersAtom,  } from '@/atoms';
 import { organizationLoadingAtom } from '@/atoms';
 import { useInvitationCodesData, useInvitationCodesActions } from '@/lib/hooks/useInvitationCodes';
 import { updateOrganization, updateOrganizationBranding, updateOrganizationUser, updateUserStatus } from '@/lib/firebase/firestore/organizations';
+import { updateProfile } from 'firebase/auth';
+import { auth } from '@/lib/firebase/config';
 import { useAtom } from 'jotai';
 import { selectedOrganizationIdAtom } from '@/atoms';
 import { OrganizationUser } from '@/types';
@@ -63,6 +65,7 @@ function CompanyContent() {
   const [vatNumber, setVatNumber] = useState('');
   const [logoUrl, setLogoUrl] = useState('');
   const [stampUrl, setStampUrl] = useState('');
+  const [userDisplayName, setUserDisplayName] = useState('');
 
   useEffect(() => {
     if (!organization) return;
@@ -81,6 +84,11 @@ function CompanyContent() {
     const isLoading = orgLoading || codesLoading;
     setLoading(isLoading);
   }, [orgLoading, codesLoading]);
+
+  useEffect(() => {
+    if (!user) return;
+    setUserDisplayName(user.displayName || '');
+  }, [user]);
 
   
 
@@ -213,6 +221,21 @@ function CompanyContent() {
     } catch (error) {
       console.error('Error updating user status:', error);
       toast.error('Failed to update user status. Please try again.');
+    }
+  };
+
+  const handleUpdateUserDisplayName = async () => {
+    if (!user) return;
+
+    setSaving(true);
+    try {
+      await updateProfile(user, { displayName: userDisplayName });
+      toast.success('Display name updated successfully!');
+    } catch (error) {
+      console.error('Error updating display name:', error);
+      toast.error('Failed to update display name.');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -727,46 +750,61 @@ function CompanyContent() {
         </TabsContent>
 
         <TabsContent value="account" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Account Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center space-x-4">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-                  <User className="h-8 w-8" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold">{user.displayName || user.email}</h3>
-                  <p className="text-muted-foreground">{user.email}</p>
-                </div>
-              </div>
+           <Card>
+             <CardHeader>
+               <CardTitle>Account Information</CardTitle>
+             </CardHeader>
+             <CardContent className="space-y-4">
+               <div className="flex items-center space-x-4">
+                 <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                   <User className="h-8 w-8" />
+                 </div>
+                 <div>
+                   <h3 className="text-lg font-semibold">{userDisplayName || user?.email}</h3>
+                   <p className="text-muted-foreground">{user?.email}</p>
+                 </div>
+               </div>
 
-              <div className="grid grid-cols-2 gap-4 pt-4">
-                <div className="flex items-center space-x-2">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
-                  <span>{user.email}</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span>Joined {organization?.createdAt?.toLocaleDateString()}</span>
-                </div>
-              </div>
+               <div className="space-y-4 pt-4">
+                 <div className="space-y-2">
+                   <Label htmlFor="userDisplayName">Display Name</Label>
+                   <Input
+                     id="userDisplayName"
+                     value={userDisplayName}
+                     onChange={(e) => setUserDisplayName(e.target.value)}
+                     placeholder="Enter your display name"
+                   />
+                 </div>
+                 <Button onClick={handleUpdateUserDisplayName} loading={saving} className="w-full">
+                   Update Display Name
+                 </Button>
+               </div>
 
-              <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-                <Button variant="outline" className="w-full justify-start">
-                  Change Password
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  Two-Factor Authentication
-                </Button>
-                <Button variant="destructive" className="w-full justify-start col-span-2">
-                  Delete Account
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+               <div className="grid grid-cols-2 gap-4 pt-4">
+                 <div className="flex items-center space-x-2">
+                   <Mail className="h-4 w-4 text-muted-foreground" />
+                   <span>{user?.email}</span>
+                 </div>
+                 <div className="flex items-center space-x-2">
+                   <Calendar className="h-4 w-4 text-muted-foreground" />
+                   <span>Joined {organization?.createdAt?.toLocaleDateString()}</span>
+                 </div>
+               </div>
+
+               <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                 <Button variant="outline" className="w-full justify-start">
+                   Change Password
+                 </Button>
+                 <Button variant="outline" className="w-full justify-start">
+                   Two-Factor Authentication
+                 </Button>
+                 <Button variant="destructive" className="w-full justify-start col-span-2">
+                   Delete Account
+                 </Button>
+               </div>
+             </CardContent>
+           </Card>
+         </TabsContent>
       </Tabs>
     </div>
   );
