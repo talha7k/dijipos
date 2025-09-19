@@ -45,14 +45,34 @@ export function useOrders(): OrdersState & OrdersActions {
     null // disable orderBy to prevent index issues remove this line later for indexes to be used.
   );
 
-  const handleTableStatusUpdate = async (order: Order) => {
-    if (!order.tableId) return;
-
+  const handleTableStatusUpdate = async (oldOrder: Order | null, newOrder: Order) => {
     try {
-      if (order.status === OrderStatus.OPEN) {
-        await updateTable(order.tableId, { status: TableStatus.OCCUPIED });
-      } else if (order.status === OrderStatus.COMPLETED || order.status === OrderStatus.CANCELLED) {
-        await updateTable(order.tableId, { status: TableStatus.AVAILABLE });
+      const oldTableId = oldOrder?.tableId;
+      const newTableId = newOrder.tableId;
+
+      // If table assignment hasn't changed, only update based on order status
+      if (oldTableId === newTableId) {
+        if (!newTableId) return; // No table assigned
+
+        if (newOrder.status === OrderStatus.OPEN) {
+          await updateTable(newTableId, { status: TableStatus.OCCUPIED });
+        } else if (newOrder.status === OrderStatus.COMPLETED || newOrder.status === OrderStatus.CANCELLED) {
+          await updateTable(newTableId, { status: TableStatus.AVAILABLE });
+        }
+        return;
+      }
+
+      // Table assignment has changed - handle old and new tables
+
+      // Free up the old table if it exists
+      if (oldTableId) {
+        await updateTable(oldTableId, { status: TableStatus.AVAILABLE });
+      }
+
+      // Set the new table status based on order status
+      if (newTableId) {
+        const newStatus = newOrder.status === OrderStatus.OPEN ? TableStatus.OCCUPIED : TableStatus.AVAILABLE;
+        await updateTable(newTableId, { status: newStatus });
       }
     } catch (error) {
       console.error('Error updating table status:', error);
@@ -75,10 +95,8 @@ export function useOrders(): OrdersState & OrdersActions {
       // Real-time listener will automatically update the orders list
 
       // Update table status if order has a table assigned
-      if (orderData.tableId) {
-        const order = { ...orderData, id: orderId, createdAt: new Date(), updatedAt: new Date() } as Order;
-        await handleTableStatusUpdate(order);
-      }
+      const newOrder = { ...orderData, id: orderId, createdAt: new Date(), updatedAt: new Date() } as Order;
+      await handleTableStatusUpdate(null, newOrder);
 
       return orderId;
     } catch (err) {
@@ -89,15 +107,21 @@ export function useOrders(): OrdersState & OrdersActions {
 
   const updateExistingOrder = async (orderId: string, updates: Partial<Omit<Order, 'id' | 'createdAt'>>): Promise<void> => {
     try {
+      // Get the old order before updating
+      const oldOrder = await getOrder(orderId);
+      if (!oldOrder) {
+        throw new Error(`Order with ID ${orderId} not found`);
+      }
+
       await updateOrder(orderId, updates);
       // Real-time listener will automatically update the orders list
 
       // Update table status if order status or table assignment changed
-      if (updates.status || updates.tableId) {
+      if (updates.status !== undefined || updates.tableId !== undefined) {
         // Get the updated order to check its current state
         const updatedOrder = await getOrder(orderId);
         if (updatedOrder) {
-          await handleTableStatusUpdate(updatedOrder);
+          await handleTableStatusUpdate(oldOrder, updatedOrder);
         }
       }
     } catch (err) {
@@ -108,6 +132,12 @@ export function useOrders(): OrdersState & OrdersActions {
 
   const deleteExistingOrder = async (orderId: string): Promise<void> => {
     try {
+      // Get the order before deleting to free up its table if needed
+      const orderToDelete = await getOrder(orderId);
+      if (orderToDelete && orderToDelete.status === OrderStatus.OPEN && orderToDelete.tableId) {
+        await updateTable(orderToDelete.tableId, { status: TableStatus.AVAILABLE });
+      }
+
       await deleteOrder(orderId);
       // Real-time listener will automatically update the orders list
     } catch (err) {
