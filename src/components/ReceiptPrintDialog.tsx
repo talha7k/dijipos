@@ -143,8 +143,14 @@ export function ReceiptPrintDialog({
       console.log("- Payments:", hasPayments);
       console.log("- Dijibill Branding:", hasDijibill);
 
+      // Calculate appropriate window width based on paper width
+      const paperWidthMm = printerSettings?.receipts?.paperWidth || 80;
+      // Convert mm to pixels (assuming 96 DPI) and add some padding for UI
+      const windowWidth = Math.max(400, Math.min(1000, paperWidthMm * 3.78 + 200));
+      const windowHeight = 600;
+
       // Create a new window for printing (safer than manipulating current DOM)
-      const printWindow = window.open("", "_blank", "width=800,height=600");
+      const printWindow = window.open("", "_blank", `width=${windowWidth},height=${windowHeight}`);
       if (!printWindow) {
         throw new Error(
           "Unable to open print window. Please check your popup blocker.",
@@ -157,19 +163,26 @@ export function ReceiptPrintDialog({
         <html>
           <head>
             <title>Receipt - ${order.orderNumber}</title>
-            <style>
-              body {
-                margin: 0;
-                padding: 0;
-                font-family: Arial, sans-serif;
-              }
-              @media print {
-                body {
-                  margin: 0;
-                  padding: 0;
+             <style>
+               body {
+                 margin: 0;
+                 padding: 0;
+                 font-family: Arial, sans-serif;
+               }
+                @media print {
+                  @page {
+                    margin: 0;
+                  }
+                  body {
+                    margin: 0 !important;
+                    padding: 0 !important;
+                  }
+                  * {
+                    margin: 0 !important;
+                    padding: 0 !important;
+                  }
                 }
-              }
-            </style>
+             </style>
           </head>
           <body>
             ${renderedContent}

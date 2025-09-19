@@ -91,8 +91,14 @@ export function QuotePrintDialog({
       // Render the quote using template
       const renderedContent = await renderQuoteTemplate(template, quote, organization, customer, printerSettings || undefined);
 
+      // Calculate appropriate window width based on paper width
+      const paperWidthMm = printerSettings?.quotes?.paperWidth || 210;
+      // Convert mm to pixels (assuming 96 DPI) and add some padding for UI
+      const windowWidth = Math.max(600, Math.min(1200, paperWidthMm * 3.78 + 200));
+      const windowHeight = 800;
+
       // Create a new window for printing (safer than manipulating current DOM)
-      const printWindow = window.open('', '_blank', 'width=800,height=600');
+      const printWindow = window.open('', '_blank', `width=${windowWidth},height=${windowHeight}`);
       if (!printWindow) {
         throw new Error('Unable to open print window. Please check your popup blocker.');
       }
