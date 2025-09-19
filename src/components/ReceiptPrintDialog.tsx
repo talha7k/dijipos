@@ -83,41 +83,36 @@ function renderTemplateContent(
 ): string {
   let result = template;
 
-  // Replace simple placeholders like {{companyName}}
-  result = result.replace(/{{companyName}}/g, data.companyName);
-  result = result.replace(/{{companyNameAr}}/g, data.companyNameAr);
-  result = result.replace(/{{companyAddress}}/g, data.companyAddress);
-  result = result.replace(/{{companyPhone}}/g, data.companyPhone);
-  result = result.replace(/{{companyVat}}/g, data.companyVat);
-  result = result.replace(/{{companyLogo}}/g, data.companyLogo);
-  result = result.replace(/{{orderNumber}}/g, data.orderNumber);
-  result = result.replace(/{{queueNumber}}/g, data.queueNumber || "");
-  result = result.replace(/{{orderDate}}/g, data.orderDate);
-  result = result.replace(/{{formattedDate}}/g, data.formattedDate);
-  result = result.replace(/{{tableName}}/g, data.tableName);
-  result = result.replace(/{{customerName}}/g, data.customerName);
-  result = result.replace(/{{createdByName}}/g, data.createdByName);
-  result = result.replace(/{{orderType}}/g, data.orderType);
-  result = result.replace(/{{paymentMethod}}/g, data.paymentMethod);
-  result = result.replace(/{{subtotal}}/g, data.subtotal);
-  result = result.replace(/{{vatRate}}/g, data.vatRate);
-  result = result.replace(/{{vatAmount}}/g, data.vatAmount);
-  result = result.replace(/{{total}}/g, data.total);
-  result = result.replace(/{{totalQty}}/g, data.totalQty.toString());
-  result = result.replace(/{{customHeader}}/g, data.customHeader || "");
-  result = result.replace(/{{customFooter}}/g, data.customFooter || "");
+  // --- FIX: A more robust and efficient replacer for simple variables ---
+  // This single block replaces all individual 'result.replace(...)' calls.
+  // The \s* matches any whitespace (including non-breaking spaces).
+  result = result.replace(/{{\s*(\w+)\s*}}/g, (match, key) => {
+    // Check if the captured key (e.g., "companyName") exists in our data object.
+    if (Object.prototype.hasOwnProperty.call(data, key)) {
+      // @ts-ignore
+      const value = data[key];
+      // Return the value from data, or an empty string if it's null/undefined
+      return value ?? "";
+    }
+    // If the key isn't in our data, return the original placeholder to avoid breaking it.
+    return match;
+  });
 
-  // Handle conditional QR code block
-  if (data.includeQR && data.qrCodeUrl) {
-    result = result.replace(
-      /{{#includeQR}}([\s\S]*?){{\/includeQR}}/g,
-      (match, content) => {
-        return content.replace(/{{qrCodeUrl}}/g, data.qrCodeUrl || "");
-      },
-    );
-  } else {
-    result = result.replace(/{{#includeQR}}[\s\S]*?{{\/includeQR}}/g, "");
-  }
+  // --- Keep the logic for conditionals and loops from the previous fix ---
+
+  // Handle general conditionals like {{#companyVat}}...{{/companyVat}}
+  result = result.replace(
+    /{{#(\w+)}}([\s\S]*?){{\/\1}}/g,
+    (match, variable, content) => {
+      const value = data[variable as keyof ReceiptTemplateData];
+      // @ts-ignore
+      return Array.isArray(value) && value.length > 0
+        ? content
+        : value
+          ? content
+          : "";
+    },
+  );
 
   // Handle items loop: {{#each items}}...{{/each}}
   result = result.replace(
@@ -126,9 +121,9 @@ function renderTemplateContent(
       return data.items
         .map((item) =>
           itemTemplate
-            .replace(/{{name}}/g, item.name)
-            .replace(/{{quantity}}/g, item.quantity.toString())
-            .replace(/{{total}}/g, item.total),
+            .replace(/{{\s*name\s*}}/g, item.name)
+            .replace(/{{\s*quantity\s*}}/g, item.quantity.toString())
+            .replace(/{{\s*total\s*}}/g, item.total),
         )
         .join("");
     },
@@ -141,8 +136,8 @@ function renderTemplateContent(
       return data.payments
         .map((payment) =>
           paymentTemplate
-            .replace(/{{paymentType}}/g, payment.paymentType)
-            .replace(/{{amount}}/g, payment.amount),
+            .replace(/{{\s*paymentType\s*}}/g, payment.paymentType)
+            .replace(/{{\s*amount\s*}}/g, payment.amount),
         )
         .join("");
     },
@@ -256,25 +251,61 @@ export function ReceiptPrintDialog({
     left: 0,
   });
 
-  // Initialize settings when the dialog opens
+  // Re-render the receipt preview when settings or template change
   useEffect(() => {
-    if (open) {
-      const settings = printerSettings?.receipts;
-      setPageSize(`${settings?.paperWidth || 80}mm`);
-      setMargins({
-        top: settings?.marginTop || 0,
-        right: settings?.marginRight || 0,
-        bottom: settings?.marginBottom || 0,
-        left: settings?.marginLeft || 0,
-      });
-      setPadding({
-        top: settings?.paddingTop || 0,
-        right: settings?.paddingRight || 0,
-        bottom: settings?.paddingBottom || 0,
-        left: settings?.paddingLeft || 0,
-      });
+    if (open && selectedTemplate) {
+      const renderPreview = async () => {
+        try {
+          // Add try...catch for robust error handling
+          const template = receiptTemplates.find(
+            (t) => t.id === selectedTemplate,
+          );
+
+          if (!template) {
+            setRenderedHtml("<p>Template not found.</p>");
+            return;
+          }
+
+          // Safely create the live settings object
+          const livePrinterSettings: PrinterSettings = {
+            ...(printerSettings || {}), // <-- SAFE SPREAD
+            id: printerSettings?.id || "live-preview",
+            organizationId: organization?.id || "",
+            createdAt: printerSettings?.createdAt || new Date(),
+            updatedAt: new Date(),
+            receipts: {
+              ...(printerSettings?.receipts || {}),
+              paperWidth: parseInt(pageSize),
+            },
+          };
+
+          const content = await renderReceiptTemplate(
+            template,
+            order,
+            organization,
+            payments,
+            livePrinterSettings,
+          );
+          setRenderedHtml(content);
+        } catch (error) {
+          console.error("Failed to render receipt preview:", error);
+          setRenderedHtml(
+            "<p style='color: red;'>Error rendering preview. Check console for details.</p>",
+          );
+        }
+      };
+      renderPreview();
     }
-  }, [open, printerSettings]);
+  }, [
+    open,
+    selectedTemplate,
+    order,
+    organization,
+    payments,
+    receiptTemplates,
+    printerSettings,
+    pageSize,
+  ]);
 
   // Re-render the receipt preview when settings or template change
   useEffect(() => {
@@ -290,7 +321,12 @@ export function ReceiptPrintDialog({
 
         // Pass live settings from the dialog to the renderer
         const livePrinterSettings: PrinterSettings = {
-          ...printerSettings,
+          ...(printerSettings || {}),
+          id: printerSettings?.id || "live-preview",
+          organizationId:
+            printerSettings?.organizationId || organization?.id || "",
+          createdAt: printerSettings?.createdAt || new Date(),
+          updatedAt: printerSettings?.updatedAt || new Date(),
           receipts: {
             ...(printerSettings?.receipts || {}),
             paperWidth: parseInt(pageSize),
@@ -431,19 +467,19 @@ export function ReceiptPrintDialog({
       maxWidth="max-w-4xl"
     >
       <div className="flex h-[60vh] font-sans">
-        {/* --- Settings Panel --- */}
-        <div className="w-1/3 p-4 border-r bg-gray-50 overflow-y-auto space-y-4">
-          <h2 className="text-lg font-bold text-gray-800 pb-2 border-b">
+        {/* --- Settings Panel (Cleaned Up) --- */}
+        <div className="w-1/3 p-4 border-r bg-muted/50 overflow-y-auto space-y-4">
+          <h2 className="text-lg font-bold text-foreground pb-2 border-b">
             Print Settings
           </h2>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Template
             </label>
             <select
               value={selectedTemplate}
               onChange={(e) => setSelectedTemplate(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              className="w-full p-2 border border-border rounded-md shadow-sm focus:ring-ring focus:border-ring bg-background"
             >
               {receiptTemplates.length === 0 ? (
                 <option disabled>No templates available</option>
@@ -457,31 +493,31 @@ export function ReceiptPrintDialog({
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Paper Size
             </label>
             <select
               value={pageSize}
               onChange={(e) => setPageSize(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              className="w-full p-2 border border-border rounded-md shadow-sm focus:ring-ring focus:border-ring bg-background"
             >
               <option value="80mm">80mm</option>
               <option value="58mm">58mm</option>
             </select>
           </div>
           <div>
-            <h3 className="text-md font-semibold mb-1 text-gray-800">
+            <h3 className="text-md font-semibold mb-1 text-foreground">
               Margins (mm)
             </h3>
-            <p className="text-xs text-gray-500 mb-2">
-              Controls the printer's physical unprinted border.
+            <p className="text-xs text-muted-foreground mb-2">
+              Controls the printer&apos;s physical unprinted border.
             </p>
             {Object.keys(margins).map((side) => (
               <div
                 key={side}
                 className="flex items-center justify-between mb-1"
               >
-                <label className="capitalize text-sm text-gray-600">
+                <label className="capitalize text-sm text-muted-foreground">
                   {side}:
                 </label>
                 <input
@@ -494,16 +530,16 @@ export function ReceiptPrintDialog({
                       [e.target.name]: Number(e.target.value),
                     }))
                   }
-                  className="w-20 p-1 border border-gray-300 rounded-md text-center shadow-sm"
+                  className="w-20 p-1 border border-border rounded-md text-center shadow-sm bg-background"
                 />
               </div>
             ))}
           </div>
           <div>
-            <h3 className="text-md font-semibold mb-1 text-gray-800">
+            <h3 className="text-md font-semibold mb-1 text-foreground">
               Padding (mm)
             </h3>
-            <p className="text-xs text-gray-500 mb-2">
+            <p className="text-xs text-muted-foreground mb-2">
               Controls the internal whitespace of the content.
             </p>
             {Object.keys(padding).map((side) => (
@@ -511,7 +547,7 @@ export function ReceiptPrintDialog({
                 key={side}
                 className="flex items-center justify-between mb-1"
               >
-                <label className="capitalize text-sm text-gray-600">
+                <label className="capitalize text-sm text-muted-foreground">
                   {side}:
                 </label>
                 <input
@@ -524,18 +560,30 @@ export function ReceiptPrintDialog({
                       [e.target.name]: Number(e.target.value),
                     }))
                   }
-                  className="w-20 p-1 border border-gray-300 rounded-md text-center shadow-sm"
+                  className="w-20 p-1 border border-border rounded-md text-center shadow-sm bg-background"
                 />
               </div>
             ))}
           </div>
         </div>
-        {/* --- Receipt Preview Area --- */}
-        <div className="w-2/3 p-6 flex justify-center bg-gray-200 overflow-y-auto">
-          <div className="bg-white shadow-lg" style={{ width: pageSize }}>
+
+        {/* --- Receipt Preview Area (Styled) --- */}
+        <div className="w-2/3 p-6 flex justify-center items-start bg-muted/30 overflow-y-auto">
+          <div
+            className="shadow-lg"
+            style={{
+              width: pageSize,
+              // Add styles for the "paper"
+              backgroundColor: "white",
+              color: "black",
+            }}
+          >
             <div
               style={{
                 padding: `${padding.top}mm ${padding.right}mm ${padding.bottom}mm ${padding.left}mm`,
+                // Add styles for the "ink"
+                fontFamily: "monospace", // Use a monospaced font for a receipt feel
+                fontSize: "12px", // A base font size for the preview
               }}
               dangerouslySetInnerHTML={{ __html: renderedHtml }}
             />
