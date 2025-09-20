@@ -341,6 +341,13 @@ export default function SimplifiedPOSPage() {
   ]);
 
   const handleSaveOrder = useCallback(async () => {
+    console.log("--------------- handleSaveOrder --------------- ", {
+      isSavedOrderLoaded,
+      isSavedOrderModified,
+      selectedOrderId: selectedOrder?.id,
+      selectedOrderPaymentStatus: selectedOrder?.paymentStatus,
+    });
+
     if (!organizationId || (cartItems || []).length === 0) return;
     setIsProcessing(true);
     try {
@@ -385,7 +392,6 @@ export default function SimplifiedPOSPage() {
         taxAmount,
         total,
         status: OrderStatus.OPEN,
-        paymentStatus: PaymentStatus.UNPAID,
         orderType: selectedOrderType?.name || "dine-in",
         ...(selectedCustomer?.name && { customerName: selectedCustomer.name }),
         ...(selectedCustomer?.phone && {
@@ -423,7 +429,11 @@ export default function SimplifiedPOSPage() {
         resetAllState();
       } else {
         // Create new order
-        const orderId = await createNewOrder(orderData);
+        const orderDataToCreate = {
+          ...orderData,
+          paymentStatus: PaymentStatus.UNPAID,
+        };
+        const orderId = await createNewOrder(orderDataToCreate);
         console.log("Order created successfully:", orderId);
 
         // Reset POS state for new order
@@ -465,6 +475,7 @@ export default function SimplifiedPOSPage() {
     calculateCartTotals,
     setIsProcessing,
     isSavedOrderLoaded,
+    isSavedOrderModified,
   ]);
 
   const handlePaymentProcessed = useCallback(
@@ -477,27 +488,28 @@ export default function SimplifiedPOSPage() {
       try {
         // If we have a selected order, save payments to it
         if (selectedOrder) {
-        // Save each payment record
-        for (const payment of payments) {
-          try {
-            const paymentData: any = { // Use 'any' to build dynamically
-              organizationId: selectedOrder.organizationId,
-              amount: payment.amount,
-              paymentMethod: payment.paymentMethod,
-              paymentDate: payment.paymentDate,
-            };
-            if (payment.reference) {
-              paymentData.reference = payment.reference;
+          // Save each payment record
+          for (const payment of payments) {
+            try {
+              const paymentData: any = {
+                // Use 'any' to build dynamically
+                organizationId: selectedOrder.organizationId,
+                amount: payment.amount,
+                paymentMethod: payment.paymentMethod,
+                paymentDate: payment.paymentDate,
+              };
+              if (payment.reference) {
+                paymentData.reference = payment.reference;
+              }
+              if (payment.notes) {
+                paymentData.notes = payment.notes;
+              }
+              await addPaymentToOrder(selectedOrder.id, paymentData);
+            } catch (error) {
+              console.error("Error saving payment:", error);
+              throw error;
             }
-            if (payment.notes) {
-              paymentData.notes = payment.notes;
-            }
-            await addPaymentToOrder(selectedOrder.id, paymentData);
-          } catch (error) {
-            console.error('Error saving payment:', error);
-            throw error;
           }
-        }
 
           // Update order payment status based on total paid vs order total
           const newPaymentStatus =
@@ -543,7 +555,7 @@ export default function SimplifiedPOSPage() {
 
   // New function that preserves cart when navigating back to POS
   const handleBackToItemsPreserveCart = useCallback(() => {
-    setCurrentView('items');
+    setCurrentView("items");
     setCategoryPath([]);
     // Do NOT clear these if a saved order is loaded
     if (!isSavedOrderLoaded) {
@@ -563,14 +575,20 @@ export default function SimplifiedPOSPage() {
   const handleOrderToggle = useCallback(() => {
     // If we are on the items view AND we are NOT editing a saved order,
     // then the button means "start a new order".
-    if (currentView === 'items' && !isSavedOrderLoaded) {
+    if (currentView === "items" && !isSavedOrderLoaded) {
       resetAllState();
     } else {
       // Otherwise, it just means "go to the items view".
-      setCurrentView('items');
+      setCurrentView("items");
       setCategoryPath([]);
     }
-  }, [currentView, isSavedOrderLoaded, resetAllState, setCurrentView, setCategoryPath]);
+  }, [
+    currentView,
+    isSavedOrderLoaded,
+    resetAllState,
+    setCurrentView,
+    setCategoryPath,
+  ]);
 
   const handleTableDeselect = useCallback(() => {
     setSelectedTable(null);
@@ -687,7 +705,7 @@ export default function SimplifiedPOSPage() {
       } else {
         // This is a new order. Create it.
         const queueNumber = nextQueueNumber.toString();
-        const orderDataToCreate: Omit<Order, "id"> = {
+        const orderData: Omit<Order, "id" | "paymentStatus"> = {
           organizationId,
           orderNumber: `ORD-${Date.now()}`,
           queueNumber: queueNumber,
@@ -697,7 +715,6 @@ export default function SimplifiedPOSPage() {
           taxAmount,
           total,
           status: OrderStatus.OPEN,
-          paymentStatus: PaymentStatus.UNPAID,
           orderType: selectedOrderType?.name || "dine-in",
           ...(selectedCustomer?.name && {
             customerName: selectedCustomer.name,
@@ -717,6 +734,10 @@ export default function SimplifiedPOSPage() {
           updatedAt: new Date(),
         };
 
+        const orderDataToCreate = {
+          ...orderData,
+          paymentStatus: PaymentStatus.UNPAID,
+        };
         const newOrderId = await createNewOrder(orderDataToCreate);
         orderToPay = { ...orderDataToCreate, id: newOrderId };
 
@@ -860,14 +881,15 @@ export default function SimplifiedPOSPage() {
             onCategoryClick={handleCategoryClick}
             onNavigateToRoot={handleNavigateToRoot}
             onNavigateToPath={handleNavigateToPath}
-                         onItemClick={handleAddToCart}
-                         onTableSelect={handleTableSelected}
-                         onCustomerSelect={handleCustomerSelected}
-                         onOrderSelect={handleViewOrderDetail}
-                         onReopenOrder={handleOrderReopen}
-                         onPayOrder={() => {}}
-                          onBackToItems={handleBackToItemsPreserveCart}
-                         onPaymentProcessed={async (payments) => {              await handlePaymentProcessed(payments);
+            onItemClick={handleAddToCart}
+            onTableSelect={handleTableSelected}
+            onCustomerSelect={handleCustomerSelected}
+            onOrderSelect={handleViewOrderDetail}
+            onReopenOrder={handleOrderReopen}
+            onPayOrder={() => {}}
+            onBackToItems={handleBackToItemsPreserveCart}
+            onPaymentProcessed={async (payments) => {
+              await handlePaymentProcessed(payments);
             }}
           />
         </POSMainContent>

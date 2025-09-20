@@ -10,6 +10,7 @@ import { OrderSummaryCard } from "../OrderSummaryCard";
 import { PaymentList } from "../PaymentList";
 import { PaymentEntryForm } from "../PaymentEntryForm";
 import { OrderAlreadyPaid } from "../OrderAlreadyPaid";
+import { useOrders } from "@/lib/hooks/useOrders";
 import { useCurrency } from "@/lib/hooks/useCurrency";
 
 interface POSPaymentGridProps {
@@ -32,17 +33,30 @@ export function POSPaymentGrid({
   onPaymentProcessed,
   onBack,
 }: POSPaymentGridProps) {
+  const { getPaymentsForOrder } = useOrders();
+  const [savedPayments, setSavedPayments] = useState<OrderPayment[]>([]);
   const [payments, setPayments] = useState<PaymentEntry[]>([]);
   const [amount, setAmount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [reference, setReference] = useState("");
   const [notes, setNotes] = useState("");
   const [paymentProcessed, setPaymentProcessed] = useState(false);
+  const [paymentRefreshTrigger, setPaymentRefreshTrigger] = useState(0);
 
   const { formatCurrency } = useCurrency();
-  const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
+  const totalPaid =
+    savedPayments.reduce((sum, p) => sum + p.amount, 0) +
+    payments.reduce((sum, payment) => sum + payment.amount, 0);
   const remainingAmount = order.total - totalPaid;
   const changeDue = totalPaid > order.total ? totalPaid - order.total : 0;
+
+  useEffect(() => {
+    const fetchSavedPayments = async () => {
+      const existingPayments = await getPaymentsForOrder(order.id);
+      setSavedPayments(existingPayments);
+    };
+    fetchSavedPayments();
+  }, [order.id, getPaymentsForOrder, paymentRefreshTrigger]);
 
   // Auto-fill amount with remaining amount when payment method is selected
   useEffect(() => {
@@ -104,7 +118,12 @@ export function POSPaymentGrid({
   };
 
   const removePayment = (paymentId: string) => {
-    setPayments(payments.filter((p) => p.id !== paymentId));
+    // Only allow removing temporary payments
+    if (paymentId.startsWith('payment-')) {
+      setPayments(payments.filter(p => p.id !== paymentId));
+    } else {
+      toast.info('Saved payments cannot be removed from this screen.');
+    }
   };
 
   const processPayment = async () => {
@@ -139,6 +158,8 @@ export function POSPaymentGrid({
     try {
       await onPaymentProcessed(orderPayments);
       setPaymentProcessed(true);
+      setPayments([]); // Clear temporary payments
+      setPaymentRefreshTrigger(prev => prev + 1);
     } catch (error) {
       console.error("Payment processing failed:", error);
       toast.error("Failed to process payment. Please try again.");
@@ -258,15 +279,12 @@ export function POSPaymentGrid({
         </div>
 
         {/* Payment List */}
-        {payments.length > 0 && (
+        {(payments.length > 0 || savedPayments.length > 0) && (
           <PaymentList
-            payments={payments.map((payment) => ({
-              ...payment,
-              paymentDate: new Date(), // Add current date for new payments
-            }))}
+            payments={[...savedPayments, ...payments.map(p => ({...p, paymentDate: new Date()}))]}
             orderTotal={order.total}
             onRemovePayment={removePayment}
-            showRemoveButton={true}
+            showRemoveButton={!paymentProcessed}
             disabled={paymentProcessed}
             className={`mt-6 ${paymentProcessed ? "opacity-50" : ""}`}
           />
