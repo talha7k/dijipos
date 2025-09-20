@@ -407,8 +407,8 @@ export default function SimplifiedPOSPage() {
         ...(selectedCustomer?.email && {
           customerEmail: selectedCustomer.email,
         }),
-        tableId: selectedTable?.id || null,
-        tableName: selectedTable?.name || null,
+        tableId: selectedTable?.id || undefined,
+        tableName: selectedTable?.name || undefined,
         createdById: user?.uid || "unknown",
         createdByName:
           userName || user?.displayName || user?.email || "Unknown User",
@@ -498,8 +498,7 @@ export default function SimplifiedPOSPage() {
           // Save each payment record
           for (const payment of payments) {
             try {
-              const paymentData: any = {
-                // Use 'any' to build dynamically
+              const paymentData: Omit<OrderPayment, 'id' | 'orderId' | 'createdAt'> = {
                 organizationId: selectedOrder.organizationId,
                 amount: payment.amount,
                 paymentMethod: payment.paymentMethod,
@@ -601,7 +600,7 @@ export default function SimplifiedPOSPage() {
     setSelectedTable(null);
     if (selectedOrder) {
       setSelectedOrder((prevOrder) =>
-        prevOrder ? { ...prevOrder, tableId: null, tableName: null } : null,
+        prevOrder ? { ...prevOrder, tableId: undefined, tableName: undefined } : null,
       );
       setIsSavedOrderModified(true);
     }

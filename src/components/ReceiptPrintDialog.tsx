@@ -55,6 +55,7 @@ async function renderReceipt(
     items: order.items.map((item) => ({
       ...item,
       unitPrice: (item.unitPrice || 0).toFixed(2),
+      total: item.total.toFixed(2),
       // --- THIS IS THE FIX ---
       // Renamed 'total' to 'lineTotal' to avoid conflict with the order's grand total.
       lineTotal: (item.quantity * item.unitPrice).toFixed(2),

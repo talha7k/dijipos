@@ -86,7 +86,6 @@ export function POSPaymentGrid({
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <OrderSummaryCard
               order={order}
-              payments={[]}
               showPaymentStatus={false}
               showOrderDetails={true}
             />
@@ -253,7 +252,6 @@ export function POSPaymentGrid({
           {/* Order Summary */}
           <OrderSummaryCard
             order={order}
-            payments={[]}
             showPaymentStatus={false}
             showOrderDetails={true}
             totalPaid={totalPaid}

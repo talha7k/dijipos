@@ -38,7 +38,7 @@ export function OrderList({ orders, onOrderSelect, onBack, onStatusChange, onMar
               <OrderSummaryCard
                 key={order.id}
                 order={order}
-                onClick={onOrderSelect}
+                onOrderSelect={onOrderSelect}
                 showPaymentStatus={true}
                 showOrderDetails={true}
                 showItemCount={true}
