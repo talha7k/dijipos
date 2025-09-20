@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Download, FileText, Receipt } from 'lucide-react';
 import { useInvoices } from '@/lib/hooks/useInvoices';
@@ -13,12 +14,60 @@ import { useOrders } from '@/lib/hooks/useOrders';
 import { AdminManagerGuard } from '@/components/layout/RoleGuard';
 import { format } from 'date-fns';
 
+function PosReportTab({ title, data, date, onDateChange, dateFilterType, onDateFilterTypeChange }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+        <div className="flex items-center space-x-2">
+          <DatePicker onDateChange={onDateChange}>
+            <Button variant="outline">
+              {format(date, 'PPP')}
+            </Button>
+          </DatePicker>
+          <Select value={dateFilterType} onValueChange={onDateFilterTypeChange}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="selectedDate">Business Date</SelectItem>
+              <SelectItem value="createdAt">Order Date</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button size="sm"><Download className="h-4 w-4 mr-2" />Export</Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Description</TableHead>
+              <TableHead>Amount</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow>
+              <TableCell>Total Sales</TableCell>
+              <TableCell>{data.totalSales.toFixed(2)}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>Total Tax</TableCell>
+              <TableCell>{data.totalTax.toFixed(2)}</TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  );
+}
+
 function ReportsPage() {
   const { salesInvoices, loading: invoicesLoading } = useInvoices();
   const { quotes, loading: quotesLoading } = useQuotes();
   const { orders, loading: ordersLoading } = useOrders();
 
   const [posReportDate, setPosReportDate] = useState<Date>(new Date());
+  const [dateFilterType, setDateFilterType] = useState('selectedDate');
 
   const handlePosReportDateChange = (date: Date) => {
     setPosReportDate(date);
@@ -26,11 +75,11 @@ function ReportsPage() {
 
   const filteredOrders = useMemo(() => {
     return orders.filter(order => {
-      if (!order.selectedDate) return false;
-      const orderDate = new Date(order.selectedDate);
-      return orderDate.toDateString() === posReportDate.toDateString();
+      const dateToCompare = dateFilterType === 'selectedDate' ? (order.selectedDate ? new Date(order.selectedDate) : null) : order.createdAt;
+      if (!dateToCompare) return false;
+      return dateToCompare.toDateString() === posReportDate.toDateString();
     });
-  }, [orders, posReportDate]);
+  }, [orders, posReportDate, dateFilterType]);
 
   const posReportData = useMemo(() => {
     const totalSales = filteredOrders.reduce((sum, order) => sum + order.total, 0);
@@ -65,74 +114,24 @@ function ReportsPage() {
                   <TabsTrigger value="z-report">Z Report</TabsTrigger>
                 </TabsList>
                 <TabsContent value="x-report">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>X Report</CardTitle>
-                      <div className="flex items-center space-x-2">
-                        <DatePicker onDateChange={handlePosReportDateChange}>
-                          <Button variant="outline">
-                            {format(posReportDate, 'PPP')}
-                          </Button>
-                        </DatePicker>
-                        <Button size="sm"><Download className="h-4 w-4 mr-2" />Export</Button>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Description</TableHead>
-                            <TableHead>Amount</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          <TableRow>
-                            <TableCell>Total Sales</TableCell>
-                            <TableCell>{posReportData.totalSales.toFixed(2)}</TableCell>
-                          </TableRow>
-                          <TableRow>
-                            <TableCell>Total Tax</TableCell>
-                            <TableCell>{posReportData.totalTax.toFixed(2)}</TableCell>
-                          </TableRow>
-                        </TableBody>
-                      </Table>
-                    </CardContent>
-                  </Card>
+                  <PosReportTab
+                    title="X Report"
+                    data={posReportData}
+                    date={posReportDate}
+                    onDateChange={handlePosReportDateChange}
+                    dateFilterType={dateFilterType}
+                    onDateFilterTypeChange={setDateFilterType}
+                  />
                 </TabsContent>
                 <TabsContent value="z-report">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Z Report</CardTitle>
-                      <div className="flex items-center space-x-2">
-                        <DatePicker onDateChange={handlePosReportDateChange}>
-                          <Button variant="outline">
-                            {format(posReportDate, 'PPP')}
-                          </Button>
-                        </DatePicker>
-                        <Button size="sm"><Download className="h-4 w-4 mr-2" />Export</Button>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                    <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Description</TableHead>
-                            <TableHead>Amount</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          <TableRow>
-                            <TableCell>Total Sales</TableCell>
-                            <TableCell>{posReportData.totalSales.toFixed(2)}</TableCell>
-                          </TableRow>
-                          <TableRow>
-                            <TableCell>Total Tax</TableCell>
-                            <TableCell>{posReportData.totalTax.toFixed(2)}</TableCell>
-                          </TableRow>
-                        </TableBody>
-                      </Table>
-                    </CardContent>
-                  </Card>
+                  <PosReportTab
+                    title="Z Report"
+                    data={posReportData}
+                    date={posReportDate}
+                    onDateChange={handlePosReportDateChange}
+                    dateFilterType={dateFilterType}
+                    onDateFilterTypeChange={setDateFilterType}
+                  />
                 </TabsContent>
               </Tabs>
             </CardContent>
