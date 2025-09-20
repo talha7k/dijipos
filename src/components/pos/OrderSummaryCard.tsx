@@ -38,7 +38,7 @@ interface OrderSummaryCardProps {
   totalPaid?: number;
   remainingAmount?: number;
   changeDue?: number;
-  onClick?: (order: Order) => void;
+  onOrderSelect?: (order: Order) => void;
   onStatusChange?: (orderId: string, status: OrderStatus) => Promise<void>;
 
   onReopenOrder?: (order: Order) => void;
@@ -53,7 +53,7 @@ export function OrderSummaryCard({
   totalPaid,
   remainingAmount,
   changeDue,
-  onClick,
+  onOrderSelect,
   onStatusChange,
   onReopenOrder,
   className = "",
@@ -107,9 +107,7 @@ export function OrderSummaryCard({
 
   return (
     <Card
-      className={`${
-        onClick ? " hover:shadow-lg transition-all duration-200" : ""
-      } ${className}`}
+      className={`${onOrderSelect ? " hover:shadow-lg transition-all duration-200" : ""} ${className}`}
     >
       <CardContent className="space-y-4">
         {/* Status and Payment Badges - 3 column grid */}
@@ -170,7 +168,7 @@ export function OrderSummaryCard({
         ) : null}
 
         <div
-          onClick={onClick ? () => onClick(order) : undefined}
+          onClick={onOrderSelect ? () => onOrderSelect(order) : undefined}
           className="space-y-2 cursor-pointer"
         >
           <div className="bg-muted/70 rounded-lg py-2 my-4 px-4">

@@ -11,6 +11,7 @@ import { OrderSummaryCard } from "@/components/pos/OrderSummaryCard";
 interface POSOrderGridProps {
   orders: Order[];
   onOrderSelect: (order: Order) => void;
+  onReopenOrder: (order: Order) => void;
   onPayOrder: (order: Order) => void;
   onBack: () => void;
   onOrderUpdate?: () => void;
@@ -19,6 +20,7 @@ interface POSOrderGridProps {
 export function POSOrderGrid({
   orders,
   onOrderSelect,
+  onReopenOrder,
   onPayOrder,
   onBack,
   onOrderUpdate,
@@ -128,7 +130,7 @@ export function POSOrderGrid({
   };
 
   const handleReopenOrder = (order: Order) => {
-    onOrderSelect(order);
+    onReopenOrder(order);
   };
 
   const handlePayOrder = (order: Order) => {
@@ -262,7 +264,7 @@ export function POSOrderGrid({
               <OrderSummaryCard
                 key={order.id}
                 order={order}
-                onClick={handleOrderSelect}
+                onOrderSelect={handleOrderSelect}
                 showPaymentStatus={true}
                 showOrderDetails={true}
                 showItemCount={true}

@@ -43,6 +43,7 @@ interface POSViewsManagerProps {
   onTableSelect: (table: Table) => void;
   onCustomerSelect: (customer: Customer) => void;
   onOrderSelect: (order: Order) => void;
+  onReopenOrder: (order: Order) => void;
   onPayOrder: (order: Order) => void;
   onBackToItems: () => void;
   onPaymentProcessed: (payments: OrderPayment[]) => Promise<void>;
@@ -67,6 +68,7 @@ export function POSViewsManager({
   onTableSelect,
   onCustomerSelect,
   onOrderSelect,
+  onReopenOrder,
   onPayOrder,
   onBackToItems,
   onPaymentProcessed,
@@ -150,6 +152,7 @@ export function POSViewsManager({
         <POSOrderGrid
           orders={orders.filter((order) => order.status !== "cancelled")}
           onOrderSelect={onOrderSelect}
+          onReopenOrder={onReopenOrder}
           onPayOrder={onPayOrder}
           onBack={onBackToItems}
         />
