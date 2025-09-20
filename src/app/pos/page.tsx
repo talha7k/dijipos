@@ -66,6 +66,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { PaymentSuccessDialog } from "@/components/PaymentSuccessDialog";
 import { CartItemModal } from "@/components/pos/CartItemModal";
+import { DatePicker } from '@/components/ui/date-picker';
 import { Loader2 } from "lucide-react";
 
 export default function SimplifiedPOSPage() {
@@ -411,13 +412,9 @@ export default function SimplifiedPOSPage() {
         total,
         status: OrderStatus.OPEN,
         orderType: selectedOrderType?.name || "dine-in",
-        ...(selectedCustomer?.name && { customerName: selectedCustomer.name }),
-        ...(selectedCustomer?.phone && {
-          customerPhone: selectedCustomer.phone,
-        }),
-        ...(selectedCustomer?.email && {
-          customerEmail: selectedCustomer.email,
-        }),
+        customerName: selectedCustomer?.name || null,
+        customerPhone: selectedCustomer?.phone || null,
+        customerEmail: selectedCustomer?.email || null,
         tableId: selectedTable?.id || undefined,
         tableName: selectedTable?.name || undefined,
         createdById: user?.uid || "unknown",
@@ -620,7 +617,10 @@ export default function SimplifiedPOSPage() {
 
   const handleCustomerDeselect = useCallback(() => {
     setSelectedCustomer(null);
-  }, [setSelectedCustomer]);
+    if (selectedOrder) {
+      setIsSavedOrderModified(true);
+    }
+  }, [setSelectedCustomer, selectedOrder]);
 
   const handleOrderTypeDeselect = useCallback(() => {
     setSelectedOrderType(null);
@@ -717,15 +717,9 @@ export default function SimplifiedPOSPage() {
           total,
           paymentStatus: newPaymentStatus,
           orderType: selectedOrderType?.name || selectedOrder.orderType,
-          ...(selectedCustomer?.name && {
-            customerName: selectedCustomer.name,
-          }),
-          ...(selectedCustomer?.phone && {
-            customerPhone: selectedCustomer.phone,
-          }),
-          ...(selectedCustomer?.email && {
-            customerEmail: selectedCustomer.email,
-          }),
+          customerName: selectedCustomer?.name || null,
+          customerPhone: selectedCustomer?.phone || null,
+          customerEmail: selectedCustomer?.email || null,
           ...(selectedTable?.id && { tableId: selectedTable.id }),
           ...(selectedTable?.name && { tableName: selectedTable.name }),
           updatedAt: new Date(),
