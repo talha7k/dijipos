@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -9,7 +9,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+} from "@/components/ui/alert-dialog";
 
 interface PaymentSuccessDialogProps {
   isOpen: boolean;
@@ -22,11 +22,9 @@ export function PaymentSuccessDialog({
   isOpen,
   onClose,
   totalPaid,
-  onViewOrders
 }: PaymentSuccessDialogProps) {
-  const handleViewOrders = () => {
+  const handleClose = () => {
     onClose();
-    onViewOrders?.();
   };
 
   // Only render if we have valid data and dialog should be open
@@ -44,21 +42,18 @@ export function PaymentSuccessDialog({
           <AlertDialogTitle className="text-center text-xl">
             Payment Processed Successfully!
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-center space-y-2">
-            <div className="text-lg font-semibold text-green-600">
-              Total Paid: ${totalPaid.toFixed(2)}
-            </div>
-            <div>
-              Payment processed successfully! What would you like to do next?
+          <AlertDialogDescription asChild>
+            <div className="text-muted-foreground text-sm text-center space-y-2">
+              <div className="text-lg font-semibold text-green-600">
+                Total Paid: ${totalPaid.toFixed(2)}
+              </div>
+              <div>Payment processed successfully!</div>
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-          <AlertDialogAction onClick={handleViewOrders} className="w-full sm:w-auto">
-            Go to Orders
-          </AlertDialogAction>
-          <AlertDialogAction onClick={onClose} className="w-full sm:w-auto">
-            Stay Here
+          <AlertDialogAction onClick={handleClose} className="w-full sm:w-auto">
+            Return
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

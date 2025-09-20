@@ -10,12 +10,14 @@ import { useOrders } from '@/lib/hooks/useOrders';
 import { OrderPayment } from '@/types';
 
 interface PaymentListProps {
-  orderId: string;
   orderTotal: number;
+  payments?: OrderPayment[];
+  orderId?: string;
   onRemovePayment?: (paymentId: string) => void;
   showRemoveButton?: boolean;
   disabled?: boolean;
   className?: string;
+  refreshTrigger?: number;
 }
 
 export function PaymentList({
@@ -24,34 +26,45 @@ export function PaymentList({
   onRemovePayment,
   showRemoveButton = false,
   disabled = false,
-  className = ''
+  className = '',
+  refreshTrigger,
+  payments: paymentsFromProps,
 }: PaymentListProps) {
   const { getPaymentsForOrder } = useOrders();
-  const [payments, setPayments] = useState<OrderPayment[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [fetchedPayments, setFetchedPayments] = useState<OrderPayment[]>([]);
+  const [loading, setLoading] = useState(!paymentsFromProps);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (paymentsFromProps) {
+      setLoading(false);
+      return;
+    }
+
     const fetchPayments = async () => {
-      if (!orderId) return;
+      if (!orderId) {
+        setLoading(false);
+        return;
+      }
 
       try {
         setLoading(true);
         setError(null);
         const orderPayments = await getPaymentsForOrder(orderId);
-        setPayments(orderPayments);
+        setFetchedPayments(orderPayments);
       } catch (err) {
         console.error('Error fetching payments:', err);
         setError('Failed to load payments');
-        setPayments([]);
+        setFetchedPayments([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchPayments();
-  }, [orderId, getPaymentsForOrder]);
+  }, [orderId, getPaymentsForOrder, refreshTrigger, paymentsFromProps]);
 
+  const payments = paymentsFromProps || fetchedPayments;
   const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
   const remainingAmount = orderTotal - totalPaid;
 

@@ -439,42 +439,99 @@ export default function SimplifiedPOSPage() {
     setCategoryPath(path);
   }, [setCategoryPath]);
 
-  const handlePayOrder = useCallback(() => {
-    if (cartItems.length === 0) return;
-
-    // Assign queue number for new orders
-    const queueNumber = selectedOrder?.queueNumber || nextQueueNumber.toString();
-
-    // If this is a new order (not reopening existing), increment the queue counter
-    if (!selectedOrder) {
-      const newQueueNumber = nextQueueNumber + 1;
-      console.log('Payment flow: Incrementing queue number from', nextQueueNumber, 'to', newQueueNumber);
-      setNextQueueNumber(newQueueNumber);
+  const handlePayOrder = useCallback(async () => {
+    if ((cartItems || []).length === 0) return;
+    if (!organizationId) {
+      console.error("No organization selected");
+      return;
     }
 
-    const orderToPay = selectedOrder || {
-      id: 'temp-checkout',
-      organizationId: organizationId || '',
-      orderNumber: `TEMP-${Date.now()}`,
-      queueNumber: queueNumber,
-      items: cartItems,
-      subtotal: cartSubtotal,
-      taxRate: 15,
-      taxAmount: cartSubtotal * 0.15,
-      total: cartTotal,
-      status: OrderStatus.OPEN,
-      paymentStatus: PaymentStatus.UNPAID,
-      paid: false,
-      orderType: selectedOrderType?.name || 'dine-in',
-      createdById: user?.uid || 'unknown',
-      createdByName: userName || user?.displayName || user?.email || 'Unknown User',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    let orderToPay: Order;
+
+    if (selectedOrder) {
+      orderToPay = selectedOrder;
+    } else {
+      // This is a new order. It must be created in the database before payment.
+      try {
+        const taxRate = vatSettings?.rate || 15;
+        const isVatEnabled = vatSettings?.isEnabled || false;
+        const isVatInclusive = vatSettings?.isVatInclusive || false;
+
+        let subtotal, taxAmount, total;
+
+        if (isVatEnabled) {
+          const itemsForCalculation = (cartItems || []).map(item => ({
+            price: item.unitPrice,
+            quantity: item.quantity
+          }));
+          const result = calculateCartTotals(itemsForCalculation, taxRate, isVatInclusive);
+          subtotal = result.subtotal;
+          taxAmount = result.vatAmount;
+          total = result.total;
+        } else {
+          subtotal = cartSubtotal;
+          taxAmount = 0;
+          total = subtotal;
+        }
+
+        const queueNumber = nextQueueNumber.toString();
+
+        const orderData: Omit<Order, 'id'> = {
+          organizationId,
+          orderNumber: `ORD-${Date.now()}`,
+          queueNumber: queueNumber,
+          items: cartItems,
+          subtotal,
+          taxRate,
+          taxAmount,
+          total,
+          status: OrderStatus.OPEN,
+          paymentStatus: PaymentStatus.UNPAID,
+          orderType: selectedOrderType?.name || 'dine-in',
+          ...(selectedCustomer?.name && { customerName: selectedCustomer.name }),
+          ...(selectedCustomer?.phone && { customerPhone: selectedCustomer.phone }),
+          ...(selectedCustomer?.email && { customerEmail: selectedCustomer.email }),
+          ...(selectedTable?.id && { tableId: selectedTable.id }),
+          ...(selectedTable?.name && { tableName: selectedTable.name }),
+          createdById: user?.uid || 'unknown',
+          createdByName: userName || user?.displayName || user?.email || 'Unknown User',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+
+        const newOrderId = await createNewOrder(orderData);
+        orderToPay = { ...orderData, id: newOrderId };
+
+        // Increment queue number for new orders, AFTER creating the order
+        const newQueueNumber = nextQueueNumber + 1;
+        setNextQueueNumber(newQueueNumber);
+
+      } catch (error) {
+        console.error("Error creating order before payment:", error);
+        return;
+      }
+    }
 
     setSelectedOrder(orderToPay);
     setCurrentView('payment');
-  }, [cartItems, cartTotal, cartSubtotal, selectedOrder, selectedOrderType, organizationId, user, userName, setSelectedOrder, setCurrentView, nextQueueNumber, setNextQueueNumber]);
+  }, [
+    cartItems,
+    cartSubtotal,
+    selectedOrder,
+    selectedOrderType,
+    selectedCustomer,
+    selectedTable,
+    organizationId,
+    user,
+    userName,
+    nextQueueNumber,
+    vatSettings,
+    createNewOrder,
+    setNextQueueNumber,
+    setSelectedOrder,
+    setCurrentView,
+    calculateCartTotals,
+  ]);
 
   const updateCartItem = useCallback((itemId: string, type: string, updates: Partial<CartItem>) => {
     const updatedCart = cartItems.map(item =>

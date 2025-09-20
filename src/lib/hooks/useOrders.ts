@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { Order, OrderPayment } from '@/types';
 import { OrderStatus, TableStatus } from '@/types/enums';
 import {
@@ -45,7 +46,7 @@ export function useOrders(): OrdersState & OrdersActions {
     null // disable orderBy to prevent index issues remove this line later for indexes to be used.
   );
 
-  const handleTableStatusUpdate = async (oldOrder: Order | null, newOrder: Order) => {
+  const handleTableStatusUpdate = useCallback(async (oldOrder: Order | null, newOrder: Order) => {
     try {
       const oldTableId = oldOrder?.tableId;
       const newTableId = newOrder.tableId;
@@ -78,18 +79,18 @@ export function useOrders(): OrdersState & OrdersActions {
       console.error('Error updating table status:', error);
       // Don't throw error here to avoid breaking order operations
     }
-  };
+  }, [updateTable]);
 
-  const getOrderById = async (orderId: string): Promise<Order | null> => {
+  const getOrderById = useCallback(async (orderId: string): Promise<Order | null> => {
     try {
       return await getOrder(orderId);
     } catch (err) {
       console.error('Error fetching order:', err);
       throw err;
     }
-  };
+  }, []);
 
-  const createNewOrder = async (orderData: Omit<Order, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
+  const createNewOrder = useCallback(async (orderData: Omit<Order, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
     try {
       const orderId = await createOrder(orderData);
       // Real-time listener will automatically update the orders list
@@ -103,9 +104,9 @@ export function useOrders(): OrdersState & OrdersActions {
       console.error('Error creating order:', err);
       throw err;
     }
-  };
+  }, [handleTableStatusUpdate]);
 
-  const updateExistingOrder = async (orderId: string, updates: Partial<Omit<Order, 'id' | 'createdAt'>>): Promise<void> => {
+  const updateExistingOrder = useCallback(async (orderId: string, updates: Partial<Omit<Order, 'id' | 'createdAt'>>): Promise<void> => {
     try {
       // Get the old order before updating
       const oldOrder = await getOrder(orderId);
@@ -128,9 +129,9 @@ export function useOrders(): OrdersState & OrdersActions {
       console.error('Error updating order:', err);
       throw err;
     }
-  };
+  }, [handleTableStatusUpdate]);
 
-  const deleteExistingOrder = async (orderId: string): Promise<void> => {
+  const deleteExistingOrder = useCallback(async (orderId: string): Promise<void> => {
     try {
       // Get the order before deleting to free up its table if needed
       const orderToDelete = await getOrder(orderId);
@@ -144,18 +145,18 @@ export function useOrders(): OrdersState & OrdersActions {
       console.error('Error deleting order:', err);
       throw err;
     }
-  };
+  }, [updateTable]);
 
-  const getPaymentsForOrder = async (orderId: string): Promise<OrderPayment[]> => {
+  const getPaymentsForOrder = useCallback(async (orderId: string): Promise<OrderPayment[]> => {
     try {
       return await getOrderPayments(orderId);
     } catch (err) {
       console.error('Error fetching order payments:', err);
       throw err;
     }
-  };
+  }, []);
 
-  const addPaymentToOrder = async (
+  const addPaymentToOrder = useCallback(async (
     orderId: string,
     paymentData: Omit<OrderPayment, 'id' | 'orderId' | 'createdAt'>
   ): Promise<string> => {
@@ -165,9 +166,9 @@ export function useOrders(): OrdersState & OrdersActions {
       console.error('Error adding payment to order:', err);
       throw err;
     }
-  };
+  }, []);
 
-  const updatePaymentInOrder = async (
+  const updatePaymentInOrder = useCallback(async (
     orderId: string,
     paymentId: string,
     updates: Partial<Omit<OrderPayment, 'id' | 'orderId' | 'createdAt'>>
@@ -178,16 +179,16 @@ export function useOrders(): OrdersState & OrdersActions {
       console.error('Error updating order payment:', err);
       throw err;
     }
-  };
+  }, []);
 
-  const deletePaymentFromOrder = async (orderId: string, paymentId: string): Promise<void> => {
+  const deletePaymentFromOrder = useCallback(async (orderId: string, paymentId: string): Promise<void> => {
     try {
       await deleteOrderPayment(orderId, paymentId);
     } catch (err) {
       console.error('Error deleting order payment:', err);
       throw err;
     }
-  };
+  }, []);
 
   return {
     orders,
