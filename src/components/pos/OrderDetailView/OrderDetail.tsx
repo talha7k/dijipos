@@ -1,9 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { Order } from "@/types";
+import { useEffect, useState } from "react";
+import { Order, OrderPayment } from "@/types";
 import { OrderSummaryCard } from "@/components/pos/OrderSummaryCard";
 import { PaymentList } from "@/components/pos/PaymentList";
 import { OrderDetailItemList } from "./OrderDetailItemList";
+import { useOrders } from "@/lib/hooks/useOrders";
 
 interface OrderDetailProps {
   order: Order;
@@ -16,6 +18,25 @@ export function OrderDetail({
   onBack,
   onReopenOrder,
 }: OrderDetailProps) {
+  const { getPaymentsForOrder } = useOrders();
+  const [payments, setPayments] = useState<OrderPayment[]>([]);
+  const [loadingPayments, setLoadingPayments] = useState(true);
+
+  useEffect(() => {
+    const fetchPayments = async () => {
+      try {
+        const orderPayments = await getPaymentsForOrder(order.id);
+        setPayments(orderPayments);
+      } catch (error) {
+        console.error("Failed to fetch payments:", error);
+      } finally {
+        setLoadingPayments(false);
+      }
+    };
+
+    fetchPayments();
+  }, [order.id, getPaymentsForOrder]);
+
   return (
     <div className="h-screen flex flex-col bg-background pb-15">
       <div className="flex-shrink-0 p-4 border-b">
@@ -49,7 +70,10 @@ export function OrderDetail({
             />
           </div>
           <div className="mb-6">
-            <PaymentList orderId={order.id} orderTotal={order.total} />
+            <PaymentList
+              payments={payments}
+              orderTotal={order.total}
+            />
           </div>
         </div>
       </div>

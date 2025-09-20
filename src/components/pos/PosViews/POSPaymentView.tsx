@@ -279,7 +279,13 @@ export function POSPaymentGrid({
         {/* Payment List */}
         {(payments.length > 0 || savedPayments.length > 0) && (
           <PaymentList
-            payments={[...savedPayments, ...payments.map(p => ({...p, paymentDate: new Date()}))]}
+            payments={[...savedPayments, ...payments.map(p => ({
+              ...p,
+              paymentDate: new Date(),
+              organizationId: order.organizationId,
+              orderId: order.id,
+              createdAt: new Date()
+            } as OrderPayment))]}
             orderTotal={order.total}
             onRemovePayment={removePayment}
             showRemoveButton={!paymentProcessed}
