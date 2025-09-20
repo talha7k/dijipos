@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-import { ItemCard } from '@/components/orders/ItemCard';
-import { SubcategoryCard } from '@/components/orders/SubcategoryCard';
+import { ItemCard } from '../ItemCard';
+import { SubcategoryCard } from '../SubcategoryCard';
 import { Category, Product, Service } from '@/types';
 
 interface POSItemsGridProps {

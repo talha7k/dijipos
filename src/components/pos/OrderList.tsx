@@ -38,15 +38,12 @@ export function OrderList({ orders, onOrderSelect, onBack, onStatusChange, onMar
               <OrderSummaryCard
                 key={order.id}
                 order={order}
-                payments={getOrderPayments?.(order.id)}
                 onClick={onOrderSelect}
                 showPaymentStatus={true}
                 showOrderDetails={true}
                 showItemCount={true}
                 showCreatedDate={true}
                 onStatusChange={onStatusChange}
-                onMarkAsPaid={onMarkAsPaid}
-                onCompleteOrder={onCompleteOrder}
               />
             ))}
           </div>

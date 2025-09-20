@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Combobox } from '@/components/ui/combobox';
-import ItemList from '@/components/orders/ItemList';
+import ItemList from '@/components/pos/ItemList';
 import ClientInfo from '@/components/invoices_quotes/ClientInfo';
 import FormSummary from '@/components/invoices_quotes/FormSummary';
 import { Quote, Item, ItemType } from '@/types';

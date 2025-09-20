@@ -6,10 +6,10 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, CreditCard } from 'lucide-react';
 import { Order, OrderPayment, PaymentType, PaymentStatus } from '@/types';
 import { toast } from 'sonner';
-import { OrderSummaryCard } from './OrderSummaryCard';
-import { PaymentList } from './PaymentList';
-import { PaymentEntryForm } from './PaymentEntryForm';
-import { OrderAlreadyPaid } from './OrderAlreadyPaid';
+import { OrderSummaryCard } from '../OrderSummaryCard';
+import { PaymentList } from '../PaymentList';
+import { PaymentEntryForm } from '../PaymentEntryForm';
+import { OrderAlreadyPaid } from '../OrderAlreadyPaid';
 import { useCurrency } from '@/lib/hooks/useCurrency';
 
 interface POSPaymentGridProps {
@@ -69,7 +69,6 @@ export function POSPaymentGrid({ order, paymentTypes, onPaymentProcessed, onBack
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <OrderSummaryCard
               order={order}
-              payments={[]}
               showPaymentStatus={false}
               showOrderDetails={true}
             />
@@ -208,7 +207,6 @@ export function POSPaymentGrid({ order, paymentTypes, onPaymentProcessed, onBack
           {/* Order Summary */}
           <OrderSummaryCard
             order={order}
-            payments={[]}
             showPaymentStatus={false}
             showOrderDetails={true}
             totalPaid={totalPaid}
@@ -236,10 +234,7 @@ export function POSPaymentGrid({ order, paymentTypes, onPaymentProcessed, onBack
         {/* Payment List */}
         {payments.length > 0 && (
           <PaymentList
-            payments={payments.map(payment => ({
-              ...payment,
-              paymentDate: new Date() // Add current date for new payments
-            }))}
+            orderId={order.id}
             orderTotal={order.total}
             onRemovePayment={removePayment}
             showRemoveButton={true}

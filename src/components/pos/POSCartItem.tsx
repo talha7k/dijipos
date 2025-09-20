@@ -12,7 +12,7 @@ interface POSCartItemProps {
   onClick?: () => void;
 }
 
-import { OrderItemDisplay } from "./OrderDetail/OrderItemDisplay";
+import { OrderItemDisplay } from "./OrderDetailView/OrderItemDisplay";
 
 export function POSCartItem({ item, onClick }: POSCartItemProps) {
   return (

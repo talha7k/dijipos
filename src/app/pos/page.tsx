@@ -21,9 +21,9 @@ import {
   POSMainContent,
   POSRightColumn,
 } from "./components/POSLayout";
-import { POSHeader } from "@/components/orders/POSHeader";
+import { POSHeader } from "@/components/pos/POSHeader";
 import { POSViewsManager } from "./components/POSViewsManager";
-import { POSCartSidebar } from "@/components/orders/POSCartSidebar";
+import { POSCartSidebar } from "@/components/pos/POSCartSidebar";
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import {
   safeCartItemsAtom,
@@ -52,7 +52,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { PaymentSuccessDialog } from "@/components/PaymentSuccessDialog";
-import { CartItemModal } from "@/components/orders/CartItemModal";
+import { CartItemModal } from "@/components/pos/CartItemModal";
 
 export default function SimplifiedPOSPage() {
   const pathname = usePathname();

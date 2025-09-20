@@ -11,7 +11,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 
 import { Plus, Trash2, Edit, Users } from 'lucide-react';
 import { toast } from 'sonner';
-import { AddCustomerDialog } from '@/components/orders/AddCustomerDialog';
+import { AddCustomerDialog } from '@/components/pos/AddCustomerDialog';
 
 export default function CustomersPage() {
   const { customers, loading: customersLoading, deleteCustomer } = useCustomers();

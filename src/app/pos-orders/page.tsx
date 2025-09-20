@@ -38,7 +38,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Receipt, User, CheckCircle, Save, Settings } from "lucide-react";
 
-import { OrderActionsDialog } from "@/components/orders/OrderStatusActionsDialog";
+import { OrderActionsDialog } from "@/components/pos/OrderStatusActionsDialog";
 import { ActionButtons } from "@/components/ui/action-buttons";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 

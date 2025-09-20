@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Combobox } from '@/components/ui/combobox';
-import ItemList from '@/components/orders/ItemList';
+import ItemList from '@/components/pos/ItemList';
 import ClientInfo from '@/components/invoices_quotes/ClientInfo';
 import SupplierInfo from '@/components/invoices_quotes/SupplierInfo';
 import FormSummary from '@/components/invoices_quotes/FormSummary';

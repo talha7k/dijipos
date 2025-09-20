@@ -1,11 +1,11 @@
 import React from "react";
-import { POSItemsGrid } from "@/components/orders/POSItemsGrid";
-import { POSCategoriesGrid } from "@/components/orders/POSCategoriesGrid";
-import { POSBreadcrumb } from "@/components/orders/POSBreadcrumb";
-import { POSTableGrid } from "@/components/orders/POSTableGrid";
-import { POSCustomerGrid } from "@/components/orders/POSCustomerGrid";
-import { POSOrderGrid } from "@/components/orders/POSOrderGrid";
-import { POSPaymentGrid } from "@/components/orders/POSPaymentGrid";
+import { POSItemsGrid } from "@/components/pos/PosViews/POSItemsView";
+import { POSCategoriesGrid } from "@/components/pos/POSCategoriesGrid";
+import { POSBreadcrumb } from "@/components/pos/POSBreadcrumb";
+import { POSTableGrid } from "@/components/pos/POSTableGrid";
+import { POSCustomerGrid } from "@/components/pos/POSCustomerGrid";
+import { POSOrderGrid } from "@/components/pos/PosViews/POSOrdersView";
+import { POSPaymentGrid } from "@/components/pos/PosViews/POSPaymentView";
 import {
   Category,
   Product,
