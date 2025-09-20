@@ -4,171 +4,171 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --font-sans: var(--font-geist-sans);
+    --font-mono: var(--font-geist-mono);
+    --color-sidebar-ring: var(--sidebar-ring);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar: var(--sidebar);
+    --color-chart-5: var(--chart-5);
+    --color-chart-4: var(--chart-4);
+    --color-chart-3: var(--chart-3);
+    --color-chart-2: var(--chart-2);
+    --color-chart-1: var(--chart-1);
+    --color-ring: var(--ring);
+    --color-input: var(--input);
+    --color-border: var(--border);
+    --color-destructive: var(--destructive);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-accent: var(--accent);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) + 4px);
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: hsl(0 0% 100%);
-  --foreground: hsl(0 0% 15%);
-  --card: hsl(0 0% 100%);
-  --card-foreground: hsl(0 0% 15%);
-  --popover: hsl(0 0% 100%);
-  --popover-foreground: hsl(0 0% 15%);
-  --primary: hsl(312.681 89.06% 87.101%);
-  --primary-foreground: hsl(0 0% 20%);
-  --secondary: hsl(225.053 22.8% 96.453%);
-  --secondary-foreground: hsl(0 0% 20%);
-  --muted: hsl(310 20% 95%);
-  --muted-foreground: hsl(310 100% 50%);
-  --accent: hsl(310 40% 90%);
-  --accent-foreground: hsl(0 0% 20%);
-  --destructive: hsl(27.325 245% 57.7%);
-  --border: hsl(310 10% 92%);
-  --input: hsl(310 10% 92%);
-  --ring: hsl(310 20% 70%);
-  --chart-1: hsl(41.116 222% 64.6%);
-  --chart-2: hsl(184.704 118% 60%);
-  --chart-3: hsl(227.392 70% 39.8%);
-  --chart-4: hsl(84.429 189% 82.8%);
-  --chart-5: hsl(70.08 188% 76.9%);
-  --sidebar: hsl(0 0% 98.5%);
-  --sidebar-foreground: hsl(0 0% 15%);
-  --sidebar-primary: hsl(0 0% 20.5%);
-  --sidebar-primary-foreground: hsl(0 0% 98.5%);
-  --sidebar-accent: hsl(310 40% 90%);
-  --sidebar-accent-foreground: hsl(0 0% 20%);
-  --sidebar-border: hsl(0 0% 92.2%);
-  --sidebar-ring: hsl(0 0% 70.8%);
+    --radius: 0.625rem;
+    --background: hsl(0 0% 100%);
+    --foreground: hsl(0 0% 15%);
+    --card: hsl(0 0% 100%);
+    --card-foreground: hsl(0 0% 15%);
+    --popover: hsl(0 0% 100%);
+    --popover-foreground: hsl(0 0% 15%);
+    --primary: hsl(312.681 89.06% 87.101%);
+    --primary-foreground: hsl(0 0% 20%);
+    --secondary: hsl(225.053 22.8% 96.453%);
+    --secondary-foreground: hsl(0 0% 20%);
+    --muted: hsl(310 20% 95%);
+    --muted-foreground: hsl(310 100% 50%);
+    --accent: hsl(310 40% 90%);
+    --accent-foreground: hsl(0 0% 20%);
+    --destructive: hsl(349 80.8% 60%);
+    --border: hsl(310 10% 92%);
+    --input: hsl(310 10% 92%);
+    --ring: hsl(310 20% 70%);
+    --chart-1: hsl(41.116 222% 64.6%);
+    --chart-2: hsl(184.704 118% 60%);
+    --chart-3: hsl(227.392 70% 39.8%);
+    --chart-4: hsl(84.429 189% 82.8%);
+    --chart-5: hsl(70.08 188% 76.9%);
+    --sidebar: hsl(0 0% 98.5%);
+    --sidebar-foreground: hsl(0 0% 15%);
+    --sidebar-primary: hsl(0 0% 20.5%);
+    --sidebar-primary-foreground: hsl(0 0% 98.5%);
+    --sidebar-accent: hsl(310 40% 90%);
+    --sidebar-accent-foreground: hsl(0 0% 20%);
+    --sidebar-border: hsl(0 0% 92.2%);
+    --sidebar-ring: hsl(0 0% 70.8%);
 }
 
 .dark {
-  --background: hsl(0 0% 15%);
-  --foreground: hsl(0 0% 98.5%);
-  --card: hsl(0 0% 20.5%);
-  --card-foreground: hsl(0 0% 98.5%);
-  --popover: hsl(0 0% 20.5%);
-  --popover-foreground: hsl(0 0% 98.5%);
-  --primary: hsl(310 200% 60%);
-  --primary-foreground: hsl(0 0% 95%);
-  --secondary: hsl(254.44 82.16% 44.37%);
-  --secondary-foreground: hsl(0 0% 95%);
-   --muted: hsl(0 0% 25%);
-  --muted-foreground: hsl(310 50% 75%);
-  --accent: hsl(310 100% 35%);
-  --accent-foreground: hsl(0 0% 95%);
-  --destructive: hsl(22.216 191% 70.4%);
-  --border: hsl(0 0% 100% / 10%);
-  --input: hsl(0 0% 100% / 15%);
-  --ring: hsl(310 20% 55%);
-  --chart-1: hsl(264.376 243% 48.8%);
-  --chart-2: hsl(162.48 170% 69.6%);
-  --chart-3: hsl(70.08 188% 76.9%);
-  --chart-4: hsl(303.9 265% 62.7%);
-  --chart-5: hsl(16.439 246% 64.5%);
-  --sidebar: hsl(0 0% 20.5%);
-  --sidebar-foreground: hsl(0 0% 98.5%);
-  --sidebar-primary: hsl(264.376 243% 48.8%);
-  --sidebar-primary-foreground: hsl(0 0% 98.5%);
-  --sidebar-accent: hsl(310 100% 35%);
-  --sidebar-accent-foreground: hsl(0 0% 95%);
-  --sidebar-border: hsl(0 0% 100% / 10%);
-  --sidebar-ring: hsl(0 0% 55.6%);
+    --background: hsl(0 0% 15%);
+    --foreground: hsl(0 0% 98.5%);
+    --card: hsl(0 0% 20.5%);
+    --card-foreground: hsl(0 0% 98.5%);
+    --popover: hsl(0 0% 20.5%);
+    --popover-foreground: hsl(0 0% 98.5%);
+    --primary: hsl(310 200% 60%);
+    --primary-foreground: hsl(0 0% 95%);
+    --secondary: hsl(254.44 82.16% 44.37%);
+    --secondary-foreground: hsl(0 0% 95%);
+    --muted: hsl(0 0% 25%);
+    --muted-foreground: hsl(310 50% 75%);
+    --accent: hsl(310 100% 35%);
+    --accent-foreground: hsl(0 0% 95%);
+    --destructive: hsl(349 80.8% 60%);
+    --border: hsl(0 0% 100% / 10%);
+    --input: hsl(0 0% 100% / 15%);
+    --ring: hsl(310 20% 55%);
+    --chart-1: hsl(264.376 243% 48.8%);
+    --chart-2: hsl(162.48 170% 69.6%);
+    --chart-3: hsl(70.08 188% 76.9%);
+    --chart-4: hsl(303.9 265% 62.7%);
+    --chart-5: hsl(16.439 246% 64.5%);
+    --sidebar: hsl(0 0% 20.5%);
+    --sidebar-foreground: hsl(0 0% 98.5%);
+    --sidebar-primary: hsl(264.376 243% 48.8%);
+    --sidebar-primary-foreground: hsl(0 0% 98.5%);
+    --sidebar-accent: hsl(310 100% 35%);
+    --sidebar-accent-foreground: hsl(0 0% 95%);
+    --sidebar-border: hsl(0 0% 100% / 10%);
+    --sidebar-ring: hsl(0 0% 55.6%);
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
+    * {
+        @apply border-border outline-ring/50;
+    }
+    body {
+        @apply bg-background text-foreground;
+    }
 }
 
 /* Custom scrollbar styles */
 ::-webkit-scrollbar {
-  width: 0.25rem;
+    width: 0.25rem;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+    background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgb(209 213 219);
-  border-radius: 9999px;
-  margin: 0.125rem 0;
+    background: rgb(209 213 219);
+    border-radius: 9999px;
+    margin: 0.125rem 0;
 }
 
 /* Print styles */
 @media print {
-  /* Hide all UI elements when printing */
-  body > *:not(.print-content) {
-    display: none !important;
-  }
-  
-  /* Show only the invoice content */
-  .print-content {
-    display: block !important;
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    background: white !important;
-    box-shadow: none !important;
-  }
-  
-  /* Remove dialog overlay and background */
-  .fixed.inset-0,
-  [data-state="open"] {
-    display: none !important;
-  }
-  
-  /* Ensure invoice template takes full page */
-  .print-content .max-w-4xl {
-    max-width: 100% !important;
-    margin: 0 !important;
-    padding: 1rem !important;
-  }
-  
-  /* Optimize QR code for printing */
-  canvas {
-    image-rendering: crisp-edges !important;
-  }
+    /* Hide all UI elements when printing */
+    body > *:not(.print-content) {
+        display: none !important;
+    }
+
+    /* Show only the invoice content */
+    .print-content {
+        display: block !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        background: white !important;
+        box-shadow: none !important;
+    }
+
+    /* Remove dialog overlay and background */
+    .fixed.inset-0,
+    [data-state="open"] {
+        display: none !important;
+    }
+
+    /* Ensure invoice template takes full page */
+    .print-content .max-w-4xl {
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 1rem !important;
+    }
+
+    /* Optimize QR code for printing */
+    canvas {
+        image-rendering: crisp-edges !important;
+    }
 }

@@ -7,20 +7,10 @@ import { format } from 'date-fns';
 import { Table, Customer, OrderType, Order } from '@/types';
 import { Users, LayoutGrid, FileText, ShoppingBag, RotateCcw, PlusCircle, Calendar } from 'lucide-react';
 import { OrderTypeSelectionDialog } from './OrderTypeSelectionDialog';
-import { useCurrency } from '@/lib/hooks/useCurrency';
-
-interface CartItem {
-  id: string;
-  type: 'product' | 'service';
-  name: string;
-  price: number;
-  quantity: number;
-  total: number;
-}
+import { useOnlineStatus } from '@/lib/hooks/useOnlineStatus';
 
 interface POSHeaderProps {
-  cartItems: CartItem[];
-  cartTotal: number;
+  cartItems: { length: number }[];
   selectedTable?: Table | null;
   selectedCustomer?: Customer | null;
   selectedOrder?: Order | null;
@@ -43,7 +33,6 @@ interface POSHeaderProps {
 
 export function POSHeader({
   cartItems,
-  cartTotal,
   selectedTable,
   selectedCustomer,
   selectedOrder,
@@ -61,15 +50,9 @@ export function POSHeader({
   onClearSelectedOrder,
   onDateChange,
   isOnPOSPage = false,
-  currentView = 'items'
+  currentView = 'items',
 }: POSHeaderProps) {
-  const { formatCurrency } = useCurrency();
-
-  // Debug current state
-  console.log('[POSHeader] currentView:', currentView, 'cartItems.length:', cartItems.length, 'selectedOrder:', !!selectedOrder);
-  console.log('[POSHeader] condition check:', currentView === 'items' && cartItems.length > 0);
-
-
+  const isOnline = useOnlineStatus();
 
   const handleOrderToggle = () => {
     if (onOrderToggle) onOrderToggle();
@@ -146,20 +129,21 @@ export function POSHeader({
                  </Badge>
               )
             )}
+          </div>
+          <div className="flex items-center w-full">
+            {isOnline ? (
+              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+            ) : (
+              <Badge variant="destructive">No Internet</Badge>
+            )}
             {selectedDate && (
               <DatePicker onDateChange={onDateChange}>
-                <Badge variant="outline" className="flex items-center space-x-1 cursor-pointer hover:bg-gray-100">
-                  <Calendar className="h-4 w-4" />
+                <Badge variant="outline" className="ml-2 flex items-center space-x-1 cursor-pointer hover:bg-accent">
+                  <Calendar className="h-4 w-4 mr-1" />
                   <span>{format(new Date(selectedDate), 'MMM dd')}</span>
                 </Badge>
               </DatePicker>
             )}
-          </div>
-          <div className="flex items-center w-full">
-            <Badge className='bg-blue-500 hover:bg-blue-600 text-[10px] text-white mr-2'>{cartItems.length}</Badge>
-            <Badge className='bg-green-500 hover:bg-green-600 text-[10px] text-white justify-end'>
-              {formatCurrency(cartTotal)}
-            </Badge>
           </div>
         </div>
         <div className="flex items-center space-x-4">
