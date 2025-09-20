@@ -51,6 +51,7 @@ import {
   resetPOSStateAtom,
   nextQueueNumberAtom,
   currentQueueNumberAtom,
+  selectedDateAtom,
 } from "@/atoms/posAtoms";
 
 import {
@@ -109,14 +110,13 @@ export default function SimplifiedPOSPage() {
   const resetPOSState = useSetAtom(resetPOSStateAtom);
   const [nextQueueNumber, setNextQueueNumber] = useAtom(nextQueueNumberAtom);
   const setCurrentQueueNumber = useSetAtom(currentQueueNumberAtom);
+  const [selectedDate, setSelectedDate] = useAtom(selectedDateAtom);
 
   // Local state for UI
-  const [showOrderConfirmationDialog, setShowOrderConfirmationDialog] =
-    useState(false);
-  const [pendingOrderToReopen, setPendingOrderToReopen] =
-    useState<Order | null>(null);
-  const [showPaymentSuccessDialog, setShowPaymentSuccessDialog] =
-    useState(false);
+  const [showOrderConfirmationDialog, setShowOrderConfirmationDialog] = useState(false);
+  const [showDateSelectionDialog, setShowDateSelectionDialog] = useState(false);
+  const [pendingOrderToReopen, setPendingOrderToReopen] = useState<Order | null>(null);
+  const [showPaymentSuccessDialog, setShowPaymentSuccessDialog] = useState(false);
   const [paymentSuccessData, setPaymentSuccessData] = useState<{
     totalPaid: number;
     order?: Order;
@@ -162,6 +162,12 @@ export default function SimplifiedPOSPage() {
     fetchUserProfile();
   }, [user]);
 
+  React.useEffect(() => {
+    if (!selectedDate) {
+      setShowDateSelectionDialog(true);
+    }
+  }, [selectedDate]);
+
   // Ensure POS starts with items view when pathname changes to /pos
   React.useEffect(() => {
     if (pathname === "/pos") {
@@ -176,6 +182,11 @@ export default function SimplifiedPOSPage() {
       setVatSettings(storeSettings.vatSettings);
     }
   }, [storeSettings, setVatSettings]);
+
+  const handleDateChange = (date: Date) => {
+    setSelectedDate(date.toISOString());
+    setShowDateSelectionDialog(false);
+  };
 
   // Handler functions
   const handleAddToCart = useCallback(
@@ -414,6 +425,7 @@ export default function SimplifiedPOSPage() {
           userName || user?.displayName || user?.email || "Unknown User",
         createdAt: selectedOrder?.createdAt || new Date(),
         updatedAt: new Date(),
+        selectedDate: selectedDate,
       };
 
       if (isSavedOrderLoaded && selectedOrder) {
@@ -751,6 +763,7 @@ export default function SimplifiedPOSPage() {
             userName || user?.displayName || user?.email || "Unknown User",
           createdAt: new Date(),
           updatedAt: new Date(),
+          selectedDate: selectedDate,
         };
 
         const orderDataToCreate = {
@@ -883,6 +896,8 @@ export default function SimplifiedPOSPage() {
             onOrderTypeDeselect={handleOrderTypeDeselect}
             onOrderToggle={handleOrderToggle}
             onClearSelectedOrder={handleClearSelectedOrder}
+            onDateChange={handleDateChange}
+            selectedDate={selectedDate}
             isOnPOSPage={true}
             currentView={currentView}
           />
@@ -1013,6 +1028,22 @@ export default function SimplifiedPOSPage() {
           }}
         />
       )}
+
+      <AlertDialog open={showDateSelectionDialog} onOpenChange={setShowDateSelectionDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Select Business Date</AlertDialogTitle>
+            <AlertDialogDescription>
+              Please select a business date to record sales.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex justify-center">
+            <DatePicker onDateChange={handleDateChange}>
+              <Button>Select Date</Button>
+            </DatePicker>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
     </POSLayout>
   );
 }

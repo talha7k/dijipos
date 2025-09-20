@@ -48,6 +48,7 @@ export interface Order {
   createdByName: string; // Name of user who created the order
   createdAt: Date;
   updatedAt: Date;
+  selectedDate?: string;
 }
 
 export interface OrderPayment {

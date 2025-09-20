@@ -1,9 +1,11 @@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ClearOrderDialog } from '@/components/ui/clear-order-dialog';
+import { DatePicker } from '@/components/ui/date-picker';
+import { format } from 'date-fns';
 
 import { Table, Customer, OrderType, Order } from '@/types';
-import { Users, LayoutGrid, FileText, ShoppingBag, RotateCcw, PlusCircle } from 'lucide-react';
+import { Users, LayoutGrid, FileText, ShoppingBag, RotateCcw, PlusCircle, Calendar } from 'lucide-react';
 import { OrderTypeSelectionDialog } from './OrderTypeSelectionDialog';
 import { useCurrency } from '@/lib/hooks/useCurrency';
 
@@ -24,6 +26,7 @@ interface POSHeaderProps {
   selectedOrder?: Order | null;
   orderTypes: OrderType[];
   selectedOrderType: OrderType | null;
+  selectedDate?: string;
   onTableSelect: () => void;
   onTableDeselect: () => void;
   onCustomerSelect: () => void;
@@ -33,6 +36,7 @@ interface POSHeaderProps {
   onOrderTypeDeselect: () => void;
   onOrderToggle?: () => void;
   onClearSelectedOrder: () => void;
+  onDateChange: (date: Date) => void;
   isOnPOSPage?: boolean;
   currentView?: string;
 }
@@ -45,6 +49,7 @@ export function POSHeader({
   selectedOrder,
   orderTypes,
   selectedOrderType,
+  selectedDate,
   onTableSelect,
   onTableDeselect,
   onCustomerSelect,
@@ -54,6 +59,7 @@ export function POSHeader({
   onOrderTypeDeselect,
   onOrderToggle,
   onClearSelectedOrder,
+  onDateChange,
   isOnPOSPage = false,
   currentView = 'items'
 }: POSHeaderProps) {
@@ -81,7 +87,7 @@ export function POSHeader({
     <div className="bg-card shadow p-3">
       <div className="flex justify-between items-center max-w-7xl mx-auto">
         <div className="flex flex-col items-start space-y-2 flex-1">
-          <div className="flex items-center">
+          <div className="flex items-center space-x-2">
             {selectedOrder ? (
               cartItems.length > 0 ? (
                 <ClearOrderDialog
@@ -140,6 +146,17 @@ export function POSHeader({
                  </Badge>
               )
             )}
+            {selectedDate && (
+              <Badge variant="outline" className="flex items-center space-x-1">
+                <Calendar className="h-4 w-4" />
+                <span>{format(new Date(selectedDate), 'PPP')}</span>
+              </Badge>
+            )}
+            <DatePicker onDateChange={onDateChange}>
+              <Button variant="outline" size="icon">
+                <Calendar className="h-4 w-4" />
+              </Button>
+            </DatePicker>
           </div>
           <div className="flex items-center w-full">
             <Badge className='bg-blue-500 hover:bg-blue-600 text-[10px] text-white mr-2'>{cartItems.length}</Badge>

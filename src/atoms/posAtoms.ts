@@ -125,6 +125,12 @@ export const selectedOrderTypeAtom = atomWithStorage<OrderType | null>(
 );
 export const selectedCartOrderAtom = atom<Order | null>(null);
 
+export const selectedDateAtom = atomWithStorage<string>(
+  "dijibill-selected-date",
+  "",
+  indexedDBStorage,
+);
+
 // POS navigation state
 export const currentViewAtom = atom<
   "items" | "tables" | "customers" | "orders" | "payment"
