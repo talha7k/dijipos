@@ -32,6 +32,7 @@ interface POSHeaderProps {
   onOrderTypeSelect: (orderType: OrderType) => void;
   onOrderTypeDeselect: () => void;
   onOrderToggle?: () => void;
+  onClearSelectedOrder: () => void;
   isOnPOSPage?: boolean;
   currentView?: string;
 }
@@ -52,6 +53,7 @@ export function POSHeader({
   onOrderTypeSelect,
   onOrderTypeDeselect,
   onOrderToggle,
+  onClearSelectedOrder,
   isOnPOSPage = false,
   currentView = 'items'
 }: POSHeaderProps) {
@@ -73,6 +75,7 @@ export function POSHeader({
 
   const handleConfirmOrderReset = () => {
     if (onOrderToggle) onOrderToggle();
+    onClearSelectedOrder();
   };
   return (
     <div className="bg-card shadow p-3">
@@ -102,7 +105,7 @@ export function POSHeader({
                 <Badge
                   variant="default"
                   className="flex py-1 items-center space-x-1 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white"
-                  onClick={handleOrderToggle}
+                  onClick={onClearSelectedOrder}
                 >
                   <RotateCcw className="h-5 w-5" />
                   <span>Order #{selectedOrder.orderNumber}</span>

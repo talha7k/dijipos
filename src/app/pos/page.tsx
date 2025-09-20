@@ -817,6 +817,11 @@ export default function SimplifiedPOSPage() {
     [cartItems, setCartItems, isSavedOrderLoaded, setIsSavedOrderModified],
   );
 
+  const handleClearSelectedOrder = useCallback(() => {
+    setSelectedOrder(null);
+    resetAllState();
+  }, [setSelectedOrder, resetAllState]);
+
   // Loading state - exclude ordersLoading when viewing orders to prevent stuck loading
   const loading =
     productsLoading ||
@@ -869,9 +874,10 @@ export default function SimplifiedPOSPage() {
             onOrderTypeSelect={handleOrderTypeSelect}
             onTableDeselect={handleTableDeselect}
             onCustomerDeselect={handleCustomerDeselect}
-            onOrderTypeDeselect={handleOrderTypeDeselect}
             onOrdersClick={handleOrdersClick}
+            onOrderTypeDeselect={handleOrderTypeDeselect}
             onOrderToggle={handleOrderToggle}
+            onClearSelectedOrder={handleClearSelectedOrder}
             isOnPOSPage={true}
             currentView={currentView}
           />

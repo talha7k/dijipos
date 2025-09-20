@@ -1,12 +1,10 @@
-import { atom } from 'jotai';
-import { atomWithStorage } from 'jotai/utils';
-import { Order, CartItem, Table, OrderType } from '@/types/pos-order';
-import { Customer } from '@/types/customer-supplier';
-import { VATSettings } from '@/types/settings';
-import { indexedDBStorage } from '@/lib/storage';
-import { calculateCartTotals } from '@/lib/vat-calculator';
-
-
+import { atom } from "jotai";
+import { atomWithStorage } from "jotai/utils";
+import { Order, CartItem, Table, OrderType } from "@/types/pos-order";
+import { Customer } from "@/types/customer-supplier";
+import { VATSettings } from "@/types/settings";
+import { indexedDBStorage } from "@/lib/storage";
+import { calculateCartTotals } from "@/lib/vat-calculator";
 
 // =====================
 // POS STATE ATOMS
@@ -16,7 +14,11 @@ import { calculateCartTotals } from '@/lib/vat-calculator';
 export const vatSettingsAtom = atom<VATSettings | null>(null);
 
 // Cart state
-export const cartItemsAtom = atomWithStorage<CartItem[]>('dijibill-cart-items', [], indexedDBStorage);
+export const cartItemsAtom = atomWithStorage<CartItem[]>(
+  "dijibill-cart-items",
+  [],
+  indexedDBStorage,
+);
 
 // Wrapper atom to ensure cartItems is never null
 export const safeCartItemsAtom = atom(
@@ -26,28 +28,31 @@ export const safeCartItemsAtom = atom(
   },
   (get, set, newCartItems: CartItem[]) => {
     set(cartItemsAtom, newCartItems);
-  }
+  },
 );
 export const cartTotalAtom = atom(async (get) => {
   const cartItems = await get(cartItemsAtom);
   const vatSettings = await get(vatSettingsAtom);
-  
+
   if (!vatSettings || !vatSettings.isEnabled) {
     // VAT disabled, just sum item totals
-    return (cartItems || []).reduce((sum: number, item: CartItem) => sum + item.total, 0);
+    return (cartItems || []).reduce(
+      (sum: number, item: CartItem) => sum + item.total,
+      0,
+    );
   }
-  
-  const itemsForCalculation = (cartItems || []).map(item => ({
+
+  const itemsForCalculation = (cartItems || []).map((item) => ({
     price: item.total / item.quantity, // Get unit price
-    quantity: item.quantity
+    quantity: item.quantity,
   }));
-  
+
   const result = calculateCartTotals(
     itemsForCalculation,
     vatSettings.rate,
-    vatSettings.isVatInclusive
+    vatSettings.isVatInclusive,
   );
-  
+
   return result.total;
 });
 
@@ -55,23 +60,26 @@ export const cartTotalAtom = atom(async (get) => {
 export const cartSubtotalAtom = atom(async (get) => {
   const cartItems = await get(cartItemsAtom);
   const vatSettings = await get(vatSettingsAtom);
-  
+
   if (!vatSettings || !vatSettings.isEnabled) {
     // VAT disabled, just sum item totals
-    return (cartItems || []).reduce((sum: number, item: CartItem) => sum + item.total, 0);
+    return (cartItems || []).reduce(
+      (sum: number, item: CartItem) => sum + item.total,
+      0,
+    );
   }
-  
-  const itemsForCalculation = (cartItems || []).map(item => ({
+
+  const itemsForCalculation = (cartItems || []).map((item) => ({
     price: item.total / item.quantity, // Get unit price
-    quantity: item.quantity
+    quantity: item.quantity,
   }));
-  
+
   const result = calculateCartTotals(
     itemsForCalculation,
     vatSettings.rate,
-    vatSettings.isVatInclusive
+    vatSettings.isVatInclusive,
   );
-  
+
   return result.subtotal;
 });
 
@@ -79,38 +87,56 @@ export const cartSubtotalAtom = atom(async (get) => {
 export const cartVatAmountAtom = atom(async (get) => {
   const cartItems = await get(cartItemsAtom);
   const vatSettings = await get(vatSettingsAtom);
-  
+
   if (!vatSettings || !vatSettings.isEnabled) {
     return 0;
   }
-  
-  const itemsForCalculation = (cartItems || []).map(item => ({
+
+  const itemsForCalculation = (cartItems || []).map((item) => ({
     price: item.total / item.quantity, // Get unit price
-    quantity: item.quantity
+    quantity: item.quantity,
   }));
-  
+
   const result = calculateCartTotals(
     itemsForCalculation,
     vatSettings.rate,
-    vatSettings.isVatInclusive
+    vatSettings.isVatInclusive,
   );
-  
+
   return result.vatAmount;
 });
 export const cartLoadingAtom = atom<boolean>(false);
 
 // POS selection state
-export const selectedTableAtom = atomWithStorage<Table | null>('dijibill-selected-table', null, indexedDBStorage);
-export const selectedCustomerAtom = atomWithStorage<Customer | null>('dijibill-selected-customer', null, indexedDBStorage);
-export const selectedOrderTypeAtom = atomWithStorage<OrderType | null>('dijibill-selected-order-type', null, indexedDBStorage);
+export const selectedTableAtom = atomWithStorage<Table | null>(
+  "dijibill-selected-table",
+  null,
+  indexedDBStorage,
+);
+export const selectedCustomerAtom = atomWithStorage<Customer | null>(
+  "dijibill-selected-customer",
+  null,
+  indexedDBStorage,
+);
+export const selectedOrderTypeAtom = atomWithStorage<OrderType | null>(
+  "dijibill-selected-order-type",
+  null,
+  indexedDBStorage,
+);
 export const selectedCartOrderAtom = atom<Order | null>(null);
 
 // POS navigation state
-export const currentViewAtom = atom<'items' | 'tables' | 'customers' | 'orders' | 'payment'>('items');
+export const currentViewAtom = atom<
+  "items" | "tables" | "customers" | "orders" | "payment"
+>("items");
 export const categoryPathAtom = atom<string[]>([]);
 
 // Queue management state
-export const nextQueueNumberAtom = atomWithStorage<number>('dijibill-next-queue-number', 1, indexedDBStorage);
+export const nextQueueNumberAtom = atomWithStorage<number>(
+  "dijibill-next-queue-number",
+  1,
+  indexedDBStorage,
+);
 export const currentQueueNumberAtom = atom<number | null>(null);
 
 // =====================
@@ -124,7 +150,10 @@ export const hasItemsInCartAtom = atom(async (get) => {
 });
 export const cartItemCountAtom = atom(async (get) => {
   const cartItems = await get(cartItemsAtom);
-  return (cartItems || []).reduce((count, item) => count + (item.quantity || 1), 0);
+  return (cartItems || []).reduce(
+    (count, item) => count + (item.quantity || 1),
+    0,
+  );
 });
 
 // =====================
@@ -137,7 +166,7 @@ export const resetPOSStateAtom = atom(null, (get, set) => {
   set(selectedTableAtom, null);
   set(selectedCustomerAtom, null);
   // Don't clear order type - preserve user preference
-  set(currentViewAtom, 'items');
+  set(currentViewAtom, "items");
   set(categoryPathAtom, []);
   set(selectedCartOrderAtom, null);
   set(currentQueueNumberAtom, null);
