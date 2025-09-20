@@ -53,6 +53,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { PaymentSuccessDialog } from "@/components/PaymentSuccessDialog";
 import { CartItemModal } from "@/components/pos/CartItemModal";
+import { Loader2 } from "lucide-react";
 
 export default function SimplifiedPOSPage() {
   const pathname = usePathname();
@@ -93,6 +94,11 @@ export default function SimplifiedPOSPage() {
   const [paymentSuccessData, setPaymentSuccessData] = useState<{ totalPaid: number; order?: Order } | null>(null);
   const [showCartItemModal, setShowCartItemModal] = useState(false);
   const [editingCartItem, setEditingCartItem] = useState<CartItem | null>(null);
+  const [isSavedOrderLoaded, setIsSavedOrderLoaded] = useState(false);
+  const [isSavedOrderModified, setIsSavedOrderModified] = useState(false);
+
+  const [isProcessing, setIsProcessing] = useState(false);
+
 
   // State for order payments
   const [orderPayments, setOrderPayments] = useState<{ [orderId: string]: OrderPayment[] }>({});
@@ -175,6 +181,10 @@ export default function SimplifiedPOSPage() {
       setCartItems([...currentCartItems, newItem]);
     }
     
+    if (isSavedOrderLoaded) {
+      setIsSavedOrderModified(true);
+    }
+
     // Set current queue number when adding items to cart
     console.log('Setting current queue number to:', nextQueueNumber, '(nextQueueNumber value)');
     setCurrentQueueNumber(nextQueueNumber);
@@ -244,14 +254,17 @@ export default function SimplifiedPOSPage() {
       }
     }
 
+    setIsSavedOrderLoaded(true);
+    setIsSavedOrderModified(false);
+
     setShowOrderConfirmationDialog(false);
     setPendingOrderToReopen(null);
     setCurrentView('items');
-  }, [pendingOrderToReopen, setCartItems, setSelectedOrder, setSelectedCustomer, setSelectedTable, setSelectedOrderType, setCurrentView, customers, tables, orderTypes]);
+  }, [pendingOrderToReopen, setCartItems, setSelectedOrder, setSelectedCustomer, setSelectedTable, setSelectedOrderType, setCurrentView, customers, tables, orderTypes, setIsSavedOrderLoaded, setIsSavedOrderModified]);
 
   const handleSaveOrder = useCallback(async () => {
     if (!organizationId || (cartItems || []).length === 0) return;
-
+    setIsProcessing(true);
     try {
       // Use VAT settings from store or defaults
       const taxRate = vatSettings?.rate || 15;
@@ -306,20 +319,25 @@ export default function SimplifiedPOSPage() {
         updatedAt: new Date(),
       };
 
-      if (selectedOrder) {
+      if (isSavedOrderLoaded && selectedOrder) {
         // Update existing order
-        await updateExistingOrder(selectedOrder.id, orderData);
+        let newPaymentStatus = selectedOrder.paymentStatus;
+        if (isSavedOrderModified && selectedOrder.paymentStatus === PaymentStatus.PAID) {
+          newPaymentStatus = PaymentStatus.PARTIAL;
+        }
+        const orderDataToUpdate = { ...orderData, paymentStatus: newPaymentStatus };
+        await updateExistingOrder(selectedOrder.id, orderDataToUpdate);
         console.log('Order updated successfully');
         
-        // Reset POS state after updating order (clears cart, table, customer, selectedOrder, but preserves order type)
-        resetPOSState();
+        // Reset POS state after updating order
+        resetAllState();
       } else {
         // Create new order
         const orderId = await createNewOrder(orderData);
         console.log('Order created successfully:', orderId);
 
-        // Reset POS state for new order (clears cart, table, customer, selectedOrder, but preserves order type)
-        resetPOSState();
+        // Reset POS state for new order
+        resetAllState();
 
         // Increment queue number for new orders
         const newQueueNumber = nextQueueNumber + 1;
@@ -328,12 +346,14 @@ export default function SimplifiedPOSPage() {
       }
     } catch (error) {
       console.error('Error saving order:', error);
+    } finally {
+      setIsProcessing(false);
     }
-  }, [organizationId, cartItems, cartSubtotal, selectedOrder, selectedOrderType, selectedCustomer, selectedTable, user, userName, nextQueueNumber, createNewOrder, updateExistingOrder, resetPOSState, setNextQueueNumber, vatSettings?.isEnabled, vatSettings?.isVatInclusive, vatSettings?.rate]);
+  }, [organizationId, cartItems, cartSubtotal, selectedOrder, selectedOrderType, selectedCustomer, selectedTable, user, userName, nextQueueNumber, createNewOrder, updateExistingOrder, resetAllState, setNextQueueNumber, vatSettings?.isEnabled, vatSettings?.isVatInclusive, vatSettings?.rate, calculateCartTotals, setIsProcessing, isSavedOrderLoaded]);
 
   const handlePaymentProcessed = useCallback(async (payments: OrderPayment[]) => {
     const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
-
+    setIsProcessing(true);
     try {
       // If we have a selected order, save payments to it
       if (selectedOrder) {
@@ -363,24 +383,33 @@ export default function SimplifiedPOSPage() {
         // This shouldn't happen in normal flow, but handle it gracefully
         console.warn('No selected order found during payment processing');
       }
+      
+      // On success:
+      setPaymentSuccessData({ totalPaid });
+      setShowPaymentSuccessDialog(true);
+      setCurrentView('items');
     } catch (error) {
       console.error('Error processing payments:', error);
-      throw error;
+      throw error; // re-throw for POSPaymentView to catch
+    } finally {
+      setIsProcessing(false);
     }
-
-    setPaymentSuccessData({ totalPaid });
-    setShowPaymentSuccessDialog(true);
-    setCurrentView('items');
-  }, [selectedOrder, addPaymentToOrder, updateExistingOrder, setCurrentView]);
+  }, [selectedOrder, addPaymentToOrder, updateExistingOrder, setCurrentView, setIsProcessing]);
 
   const handleClearCart = useCallback(() => {
     setCartItems([]);
     setCurrentQueueNumber(null);
   }, [setCartItems, setCurrentQueueNumber]);
 
-  const handleBackToItems = useCallback(() => {
+  const resetAllState = useCallback(() => {
     resetPOSState();
-  }, [resetPOSState]);
+    setIsSavedOrderLoaded(false);
+    setIsSavedOrderModified(false);
+  }, [resetPOSState, setIsSavedOrderLoaded, setIsSavedOrderModified]);
+
+  const handleBackToItems = useCallback(() => {
+    resetAllState();
+  }, [resetAllState]);
 
   // New function that preserves cart when navigating back to POS
   const handleBackToItemsPreserveCart = useCallback(() => {
@@ -395,13 +424,13 @@ export default function SimplifiedPOSPage() {
   const handleOrderToggle = useCallback(() => {
     if (currentView === 'items') {
       // When on items view, reset for new order
-      resetPOSState();
+      resetAllState();
     } else {
       // When on other views, just switch to items view without clearing cart
       setCurrentView('items');
       setCategoryPath([]);
     }
-  }, [currentView, resetPOSState, setCurrentView, setCategoryPath]);
+  }, [currentView, resetAllState, setCurrentView, setCategoryPath]);
 
   const handleTableDeselect = useCallback(() => {
     setSelectedTable(null);
@@ -446,37 +475,61 @@ export default function SimplifiedPOSPage() {
       return;
     }
 
-    let orderToPay: Order;
+    setIsProcessing(true);
+    try {
+      let orderToPay: Order;
 
-    if (selectedOrder) {
-      orderToPay = selectedOrder;
-    } else {
-      // This is a new order. It must be created in the database before payment.
-      try {
-        const taxRate = vatSettings?.rate || 15;
-        const isVatEnabled = vatSettings?.isEnabled || false;
-        const isVatInclusive = vatSettings?.isVatInclusive || false;
+      // First, calculate totals based on the CURRENT cart
+      const taxRate = vatSettings?.rate || 15;
+      const isVatEnabled = vatSettings?.isEnabled || false;
+      const isVatInclusive = vatSettings?.isVatInclusive || false;
+      let subtotal, taxAmount, total;
 
-        let subtotal, taxAmount, total;
+      if (isVatEnabled) {
+        const itemsForCalculation = (cartItems || []).map(item => ({
+          price: item.unitPrice,
+          quantity: item.quantity
+        }));
+        const result = calculateCartTotals(itemsForCalculation, taxRate, isVatInclusive);
+        subtotal = result.subtotal;
+        taxAmount = result.vatAmount;
+        total = result.total;
+      } else {
+        subtotal = cartSubtotal;
+        taxAmount = 0;
+        total = subtotal;
+      }
 
-        if (isVatEnabled) {
-          const itemsForCalculation = (cartItems || []).map(item => ({
-            price: item.unitPrice,
-            quantity: item.quantity
-          }));
-          const result = calculateCartTotals(itemsForCalculation, taxRate, isVatInclusive);
-          subtotal = result.subtotal;
-          taxAmount = result.vatAmount;
-          total = result.total;
-        } else {
-          subtotal = cartSubtotal;
-          taxAmount = 0;
-          total = subtotal;
+      if (isSavedOrderLoaded && selectedOrder) {
+        // An order is reopened. Update it with the current cart state before paying.
+        let newPaymentStatus = selectedOrder.paymentStatus;
+        if (isSavedOrderModified && selectedOrder.paymentStatus === PaymentStatus.PAID) {
+          newPaymentStatus = PaymentStatus.PARTIAL;
         }
 
-        const queueNumber = nextQueueNumber.toString();
+        const orderDataToUpdate = {
+          items: cartItems,
+          subtotal,
+          taxRate,
+          taxAmount,
+          total,
+          paymentStatus: newPaymentStatus,
+          orderType: selectedOrderType?.name || selectedOrder.orderType,
+          ...(selectedCustomer?.name && { customerName: selectedCustomer.name }),
+          ...(selectedCustomer?.phone && { customerPhone: selectedCustomer.phone }),
+          ...(selectedCustomer?.email && { customerEmail: selectedCustomer.email }),
+          ...(selectedTable?.id && { tableId: selectedTable.id }),
+          ...(selectedTable?.name && { tableName: selectedTable.name }),
+          updatedAt: new Date(),
+        };
+        await updateExistingOrder(selectedOrder.id, orderDataToUpdate);
+        orderToPay = { ...selectedOrder, ...orderDataToUpdate };
+        setIsSavedOrderModified(false); // Reset modified flag after update
 
-        const orderData: Omit<Order, 'id'> = {
+      } else {
+        // This is a new order. Create it.
+        const queueNumber = nextQueueNumber.toString();
+        const orderDataToCreate: Omit<Order, 'id'> = {
           organizationId,
           orderNumber: `ORD-${Date.now()}`,
           queueNumber: queueNumber,
@@ -499,21 +552,20 @@ export default function SimplifiedPOSPage() {
           updatedAt: new Date(),
         };
 
-        const newOrderId = await createNewOrder(orderData);
-        orderToPay = { ...orderData, id: newOrderId };
+        const newOrderId = await createNewOrder(orderDataToCreate);
+        orderToPay = { ...orderDataToCreate, id: newOrderId };
 
-        // Increment queue number for new orders, AFTER creating the order
         const newQueueNumber = nextQueueNumber + 1;
         setNextQueueNumber(newQueueNumber);
-
-      } catch (error) {
-        console.error("Error creating order before payment:", error);
-        return;
       }
-    }
 
-    setSelectedOrder(orderToPay);
-    setCurrentView('payment');
+      setSelectedOrder(orderToPay);
+      setCurrentView('payment');
+    } catch (error) {
+      console.error("Error in pay order flow:", error);
+    } finally {
+      setIsProcessing(false);
+    }
   }, [
     cartItems,
     cartSubtotal,
@@ -527,10 +579,14 @@ export default function SimplifiedPOSPage() {
     nextQueueNumber,
     vatSettings,
     createNewOrder,
+    updateExistingOrder,
     setNextQueueNumber,
     setSelectedOrder,
     setCurrentView,
     calculateCartTotals,
+    setIsProcessing,
+    isSavedOrderLoaded,
+    setIsSavedOrderModified,
   ]);
 
   const updateCartItem = useCallback((itemId: string, type: string, updates: Partial<CartItem>) => {
@@ -540,12 +596,18 @@ export default function SimplifiedPOSPage() {
         : item
     );
     setCartItems(updatedCart);
-  }, [cartItems, setCartItems]);
+    if (isSavedOrderLoaded) {
+      setIsSavedOrderModified(true);
+    }
+  }, [cartItems, setCartItems, isSavedOrderLoaded, setIsSavedOrderModified]);
 
   const removeFromCart = useCallback((itemId: string, type: string) => {
     const updatedCart = cartItems.filter(item => !(item.id === itemId && item.type === type));
     setCartItems(updatedCart);
-  }, [cartItems, setCartItems]);
+    if (isSavedOrderLoaded) {
+      setIsSavedOrderModified(true);
+    }
+  }, [cartItems, setCartItems, isSavedOrderLoaded, setIsSavedOrderModified]);
 
   // Loading state - exclude ordersLoading when viewing orders to prevent stuck loading
   const loading =
@@ -576,6 +638,14 @@ export default function SimplifiedPOSPage() {
 
   return (
     <POSLayout>
+      {isProcessing && (
+        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="flex items-center gap-2 text-lg">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            Processing...
+          </div>
+        </div>
+      )}
       <POSLeftColumn>
         <POSHeaderContainer>
           <POSHeader

@@ -92,8 +92,8 @@ export function POSPaymentGrid({
       id: `payment-${Date.now()}`,
       amount: paymentAmount,
       paymentMethod,
-      reference: reference || undefined,
-      notes: notes || undefined,
+      reference: reference || '',
+      notes: notes || '',
     };
 
     setPayments([...payments, newPayment]);
