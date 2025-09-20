@@ -407,8 +407,8 @@ export default function SimplifiedPOSPage() {
         ...(selectedCustomer?.email && {
           customerEmail: selectedCustomer.email,
         }),
-        ...(selectedTable?.id && { tableId: selectedTable.id }),
-        ...(selectedTable?.name && { tableName: selectedTable.name }),
+        tableId: selectedTable?.id || null,
+        tableName: selectedTable?.name || null,
         createdById: user?.uid || "unknown",
         createdByName:
           userName || user?.displayName || user?.email || "Unknown User",
@@ -599,7 +599,13 @@ export default function SimplifiedPOSPage() {
 
   const handleTableDeselect = useCallback(() => {
     setSelectedTable(null);
-  }, [setSelectedTable]);
+    if (selectedOrder) {
+      setSelectedOrder((prevOrder) =>
+        prevOrder ? { ...prevOrder, tableId: null, tableName: null } : null,
+      );
+      setIsSavedOrderModified(true);
+    }
+  }, [setSelectedTable, selectedOrder, setSelectedOrder, setIsSavedOrderModified]);
 
   const handleCustomerDeselect = useCallback(() => {
     setSelectedCustomer(null);
