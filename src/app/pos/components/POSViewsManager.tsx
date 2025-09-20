@@ -47,6 +47,7 @@ interface POSViewsManagerProps {
   onPayOrder: (order: Order) => void;
   onBackToItems: () => void;
   onPaymentProcessed: (payments: OrderPayment[]) => Promise<void>;
+  onOrderUpdate?: () => void;
 }
 
 export function POSViewsManager({
@@ -72,6 +73,7 @@ export function POSViewsManager({
   onPayOrder,
   onBackToItems,
   onPaymentProcessed,
+  onOrderUpdate,
 }: POSViewsManagerProps) {
   switch (currentView) {
     case "items":
@@ -155,6 +157,7 @@ export function POSViewsManager({
           onReopenOrder={onReopenOrder}
           onPayOrder={onPayOrder}
           onBack={onBackToItems}
+          onOrderUpdate={onOrderUpdate}
         />
       );
 

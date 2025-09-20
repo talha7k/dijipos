@@ -227,7 +227,14 @@ export default function SimplifiedPOSPage() {
       );
       setCurrentQueueNumber(nextQueueNumber);
     },
-    [cartItems, setCartItems, nextQueueNumber, setCurrentQueueNumber],
+    [
+      cartItems,
+      setCartItems,
+      nextQueueNumber,
+      setCurrentQueueNumber,
+      isSavedOrderLoaded,
+      setIsSavedOrderModified,
+    ],
   );
 
   const handleTableSelected = useCallback(
@@ -633,6 +640,13 @@ export default function SimplifiedPOSPage() {
   );
 
   const handlePayOrder = useCallback(async () => {
+    console.log("--- handlePayOrder --- ", {
+      isSavedOrderLoaded,
+      isSavedOrderModified,
+      selectedOrderId: selectedOrder?.id,
+      selectedOrderPaymentStatus: selectedOrder?.paymentStatus,
+    });
+
     if ((cartItems || []).length === 0) return;
     if (!organizationId) {
       console.error("No organization selected");
