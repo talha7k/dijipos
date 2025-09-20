@@ -543,30 +543,34 @@ export default function SimplifiedPOSPage() {
 
   // New function that preserves cart when navigating back to POS
   const handleBackToItemsPreserveCart = useCallback(() => {
-    setCurrentView("items");
+    setCurrentView('items');
     setCategoryPath([]);
-    setSelectedTable(null);
-    setSelectedCustomer(null);
-    setSelectedOrder(null);
+    // Do NOT clear these if a saved order is loaded
+    if (!isSavedOrderLoaded) {
+      setSelectedTable(null);
+      setSelectedCustomer(null);
+      setSelectedOrder(null);
+    }
   }, [
     setCurrentView,
     setCategoryPath,
     setSelectedTable,
     setSelectedCustomer,
     setSelectedOrder,
+    isSavedOrderLoaded,
   ]);
 
-  // Function to handle order toggle
   const handleOrderToggle = useCallback(() => {
-    if (currentView === "items") {
-      // When on items view, reset for new order
+    // If we are on the items view AND we are NOT editing a saved order,
+    // then the button means "start a new order".
+    if (currentView === 'items' && !isSavedOrderLoaded) {
       resetAllState();
     } else {
-      // When on other views, just switch to items view without clearing cart
-      setCurrentView("items");
+      // Otherwise, it just means "go to the items view".
+      setCurrentView('items');
       setCategoryPath([]);
     }
-  }, [currentView, resetAllState, setCurrentView, setCategoryPath]);
+  }, [currentView, isSavedOrderLoaded, resetAllState, setCurrentView, setCategoryPath]);
 
   const handleTableDeselect = useCallback(() => {
     setSelectedTable(null);
