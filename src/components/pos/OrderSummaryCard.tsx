@@ -131,7 +131,7 @@ export function OrderSummaryCard({
           {/* Payment Status Badge - 1 column */}
           <div>
             <OrderStatusBadge
-              isPaid={isActuallyPaid}
+              paymentStatus={paymentStatus}
               queueNumber={order.queueNumber}
               showQueueBadge={false}
             />

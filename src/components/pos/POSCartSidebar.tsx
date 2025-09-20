@@ -274,7 +274,7 @@ export function POSCartSidebar({
             disabled={cartItems.length === 0}
             onClick={onPayOrder}
           >
-            Pay & Complete
+            Save & Pay
           </Button>
         </div>
       </CardFooter>
