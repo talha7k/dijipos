@@ -147,16 +147,13 @@ export function POSHeader({
               )
             )}
             {selectedDate && (
-              <Badge variant="outline" className="flex items-center space-x-1">
-                <Calendar className="h-4 w-4" />
-                <span>{format(new Date(selectedDate), 'PPP')}</span>
-              </Badge>
+              <DatePicker onDateChange={onDateChange}>
+                <Badge variant="outline" className="flex items-center space-x-1 cursor-pointer hover:bg-gray-100">
+                  <Calendar className="h-4 w-4" />
+                  <span>{format(new Date(selectedDate), 'MMM dd')}</span>
+                </Badge>
+              </DatePicker>
             )}
-            <DatePicker onDateChange={onDateChange}>
-              <Button variant="outline" size="icon">
-                <Calendar className="h-4 w-4" />
-              </Button>
-            </DatePicker>
           </div>
           <div className="flex items-center w-full">
             <Badge className='bg-blue-500 hover:bg-blue-600 text-[10px] text-white mr-2'>{cartItems.length}</Badge>

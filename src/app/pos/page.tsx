@@ -64,6 +64,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import { PaymentSuccessDialog } from "@/components/PaymentSuccessDialog";
 import { CartItemModal } from "@/components/pos/CartItemModal";
 import { DatePicker } from '@/components/ui/date-picker';
@@ -412,9 +413,9 @@ export default function SimplifiedPOSPage() {
         total,
         status: OrderStatus.OPEN,
         orderType: selectedOrderType?.name || "dine-in",
-        customerName: selectedCustomer?.name || null,
-        customerPhone: selectedCustomer?.phone || null,
-        customerEmail: selectedCustomer?.email || null,
+        customerName: selectedCustomer?.name || undefined,
+        customerPhone: selectedCustomer?.phone || undefined,
+        customerEmail: selectedCustomer?.email || undefined,
         tableId: selectedTable?.id || undefined,
         tableName: selectedTable?.name || undefined,
         createdById: user?.uid || "unknown",
@@ -717,9 +718,9 @@ export default function SimplifiedPOSPage() {
           total,
           paymentStatus: newPaymentStatus,
           orderType: selectedOrderType?.name || selectedOrder.orderType,
-          customerName: selectedCustomer?.name || null,
-          customerPhone: selectedCustomer?.phone || null,
-          customerEmail: selectedCustomer?.email || null,
+          customerName: selectedCustomer?.name || undefined,
+          customerPhone: selectedCustomer?.phone || undefined,
+          customerEmail: selectedCustomer?.email || undefined,
           ...(selectedTable?.id && { tableId: selectedTable.id }),
           ...(selectedTable?.name && { tableName: selectedTable.name }),
           updatedAt: new Date(),

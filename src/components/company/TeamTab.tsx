@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Plus, Edit, Trash2, Copy, Users, Link } from "lucide-react";
 import { DatePicker } from "@/components/ui/date-picker";
+import { format } from "date-fns";
 import { Label } from "@/components/ui/label";
 import { OrganizationUser } from "@/types";
 import { UserRole } from "@/types/enums";
@@ -177,16 +178,17 @@ export function TeamTab({
                   </Select>
                 </div>
                 <DatePicker
-                  label="Expires At"
-                  value={invitationFormData.expiresAt}
-                  onChange={(date) =>
+                  onDateChange={(date: Date) =>
                     setInvitationFormData({
                       ...invitationFormData,
-                      expiresAt:
-                        date || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+                      expiresAt: date,
                     })
                   }
-                />
+                >
+                  <Button variant="outline" className="w-full justify-start text-left font-normal">
+                    {invitationFormData.expiresAt ? format(invitationFormData.expiresAt, "PPP") : "Expires At"}
+                  </Button>
+                </DatePicker>
               </div>
               <div className="flex justify-end space-x-2 pt-4">
                 <Button

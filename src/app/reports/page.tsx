@@ -158,8 +158,8 @@ function ReportsPage() {
                 <TableBody>
                   {salesInvoices.map(invoice => (
                     <TableRow key={invoice.id}>
-                      <TableCell>{invoice.invoiceNumber}</TableCell>
-                      <TableCell>{invoice.customerName}</TableCell>
+                      <TableCell>{invoice.id}</TableCell>
+                      <TableCell>{invoice.clientName}</TableCell>
                       <TableCell>{format(invoice.createdAt, 'PPP')}</TableCell>
                       <TableCell>{invoice.total.toFixed(2)}</TableCell>
                     </TableRow>
@@ -189,8 +189,8 @@ function ReportsPage() {
                 <TableBody>
                   {quotes.map(quote => (
                     <TableRow key={quote.id}>
-                      <TableCell>{quote.quoteNumber}</TableCell>
-                      <TableCell>{quote.customerName}</TableCell>
+                      <TableCell>{quote.id}</TableCell>
+                      <TableCell>{quote.clientName}</TableCell>
                       <TableCell>{format(quote.createdAt, 'PPP')}</TableCell>
                       <TableCell>{quote.total.toFixed(2)}</TableCell>
                     </TableRow>

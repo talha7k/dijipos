@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useAtomValue } from "jotai";
+import { format } from "date-fns";
 
 import { selectedOrganizationAtom, organizationUsersAtom } from "@/atoms";
 import { organizationLoadingAtom } from "@/atoms";
@@ -248,16 +249,18 @@ function UsersContent() {
                     </SelectContent>
                   </Select>
                 </div>
-                 <DatePicker
-                   label="Expires At"
-                   value={invitationFormData.expiresAt}
-                   onChange={(date) =>
-                     setInvitationFormData({
-                       ...invitationFormData,
-                       expiresAt: date || new Date(),
-                     })
-                   }
-                 />
+                  <DatePicker
+                    onDateChange={(date) =>
+                      setInvitationFormData({
+                        ...invitationFormData,
+                        expiresAt: date,
+                      })
+                    }
+                  >
+                    <Button variant="outline" className="w-full justify-start text-left font-normal">
+                      {invitationFormData.expiresAt ? format(invitationFormData.expiresAt, "PPP") : "Expires At"}
+                    </Button>
+                  </DatePicker>
                 <div className="flex justify-end space-x-2 pt-4">
                   <Button
                     variant="outline"
