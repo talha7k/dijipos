@@ -6,6 +6,7 @@ import { useAtomValue, useSetAtom } from 'jotai';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { selectedOrganizationAtom, logoutAtom } from '@/atoms';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Building2, LogOut, ChevronDown, ChevronUp, User } from 'lucide-react';
 
 interface UserProfileWithOrganizationProps {
@@ -84,6 +85,12 @@ export function UserProfileWithOrganization({
             <p className="text-xs text-muted-foreground truncate">
               {user.email}
             </p>
+            {selectedOrganization && (
+              <Badge variant="secondary" className="text-xs mt-1">
+                <Building2 className="h-3 w-3 mr-1" />
+                {selectedOrganization.name}
+              </Badge>
+            )}
           </div>
           {isOpen ? (
             <ChevronUp className="h-4 w-4 text-muted-foreground" />

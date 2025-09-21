@@ -16,7 +16,10 @@ export function ReportsTabs() {
   const { quotes } = useQuotes();
   const { orders, getPaymentsForOrder } = useOrders();
 
-  const [posReportDate, setPosReportDate] = useState<Date>(new Date());
+  const [posReportDateRange, setPosReportDateRange] = useState<{ from: Date; to: Date }>({
+    from: new Date(),
+    to: new Date()
+  });
   const [dateFilterType, setDateFilterType] = useState("selectedDate");
 
   const [paymentsByOrder, setPaymentsByOrder] = useState<
@@ -31,15 +34,16 @@ export function ReportsTabs() {
             ? new Date(order.selectedDate)
             : null
           : order.createdAt;
-      if (
-        !dateToCompare ||
-        dateToCompare.toDateString() !== posReportDate.toDateString()
-      ) {
+      if (!dateToCompare) {
         return false;
       }
-      return order.status === OrderStatus.COMPLETED;
+      const startOfDay = new Date(posReportDateRange.from);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(posReportDateRange.to);
+      endOfDay.setHours(23, 59, 59, 999);
+      return dateToCompare >= startOfDay && dateToCompare <= endOfDay && order.status === OrderStatus.COMPLETED;
     });
-  }, [orders, posReportDate, dateFilterType]);
+  }, [orders, posReportDateRange, dateFilterType]);
 
   const allOrdersForDate = useMemo(() => {
     return orders.filter((order) => {
@@ -49,12 +53,16 @@ export function ReportsTabs() {
             ? new Date(order.selectedDate)
             : null
           : order.createdAt;
-      return (
-        dateToCompare &&
-        dateToCompare.toDateString() === posReportDate.toDateString()
-      );
+      if (!dateToCompare) {
+        return false;
+      }
+      const startOfDay = new Date(posReportDateRange.from);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(posReportDateRange.to);
+      endOfDay.setHours(23, 59, 59, 999);
+      return dateToCompare >= startOfDay && dateToCompare <= endOfDay;
     });
-  }, [orders, posReportDate, dateFilterType]);
+  }, [orders, posReportDateRange, dateFilterType]);
 
   useEffect(() => {
     const fetchPayments = async () => {
@@ -74,8 +82,8 @@ export function ReportsTabs() {
     }
   }, [allOrdersForDate, getPaymentsForOrder]);
 
-  const handlePosReportDateChange = (date: Date) => {
-    setPosReportDate(date);
+  const handlePosReportDateRangeChange = (dateRange: { from: Date; to: Date }) => {
+    setPosReportDateRange(dateRange);
   };
 
   const [printDialogOpen, setPrintDialogOpen] = useState(false);
@@ -181,32 +189,32 @@ export function ReportsTabs() {
                 <TabsTrigger value="short-summary">Short Summary</TabsTrigger>
                 <TabsTrigger value="detailed-report">Detailed Report</TabsTrigger>
               </TabsList>
-               <TabsContent value="short-summary">
-                 <PosReportTab
-                   title="Short Summary"
-                   data={posReportData}
-                   date={posReportDate}
-                   onDateChange={handlePosReportDateChange}
-                   dateFilterType={dateFilterType}
-                   onDateFilterTypeChange={setDateFilterType}
-                   isDetailed={false}
-                   onPrint={() => setPrintDialogOpen(true)}
-                   setPrintDialogOpen={setPrintDialogOpen}
-                 />
-               </TabsContent>
-               <TabsContent value="detailed-report">
-                 <PosReportTab
-                   title="Detailed Report"
-                   data={posReportData}
-                   date={posReportDate}
-                   onDateChange={handlePosReportDateChange}
-                   dateFilterType={dateFilterType}
-                   onDateFilterTypeChange={setDateFilterType}
-                   isDetailed={true}
-                   onPrint={() => setPrintDialogOpen(true)}
-                   setPrintDialogOpen={setPrintDialogOpen}
-                 />
-               </TabsContent>
+                <TabsContent value="short-summary">
+                  <PosReportTab
+                    title="Short Summary"
+                    data={posReportData}
+                    dateRange={posReportDateRange}
+                    onDateRangeChange={handlePosReportDateRangeChange}
+                    dateFilterType={dateFilterType}
+                    onDateFilterTypeChange={setDateFilterType}
+                    isDetailed={false}
+                    onPrint={() => setPrintDialogOpen(true)}
+                    setPrintDialogOpen={setPrintDialogOpen}
+                  />
+                </TabsContent>
+                <TabsContent value="detailed-report">
+                  <PosReportTab
+                    title="Detailed Report"
+                    data={posReportData}
+                    dateRange={posReportDateRange}
+                    onDateRangeChange={handlePosReportDateRangeChange}
+                    dateFilterType={dateFilterType}
+                    onDateFilterTypeChange={setDateFilterType}
+                    isDetailed={true}
+                    onPrint={() => setPrintDialogOpen(true)}
+                    setPrintDialogOpen={setPrintDialogOpen}
+                  />
+                </TabsContent>
             </Tabs>
           </CardContent>
         </Card>

@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { DatePicker } from "@/components/ui/date-picker";
+import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Download } from "lucide-react";
@@ -18,8 +18,8 @@ import { shortPosReportThermal } from "@/components/templates/reports/short-pos-
 export function PosReportTab({
   title,
   data,
-  date,
-  onDateChange,
+  dateRange,
+  onDateRangeChange,
   dateFilterType,
   onDateFilterTypeChange,
   isDetailed,
@@ -28,8 +28,8 @@ export function PosReportTab({
 }: {
   title: string;
   data: PosReportData;
-  date: Date;
-  onDateChange: (date: Date) => void;
+  dateRange: { from: Date; to: Date };
+  onDateRangeChange: (dateRange: { from: Date; to: Date }) => void;
   dateFilterType: string;
   onDateFilterTypeChange: (value: string) => void;
   isDetailed: boolean;
@@ -42,9 +42,11 @@ export function PosReportTab({
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         <div className="flex items-center space-x-2">
-          <DatePicker onDateChange={onDateChange}>
-            <Button variant="outline">{format(date, "PPP")}</Button>
-          </DatePicker>
+           <DateRangePicker onDateRangeChange={onDateRangeChange}>
+             <Button variant="outline">
+               {format(dateRange.from, "PPP")} - {format(dateRange.to, "PPP")}
+             </Button>
+           </DateRangePicker>
           <Select value={dateFilterType} onValueChange={onDateFilterTypeChange}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Filter by" />
@@ -75,13 +77,13 @@ export function PosReportTab({
                   defaultPaddings: { top: 3, right: 3, bottom: 3, left: 3 },
                 },
               ]}
-              data={{
-                ...data,
-                generationTime: formatDateTime(new Date()),
-                fromDate: formatDateTime(date, false),
-                toDate: formatDateTime(date, false),
-                title: `POS Sales Report - ${format(date, "PPP")}`,
-                isDetailed,
+               data={{
+                 ...data,
+                 generationTime: formatDateTime(new Date()),
+                 fromDate: formatDateTime(dateRange.from, false),
+                 toDate: formatDateTime(dateRange.to, false),
+                 title: `POS Sales Report - ${format(dateRange.from, "PPP")} to ${format(dateRange.to, "PPP")}`,
+                 isDetailed,
                 totalSales: formatCurrency(data.totalSales),
                 totalSubtotal: formatCurrency(data.totalSubtotal),
                 totalTax: formatCurrency(data.totalTax),
@@ -92,7 +94,7 @@ export function PosReportTab({
                   Object.entries(data.salesByOrderType).map(([key, value]) => [key, formatCurrency(value)])
                 ),
               }}
-             title={`POS Sales Report - ${format(date, "PPP")}`}
+             title={`POS Sales Report - ${format(dateRange.from, "PPP")} to ${format(dateRange.to, "PPP")}`}
              description="Configure and print your POS sales report"
              onOpenChange={setPrintDialogOpen}
               allowedPageSizes={["210mm", "80mm", "letter"]}
@@ -109,10 +111,10 @@ export function PosReportTab({
            <PosReportDetails data={data} />
          ) : (
            <div className="space-y-6">
-             <div>
-               <p>Report generated on: {new Date().toLocaleString()}</p>
-               <p>From: {format(date, "PPP")} To: {format(date, "PPP")}</p>
-             </div>
+              <div>
+                <p>Report generated on: {new Date().toLocaleString()}</p>
+                <p>From: {format(dateRange.from, "PPP")} To: {format(dateRange.to, "PPP")}</p>
+              </div>
 
              <div>
                <h3 className="text-lg font-semibold mb-2">Summary</h3>
