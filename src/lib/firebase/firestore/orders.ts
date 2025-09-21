@@ -96,8 +96,14 @@ export async function createOrder(data: Omit<Order, 'id' | 'createdAt' | 'update
 export async function updateOrder(orderId: string, updates: Partial<Omit<Order, 'id' | 'createdAt'>>): Promise<void> {
   try {
     const docRef = doc(ordersRef, orderId);
+    
+    // Filter out undefined values to prevent Firestore errors
+    const filteredUpdates = Object.fromEntries(
+      Object.entries(updates).filter(([_, value]) => value !== undefined)
+    );
+    
     await updateDoc(docRef, {
-      ...updates,
+      ...filteredUpdates,
       updatedAt: Timestamp.now(),
     });
   } catch (error) {
