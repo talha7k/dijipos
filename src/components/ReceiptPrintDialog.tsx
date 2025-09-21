@@ -326,7 +326,6 @@ export function ReceiptPrintDialog({
     iframe.style.border = "0";
     document.body.appendChild(iframe);
 
-    // 2. Get a reference to the iframe's document
     const iframeDoc = iframe.contentWindow?.document;
     if (!iframeDoc) {
       toast.error("Could not create a print frame.");
@@ -334,28 +333,48 @@ export function ReceiptPrintDialog({
       return;
     }
 
-    // 3. Define the "Failsafe" CSS
-    // The key is page-break-after: always. It forces the printer to treat
-    // the content as a complete job before cutting.
-    const printStyles = `
-      @media print {
-        @page {
-          margin: 0; /* Remove all browser margins */
-          size: auto;
-        }
-        html, body {
-          margin: 0;
-          padding: 0;
-        }
-        /* This is the magic wrapper */
-        #receipt-content {
-          width: ${pageSize === "210mm" ? "auto" : pageSize};
-          page-break-after: always; /* Force print job to complete */
-        }
-      }
-    `;
+    // 2. Define Adaptive CSS based on selected pageSize
+    let printStyles = "";
 
-    // 4. Write the HTML content into the iframe
+    if (pageSize === "210mm") {
+      // --- STYLES FOR A4 PAPER ---
+      printStyles = `
+        @media print {
+          @page {
+            size: A4; /* Explicitly set page size */
+            margin: 15mm; /* Standard A4 margins */
+          }
+          html, body {
+            width: 100%;
+            font-size: 12pt; /* Use points for A4 for better scaling */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          }
+          #receipt-content {
+            width: 100%;
+          }
+        }
+      `;
+    } else {
+      // --- FAILSAFE STYLES FOR THERMAL PAPER ---
+      printStyles = `
+        @media print {
+          @page {
+            margin: 0;
+            size: auto;
+          }
+          html, body {
+            margin: 0;
+            padding: 0;
+          }
+          #receipt-content {
+            width: ${pageSize}; /* Use the selected 80mm or 58mm */
+            page-break-after: always; /* Crucial for thermal printers */
+          }
+        }
+      `;
+    }
+
+    // 3. Write the HTML and the chosen styles into the iframe
     iframeDoc.open();
     iframeDoc.write(`
       <html>
@@ -372,11 +391,11 @@ export function ReceiptPrintDialog({
     `);
     iframeDoc.close();
 
-    // 5. Print the iframe's content
-    iframe.contentWindow?.focus(); // Focus is required for print to work in some browsers
+    // 4. Print the iframe's content
+    iframe.contentWindow?.focus();
     iframe.contentWindow?.print();
 
-    // 6. Clean up by removing the iframe after a short delay
+    // 5. Clean up the iframe
     setTimeout(() => {
       document.body.removeChild(iframe);
     }, 1000);
@@ -410,7 +429,7 @@ export function ReceiptPrintDialog({
         style={{ maxHeight: "calc(100vh - 180px)" }}
       >
         <div className="w-1/3 p-4 border-r bg-muted overflow-y-auto space-y-4">
-          <h2 className="text-lg font-bold">Print Settings</h2>
+          <h2 className="text-lg font-bold">Print Settings - ({pageSize})</h2>
           <div>
             <label className="block text-sm font-medium mb-1">Template</label>
             <select
