@@ -293,42 +293,9 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
              </div>
            )}
 
-           {selectedTab === 'receipts' && (
-             <div className="space-y-4">
-              <div className="space-y-6">
-                <div>
-                  <h2 className="text-lg font-semibold mb-3">Margins (mm)</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <EditableSetting
-                      label="Top Margin"
-                      value={printerSettings?.receipts?.marginTop?.toString() || '0'}
-                      type="number"
-                      onSave={(value) => handleUpdateSettings('receipts.marginTop', parseInt(value))}
-                      placeholder="Enter top margin in mm"
-                    />
-                    <EditableSetting
-                      label="Bottom Margin"
-                      value={printerSettings?.receipts?.marginBottom?.toString() || '0'}
-                      type="number"
-                      onSave={(value) => handleUpdateSettings('receipts.marginBottom', parseInt(value))}
-                      placeholder="Enter bottom margin in mm"
-                    />
-                    <EditableSetting
-                      label="Left Margin"
-                      value={printerSettings?.receipts?.marginLeft?.toString() || '0'}
-                      type="number"
-                      onSave={(value) => handleUpdateSettings('receipts.marginLeft', parseInt(value))}
-                      placeholder="Enter left margin in mm"
-                    />
-                    <EditableSetting
-                      label="Right Margin"
-                      value={printerSettings?.receipts?.marginRight?.toString() || '0'}
-                      type="number"
-                      onSave={(value) => handleUpdateSettings('receipts.marginRight', parseInt(value))}
-                      placeholder="Enter right margin in mm"
-                     />
-                   </div>
-                </div>
+            {selectedTab === 'receipts' && (
+              <div className="space-y-4">
+               <div className="space-y-6">
                 <div>
                   <h2 className="text-lg font-semibold mb-3">Padding (mm)</h2>
                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

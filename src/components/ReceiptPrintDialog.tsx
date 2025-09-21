@@ -32,7 +32,10 @@ async function renderReceipt(
   payments: OrderPayment[] = [],
   printerSettings?: PrinterSettings,
 ): Promise<string> {
-  console.log("ReceiptPrintDialog: organization logoUrl:", organization?.logoUrl);
+  console.log(
+    "ReceiptPrintDialog: organization logoUrl:",
+    organization?.logoUrl,
+  );
   const qrCodeBase64 = await generateZatcaQRCode(
     createReceiptQRData(order, organization),
   );
@@ -347,7 +350,6 @@ export function ReceiptPrintDialog({
         @media print {
           @page {
             size: A4;
-            /* Using your component's 'margins' state */
             margin: ${margins.top}mm ${margins.right}mm ${margins.bottom}mm ${margins.left}mm;
           }
           html, body {
@@ -357,17 +359,17 @@ export function ReceiptPrintDialog({
           }
           #receipt-content {
             width: 100%;
-            /* Using your component's 'paddings' state */
             padding: ${paddings.top}mm ${paddings.right}mm ${paddings.bottom}mm ${paddings.left}mm;
+            box-sizing: border-box; /* Good practice to include this for A4 too */
           }
         }
       `;
     } else {
-      // --- FAILSAFE STYLES FOR THERMAL PAPER ---
+      // --- STYLES FOR THERMAL PAPER ---
       printStyles = `
         @media print {
           @page {
-            /* Margins are best kept at 0 for thermal drivers */
+            /* FIX 1: Set page margins to 0 for thermal printers to prevent cutoffs. */
             margin: 0;
           }
           html, body {
@@ -376,9 +378,10 @@ export function ReceiptPrintDialog({
           }
           #receipt-content {
             width: ${pageSize};
-            /* Using your component's 'paddings' state */
             padding: ${paddings.top}mm ${paddings.right}mm ${paddings.bottom}mm ${paddings.left}mm;
             page-break-after: always; /* Crucial for thermal printers */
+            /* FIX 2: Add box-sizing to make padding work correctly within the fixed width. */
+            box-sizing: border-box;
           }
         }
       `;
@@ -402,29 +405,25 @@ export function ReceiptPrintDialog({
     iframeDoc.close();
 
     // 4. Wait for images to load before printing
-    const images = iframeDoc.querySelectorAll('img');
-    const imagePromises = Array.from(images).map(img => {
+    const images = iframeDoc.querySelectorAll("img");
+    const imagePromises = Array.from(images).map((img) => {
       return new Promise<void>((resolve) => {
         if (img.complete) {
           resolve();
         } else {
           img.onload = () => resolve();
           img.onerror = () => resolve(); // Resolve even on error to avoid hanging
-          // Set a timeout to resolve after 3 seconds in case image takes too long
-          setTimeout(() => resolve(), 3000);
+          setTimeout(() => resolve(), 3000); // Failsafe timeout
         }
       });
     });
 
-    // Wait for all images to load (or timeout)
     Promise.all(imagePromises).then(() => {
-      // 5. Close the dialog immediately since browser print will handle the rest
+      // 5. Close the dialog immediately
       handleOpenChange(false);
-
       // 6. Print the iframe's content
       iframe.contentWindow?.focus();
       iframe.contentWindow?.print();
-
       // 7. Clean up the iframe
       setTimeout(() => {
         document.body.removeChild(iframe);
@@ -489,13 +488,15 @@ export function ReceiptPrintDialog({
               <option value="210mm">A4</option>
             </select>
           </div>
-          <SettingsInputGroup
-            label="Margins (mm)"
-            values={margins}
-            onChange={(key, value) =>
-              setMargins((m) => ({ ...m, [key]: Number(value) }))
-            }
-          />
+           {pageSize === "210mm" && (
+             <SettingsInputGroup
+               label="Margins (mm)"
+               values={margins}
+               onChange={(key, value) =>
+                 setMargins((m) => ({ ...m, [key]: Number(value) }))
+               }
+             />
+           )}
           <SettingsInputGroup
             label="Paddings (mm)"
             values={paddings}

@@ -34,11 +34,40 @@ export interface DocumentPrintSettings {
   customFooter?: string; // Custom footer text for receipts
 }
 
+// Receipt-specific print settings (no margins for thermal printers)
+export interface ReceiptsPrintSettings {
+  // Template selection
+  defaultTemplateId?: string;
+
+  // Spacing (in mm) - no margins for thermal
+  paddingTop?: number;
+  paddingBottom?: number;
+  paddingLeft?: number;
+  paddingRight?: number;
+
+  // Printer settings (document-specific)
+  includeQRCode?: boolean; // Whether to include ZATCA QR code (mainly receipts)
+  paperWidth?: number; // Paper width in mm
+  fontSize?: FontSize; // Base font size
+
+  // Font settings (all document types)
+  headingFont?: string; // Font family for headings
+  bodyFont?: string; // Font family for body text
+
+  // Receipt-specific settings
+  lineSpacing?: number; // Line spacing (receipts only)
+  autoPrint?: boolean; // Auto-open print dialog after transaction (receipts only)
+
+  // Custom content settings
+  customHeader?: string; // Custom header text for receipts
+  customFooter?: string; // Custom footer text for receipts
+}
+
 export interface PrinterSettings {
   id: string;
 
   // Document-specific settings only
-  receipts?: DocumentPrintSettings;
+  receipts?: ReceiptsPrintSettings;
   invoices?: DocumentPrintSettings;
   quotes?: DocumentPrintSettings;
 

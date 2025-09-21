@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { EditableSetting } from '@/components/ui/editable-setting';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Percent, FileText, DollarSign, Database } from 'lucide-react';
 import { toast } from 'sonner';
 import { Loader } from '@/components/ui/loader';
@@ -135,14 +136,12 @@ export function StoreSettingsTab() {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <Loader size="lg" />
-            <p className="text-muted-foreground mt-4">Loading store settings...</p>
-          </CardContent>
-        </Card>
-      </div>
+      <Card>
+        <CardContent className="flex flex-col items-center justify-center py-12">
+          <Loader size="lg" />
+          <p className="text-muted-foreground mt-4">Loading store settings...</p>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -222,19 +221,25 @@ export function StoreSettingsTab() {
         </Card>
       </div>
 
-      {/* Sample Data Button */}
+      {/* Sample Data Section */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Database className="h-5 w-5" />
-              Sample Data
-            </div>
-            <Button onClick={handleGenerateSampleData}>
-              Generate Sample Data
-            </Button>
-          </CardTitle>
-        </CardHeader>
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="sample-data">
+            <AccordionTrigger className="px-6 py-4 hover:no-underline">
+              <CardTitle className="flex items-center gap-2 text-left">
+                <Database className="h-5 w-5" />
+                Sample Data
+              </CardTitle>
+            </AccordionTrigger>
+            <AccordionContent className="px-6 pb-4">
+              <div className="flex justify-end">
+                <Button onClick={handleGenerateSampleData}>
+                  Generate Sample Data
+                </Button>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </Card>
 
 
