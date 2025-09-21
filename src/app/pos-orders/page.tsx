@@ -37,6 +37,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Receipt, User, CheckCircle, Save, Settings } from "lucide-react";
+import { TableFilter } from "@/components/shared/TableFilter";
 
 import { OrderActionsDialog } from "@/components/pos/OrderStatusActionsDialog";
 import { ActionButtons } from "@/components/ui/action-buttons";
@@ -97,8 +98,35 @@ function OrdersContent() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [filters, setFilters] = useState({});
 
-  const orders = fetchedOrders || [];
+  const columns = [
+    { accessorKey: 'orderNumber', header: 'Order #', filterType: 'text' },
+    { accessorKey: 'customerName', header: 'Customer', filterType: 'text' },
+    { accessorKey: 'createdByName', header: 'Created By', filterType: 'text' },
+    { accessorKey: 'tableName', header: 'Table', filterType: 'text' },
+    { accessorKey: 'orderType', header: 'Type', filterType: 'select', filterOptions: [{value: 'dine-in', label: 'Dine-in'}, {value: 'take-away', label: 'Take-away'}, {value: 'delivery', label: 'Delivery'}] },
+    { accessorKey: 'status', header: 'Status', filterType: 'select', filterOptions: Object.values(OrderStatus).map(s => ({ value: s, label: s })) },
+    { accessorKey: 'createdAt', header: 'Date', filterType: 'date' },
+  ];
+
+  const filteredOrders = useMemo(() => {
+    return (fetchedOrders || []).filter(order => {
+      return Object.entries(filters).every(([key, value]) => {
+        if (!value) return true;
+        const orderValue = order[key];
+        if (typeof orderValue === 'string') {
+          return orderValue.toLowerCase().includes(value.toLowerCase());
+        }
+        if (orderValue === value) {
+          return true;
+        }
+        return false;
+      });
+    });
+  }, [fetchedOrders, filters]);
+
+  const orders = filteredOrders;
 
   const getStatusColor = (status: Order["status"]) => {
     switch (status) {
@@ -188,6 +216,7 @@ function OrdersContent() {
           <CardTitle>All Orders</CardTitle>
         </CardHeader>
         <CardContent>
+          <TableFilter columns={columns} onFilterChange={setFilters} />
           <Table>
             <TableHeader>
               <TableRow>
