@@ -2,8 +2,9 @@ export const shortPosReportThermal = `<html>
 <body style="font-family: monospace; font-size: 10px; margin: 5px;">
     <h1 style="font-size: 12px; text-align: center; margin-bottom: 5px;">{{title}}</h1>
 
-    <p>Report generated on: {{generationTime}}</p>
-    <p>From: {{fromDate}} To: {{toDate}}</p>
+    <h2 style="color: #333; font-size: 11px; border-bottom: 1px solid #eee; padding-bottom: 2px; margin-top: 10px;">Generated: {{generationTime}}</h2>
+    <h2 style="color: #333; font-size: 11px; border-bottom: 1px solid #eee; padding-bottom: 2px; margin-top: 10px;">From: {{fromDate}}</h2>
+    <h2 style="color: #333; font-size: 11px; border-bottom: 1px solid #eee; padding-bottom: 2px; margin-top: 10px;">To: {{toDate}}</h2>
 
     <h2 style="color: #333; font-size: 11px; border-bottom: 1px solid #eee; padding-bottom: 2px; margin-top: 10px;">Summary</h2>
     <table style="width: 100%; border-collapse: collapse; margin-top: 5px; font-size: 10px;">

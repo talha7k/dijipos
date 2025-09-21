@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Download } from "lucide-react";
 import { format } from "date-fns";
+import { formatDateTime } from "@/lib/utils";
 import { ReportPrintDialog } from "@/components/ReportPrintDialog";
 import { PosReportDetails } from "./PosReportDetails";
 import { PosReportData } from "@/types/reports";
@@ -76,9 +77,9 @@ export function PosReportTab({
               ]}
               data={{
                 ...data,
-                generationTime: new Date().toLocaleString(),
-                fromDate: format(date, "PPP"),
-                toDate: format(date, "PPP"),
+                generationTime: formatDateTime(new Date()),
+                fromDate: formatDateTime(date, false),
+                toDate: formatDateTime(date, false),
                 title: `POS Sales Report - ${format(date, "PPP")}`,
                 isDetailed,
                 totalSales: formatCurrency(data.totalSales),

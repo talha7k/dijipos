@@ -2,8 +2,9 @@ export const shortPosReportA4 = `<html>
 <body style="font-family: sans-serif; margin: 20px;">
     <h1 style="font-size: 24px; text-align: center; margin-bottom: 20px;">{{title}}</h1>
 
-    <p>Report generated on: {{generationTime}}</p>
-    <p>From: {{fromDate}} To: {{toDate}}</p>
+    <h2>Generated: {{generationTime}}</h2>
+    <h2>From: {{fromDate}}</h2>
+    <h2>To: {{toDate}}</h2>
 
     <h2 style="color: #333; font-size: 18px; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-top: 30px;">Summary</h2>
     <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
