@@ -165,24 +165,35 @@ export function ReceiptPrintDialog({
   // Effect to initialize all settings when the dialog opens
   useEffect(() => {
     if (open) {
+      const settings = printerSettings?.receipts;
+      
+      // Only update states if they actually changed to prevent infinite loops
       if (rawHtml) {
-        setRenderedHtml(rawHtml);
-        setPageSize('210mm'); // Default to A4 for reports
-        return;
+        if (renderedHtml !== rawHtml) {
+          setRenderedHtml(rawHtml);
+        }
+        if (pageSize !== '210mm') {
+          setPageSize('210mm'); // Default to A4 for reports
+        }
+      } else {
+        // 1. Set default template
+        const defaultTemplateId = settings?.defaultTemplateId;
+        const isValidDefault =
+          defaultTemplateId &&
+          receiptTemplates.some((t) => t.id === defaultTemplateId);
+        const newSelectedTemplate = isValidDefault ? defaultTemplateId : receiptTemplates[0]?.id || "";
+        if (selectedTemplate !== newSelectedTemplate) {
+          setSelectedTemplate(newSelectedTemplate);
+        }
+
+        // 2. Set paper size
+        const newPageSize = settings?.paperWidth ? `${settings.paperWidth}mm` : "80mm";
+        if (pageSize !== newPageSize) {
+          setPageSize(newPageSize);
+        }
       }
 
-      const settings = printerSettings?.receipts;
-      // 1. Set default template
-      const defaultTemplateId = settings?.defaultTemplateId;
-      const isValidDefault =
-        defaultTemplateId &&
-        receiptTemplates.some((t) => t.id === defaultTemplateId);
-      const newSelectedTemplate = isValidDefault ? defaultTemplateId : receiptTemplates[0]?.id || "";
-
-      // 2. Set paper size
-      const newPageSize = settings?.paperWidth ? `${settings.paperWidth}mm` : "80mm";
-
-      // 3. Set margins and paddings
+      // 3. Set margins and paddings (apply for both raw HTML and template modes)
       const newMargins = {
         top: settings?.marginTop ?? 0,
         right: settings?.marginRight ?? 0,
@@ -196,15 +207,19 @@ export function ReceiptPrintDialog({
         left: settings?.paddingLeft ?? 3,
       };
 
-      // Set all states at once to minimize re-renders
-      setSelectedTemplate(newSelectedTemplate);
-      setPageSize(newPageSize);
-      setMargins(newMargins);
-      setPaddings(newPaddings);
+      // Only update if values actually changed
+      if (JSON.stringify(margins) !== JSON.stringify(newMargins)) {
+        setMargins(newMargins);
+      }
+      if (JSON.stringify(paddings) !== JSON.stringify(newPaddings)) {
+        setPaddings(newPaddings);
+      }
     } else {
-      setRenderedHtml(""); // Clear preview on close
+      if (renderedHtml !== "") {
+        setRenderedHtml(""); // Clear preview on close
+      }
     }
-  }, [open, printerSettings, receiptTemplates, rawHtml]);
+  }, [open, printerSettings, receiptTemplates, rawHtml, renderedHtml, pageSize, selectedTemplate, margins, paddings]);
 
   
 
@@ -237,6 +252,14 @@ export function ReceiptPrintDialog({
     payments,
     printerSettings: printerSettings ?? undefined,
   }), [order, organization, payments, printerSettings]);
+
+  // Effect to set direction when rawHtml is provided
+  useEffect(() => {
+    if (open && rawHtml && direction !== "ltr") {
+      // Set default direction for raw HTML (can be made configurable if needed)
+      setDirection("ltr");
+    }
+  }, [open, rawHtml, direction]);
 
   // Effect to render the preview when settings change
   useEffect(() => {
