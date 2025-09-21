@@ -8,7 +8,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { EditableSetting } from '@/components/ui/editable-setting';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { DialogWithActions } from '@/components/ui/DialogWithActions';
 import { Percent, FileText, DollarSign, Database } from 'lucide-react';
 import { toast } from 'sonner';
 import { updateVATSettings, updateCurrencySettings, createVATSettings, createCurrencySettings } from '@/lib/firebase/firestore/settings/storeSettings';
@@ -16,7 +15,6 @@ import { updateVATSettings, updateCurrencySettings, createVATSettings, createCur
 export function StoreSettingsTab() {
   const { storeSettings } = useStoreSettings();
   const [showSampleDataConfirm, setShowSampleDataConfirm] = useState(false);
-  const [showSampleDataDialog, setShowSampleDataDialog] = useState(false);
 
   // Default VAT settings
   const defaultVatSettings: VATSettings = {
@@ -116,10 +114,6 @@ export function StoreSettingsTab() {
 
   const handleGenerateSampleData = () => {
     setShowSampleDataConfirm(true);
-  };
-
-  const handleShowSampleDataInfo = () => {
-    setShowSampleDataDialog(true);
   };
 
   const confirmGenerateSampleData = async () => {
@@ -222,60 +216,42 @@ export function StoreSettingsTab() {
               <Database className="h-5 w-5" />
               Sample Data
             </div>
-            <div className="flex gap-2">
-              <Button onClick={handleShowSampleDataInfo} variant="outline">
-                View Details
-              </Button>
-              <Button onClick={handleGenerateSampleData}>
-                Generate Sample Data
-              </Button>
-            </div>
+            <Button onClick={handleGenerateSampleData}>
+              Generate Sample Data
+            </Button>
           </CardTitle>
         </CardHeader>
       </Card>
 
-      {/* Sample Data Info Dialog */}
-      <DialogWithActions
-        open={showSampleDataDialog}
-        onOpenChange={setShowSampleDataDialog}
-        title="Sample Data Information"
-        description="Comprehensive sample data for testing your application"
-        actions={
-          <Button onClick={() => setShowSampleDataDialog(false)} variant="outline">
-            Close
-          </Button>
-        }
-        maxWidth="max-w-2xl"
-      >
-        <div className="space-y-4">
-          <div className="space-y-2 text-sm text-muted-foreground">
-            <p>Generate comprehensive sample data to test the application:</p>
-            <ul className="list-disc list-inside space-y-1">
-              <li>Tables (5 tables with different capacities)</li>
-              <li>Product categories (Food, Beverages, Desserts, etc.)</li>
-              <li>Products (8 food and beverage items)</li>
-              <li>Customers (5 sample customers)</li>
-              <li>Suppliers (5 food and beverage suppliers)</li>
-              <li>Orders (2 completed orders)</li>
-              <li>Purchase invoices (2 supplier invoices)</li>
-              <li>Sales invoices (2 customer invoices)</li>
-            </ul>
-            <p className="font-medium text-amber-600 mt-2">
-              ⚠️ This will add data to your database. Make sure this is a test environment.
-            </p>
-          </div>
-        </div>
-      </DialogWithActions>
+
 
       {/* Sample Data Confirmation AlertDialog */}
       <AlertDialog open={showSampleDataConfirm} onOpenChange={setShowSampleDataConfirm}>
-        <AlertDialogContent>
+        <AlertDialogContent className="max-w-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle>Generate Sample Data?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will populate your database with sample data including tables, products, customers, suppliers, orders, and invoices. This action cannot be undone.
+              This will populate your database with comprehensive sample data to test the application. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2 text-sm text-muted-foreground">
+              <p>The following sample data will be generated:</p>
+              <ul className="list-disc list-inside space-y-1">
+                <li>Tables (5 tables with different capacities)</li>
+                <li>Product categories (Food, Beverages, Desserts, etc.)</li>
+                <li>Products (8 food and beverage items)</li>
+                <li>Customers (5 sample customers)</li>
+                <li>Suppliers (5 food and beverage suppliers)</li>
+                <li>Orders (2 completed orders)</li>
+                <li>Purchase invoices (2 supplier invoices)</li>
+                <li>Sales invoices (2 customer invoices)</li>
+              </ul>
+              <p className="font-medium text-amber-600 mt-2">
+                ⚠️ This will add data to your database. Make sure this is a test environment.
+              </p>
+            </div>
+          </div>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setShowSampleDataConfirm(false)}>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={confirmGenerateSampleData} className="bg-destructive text-destructive-foreground">
