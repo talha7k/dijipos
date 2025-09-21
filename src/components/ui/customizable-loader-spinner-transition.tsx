@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
+import Image from "next/image";
 
 export const Component = () => {
   const [mounted, setMounted] = useState(false);
@@ -383,22 +384,32 @@ export const Component = () => {
         {showControls ? "✕" : "☰"}
       </button>
 
-      {/* Title */}
+      {/* Logo */}
       <div
         style={{
           position: "fixed",
           top: "32px",
           left: "50%",
           transform: "translateX(-50%)",
-          color: "rgba(255, 255, 255, 0.3)",
-          fontSize: "12px",
-          fontWeight: "600",
-          letterSpacing: "2px",
-          textTransform: "uppercase",
-          fontFamily: "monospace",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "8px",
         }}
       >
-        DijiBill.com
+        <Image src="/icon_logo.svg" alt="DijiPOS Logo" width={84} height={84} />
+        <div
+          style={{
+            color: "rgba(255, 255, 255)",
+            fontSize: "18px",
+            fontWeight: "600",
+            letterSpacing: "1px",
+            textTransform: "uppercase",
+            fontFamily: "monospace",
+          }}
+        >
+          Dijitize.com
+        </div>
       </div>
     </div>
   );
