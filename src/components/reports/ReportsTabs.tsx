@@ -12,13 +12,12 @@ import { useOrders } from "@/lib/hooks/useOrders";
 import { OrderStatus } from "@/types";
 
 export function ReportsTabs() {
-  const { salesInvoices, loading: invoicesLoading } = useInvoices();
-  const { quotes, loading: quotesLoading } = useQuotes();
-  const { orders, loading: ordersLoading, getPaymentsForOrder } = useOrders();
+  const { salesInvoices } = useInvoices();
+  const { quotes } = useQuotes();
+  const { orders, getPaymentsForOrder } = useOrders();
 
   const [posReportDate, setPosReportDate] = useState<Date>(new Date());
   const [dateFilterType, setDateFilterType] = useState("selectedDate");
-  const [printDialogOpen, setPrintDialogOpen] = useState(false);
 
   const [paymentsByOrder, setPaymentsByOrder] = useState<
     Record<string, Array<{ paymentMethod: string; amount: number }>>
@@ -79,9 +78,7 @@ export function ReportsTabs() {
     setPosReportDate(date);
   };
 
-  const handlePrint = () => {
-    setPrintDialogOpen(true);
-  };
+  const [printDialogOpen, setPrintDialogOpen] = useState(false);
 
   const posReportData = useMemo(() => {
     const totalSales = filteredOrders.reduce(
@@ -192,9 +189,8 @@ export function ReportsTabs() {
                   onDateChange={handlePosReportDateChange}
                   dateFilterType={dateFilterType}
                   onDateFilterTypeChange={setDateFilterType}
-                  isDetailed={false}
-                  onPrint={handlePrint}
-                  printDialogOpen={printDialogOpen}
+                  isDetailed={true}
+                  onPrint={() => setPrintDialogOpen(true)}
                   setPrintDialogOpen={setPrintDialogOpen}
                 />
               </TabsContent>
@@ -207,8 +203,7 @@ export function ReportsTabs() {
                   dateFilterType={dateFilterType}
                   onDateFilterTypeChange={setDateFilterType}
                   isDetailed={true}
-                  onPrint={handlePrint}
-                  printDialogOpen={printDialogOpen}
+                  onPrint={() => setPrintDialogOpen(true)}
                   setPrintDialogOpen={setPrintDialogOpen}
                 />
               </TabsContent>

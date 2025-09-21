@@ -5,7 +5,7 @@ import {
   PrinterSettings,
   ReportTemplate,
 } from "@/types";
-import { renderTemplate } from "@/lib/template-renderer";
+import { renderTemplate, TemplateData } from "@/lib/template-renderer";
 import { DialogWithActions } from "@/components/ui/DialogWithActions";
 
 // Helper component for settings inputs
@@ -47,7 +47,8 @@ interface ReportPrintDialogProps {
   title?: string;
   onOpenChange?: (open: boolean) => void;
   allowedPageSizes?: Array<"80mm" | "58mm" | "210mm" | "letter">;
-  data?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  data?: Record<string, any>;
 }
 
 export function ReportPrintDialog({
@@ -153,8 +154,10 @@ export function ReportPrintDialog({
       try {
         const templateResponse = await fetch(`/templates/${template.content}`);
         const templateContent = await templateResponse.text();
-        const content = renderTemplate(templateContent, data);
-        setRenderedHtml(content);
+        if (data) {
+          const content = renderTemplate(templateContent, data as TemplateData);
+          setRenderedHtml(content);
+        }
       } catch (error) {
         console.error("Failed to render report preview:", error);
         setRenderedHtml("<p style='color: red;'>Error rendering preview.</p>");

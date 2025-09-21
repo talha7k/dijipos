@@ -18,7 +18,6 @@ export function PosReportTab({
   onDateFilterTypeChange,
   isDetailed,
   onPrint,
-  printDialogOpen,
   setPrintDialogOpen,
 }: {
   title: string;
@@ -29,7 +28,6 @@ export function PosReportTab({
   onDateFilterTypeChange: (value: string) => void;
   isDetailed: boolean;
   onPrint: () => void;
-  printDialogOpen: boolean;
   setPrintDialogOpen: (open: boolean) => void;
 }) {
   return (
@@ -60,6 +58,7 @@ export function PosReportTab({
             ]}
             data={data}
             title={`POS Sales Report - ${format(date, "PPP")}`}
+            
             onOpenChange={setPrintDialogOpen}
             allowedPageSizes={["210mm", "letter"]}
           >

@@ -5,7 +5,7 @@ import {
 } from "@/types/template";
 
 // A generic type to accept data for any kind of template.
-type TemplateData = ReceiptTemplateData | InvoiceTemplateData | QuoteTemplateData;
+export type TemplateData = ReceiptTemplateData | InvoiceTemplateData | QuoteTemplateData;
 
 /**
  * A generic and robust template rendering engine.
