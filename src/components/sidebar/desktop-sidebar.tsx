@@ -31,7 +31,7 @@ const getNavigationItems = (role: string): NavigationItem[] => {
       icon: Home,
     },
     {
-      title: "Point of Sale",
+      title: "Point of Sales",
       href: "/pos",
       icon: Receipt,
     },

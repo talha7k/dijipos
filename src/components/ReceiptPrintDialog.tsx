@@ -318,39 +318,68 @@ export function ReceiptPrintDialog({
   }, [open, selectedTemplate, renderData, paymentsLoading, receiptTemplates]);
 
   const handlePrint = () => {
-    const printWindow = window.open("", "_blank");
-    if (printWindow) {
-      printWindow.document.write(`
-        <html>
-          <head>
-            <title>${title}</title>
-             <style>
-                @media print {
-                  @page {
-                    size: ${pageSize === "210mm" ? "A4" : "auto"};
-                    margin: ${margins.top}mm ${margins.right}mm ${margins.bottom}mm ${margins.left}mm;
-                  }
-                  body {
-                    width: ${pageSize === "210mm" ? "auto" : pageSize};
-                    padding: ${paddings.top}mm ${paddings.right}mm ${paddings.bottom}mm ${paddings.left}mm;
-                    page-break-inside: avoid;
-                    box-sizing: border-box;
-                  }
-                }
-               body {
-                 font-family: sans-serif;
-               }
-             </style>
-          </head>
-          <body>
-            <div dir="${direction}">${renderedHtml}</div>
-          </body>
-        </html>
-      `);
-      printWindow.document.close();
-      printWindow.focus();
-      printWindow.print();
+    // 1. Create a hidden iframe
+    const iframe = document.createElement("iframe");
+    iframe.style.position = "absolute";
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.style.border = "0";
+    document.body.appendChild(iframe);
+
+    // 2. Get a reference to the iframe's document
+    const iframeDoc = iframe.contentWindow?.document;
+    if (!iframeDoc) {
+      toast.error("Could not create a print frame.");
+      document.body.removeChild(iframe);
+      return;
     }
+
+    // 3. Define the "Failsafe" CSS
+    // The key is page-break-after: always. It forces the printer to treat
+    // the content as a complete job before cutting.
+    const printStyles = `
+      @media print {
+        @page {
+          margin: 0; /* Remove all browser margins */
+          size: auto;
+        }
+        html, body {
+          margin: 0;
+          padding: 0;
+        }
+        /* This is the magic wrapper */
+        #receipt-content {
+          width: ${pageSize === "210mm" ? "auto" : pageSize};
+          page-break-after: always; /* Force print job to complete */
+        }
+      }
+    `;
+
+    // 4. Write the HTML content into the iframe
+    iframeDoc.open();
+    iframeDoc.write(`
+      <html>
+        <head>
+          <title>${title}</title>
+          <style>${printStyles}</style>
+        </head>
+        <body>
+          <div id="receipt-content" dir="${direction}">
+            ${renderedHtml}
+          </div>
+        </body>
+      </html>
+    `);
+    iframeDoc.close();
+
+    // 5. Print the iframe's content
+    iframe.contentWindow?.focus(); // Focus is required for print to work in some browsers
+    iframe.contentWindow?.print();
+
+    // 6. Clean up by removing the iframe after a short delay
+    setTimeout(() => {
+      document.body.removeChild(iframe);
+    }, 1000);
   };
 
   return (

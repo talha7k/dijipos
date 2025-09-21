@@ -47,7 +47,7 @@ export function ItemCard({ item, onClick, className = "" }: ItemCardProps) {
         <div
           className={cn(
             "px-3 mb-3 text-center font-bold text-foreground leading-tight",
-            "text-lg max-h-15",
+            "text-md max-h-15",
             isLongName && "text-[13px]",
           )}
           title={item.name}
