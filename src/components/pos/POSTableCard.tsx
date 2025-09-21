@@ -71,8 +71,8 @@ export function POSTableCard({
               </div>
             )}
 
-            {/* Order Info */}
-            {tableOrder && (
+            {/* Order Info / Available Status */}
+            {tableOrder ? (
               <Badge
                 variant="secondary"
                 className="text-blue-600 py-1 mt-4 w-full bg-blue-50 border-blue-200 text-xs max-w-full whitespace-normal break-words flex items-start justify-start gap-1"
@@ -82,6 +82,12 @@ export function POSTableCard({
                   {tableOrder.customerName || "Customer"}
                 </span>
               </Badge>
+            ) : (
+              <div className="text-center py-2 mt-4">
+                <span className="text-green-600 font-semibold text-sm border-2 border-green-600 px-2 py-1 rounded">
+                  AVAILABLE
+                </span>
+              </div>
             )}
           </div>
         </div>
