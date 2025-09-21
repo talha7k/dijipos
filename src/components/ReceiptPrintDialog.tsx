@@ -146,93 +146,93 @@ export function ReceiptPrintDialog({
     },
     [onOpenChange],
   );
+
   const [isGenerating, setIsGenerating] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState<string>("");
   const [renderedHtml, setRenderedHtml] = useState("");
-  const [pageSize, setPageSize] = useState("80mm");
   const [direction, setDirection] = useState<"ltr" | "rtl">("ltr");
   const [payments, setPayments] = useState<OrderPayment[]>(initialPayments);
   const [paymentsLoading, setPaymentsLoading] = useState(false);
-  const [margins, setMargins] = useState({
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
+
+  // Initialize states with default values from settings
+  const [selectedTemplate, setSelectedTemplate] = useState<string>(() => {
+    const settings = printerSettings?.receipts;
+    const defaultTemplateId = settings?.defaultTemplateId;
+    const isValidDefault =
+      defaultTemplateId &&
+      receiptTemplates.some((t) => t.id === defaultTemplateId);
+    return isValidDefault ? defaultTemplateId : receiptTemplates[0]?.id || "";
   });
-  const [paddings, setPaddings] = useState({
-    top: 3,
-    right: 3,
-    bottom: 3,
-    left: 3,
+  const [pageSize, setPageSize] = useState(() => {
+    const settings = printerSettings?.receipts;
+    return settings?.paperWidth ? `${settings.paperWidth}mm` : "80mm";
+  });
+  const [margins, setMargins] = useState(() => {
+    const settings = printerSettings?.receipts;
+    return {
+      top: settings?.marginTop ?? 0,
+      right: settings?.marginRight ?? 0,
+      bottom: settings?.marginBottom ?? 0,
+      left: settings?.marginLeft ?? 0,
+    };
+  });
+  const [paddings, setPaddings] = useState(() => {
+    const settings = printerSettings?.receipts;
+    return {
+      top: settings?.paddingTop ?? 3,
+      right: settings?.paddingRight ?? 3,
+      bottom: settings?.paddingBottom ?? 3,
+      left: settings?.paddingLeft ?? 3,
+    };
   });
 
   // Ref to prevent infinite loops
   const isRenderingRef = useRef(false);
   const lastRenderKeyRef = useRef("");
 
-  // Effect to initialize all settings when the dialog opens
+  // Effect to update settings when props change
   useEffect(() => {
-    if (open) {
-      const settings = printerSettings?.receipts;
+    const settings = printerSettings?.receipts;
 
-      // Only update states if they actually changed to prevent infinite loops
+    // 1. Set default template
+    const defaultTemplateId = settings?.defaultTemplateId;
+    const isValidDefault =
+      defaultTemplateId &&
+      receiptTemplates.some((t) => t.id === defaultTemplateId);
+    const newSelectedTemplate = isValidDefault
+      ? defaultTemplateId
+      : receiptTemplates[0]?.id || "";
+    setSelectedTemplate(newSelectedTemplate);
 
-      // 1. Set default template
-      const defaultTemplateId = settings?.defaultTemplateId;
-      const isValidDefault =
-        defaultTemplateId &&
-        receiptTemplates.some((t) => t.id === defaultTemplateId);
-      const newSelectedTemplate = isValidDefault
-        ? defaultTemplateId
-        : receiptTemplates[0]?.id || "";
-      if (selectedTemplate !== newSelectedTemplate) {
-        setSelectedTemplate(newSelectedTemplate);
+    // 2. Set paper size (independent of template change)
+    const newPageSize = settings?.paperWidth
+      ? `${settings.paperWidth}mm`
+      : "80mm";
+    setPageSize(newPageSize);
 
-        // 2. Set paper size
-        const newPageSize = settings?.paperWidth
-          ? `${settings.paperWidth}mm`
-          : "80mm";
-        if (pageSize !== newPageSize) {
-          setPageSize(newPageSize);
-        }
-      }
+    // 3. Set margins and paddings (apply for both raw HTML and template modes)
+    const newMargins = {
+      top: settings?.marginTop ?? 0,
+      right: settings?.marginRight ?? 0,
+      bottom: settings?.marginBottom ?? 0,
+      left: settings?.marginLeft ?? 0,
+    };
+    const newPaddings = {
+      top: settings?.paddingTop ?? 1,
+      right: settings?.paddingRight ?? 1,
+      bottom: settings?.paddingBottom ?? 1,
+      left: settings?.paddingLeft ?? 1,
+    };
 
-      // 3. Set margins and paddings (apply for both raw HTML and template modes)
-      const newMargins = {
-        top: settings?.marginTop ?? 0,
-        right: settings?.marginRight ?? 0,
-        bottom: settings?.marginBottom ?? 0,
-        left: settings?.marginLeft ?? 0,
-      };
-      const newPaddings = {
-        top: settings?.paddingTop ?? 3,
-        right: settings?.paddingRight ?? 3,
-        bottom: settings?.paddingBottom ?? 3,
-        left: settings?.paddingLeft ?? 3,
-      };
+    setMargins(newMargins);
+    setPaddings(newPaddings);
+  }, [printerSettings, receiptTemplates]);
 
-      // Only update if values actually changed
-      if (JSON.stringify(margins) !== JSON.stringify(newMargins)) {
-        setMargins(newMargins);
-      }
-      if (JSON.stringify(paddings) !== JSON.stringify(newPaddings)) {
-        setPaddings(newPaddings);
-      }
-    } else {
-      if (renderedHtml !== "") {
-        setRenderedHtml(""); // Clear preview on close
-      }
+  // Effect to clear preview when dialog closes
+  useEffect(() => {
+    if (!open) {
+      setRenderedHtml(""); // Clear preview on close
     }
-  }, [
-    open,
-    printerSettings,
-    receiptTemplates,
-    renderedHtml,
-    pageSize,
-    selectedTemplate,
-    margins,
-    paddings,
-  ]);
+  }, [open]);
 
   // Effect to fetch payments when dialog opens
   useEffect(() => {
