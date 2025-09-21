@@ -69,72 +69,78 @@ export function ReportPrintDialog({
     setOpen(newOpen);
     onOpenChange?.(newOpen);
   }, [onOpenChange]);
-  const [selectedTemplate, setSelectedTemplate] = useState<string>("");
+  const [selectedTemplate, setSelectedTemplate] = useState(() => {
+    const settings = printerSettings?.receipts;
+    const defaultTemplateId = settings?.defaultTemplateId;
+    const isValidDefault = defaultTemplateId && reportTemplates.some((t) => t.id === defaultTemplateId);
+    return isValidDefault ? defaultTemplateId : reportTemplates[0]?.id || "";
+  });
   const [renderedHtml, setRenderedHtml] = useState("");
-  const [pageSize, setPageSize] = useState("80mm");
+  const [pageSize, setPageSize] = useState(() => {
+    const settings = printerSettings?.receipts;
+    return settings?.paperWidth ? `${settings.paperWidth}mm` : "80mm";
+  });
   const [direction, setDirection] = useState<"ltr" | "rtl">("ltr");
-  
-  const [margins, setMargins] = useState({
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
+
+  const [margins, setMargins] = useState(() => {
+    const settings = printerSettings?.receipts;
+    return {
+      top: settings?.marginTop ?? 0,
+      right: settings?.marginRight ?? 0,
+      bottom: settings?.marginBottom ?? 0,
+      left: settings?.marginLeft ?? 0,
+    };
   });
-  const [paddings, setPaddings] = useState({
-    top: 3,
-    right: 3,
-    bottom: 3,
-    left: 3,
+  const [paddings, setPaddings] = useState(() => {
+    const settings = printerSettings?.receipts;
+    return {
+      top: settings?.paddingTop ?? 3,
+      right: settings?.paddingRight ?? 3,
+      bottom: settings?.paddingBottom ?? 3,
+      left: settings?.paddingLeft ?? 3,
+    };
   });
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Effect to update settings when props change
   useEffect(() => {
-    if (open) {
-      const settings = printerSettings?.receipts;
-      
-      // 1. Set default template
-      const defaultTemplateId = settings?.defaultTemplateId;
-      const isValidDefault =
-        defaultTemplateId &&
-        reportTemplates.some((t) => t.id === defaultTemplateId);
-      const newSelectedTemplate = isValidDefault ? defaultTemplateId : reportTemplates[0]?.id || "";
-      if (selectedTemplate !== newSelectedTemplate) {
-        setSelectedTemplate(newSelectedTemplate);
-      }
+    const settings = printerSettings?.receipts;
 
-      // 2. Set paper size
-      const newPageSize = settings?.paperWidth ? `${settings.paperWidth}mm` : "80mm";
-      if (pageSize !== newPageSize) {
-        setPageSize(newPageSize);
-      }
+    // 1. Set default template
+    const defaultTemplateId = settings?.defaultTemplateId;
+    const isValidDefault =
+      defaultTemplateId &&
+      reportTemplates.some((t) => t.id === defaultTemplateId);
+    const newSelectedTemplate = isValidDefault ? defaultTemplateId : reportTemplates[0]?.id || "";
+    setSelectedTemplate(newSelectedTemplate);
 
-      // 3. Set margins and paddings
-      const newMargins = {
-        top: settings?.marginTop ?? 0,
-        right: settings?.marginRight ?? 0,
-        bottom: settings?.marginBottom ?? 0,
-        left: settings?.marginLeft ?? 0,
-      };
-      const newPaddings = {
-        top: settings?.paddingTop ?? 3,
-        right: settings?.paddingRight ?? 3,
-        bottom: settings?.paddingBottom ?? 3,
-        left: settings?.paddingLeft ?? 3,
-      };
+    // 2. Set paper size
+    const newPageSize = settings?.paperWidth ? `${settings.paperWidth}mm` : "80mm";
+    setPageSize(newPageSize);
 
-      // Only update if values actually changed
-      if (JSON.stringify(margins) !== JSON.stringify(newMargins)) {
-        setMargins(newMargins);
-      }
-      if (JSON.stringify(paddings) !== JSON.stringify(newPaddings)) {
-        setPaddings(newPaddings);
-      }
-    } else {
-      if (renderedHtml !== "") {
-        setRenderedHtml(""); // Clear preview on close
-      }
+    // 3. Set margins and paddings
+    const newMargins = {
+      top: settings?.marginTop ?? 0,
+      right: settings?.marginRight ?? 0,
+      bottom: settings?.marginBottom ?? 0,
+      left: settings?.marginLeft ?? 0,
+    };
+    const newPaddings = {
+      top: settings?.paddingTop ?? 3,
+      right: settings?.paddingRight ?? 3,
+      bottom: settings?.paddingBottom ?? 3,
+      left: settings?.paddingLeft ?? 3,
+    };
+
+    setMargins(newMargins);
+    setPaddings(newPaddings);
+  }, [printerSettings, reportTemplates]);
+
+  // Effect to clear preview when dialog closes
+  useEffect(() => {
+    if (!open) {
+      setRenderedHtml(""); // Clear preview on close
     }
-  }, [open, printerSettings, reportTemplates, renderedHtml, selectedTemplate, margins, paddings]);
+  }, [open]);
 
   
 
@@ -154,8 +160,7 @@ export function ReportPrintDialog({
 
     const renderPreview = async () => {
       try {
-        const templateResponse = await fetch(`/templates/${template.content}`);
-        const templateContent = await templateResponse.text();
+        const templateContent = template.content;
         if (data) {
           const content = renderTemplate(templateContent, data as TemplateData);
           setRenderedHtml(content);
@@ -177,10 +182,10 @@ export function ReportPrintDialog({
       if (template.defaultPaperSize && pageSize !== template.defaultPaperSize) {
         setPageSize(template.defaultPaperSize);
       }
-      if (template.defaultMargins && JSON.stringify(margins) !== JSON.stringify(template.defaultMargins)) {
+      if (template.defaultMargins) {
         setMargins(template.defaultMargins);
       }
-      if (template.defaultPaddings && JSON.stringify(paddings) !== JSON.stringify(template.defaultPaddings)) {
+      if (template.defaultPaddings) {
         setPaddings(template.defaultPaddings);
       }
     }

@@ -9,6 +9,10 @@ import { ReportPrintDialog } from "@/components/ReportPrintDialog";
 import { PosReportDetails } from "./PosReportDetails";
 import { PosReportData } from "@/types/reports";
 import { useCurrency } from "@/lib/hooks/useCurrency";
+import { posReportA4 } from "@/components/templates/reports/pos-report-a4";
+import { posReportThermal } from "@/components/templates/reports/pos-report-thermal";
+import { shortPosReportA4 } from "@/components/templates/reports/short-pos-report-a4";
+import { shortPosReportThermal } from "@/components/templates/reports/short-pos-report-thermal";
 
 export function PosReportTab({
   title,
@@ -54,7 +58,7 @@ export function PosReportTab({
                 {
                   id: "pos-report-a4",
                   name: isDetailed ? "POS Report A4" : "Short Summary A4",
-                  content: isDetailed ? "pos-report-a4.html" : "short-pos-report-a4.html",
+                  content: isDetailed ? posReportA4 : shortPosReportA4,
                   type: "report",
                   defaultPaperSize: "210mm",
                   defaultMargins: { top: 10, right: 10, bottom: 10, left: 10 },
@@ -63,7 +67,7 @@ export function PosReportTab({
                 {
                   id: "pos-report-thermal",
                   name: isDetailed ? "POS Report Thermal" : "Short Summary Thermal",
-                  content: isDetailed ? "pos-report-thermal.html" : "short-pos-report-thermal.html",
+                  content: isDetailed ? posReportThermal : shortPosReportThermal,
                   type: "report",
                   defaultPaperSize: "80mm",
                   defaultMargins: { top: 0, right: 0, bottom: 0, left: 0 },
