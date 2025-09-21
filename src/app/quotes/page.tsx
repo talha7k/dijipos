@@ -16,6 +16,7 @@ import { QuoteList } from '@/components/invoices_quotes/QuoteList';
 import { QuoteDetails } from '@/components/invoices_quotes/QuoteDetails';
 import { QuoteActionsDialog } from '@/components/invoices_quotes/QuoteActionsDialog';
 import { QuotePrintDialog } from '@/components/invoices_quotes/QuotePrintDialog';
+import { Loader } from '@/components/ui/loader';
 
 function QuotesContent() {
   const { quotes, loading: quotesLoading, createQuote, updateQuote } = useQuotes();

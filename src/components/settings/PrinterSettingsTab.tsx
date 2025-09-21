@@ -14,6 +14,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Settings, Receipt, FileText, Quote } from 'lucide-react';
 import { toast } from 'sonner';
 import { FontSize } from '@/types/enums';
+import { Loader } from '@/components/ui/loader';
 
 interface PrinterSettingsTabProps {
   printerSettings?: PrinterSettings | null;
@@ -181,6 +182,17 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
       toast.error('Failed to update settings. Please try again.');
     }
   };
+
+  if (storeSettingsLoading || templatesLoading) {
+    return (
+      <Card>
+        <CardContent className="flex flex-col items-center justify-center py-12">
+          <Loader size="lg" />
+          <p className="text-muted-foreground mt-4">Loading printer settings...</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card key={printerSettings?.id || 'printer-settings'}>

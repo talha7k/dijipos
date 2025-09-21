@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { CreditCard, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { Loader } from '@/components/ui/loader';
 
 interface PaymentTypesTabProps {
   paymentTypes?: PaymentType[];
@@ -21,7 +22,7 @@ interface PaymentTypesTabProps {
 export function PaymentTypesTab({ paymentTypes: propPaymentTypes = [] }: PaymentTypesTabProps) {
   const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
-  const { storeSettings, createNewPaymentType, deleteExistingPaymentType } = useStoreSettings();
+  const { storeSettings, createNewPaymentType, deleteExistingPaymentType, loading } = useStoreSettings();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deletePaymentTypeId, setDeletePaymentTypeId] = useState<string | null>(null);
   const [newPaymentType, setNewPaymentType] = useState({ name: '', description: '' });
@@ -68,6 +69,17 @@ export function PaymentTypesTab({ paymentTypes: propPaymentTypes = [] }: Payment
       setIsSubmitting(false);
     }
   };
+
+  if (loading) {
+    return (
+      <Card>
+        <CardContent className="flex flex-col items-center justify-center py-12">
+          <Loader size="lg" />
+          <p className="text-muted-foreground mt-4">Loading payment types...</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>

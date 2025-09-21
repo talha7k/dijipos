@@ -19,6 +19,7 @@ import { AddCategoryDialog } from '@/components/products_services/AddCategoryDia
 import { ProductList } from '@/components/products_services/ProductList';
 import { ServiceList } from '@/components/products_services/ServiceList';
 import { CategoryTree } from '@/components/products_services/CategoryTree';
+import { Loader } from '@/components/ui/loader';
 import { ExportImportProducts } from '@/components/ExportImportProducts';
 
 export default function ProductsServicesPage() {
@@ -133,7 +134,14 @@ export default function ProductsServicesPage() {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen space-y-4">
+        <Loader size="lg" />
+        <p className="text-muted-foreground">Loading products and services...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-4">

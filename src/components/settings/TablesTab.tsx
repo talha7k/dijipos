@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 import { Plus, Sofa } from 'lucide-react';
+import { Loader } from '@/components/ui/loader';
 
 
 import { TableCard } from '@/components/tables/TableCard';
@@ -40,11 +41,13 @@ export function TablesTab({ tables }: TablesTabProps) {
   });
   const [bulkCount, setBulkCount] = useState('');
   const [bulkCapacity, setBulkCapacity] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Table management functions
   const handleAddTable = async () => {
     if (!organizationId) return;
 
+    setIsSubmitting(true);
     try {
       if (mode === 'single') {
         if (!newTable.name.trim()) return;
@@ -85,11 +88,13 @@ export function TablesTab({ tables }: TablesTabProps) {
         setBulkCapacity('');
         toast.success(`${count} tables added successfully`);
       }
-      
+
       setDialogOpen(false);
     } catch (error) {
       console.error('Error adding table(s):', error);
       toast.error('Failed to add table(s)');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -232,8 +237,15 @@ export function TablesTab({ tables }: TablesTabProps) {
                   </Select>
                 </div>
                 
-                <Button onClick={() => handleAddTable()} className="w-full">
-                  {mode === 'single' ? 'Add Table' : `Add ${bulkCount || 0} Tables`}
+                <Button onClick={() => handleAddTable()} className="w-full" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <Loader size="sm" className="mr-2" />
+                      Adding...
+                    </>
+                  ) : (
+                    mode === 'single' ? 'Add Table' : `Add ${bulkCount || 0} Tables`
+                  )}
                 </Button>
               </div>
             </DialogContent>

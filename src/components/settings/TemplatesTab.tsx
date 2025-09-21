@@ -12,7 +12,7 @@ import {
   PrinterSettings,
 } from "@/types";
 import { ReceiptTemplateType } from "@/types/enums";
-
+import { Loader } from "@/components/ui/loader";
 
 import { useStoreSettings } from "@/lib/hooks/useStoreSettings";
 import {
@@ -464,6 +464,17 @@ export function TemplatesTab({}: TemplatesTabProps) {
       setDeleteTemplateId(null);
     }
   };
+
+  if (loading) {
+    return (
+      <Card>
+        <CardContent className="flex flex-col items-center justify-center py-12">
+          <Loader size="lg" />
+          <p className="text-muted-foreground mt-4">Loading templates...</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>

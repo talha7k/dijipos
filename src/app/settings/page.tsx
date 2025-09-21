@@ -14,6 +14,7 @@ import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SettingsHeader } from '@/components/settings/SettingsHeader';
+import { Loader } from '@/components/ui/loader';
 import { OrderTypesTab } from '@/components/settings/OrderTypesTab';
 import { PaymentTypesTab } from '@/components/settings/PaymentTypesTab';
 import { StoreSettingsTab } from '@/components/settings/StoreSettingsTab';
@@ -51,7 +52,12 @@ function SettingsContent() {
   });
 
   if (settingsLoading || receiptTemplatesLoading || tablesLoading) {
-    return <div className="flex justify-center items-center h-64">Loading...</div>;
+    return (
+      <div className="flex flex-col justify-center items-center h-64 space-y-4">
+        <Loader size="lg" />
+        <p className="text-muted-foreground">Loading settings...</p>
+      </div>
+    );
   }
 
   return (

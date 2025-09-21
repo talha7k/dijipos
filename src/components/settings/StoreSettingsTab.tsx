@@ -10,10 +10,11 @@ import { EditableSetting } from '@/components/ui/editable-setting';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Percent, FileText, DollarSign, Database } from 'lucide-react';
 import { toast } from 'sonner';
+import { Loader } from '@/components/ui/loader';
 import { updateVATSettings, updateCurrencySettings, createVATSettings, createCurrencySettings } from '@/lib/firebase/firestore/settings/storeSettings';
 
 export function StoreSettingsTab() {
-  const { storeSettings } = useStoreSettings();
+  const { storeSettings, loading } = useStoreSettings();
   const [showSampleDataConfirm, setShowSampleDataConfirm] = useState(false);
 
   // Default VAT settings
@@ -131,6 +132,19 @@ export function StoreSettingsTab() {
       setShowSampleDataConfirm(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <Loader size="lg" />
+            <p className="text-muted-foreground mt-4">Loading store settings...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <>

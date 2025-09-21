@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { UtensilsCrossed, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { Loader } from '@/components/ui/loader';
 
 interface OrderTypesTabProps {
   orderTypes: OrderType[];
@@ -68,6 +69,17 @@ export function OrderTypesTab({ orderTypes: propOrderTypes }: OrderTypesTabProps
       setIsSubmitting(false);
     }
   };
+
+  if (loading) {
+    return (
+      <Card>
+        <CardContent className="flex flex-col items-center justify-center py-12">
+          <Loader size="lg" />
+          <p className="text-muted-foreground mt-4">Loading order types...</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>

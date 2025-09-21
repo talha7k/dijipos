@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, Printer } from 'lucide-react';
 import { useSeparatedTemplates } from '@/lib/hooks/useSeparatedTemplates';
 import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
+import { Loader } from '@/components/ui/loader';
 import {
   Dialog,
   DialogContent,
@@ -96,8 +97,9 @@ export default function InvoicesPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="flex flex-col items-center justify-center h-64 space-y-4">
+        <Loader size="lg" />
+        <p className="text-muted-foreground">Loading invoices...</p>
       </div>
     );
   }

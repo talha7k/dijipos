@@ -12,6 +12,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Plus, Trash2, Edit, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { AddCustomerDialog } from '@/components/pos/AddCustomerDialog';
+import { Loader } from '@/components/ui/loader';
 
 export default function CustomersPage() {
   const { customers, loading: customersLoading, deleteCustomer } = useCustomers();
@@ -37,7 +38,14 @@ export default function CustomersPage() {
     }
   };
 
-  if (customersLoading) return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  if (customersLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen space-y-4">
+        <Loader size="lg" />
+        <p className="text-muted-foreground">Loading customers...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-6">

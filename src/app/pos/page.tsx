@@ -71,6 +71,7 @@ import { CartItemModal } from "@/components/pos/CartItemModal";
 import { BusinessDaySelectionDialog } from "@/components/pos/BusinessDaySelectionDialog";
 import { Loader2 } from "lucide-react";
 import { useDateExpiryTimer } from "@/lib/utils/dateTimer";
+import { Loader } from "@/components/ui/loader";
 
 export default function SimplifiedPOSPage() {
   const pathname = usePathname();
@@ -868,8 +869,9 @@ export default function SimplifiedPOSPage() {
 
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center">
-        <div className="text-lg">Loading POS...</div>
+      <div className="h-screen flex flex-col items-center justify-center space-y-4">
+        <Loader size="lg" />
+        <p className="text-muted-foreground text-lg">Loading POS...</p>
       </div>
     );
   }
