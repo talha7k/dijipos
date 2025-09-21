@@ -76,6 +76,16 @@ export interface ReceiptTemplate {
   updatedAt: Date;
 }
 
+export interface ReportTemplate {
+  id: string;
+  name: string;
+  description?: string;
+  type: string;
+  content: string; // HTML template content
+  customHeader?: string;
+  customFooter?: string;
+}
+
 export interface ReceiptTemplateData {
   companyName: string;
   companyNameAr: string;
@@ -238,4 +248,4 @@ export enum TemplateCategory {
 }
 
 // Union type for all template types
-export type TemplateType = ReceiptTemplate | InvoiceTemplate | QuoteTemplate;
+export type TemplateType = ReceiptTemplate | InvoiceTemplate | QuoteTemplate | ReportTemplate;

@@ -1,4 +1,11 @@
-import React, { useState, useEffect, ReactNode, useCallback, useMemo, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  ReactNode,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
 import { Printer } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -114,10 +121,8 @@ interface ReceiptPrintDialogProps {
   payments?: OrderPayment[];
   printerSettings?: PrinterSettings | null;
   children: React.ReactNode;
-  rawHtml?: string;
   title?: string;
   onOpenChange?: (open: boolean) => void;
-  allowedPageSizes?: Array<"80mm" | "58mm" | "210mm" | "letter">;
 }
 
 export function ReceiptPrintDialog({
@@ -127,19 +132,20 @@ export function ReceiptPrintDialog({
   payments: initialPayments = [],
   printerSettings,
   children,
-  rawHtml,
   title = "Print Receipt",
   onOpenChange,
-  allowedPageSizes,
 }: ReceiptPrintDialogProps) {
   const { getPaymentsForOrder } = useOrders();
   const [open, setOpen] = useState(false);
-  
+
   // Use external onOpenChange if provided
-  const handleOpenChange = useCallback((newOpen: boolean) => {
-    setOpen(newOpen);
-    onOpenChange?.(newOpen);
-  }, [onOpenChange]);
+  const handleOpenChange = useCallback(
+    (newOpen: boolean) => {
+      setOpen(newOpen);
+      onOpenChange?.(newOpen);
+    },
+    [onOpenChange],
+  );
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
   const [renderedHtml, setRenderedHtml] = useState("");
@@ -159,7 +165,7 @@ export function ReceiptPrintDialog({
     bottom: 3,
     left: 3,
   });
-  
+
   // Ref to prevent infinite loops
   const isRenderingRef = useRef(false);
   const lastRenderKeyRef = useRef("");
@@ -168,31 +174,24 @@ export function ReceiptPrintDialog({
   useEffect(() => {
     if (open) {
       const settings = printerSettings?.receipts;
-      
+
       // Only update states if they actually changed to prevent infinite loops
-      if (rawHtml) {
-        if (renderedHtml !== rawHtml) {
-          setRenderedHtml(rawHtml);
-        }
-        // Default to A4 for reports, or letter if A4 is not allowed
-        const defaultPageSize = allowedPageSizes?.includes('210mm') ? '210mm' : 
-                               allowedPageSizes?.includes('letter') ? 'letter' : '210mm';
-        if (pageSize !== defaultPageSize) {
-          setPageSize(defaultPageSize);
-        }
-      } else {
-        // 1. Set default template
-        const defaultTemplateId = settings?.defaultTemplateId;
-        const isValidDefault =
-          defaultTemplateId &&
-          receiptTemplates.some((t) => t.id === defaultTemplateId);
-        const newSelectedTemplate = isValidDefault ? defaultTemplateId : receiptTemplates[0]?.id || "";
-        if (selectedTemplate !== newSelectedTemplate) {
-          setSelectedTemplate(newSelectedTemplate);
-        }
+
+      // 1. Set default template
+      const defaultTemplateId = settings?.defaultTemplateId;
+      const isValidDefault =
+        defaultTemplateId &&
+        receiptTemplates.some((t) => t.id === defaultTemplateId);
+      const newSelectedTemplate = isValidDefault
+        ? defaultTemplateId
+        : receiptTemplates[0]?.id || "";
+      if (selectedTemplate !== newSelectedTemplate) {
+        setSelectedTemplate(newSelectedTemplate);
 
         // 2. Set paper size
-        const newPageSize = settings?.paperWidth ? `${settings.paperWidth}mm` : "80mm";
+        const newPageSize = settings?.paperWidth
+          ? `${settings.paperWidth}mm`
+          : "80mm";
         if (pageSize !== newPageSize) {
           setPageSize(newPageSize);
         }
@@ -224,9 +223,16 @@ export function ReceiptPrintDialog({
         setRenderedHtml(""); // Clear preview on close
       }
     }
-  }, [open, printerSettings, receiptTemplates, rawHtml, renderedHtml, pageSize, selectedTemplate, margins, paddings]);
-
-  
+  }, [
+    open,
+    printerSettings,
+    receiptTemplates,
+    renderedHtml,
+    pageSize,
+    selectedTemplate,
+    margins,
+    paddings,
+  ]);
 
   // Effect to fetch payments when dialog opens
   useEffect(() => {
@@ -237,7 +243,7 @@ export function ReceiptPrintDialog({
           const orderPayments = await getPaymentsForOrder(order.id);
           setPayments(orderPayments);
         } catch (error) {
-          console.error('Error fetching payments for receipt:', error);
+          console.error("Error fetching payments for receipt:", error);
           setPayments([]);
         } finally {
           setPaymentsLoading(false);
@@ -251,25 +257,25 @@ export function ReceiptPrintDialog({
   }, [open, order, initialPayments, getPaymentsForOrder]);
 
   // Memoize the render data to prevent unnecessary re-renders
-  const renderData = useMemo(() => ({
-    order,
-    organization: organization || null,
-    payments,
-    printerSettings: printerSettings ?? undefined,
-  }), [order, organization, payments, printerSettings]);
-
-  // Effect to set direction when rawHtml is provided
-  useEffect(() => {
-    if (open && rawHtml && direction !== "ltr") {
-      // Set default direction for raw HTML (can be made configurable if needed)
-      setDirection("ltr");
-    }
-  }, [open, rawHtml, direction]);
+  const renderData = useMemo(
+    () => ({
+      order,
+      organization: organization || null,
+      payments,
+      printerSettings: printerSettings ?? undefined,
+    }),
+    [order, organization, payments, printerSettings],
+  );
 
   // Effect to render the preview when settings change
   useEffect(() => {
     // Only render if dialog is open, we're not using raw HTML, have a template, and payments are loaded
-    if (!open || rawHtml || !selectedTemplate || paymentsLoading || isRenderingRef.current) {
+    if (
+      !open ||
+      !selectedTemplate ||
+      paymentsLoading ||
+      isRenderingRef.current
+    ) {
       return;
     }
 
@@ -290,7 +296,7 @@ export function ReceiptPrintDialog({
     const renderPreview = async () => {
       isRenderingRef.current = true;
       lastRenderKeyRef.current = renderKey;
-      
+
       try {
         const content = await renderReceipt(
           template,
@@ -309,17 +315,10 @@ export function ReceiptPrintDialog({
     };
 
     renderPreview();
-  }, [
-    open,
-    rawHtml,
-    selectedTemplate,
-    renderData,
-    paymentsLoading,
-    receiptTemplates,
-  ]);
+  }, [open, selectedTemplate, renderData, paymentsLoading, receiptTemplates]);
 
   const handlePrint = () => {
-    const printWindow = window.open('', '_blank');
+    const printWindow = window.open("", "_blank");
     if (printWindow) {
       printWindow.document.write(`
         <html>
@@ -328,7 +327,7 @@ export function ReceiptPrintDialog({
             <style>
               @media print {
                 @page {
-                  size: ${pageSize === '210mm' ? 'A4' : pageSize === 'letter' ? 'letter' : pageSize};
+                  size: ${pageSize === "210mm" ? "A4" : pageSize};
                   margin: ${margins.top}mm ${margins.right}mm ${margins.bottom}mm ${margins.left}mm;
                 }
                 body {
@@ -361,10 +360,14 @@ export function ReceiptPrintDialog({
           <Button onClick={() => handleOpenChange(false)}>Cancel</Button>
           <Button
             onClick={handlePrint}
-            disabled={!rawHtml && (!selectedTemplate || isGenerating || paymentsLoading)}
+            disabled={!selectedTemplate || isGenerating || paymentsLoading}
           >
             <Printer className="h-4 w-4 mr-2" />
-            {paymentsLoading ? "Loading payments..." : isGenerating ? "Processing..." : "Print"}
+            {paymentsLoading
+              ? "Loading payments..."
+              : isGenerating
+                ? "Processing..."
+                : "Print"}
           </Button>
         </>
       }
@@ -376,22 +379,20 @@ export function ReceiptPrintDialog({
       >
         <div className="w-1/3 p-4 border-r bg-muted overflow-y-auto space-y-4">
           <h2 className="text-lg font-bold">Print Settings</h2>
-          {!rawHtml && (
-            <div>
-              <label className="block text-sm font-medium mb-1">Template</label>
-              <select
-                value={selectedTemplate}
-                onChange={(e) => setSelectedTemplate(e.target.value)}
-                className="w-full p-2 border rounded"
-              >
-                {receiptTemplates.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+          <div>
+            <label className="block text-sm font-medium mb-1">Template</label>
+            <select
+              value={selectedTemplate}
+              onChange={(e) => setSelectedTemplate(e.target.value)}
+              className="w-full p-2 border rounded"
+            >
+              {receiptTemplates.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+          </div>
           <div>
             <label className="block text-sm font-medium mb-1">Paper Size</label>
             <select
@@ -399,20 +400,9 @@ export function ReceiptPrintDialog({
               onChange={(e) => setPageSize(e.target.value)}
               className="w-full p-2 border rounded"
             >
-              {allowedPageSizes ? (
-                <>
-                  {allowedPageSizes.includes("210mm") && <option value="210mm">A4</option>}
-                  {allowedPageSizes.includes("letter") && <option value="letter">Letter</option>}
-                  {allowedPageSizes.includes("80mm") && <option value="80mm">80mm Thermal</option>}
-                  {allowedPageSizes.includes("58mm") && <option value="58mm">58mm Thermal</option>}
-                </>
-              ) : (
-                <>
-                  <option value="80mm">80mm Thermal</option>
-                  <option value="58mm">58mm Thermal</option>
-                  <option value="210mm">A4</option>
-                </>
-              )}
+              <option value="80mm">80mm Thermal</option>
+              <option value="58mm">58mm Thermal</option>
+              <option value="210mm">A4</option>
             </select>
           </div>
           <SettingsInputGroup
