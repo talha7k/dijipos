@@ -295,7 +295,10 @@ function PosReportTab({
   dateFilterType,
   onDateFilterTypeChange,
   isDetailed,
-  onPrint
+  onPrint,
+  reportHtml,
+  printDialogOpen,
+  setPrintDialogOpen
 }: {
   title: string;
   data: PosReportData;
@@ -305,6 +308,9 @@ function PosReportTab({
   onDateFilterTypeChange: (value: string) => void;
   isDetailed: boolean;
   onPrint: () => void;
+  reportHtml: string;
+  printDialogOpen: boolean;
+  setPrintDialogOpen: (open: boolean) => void;
 }) {
   return (
     <Card>
@@ -325,7 +331,13 @@ function PosReportTab({
               <SelectItem value="createdAt">Order Date</SelectItem>
             </SelectContent>
           </Select>
-          <Button onClick={onPrint}><Download className="h-4 w-4 mr-2" />Print</Button>
+          <ReceiptPrintDialog
+            rawHtml={reportHtml}
+            title={`POS Sales Report - ${format(date, 'PPP')}`}
+            onOpenChange={setPrintDialogOpen}
+          >
+            <Button onClick={onPrint}><Download className="h-4 w-4 mr-2" />Print</Button>
+          </ReceiptPrintDialog>
         </div>
       </CardHeader>
       <CardContent>
@@ -364,25 +376,10 @@ function ReportsPage() {
   const [printDialogOpen, setPrintDialogOpen] = useState(false);
   const [reportHtml, setReportHtml] = useState("");
   
-  // Memoize the dialog to prevent unnecessary re-renders
-  const receiptPrintDialog = useMemo(() => {
-    if (!printDialogOpen) return null;
-    
-    return (
-      <ReceiptPrintDialog
-        rawHtml={reportHtml}
-        title={`POS Sales Report - ${format(posReportDate, 'PPP')}`}
-        onOpenChange={setPrintDialogOpen}
-      >
-        <Button variant="outline" size="sm">
-          <Download className="h-4 w-4 mr-2" />
-          Print Report
-        </Button>
-      </ReceiptPrintDialog>
-    );
-  }, [printDialogOpen, reportHtml, posReportDate]);
+  
   const [paymentsByOrder, setPaymentsByOrder] = useState<Record<string, Array<{ paymentMethod: string; amount: number }>>>({});
 
+  // Filter orders for completed orders only (for sales calculations)
   const filteredOrders = useMemo(() => {
     return orders.filter(order => {
       // Date filter
@@ -396,20 +393,29 @@ function ReportsPage() {
     });
   }, [orders, posReportDate, dateFilterType]);
 
+  // Filter all orders for the selected date (for payments and status tracking)
+  const allOrdersForDate = useMemo(() => {
+    return orders.filter(order => {
+      const dateToCompare = dateFilterType === 'selectedDate' ? (order.selectedDate ? new Date(order.selectedDate) : null) : order.createdAt;
+      return dateToCompare && dateToCompare.toDateString() === posReportDate.toDateString();
+    });
+  }, [orders, posReportDate, dateFilterType]);
+
   useEffect(() => {
     const fetchPayments = async () => {
       const payments: Record<string, Array<{ paymentMethod: string; amount: number }>> = {};
-      for (const order of filteredOrders) {
+      // Fetch payments for ALL orders (not just completed ones)
+      for (const order of allOrdersForDate) {
         const orderPayments = await getPaymentsForOrder(order.id);
         payments[order.id] = orderPayments;
       }
       setPaymentsByOrder(payments);
     };
 
-    if (filteredOrders.length > 0) {
+    if (allOrdersForDate.length > 0) {
       fetchPayments();
     }
-  }, [filteredOrders, getPaymentsForOrder]);
+  }, [allOrdersForDate, getPaymentsForOrder]);
 
   const handlePosReportDateChange = (date: Date) => {
     setPosReportDate(date);
@@ -422,20 +428,24 @@ function ReportsPage() {
   };
 
   const posReportData = useMemo(() => {
+    // Sales calculations should only include completed orders
     const totalSales = filteredOrders.reduce((sum, order) => sum + order.total, 0);
     const totalTax = filteredOrders.reduce((sum, order) => sum + order.taxAmount, 0);
     const totalSubtotal = filteredOrders.reduce((sum, order) => sum + order.subtotal, 0);
 
+    // Payment calculations should include ALL orders (completed or not)
     const salesByPaymentType = Object.values(paymentsByOrder).flat().reduce((acc: Record<string, number>, payment) => {
       acc[payment.paymentMethod] = (acc[payment.paymentMethod] || 0) + payment.amount;
       return acc;
     }, {} as Record<string, number>);
 
+    // Order type calculations should only include completed orders
     const salesByOrderType = filteredOrders.reduce((acc: Record<string, number>, order) => {
       acc[order.orderType] = (acc[order.orderType] || 0) + order.total;
       return acc;
     }, {} as Record<string, number>);
 
+    // Item calculations should only include completed orders
     const allItems = filteredOrders.flatMap(order => order.items);
     const totalItemsSold = allItems.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -452,12 +462,7 @@ function ReportsPage() {
       .sort((a, b) => b.total - a.total)
       .slice(0, 20);
 
-    // Calculate orders by status for all orders (not just completed ones)
-    const allOrdersForDate = orders.filter(order => {
-      const dateToCompare = dateFilterType === 'selectedDate' ? (order.selectedDate ? new Date(order.selectedDate) : null) : order.createdAt;
-      return dateToCompare && dateToCompare.toDateString() === posReportDate.toDateString();
-    });
-
+    // Orders by status should include ALL orders (not just completed ones)
     const ordersByStatus = allOrdersForDate.reduce((acc: Record<string, number>, order) => {
       acc[order.status] = (acc[order.status] || 0) + 1;
       return acc;
@@ -475,7 +480,7 @@ function ReportsPage() {
       averageOrderValue: filteredOrders.length > 0 ? totalSales / filteredOrders.length : 0,
       ordersByStatus,
     };
-  }, [filteredOrders]);
+  }, [filteredOrders, paymentsByOrder, allOrdersForDate]);
 
   if (invoicesLoading || quotesLoading || ordersLoading) {
     return <div>Loading...</div>;
@@ -513,6 +518,9 @@ function ReportsPage() {
                     onDateFilterTypeChange={setDateFilterType}
                     isDetailed={false}
                     onPrint={() => handlePrint(posReportData, posReportDate, dateFilterType, false)}
+                    reportHtml={reportHtml}
+                    printDialogOpen={printDialogOpen}
+                    setPrintDialogOpen={setPrintDialogOpen}
                   />
                 </TabsContent>
                 <TabsContent value="detailed-report">
@@ -525,6 +533,9 @@ function ReportsPage() {
                     onDateFilterTypeChange={setDateFilterType}
                     isDetailed={true}
                     onPrint={() => handlePrint(posReportData, posReportDate, dateFilterType, true)}
+                    reportHtml={reportHtml}
+                    printDialogOpen={printDialogOpen}
+                    setPrintDialogOpen={setPrintDialogOpen}
                   />
                 </TabsContent>
               </Tabs>
@@ -595,7 +606,7 @@ function ReportsPage() {
         </TabsContent>
       </Tabs>
 
-      {receiptPrintDialog}
+      
     </div>
   );
 }
