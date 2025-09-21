@@ -1,51 +1,64 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Image from 'next/image';
-import { Supplier } from '@/types';
-import { useSuppliers } from '@/lib/hooks/useSuppliers';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useState } from "react";
+import Image from "next/image";
+import { Supplier } from "@/types";
+import { useSuppliers } from "@/lib/hooks/useSuppliers";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
-import { Plus, Users, X, Upload } from 'lucide-react';
-import { toast } from 'sonner';
-import { ActionButtons } from '@/components/ui/action-buttons';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { storage } from '@/lib/firebase/config';
+import { Plus, Users, X, Upload } from "lucide-react";
+import { toast } from "sonner";
+import { ActionButtons } from "@/components/ui/action-buttons";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage } from "@/lib/firebase/config";
 
 export default function SuppliersPage() {
-  const { suppliers, loading, createSupplier, updateSupplier, deleteSupplier } = useSuppliers();
-  
+  const { suppliers, loading, createSupplier, updateSupplier, deleteSupplier } =
+    useSuppliers();
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
 
   const [formData, setFormData] = useState({
-    name: '',
-    nameAr: '',
-    email: '',
-    address: '',
-    phone: '',
-    vatNumber: '',
-    contactPerson: '',
-    logoUrl: '',
+    name: "",
+    nameAr: "",
+    email: "",
+    address: "",
+    phone: "",
+    vatNumber: "",
+    contactPerson: "",
+    logoUrl: "",
   });
 
   const handleAddSupplier = () => {
     setEditingSupplier(null);
     setFormData({
-      name: '',
-      nameAr: '',
-      email: '',
-      address: '',
-      phone: '',
-      vatNumber: '',
-      contactPerson: '',
-      logoUrl: '',
+      name: "",
+      nameAr: "",
+      email: "",
+      address: "",
+      phone: "",
+      vatNumber: "",
+      contactPerson: "",
+      logoUrl: "",
     });
     setIsDialogOpen(true);
   };
@@ -54,47 +67,47 @@ export default function SuppliersPage() {
     setEditingSupplier(supplier);
     setFormData({
       name: supplier.name,
-      nameAr: supplier.nameAr || '',
+      nameAr: supplier.nameAr || "",
       email: supplier.email,
-      address: supplier.address || '',
-      phone: supplier.phone || '',
-      vatNumber: supplier.vatNumber || '',
-      contactPerson: supplier.contactPerson || '',
-      logoUrl: supplier.logoUrl || '',
+      address: supplier.address || "",
+      phone: supplier.phone || "",
+      vatNumber: supplier.vatNumber || "",
+      contactPerson: supplier.contactPerson || "",
+      logoUrl: supplier.logoUrl || "",
     });
     setIsDialogOpen(true);
   };
 
-   const handleDeleteSupplier = async (id: string) => {
-     try {
-       await deleteSupplier(id);
-     } catch {
-       // Error handling is done in the hook
-     }
-   };
+  const handleDeleteSupplier = async (id: string) => {
+    try {
+      await deleteSupplier(id);
+    } catch {
+      // Error handling is done in the hook
+    }
+  };
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !e.target.files[0]) return;
-    
+
     const file = e.target.files[0];
     setUploadingLogo(true);
-    
+
     try {
       const storageRef = ref(storage, `suppliers/${Date.now()}_logo`);
       await uploadBytes(storageRef, file);
       const downloadUrl = await getDownloadURL(storageRef);
-      
-      setFormData(prev => ({ ...prev, logoUrl: downloadUrl }));
+
+      setFormData((prev) => ({ ...prev, logoUrl: downloadUrl }));
     } catch (error) {
-      console.error('Error uploading logo:', error);
-      toast.error('Failed to upload logo.');
+      console.error("Error uploading logo:", error);
+      toast.error("Failed to upload logo.");
     } finally {
       setUploadingLogo(false);
     }
   };
 
   const handleRemoveLogo = () => {
-    setFormData(prev => ({ ...prev, logoUrl: '' }));
+    setFormData((prev) => ({ ...prev, logoUrl: "" }));
   };
 
   const handleSaveSupplier = async () => {
@@ -108,14 +121,14 @@ export default function SuppliersPage() {
       }
       setIsDialogOpen(false);
       setFormData({
-        name: '',
-        nameAr: '',
-        email: '',
-        address: '',
-        phone: '',
-        vatNumber: '',
-        contactPerson: '',
-        logoUrl: '',
+        name: "",
+        nameAr: "",
+        email: "",
+        address: "",
+        phone: "",
+        vatNumber: "",
+        contactPerson: "",
+        logoUrl: "",
       });
     } catch {
       // Error handling is done in the hook
@@ -125,7 +138,7 @@ export default function SuppliersPage() {
   };
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto p-4">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-2">
           <Users className="h-6 w-6" />
@@ -165,11 +178,13 @@ export default function SuppliersPage() {
               <TableBody>
                 {suppliers.map((supplier) => (
                   <TableRow key={supplier.id}>
-                    <TableCell className="font-medium">{supplier.name}</TableCell>
+                    <TableCell className="font-medium">
+                      {supplier.name}
+                    </TableCell>
                     <TableCell>{supplier.email}</TableCell>
-                    <TableCell>{supplier.phone || '-'}</TableCell>
-                    <TableCell>{supplier.address || '-'}</TableCell>
-                    <TableCell>{supplier.vatNumber || '-'}</TableCell>
+                    <TableCell>{supplier.phone || "-"}</TableCell>
+                    <TableCell>{supplier.address || "-"}</TableCell>
+                    <TableCell>{supplier.vatNumber || "-"}</TableCell>
                     <TableCell>
                       <ActionButtons
                         onEdit={() => handleEditSupplier(supplier)}
@@ -188,7 +203,7 @@ export default function SuppliersPage() {
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>
-              {editingSupplier ? 'Edit Supplier' : 'Add New Supplier'}
+              {editingSupplier ? "Edit Supplier" : "Add New Supplier"}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
@@ -198,7 +213,9 @@ export default function SuppliersPage() {
                 <Input
                   id="name"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
                   placeholder="Supplier name in English"
                 />
               </div>
@@ -207,7 +224,9 @@ export default function SuppliersPage() {
                 <Input
                   id="nameAr"
                   value={formData.nameAr}
-                  onChange={(e) => setFormData({ ...formData, nameAr: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, nameAr: e.target.value })
+                  }
                   placeholder="Supplier name in Arabic"
                   dir="rtl"
                 />
@@ -219,7 +238,9 @@ export default function SuppliersPage() {
                 id="email"
                 type="email"
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
                 placeholder="supplier@example.com"
               />
             </div>
@@ -228,7 +249,9 @@ export default function SuppliersPage() {
               <Input
                 id="phone"
                 value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, phone: e.target.value })
+                }
                 placeholder="+1-234-567-8900"
               />
             </div>
@@ -237,7 +260,9 @@ export default function SuppliersPage() {
               <Input
                 id="address"
                 value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, address: e.target.value })
+                }
                 placeholder="Street address, city, country"
               />
             </div>
@@ -247,7 +272,9 @@ export default function SuppliersPage() {
                 <Input
                   id="vatNumber"
                   value={formData.vatNumber}
-                  onChange={(e) => setFormData({ ...formData, vatNumber: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, vatNumber: e.target.value })
+                  }
                   placeholder="VAT number"
                 />
               </div>
@@ -256,7 +283,9 @@ export default function SuppliersPage() {
                 <Input
                   id="contactPerson"
                   value={formData.contactPerson}
-                  onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, contactPerson: e.target.value })
+                  }
                   placeholder="Contact person name"
                 />
               </div>
@@ -273,9 +302,9 @@ export default function SuppliersPage() {
                       height={96}
                       className="w-24 h-24 object-contain border rounded"
                     />
-                    <Button 
-                      variant="destructive" 
-                      size="icon" 
+                    <Button
+                      variant="destructive"
+                      size="icon"
                       className="absolute -top-2 -right-2 h-6 w-6"
                       onClick={handleRemoveLogo}
                     >
@@ -312,7 +341,7 @@ export default function SuppliersPage() {
                 Cancel
               </Button>
               <Button onClick={handleSaveSupplier}>
-                {editingSupplier ? 'Update' : 'Add'} Supplier
+                {editingSupplier ? "Update" : "Add"} Supplier
               </Button>
             </div>
           </div>

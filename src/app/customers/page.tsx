@@ -1,21 +1,42 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Customer } from '@/types';
-import { useCustomers } from '@/lib/hooks/useCustomers';
+import { useState } from "react";
+import { Customer } from "@/types";
+import { useCustomers } from "@/lib/hooks/useCustomers";
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
-import { Plus, Trash2, Edit, Users } from 'lucide-react';
-import { toast } from 'sonner';
-import { AddCustomerDialog } from '@/components/pos/AddCustomerDialog';
-import { Loader } from '@/components/ui/loader';
+import { Plus, Trash2, Edit, Users } from "lucide-react";
+import { toast } from "sonner";
+import { AddCustomerDialog } from "@/components/pos/AddCustomerDialog";
+import { Loader } from "@/components/ui/loader";
 
 export default function CustomersPage() {
-  const { customers, loading: customersLoading, deleteCustomer } = useCustomers();
+  const {
+    customers,
+    loading: customersLoading,
+    deleteCustomer,
+  } = useCustomers();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
 
@@ -32,9 +53,9 @@ export default function CustomersPage() {
   const handleDeleteCustomer = async (id: string) => {
     try {
       await deleteCustomer(id);
-      toast.success('Customer deleted successfully');
+      toast.success("Customer deleted successfully");
     } catch {
-      toast.error('Failed to delete customer');
+      toast.error("Failed to delete customer");
     }
   };
 
@@ -48,7 +69,7 @@ export default function CustomersPage() {
   }
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto p-4">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-2">
           <Users className="h-6 w-6" />
@@ -84,11 +105,13 @@ export default function CustomersPage() {
               <TableBody>
                 {customers.map((customer: Customer) => (
                   <TableRow key={customer.id}>
-                    <TableCell className="font-medium">{customer.name}</TableCell>
+                    <TableCell className="font-medium">
+                      {customer.name}
+                    </TableCell>
                     <TableCell>{customer.email}</TableCell>
-                    <TableCell>{customer.phone || '-'}</TableCell>
-                    <TableCell>{customer.address || '-'}</TableCell>
-                    <TableCell>{customer.vatNumber || '-'}</TableCell>
+                    <TableCell>{customer.phone || "-"}</TableCell>
+                    <TableCell>{customer.address || "-"}</TableCell>
+                    <TableCell>{customer.vatNumber || "-"}</TableCell>
                     <TableCell>
                       <div className="flex items-center space-x-2">
                         <Button
@@ -100,21 +123,30 @@ export default function CustomersPage() {
                         </Button>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-600 hover:text-red-700"
+                            >
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
-                              <AlertDialogTitle>Delete Customer</AlertDialogTitle>
+                              <AlertDialogTitle>
+                                Delete Customer
+                              </AlertDialogTitle>
                               <AlertDialogDescription>
-                                Are you sure you want to delete this customer? This action cannot be undone.
+                                Are you sure you want to delete this customer?
+                                This action cannot be undone.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancel</AlertDialogCancel>
                               <AlertDialogAction
-                                onClick={() => handleDeleteCustomer(customer.id)}
+                                onClick={() =>
+                                  handleDeleteCustomer(customer.id)
+                                }
                                 className="bg-red-600 hover:bg-red-700"
                               >
                                 Delete

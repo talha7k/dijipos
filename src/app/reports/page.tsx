@@ -709,7 +709,7 @@ function ReportsPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-4 space-y-6">
       <h1 className="text-3xl font-bold tracking-tight">Reports</h1>
       <Tabs defaultValue="pos">
         <TabsList>
