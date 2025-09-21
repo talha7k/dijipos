@@ -6,8 +6,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogClose,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { X } from "lucide-react";
 
 interface DialogWithActionsProps {
   open: boolean;
@@ -35,17 +37,25 @@ export function DialogWithActions({
   maxWidth = "max-w-4xl",
 }: DialogWithActionsProps) {
   const content = (
-    <DialogContent className={cn(maxWidth, "flex flex-col max-h-[90vh]", className)}>
+    <DialogContent
+      className={cn(maxWidth, "flex flex-col max-h-[90vh]", className)}
+    >
       {/* Fixed Header Section */}
       <div className="flex-shrink-0">
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          {description && <DialogDescription>{description}</DialogDescription>}
-        </DialogHeader>
+        <div className="flex items-center justify-between pb-4 border-b">
+          <div className="flex-1">
+            <DialogHeader className="space-y-1">
+              <DialogTitle>{title}</DialogTitle>
+              {description && (
+                <DialogDescription>{description}</DialogDescription>
+              )}
+            </DialogHeader>
+          </div>
 
-        {/* Fixed Actions */}
-        <div className="flex justify-end gap-2 pb-4 border-b bg-background">
-          {actions}
+          <div className="flex items-center gap-4">
+            {/* Actions */}
+            <div className="flex gap-2 mr-10">{actions}</div>
+          </div>
         </div>
       </div>
 
