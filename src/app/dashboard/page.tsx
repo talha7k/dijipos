@@ -1,124 +1,425 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useDashboard } from '@/lib/hooks/useDashboard';
+import { UserRole } from '@/types/enums';
+import { 
+  ShoppingCart, 
+  CheckCircle, 
+  Users, 
+  LayoutGrid, 
+  Package, 
+  Settings, 
+  TrendingUp, 
+  Building,
+  User,
+  CreditCard,
+  Percent,
+  Star,
+  Clock,
+  FileText
+} from 'lucide-react';
 import Link from 'next/link';
-import { useQuotes } from '@/lib/hooks/useQuotes';
-import { useInvoices } from '@/lib/hooks/useInvoices';
-import { usePayments } from '@/lib/hooks/usePayments';
-import { useProducts } from '@/lib/hooks/useProducts';
-import { useServices } from '@/lib/hooks/useServices';
-import { useTables } from '@/lib/hooks/useTables';
-import { useCurrency } from '@/lib/hooks/useCurrency';
-import { TableStatus, Payment } from '@/types';
 
 function DashboardContent() {
-  const { quotes } = useQuotes();
-  const { salesInvoices: invoices } = useInvoices();
-  const { payments } = usePayments();
-  const { products } = useProducts();
-  const { services } = useServices();
-  const { tables } = useTables();
-  const { formatCurrency } = useCurrency();
+  const { data, loading, dateFilter, setDateFilter } = useDashboard();
+  const {
+    openOrdersCount,
+    completedOrdersCount,
+    
+    totalOrdersYesterday,
+    totalCustomers,
+    totalTables,
+    availableTables,
+    occupiedTables,
+    totalProducts,
+    totalServices,
+    totalSalesToday,
+    totalSalesYesterday,
+    vatAmountToday,
+    topSellingItemsToday,
+    topSellingItemsYesterday,
+    salesByOrderTypeToday,
+    salesByOrderTypeYesterday,
+    userName,
+    userRole,
+    companyName,
+    companyAddress,
+    companyVatNumber,
+    vatRate,
+  } = data;
 
-  
+  const isManagerOrAdmin = userRole === UserRole.MANAGER || userRole === UserRole.ADMIN;
+  const currentTopSellingItems = dateFilter === 'today' ? topSellingItemsToday : topSellingItemsYesterday;
+  const currentSalesByOrderType = dateFilter === 'today' ? salesByOrderTypeToday : salesByOrderTypeYesterday;
+
+  if (loading) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p>Loading dashboard...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Dashboard</h1>
+    <div className="container mx-auto p-6 space-y-6">
+      {/* Header with Company and User Info */}
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          {companyName && (
+            <div className="mt-2 space-y-1">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Building className="h-4 w-4" />
+                <span className="font-medium">{companyName}</span>
+              </div>
+              {companyAddress && (
+                <div className="text-sm text-muted-foreground ml-6">{companyAddress}</div>
+              )}
+              {companyVatNumber && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground ml-6">
+                  <Percent className="h-4 w-4" />
+                  <span>VAT: {companyVatNumber}</span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+        <div className="text-right">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <User className="h-4 w-4" />
+            <span>{userName}</span>
+            {userRole && (
+              <Badge variant="outline" className="ml-2">
+                {userRole}
+              </Badge>
+            )}
+          </div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        <Link href="/quotes">
-          <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <CardTitle>Quotes</CardTitle>
-              <CardDescription>Total Value</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(quotes.reduce((sum, q) => sum + q.total, 0))}</div>
-              <p className="text-sm text-muted-foreground">
-                {quotes.length} total • {quotes.filter(q => q.status === 'draft').length} pending
-              </p>
-            </CardContent>
-          </Card>
-        </Link>
+      {/* Main Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Open Orders */}
+        <Card className="border-l-4 border-l-yellow-500">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Open Orders</CardTitle>
+            <Clock className="h-4 w-4 text-yellow-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{openOrdersCount}</div>
+            <p className="text-xs text-muted-foreground">Active orders</p>
+          </CardContent>
+        </Card>
 
-        <Link href="/invoices">
-          <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <CardTitle>Invoices</CardTitle>
-              <CardDescription>Total Value</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(invoices.reduce((sum, inv) => sum + inv.total, 0))}</div>
-              <p className="text-sm text-muted-foreground">
-                {invoices.length} total • {formatCurrency(invoices.filter(inv => inv.status !== 'paid').reduce((sum, inv) => sum + inv.total, 0))} unpaid
-              </p>
-            </CardContent>
-          </Card>
-        </Link>
+        {/* Completed Orders */}
+        <Card className="border-l-4 border-l-green-500">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Completed Orders</CardTitle>
+            <CheckCircle className="h-4 w-4 text-green-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{completedOrdersCount}</div>
+            <p className="text-xs text-muted-foreground">Finished orders</p>
+          </CardContent>
+        </Card>
 
-        <Link href="/payments">
-          <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <CardTitle>Payments</CardTitle>
-              <CardDescription>Total Received</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="text-2xl font-bold">{formatCurrency(payments.reduce((sum: number, p: Payment) => sum + p.amount, 0))}</div>
-              <p className="text-sm text-muted-foreground">
-                Revenue collected
-              </p>
-            </CardContent>
-          </Card>
-        </Link>
+        {/* Total Customers */}
+        <Card className="border-l-4 border-l-blue-500">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Customers</CardTitle>
+            <Users className="h-4 w-4 text-blue-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalCustomers}</div>
+            <p className="text-xs text-muted-foreground">Registered customers</p>
+          </CardContent>
+        </Card>
 
-        <Link href="/products-services">
-          <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <CardTitle>Products & Services</CardTitle>
-              <CardDescription>Total Items</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{products.length + services.length}</div>
-              <p className="text-sm text-muted-foreground">
-                {products.length} products • {services.length} services
-              </p>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href="/tables">
-          <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <CardTitle>Tables</CardTitle>
-              <CardDescription>Table Management</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{tables.length}</div>
-              <p className="text-sm text-muted-foreground">
-                        {tables.filter(table => table.status === TableStatus.AVAILABLE).length} available • {tables.filter(table => table.status !== TableStatus.AVAILABLE).length} occupied
-                      </p>
-            </CardContent>
-          </Card>
-        </Link>
+        {/* Tables Status */}
+        <Card className="border-l-4 border-l-purple-500">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Tables</CardTitle>
+            <LayoutGrid className="h-4 w-4 text-purple-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalTables}</div>
+            <p className="text-xs text-muted-foreground">
+              {availableTables} available • {occupiedTables} occupied
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
-      <div className="mt-6">
-        <Link href="/settings">
-          <Card className="cursor-pointer hover:shadow-lg transition-shadow max-w-xs">
-            <CardHeader>
-              <CardTitle>Store Settings</CardTitle>
-              <CardDescription>Configure order types, payment methods, and VAT</CardDescription>
+      {/* Financial Cards (Manager/Admin Only) */}
+      {isManagerOrAdmin && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Today's Sales */}
+          <Card className="border-l-4 border-l-emerald-500">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Today&apos;s Sales</CardTitle>
+              <TrendingUp className="h-4 w-4 text-emerald-500" />
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Manage your store configuration
+              <div className="text-2xl font-bold">SAR {totalSalesToday.toFixed(2)}</div>
+              <p className="text-xs text-muted-foreground">
+                {totalOrdersYesterday > 0 && (
+                  <span className={totalSalesToday >= totalSalesYesterday ? 'text-green-600' : 'text-red-600'}>
+                    {totalSalesYesterday > 0 ? 
+                      `${(((totalSalesToday - totalSalesYesterday) / totalSalesYesterday) * 100).toFixed(1)}% from yesterday` : 
+                      'First day sales'
+                    }
+                  </span>
+                )}
               </p>
             </CardContent>
           </Card>
-        </Link>
+
+          {/* VAT Amount */}
+          <Card className="border-l-4 border-l-orange-500">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">VAT Collected</CardTitle>
+              <Percent className="h-4 w-4 text-orange-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">SAR {vatAmountToday.toFixed(2)}</div>
+              <p className="text-xs text-muted-foreground">
+                {vatRate ? `@ ${vatRate}%` : 'VAT rate not set'}
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Products & Services */}
+          <Card className="border-l-4 border-l-indigo-500">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Products</CardTitle>
+              <Package className="h-4 w-4 text-indigo-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{totalProducts}</div>
+              <p className="text-xs text-muted-foreground">Total products</p>
+            </CardContent>
+          </Card>
+
+          {/* Services */}
+          <Card className="border-l-4 border-l-pink-500">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Services</CardTitle>
+              <Star className="h-4 w-4 text-pink-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{totalServices}</div>
+              <p className="text-xs text-muted-foreground">Total services</p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Main Content Tabs */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Top Selling Items */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>Top Selling Items</CardTitle>
+              <Tabs value={dateFilter} onValueChange={(value) => setDateFilter(value as 'today' | 'yesterday')}>
+                <TabsList>
+                  <TabsTrigger value="today">Today</TabsTrigger>
+                  <TabsTrigger value="yesterday">Yesterday</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+            <CardDescription>
+              Best performing items by revenue
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {currentTopSellingItems.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Item</TableHead>
+                    <TableHead className="text-right">Qty</TableHead>
+                    <TableHead className="text-right">Total</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {currentTopSellingItems.map((item, index) => (
+                    <TableRow key={item.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white ${
+                            index === 0 ? 'bg-yellow-500' : 
+                            index === 1 ? 'bg-gray-400' : 
+                            index === 2 ? 'bg-orange-600' : 'bg-gray-300'
+                          }`}>
+                            {index + 1}
+                          </div>
+                          {item.name}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">{item.quantity}</TableCell>
+                      <TableCell className="text-right font-medium">SAR {item.total.toFixed(2)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>No sales data for {dateFilter}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Order Type Breakdown (Manager/Admin Only) */}
+        {isManagerOrAdmin && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Sales by Order Type</CardTitle>
+              <CardDescription>
+                Revenue breakdown by order type for {dateFilter}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {Object.keys(currentSalesByOrderType).length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Order Type</TableHead>
+                      <TableHead className="text-right">Amount</TableHead>
+                      <TableHead className="text-right">%</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {Object.entries(currentSalesByOrderType)
+                      .sort(([,a], [,b]) => b - a)
+                      .map(([type, amount]) => {
+                        const total = Object.values(currentSalesByOrderType).reduce((sum, val) => sum + val, 0);
+                        const percentage = total > 0 ? (amount / total) * 100 : 0;
+                        return (
+                          <TableRow key={type}>
+                            <TableCell className="capitalize">{type.replace('_', ' ')}</TableCell>
+                            <TableCell className="text-right font-medium">SAR {amount.toFixed(2)}</TableCell>
+                            <TableCell className="text-right">{percentage.toFixed(1)}%</TableCell>
+                          </TableRow>
+                        );
+                      })}
+                  </TableBody>
+                </Table>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <ShoppingCart className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No order type data for {dateFilter}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Quick Actions */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Quick Actions</CardTitle>
+            <CardDescription>
+              Common tasks and navigation
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Link href="/pos">
+              <Button className="w-full justify-start" variant="outline">
+                <ShoppingCart className="h-4 w-4 mr-2" />
+                Point of Sale
+              </Button>
+            </Link>
+            <Link href="/tables">
+              <Button className="w-full justify-start" variant="outline">
+                <LayoutGrid className="h-4 w-4 mr-2" />
+                Table Management
+              </Button>
+            </Link>
+            <Link href="/customers">
+              <Button className="w-full justify-start" variant="outline">
+                <Users className="h-4 w-4 mr-2" />
+                Customer Management
+              </Button>
+            </Link>
+            <Link href="/products-services">
+              <Button className="w-full justify-start" variant="outline">
+                <Package className="h-4 w-4 mr-2" />
+                Products & Services
+              </Button>
+            </Link>
+            {isManagerOrAdmin && (
+              <>
+                <Link href="/invoices">
+                  <Button className="w-full justify-start" variant="outline">
+                    <CreditCard className="h-4 w-4 mr-2" />
+                    Invoices
+                  </Button>
+                </Link>
+                <Link href="/quotes">
+                  <Button className="w-full justify-start" variant="outline">
+                    <FileText className="h-4 w-4 mr-2" />
+                    Quotes
+                  </Button>
+                </Link>
+                <Link href="/reports">
+                  <Button className="w-full justify-start" variant="outline">
+                    <TrendingUp className="h-4 w-4 mr-2" />
+                    Reports
+                  </Button>
+                </Link>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Store Settings Preview */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Store Settings</CardTitle>
+            <CardDescription>
+              Quick overview of store configuration
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">VAT Rate</span>
+              <Badge variant={vatRate ? "default" : "destructive"}>
+                {vatRate ? `${vatRate}%` : 'Not Set'}
+              </Badge>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">Products</span>
+              <Badge variant="outline">{totalProducts}</Badge>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">Services</span>
+              <Badge variant="outline">{totalServices}</Badge>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">Tables</span>
+              <Badge variant="outline">{totalTables}</Badge>
+            </div>
+            <Link href="/settings">
+              <Button className="w-full mt-4" variant="outline">
+                <Settings className="h-4 w-4 mr-2" />
+                Configure Settings
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
