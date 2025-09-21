@@ -877,7 +877,6 @@ export default function SimplifiedPOSPage() {
         <POSHeaderContainer>
           <POSHeader
             cartItems={cartForComponents}
-            cartTotal={cartTotal}
             selectedTable={selectedTable}
             selectedCustomer={selectedCustomer}
             selectedOrder={selectedOrder}

@@ -4,14 +4,31 @@ import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-export function TableFilter({ columns, onFilterChange }) {
-  const [filters, setFilters] = useState({});
+interface FilterOption {
+  value: string;
+  label: string;
+}
+
+interface Column {
+  accessorKey: string;
+  header: string;
+  filterType?: 'text' | 'select' | 'date';
+  filterOptions?: FilterOption[];
+}
+
+interface TableFilterProps {
+  columns: Column[];
+  onFilterChange: (filters: Record<string, string>) => void;
+}
+
+export function TableFilter({ columns, onFilterChange }: TableFilterProps) {
+  const [filters, setFilters] = useState<Record<string, string>>({});
 
   useEffect(() => {
     onFilterChange(filters);
   }, [filters, onFilterChange]);
 
-  const handleInputChange = (columnId, value) => {
+  const handleInputChange = (columnId: string, value: string) => {
     setFilters(prev => ({ ...prev, [columnId]: value }));
   };
 
@@ -24,7 +41,7 @@ export function TableFilter({ columns, onFilterChange }) {
           <div key={column.accessorKey} className="px-2">
             {column.filterType === 'text' && (
               <Input
-                placeholder={`Filter ${column.header}...`}
+                placeholder={`${column.header}...`}
                 value={filters[column.accessorKey] || ''}
                 onChange={(e) => handleInputChange(column.accessorKey, e.target.value)}
                 className="max-w-sm"
@@ -33,10 +50,10 @@ export function TableFilter({ columns, onFilterChange }) {
             {column.filterType === 'select' && (
               <Select onValueChange={(value) => handleInputChange(column.accessorKey, value)}>
                 <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder={`Filter ${column.header}...`} />
+                  <SelectValue placeholder={`${column.header}...`} />
                 </SelectTrigger>
                 <SelectContent>
-                  {column.filterOptions.map(option => (
+                  {column.filterOptions?.map(option => (
                     <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
                   ))}
                 </SelectContent>

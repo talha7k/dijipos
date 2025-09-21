@@ -13,8 +13,23 @@ import { useQuotes } from '@/lib/hooks/useQuotes';
 import { useOrders } from '@/lib/hooks/useOrders';
 import { AdminManagerGuard } from '@/components/layout/RoleGuard';
 import { format } from 'date-fns';
+import { PaymentStatus } from '@/types';
+import { OrderStatus } from '@/types';
 
-function PosReportDetails({ data }) {
+interface PosReportData {
+  totalSales: number;
+  totalOrders: number;
+  totalItemsSold: number;
+  averageOrderValue: number;
+  salesByPaymentType: Record<string, number>;
+  salesByOrderType: Record<string, number>;
+  topSellingItems: Array<{ name: string; quantity: number; total: number }>;
+  totalSubtotal: number;
+  totalTax: number;
+  ordersByStatus: Record<string, number>;
+}
+
+function PosReportDetails({ data }: { data: PosReportData }) {
   return (
     <div className="space-y-4 mt-4">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -129,6 +144,30 @@ function PosReportDetails({ data }) {
 
       <Card>
         <CardHeader>
+          <CardTitle>Orders by Status</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Count</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {Object.entries(data.ordersByStatus).map(([status, count]) => (
+                <TableRow key={status}>
+                  <TableCell className="capitalize">{status.replace('_', ' ')}</TableCell>
+                  <TableCell className="text-right">{count}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle>Financial Summary</CardTitle>
         </CardHeader>
         <CardContent>
@@ -160,7 +199,7 @@ function PosReportDetails({ data }) {
   );
 }
 
-function generateReportHtml(data, reportDate, dateFilterType, isDetailed) {
+function generateReportHtml(data: PosReportData, reportDate: Date, dateFilterType: string, isDetailed: boolean) {
   const title = `POS Sales Report - ${format(reportDate, 'PPP')} (${dateFilterType === 'selectedDate' ? 'Business Date' : 'Order Date'})`;
   const detailsHtml = isDetailed ? `
     <h2>Sales by Payment Type</h2>
@@ -184,6 +223,14 @@ function generateReportHtml(data, reportDate, dateFilterType, isDetailed) {
       <thead><tr><th>Item</th><th class="text-right">Quantity</th><th class="text-right">Total</th></tr></thead>
       <tbody>
         ${data.topSellingItems.map(item => `<tr><td>${item.name}</td><td class="text-right">${item.quantity}</td><td class="text-right">${item.total.toFixed(2)}</td></tr>`).join('')}
+      </tbody>
+    </table>
+
+    <h2>Orders by Status</h2>
+    <table>
+      <thead><tr><th>Status</th><th class="text-right">Count</th></tr></thead>
+      <tbody>
+        ${Object.entries(data.ordersByStatus).map(([status, count]) => `<tr><td class="capitalize">${status.replace('_', ' ')}</td><td class="text-right">${count}</td></tr>`).join('')}
       </tbody>
     </table>
   ` : '';
@@ -240,7 +287,25 @@ function generateReportHtml(data, reportDate, dateFilterType, isDetailed) {
 
 import { ReceiptPrintDialog } from '@/components/ReceiptPrintDialog';
 
-function PosReportTab({ title, data, date, onDateChange, dateFilterType, onDateFilterTypeChange, isDetailed, onPrint }) {
+function PosReportTab({
+  title,
+  data,
+  date,
+  onDateChange,
+  dateFilterType,
+  onDateFilterTypeChange,
+  isDetailed,
+  onPrint
+}: {
+  title: string;
+  data: PosReportData;
+  date: Date;
+  onDateChange: (date: Date) => void;
+  dateFilterType: string;
+  onDateFilterTypeChange: (value: string) => void;
+  isDetailed: boolean;
+  onPrint: () => void;
+}) {
   return (
     <Card>
       <CardHeader>
@@ -298,7 +363,7 @@ function ReportsPage() {
   const [dateFilterType, setDateFilterType] = useState('selectedDate');
   const [printDialogOpen, setPrintDialogOpen] = useState(false);
   const [reportHtml, setReportHtml] = useState("");
-  const [paymentsByOrder, setPaymentsByOrder] = useState({});
+  const [paymentsByOrder, setPaymentsByOrder] = useState<Record<string, Array<{ paymentMethod: string; amount: number }>>>({});
 
   const filteredOrders = useMemo(() => {
     return orders.filter(order => {
@@ -308,14 +373,14 @@ function ReportsPage() {
         return false;
       }
 
-      // Payment status filter
-      return order.paymentStatus === 'PAID' || order.paymentStatus === 'PARTIAL';
+      // Order status filter - only completed orders for calculations
+      return order.status === OrderStatus.COMPLETED;
     });
   }, [orders, posReportDate, dateFilterType]);
 
   useEffect(() => {
     const fetchPayments = async () => {
-      const payments = {};
+      const payments: Record<string, Array<{ paymentMethod: string; amount: number }>> = {};
       for (const order of filteredOrders) {
         const orderPayments = await getPaymentsForOrder(order.id);
         payments[order.id] = orderPayments;
@@ -332,7 +397,7 @@ function ReportsPage() {
     setPosReportDate(date);
   };
 
-  const handlePrint = (data, date, filterType, isDetailed) => {
+  const handlePrint = (data: PosReportData, date: Date, filterType: string, isDetailed: boolean) => {
     const html = generateReportHtml(data, date, filterType, isDetailed);
     setReportHtml(html);
     setPrintDialogOpen(true);
@@ -343,31 +408,42 @@ function ReportsPage() {
     const totalTax = filteredOrders.reduce((sum, order) => sum + order.taxAmount, 0);
     const totalSubtotal = filteredOrders.reduce((sum, order) => sum + order.subtotal, 0);
 
-    const salesByPaymentType = Object.values(paymentsByOrder).flat().reduce((acc, payment) => {
+    const salesByPaymentType = Object.values(paymentsByOrder).flat().reduce((acc: Record<string, number>, payment) => {
       acc[payment.paymentMethod] = (acc[payment.paymentMethod] || 0) + payment.amount;
       return acc;
-    }, {});
+    }, {} as Record<string, number>);
 
-    const salesByOrderType = filteredOrders.reduce((acc, order) => {
+    const salesByOrderType = filteredOrders.reduce((acc: Record<string, number>, order) => {
       acc[order.orderType] = (acc[order.orderType] || 0) + order.total;
       return acc;
-    }, {});
+    }, {} as Record<string, number>);
 
     const allItems = filteredOrders.flatMap(order => order.items);
     const totalItemsSold = allItems.reduce((sum, item) => sum + item.quantity, 0);
 
-    const itemSales = allItems.reduce((acc, item) => {
+    const itemSales: Record<string, { name: string; quantity: number; total: number }> = allItems.reduce((acc, item) => {
       if (!acc[item.id]) {
         acc[item.id] = { name: item.name, quantity: 0, total: 0 };
       }
       acc[item.id].quantity += item.quantity;
       acc[item.id].total += item.total;
       return acc;
-    }, {});
+    }, {} as Record<string, { name: string; quantity: number; total: number }>);
 
     const topSellingItems = Object.values(itemSales)
       .sort((a, b) => b.total - a.total)
       .slice(0, 20);
+
+    // Calculate orders by status for all orders (not just completed ones)
+    const allOrdersForDate = orders.filter(order => {
+      const dateToCompare = dateFilterType === 'selectedDate' ? (order.selectedDate ? new Date(order.selectedDate) : null) : order.createdAt;
+      return dateToCompare && dateToCompare.toDateString() === posReportDate.toDateString();
+    });
+
+    const ordersByStatus = allOrdersForDate.reduce((acc: Record<string, number>, order) => {
+      acc[order.status] = (acc[order.status] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
 
     return {
       totalSales,
@@ -379,6 +455,7 @@ function ReportsPage() {
       topSellingItems,
       totalOrders: filteredOrders.length,
       averageOrderValue: filteredOrders.length > 0 ? totalSales / filteredOrders.length : 0,
+      ordersByStatus,
     };
   }, [filteredOrders]);
 
@@ -501,12 +578,13 @@ function ReportsPage() {
       </Tabs>
 
       <ReceiptPrintDialog
-        open={printDialogOpen}
-        onOpenChange={setPrintDialogOpen}
         rawHtml={reportHtml}
         title={`POS Sales Report - ${format(posReportDate, 'PPP')}`}
       >
-        <div />
+        <Button variant="outline" size="sm">
+          <Download className="h-4 w-4 mr-2" />
+          Print Report
+        </Button>
       </ReceiptPrintDialog>
     </div>
   );

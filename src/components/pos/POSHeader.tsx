@@ -9,8 +9,17 @@ import { Users, LayoutGrid, FileText, ShoppingBag, RotateCcw, PlusCircle, Calend
 import { OrderTypeSelectionDialog } from './OrderTypeSelectionDialog';
 import { useOnlineStatus } from '@/lib/hooks/useOnlineStatus';
 
+interface CartItemForComponent {
+  id: string;
+  type: "product" | "service";
+  name: string;
+  price: number;
+  quantity: number;
+  total: number;
+}
+
 interface POSHeaderProps {
-  cartItems: { length: number }[];
+  cartItems: CartItemForComponent[];
   selectedTable?: Table | null;
   selectedCustomer?: Customer | null;
   selectedOrder?: Order | null;

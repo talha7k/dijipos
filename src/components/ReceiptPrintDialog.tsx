@@ -1,4 +1,4 @@
-import React, { useState, useEffect, ReactNode } from "react";
+import React, { useState, useEffect, ReactNode, useCallback } from "react";
 import { Printer } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -190,6 +190,28 @@ export function ReceiptPrintDialog({
     }
   }, [open, printerSettings, receiptTemplates, rawHtml]);
 
+  const renderPreview = useCallback(async (template: ReceiptTemplate) => {
+    if (paymentsLoading) {
+      setRenderedHtml("<p style='color: gray;'>Loading payment information...</p>");
+      return;
+    }
+    if (!order) return;
+
+    try {
+      const content = await renderReceipt(
+        template,
+        order,
+        organization || null,
+        payments,
+        printerSettings ?? undefined,
+      );
+      setRenderedHtml(content);
+    } catch (error) {
+      console.error("Failed to render receipt preview:", error);
+      setRenderedHtml("<p style='color: red;'>Error rendering preview.</p>");
+    }
+  }, [paymentsLoading, order, organization, payments, printerSettings]);
+
   // Effect to fetch payments when dialog opens
   useEffect(() => {
     if (open && order && initialPayments.length === 0) {
@@ -231,29 +253,8 @@ export function ReceiptPrintDialog({
     payments,
     printerSettings,
     paymentsLoading,
+    renderPreview,
   ]);
-
-  const renderPreview = async (template: ReceiptTemplate) => {
-    if (paymentsLoading) {
-      setRenderedHtml("<p style='color: gray;'>Loading payment information...</p>");
-      return;
-    }
-    if (!order) return;
-
-    try {
-      const content = await renderReceipt(
-        template,
-        order,
-        organization,
-        payments,
-        printerSettings ?? undefined,
-      );
-      setRenderedHtml(content);
-    } catch (error) {
-      console.error("Failed to render receipt preview:", error);
-      setRenderedHtml("<p style='color: red;'>Error rendering preview.</p>");
-    }
-  };
 
   const handlePrint = () => {
     const printWindow = window.open('', '_blank');
@@ -313,20 +314,22 @@ export function ReceiptPrintDialog({
       >
         <div className="w-1/3 p-4 border-r bg-muted overflow-y-auto space-y-4">
           <h2 className="text-lg font-bold">Print Settings</h2>
-          <div>
-            <label className="block text-sm font-medium mb-1">Template</label>
-            <select
-              value={selectedTemplate}
-              onChange={(e) => setSelectedTemplate(e.target.value)}
-              className="w-full p-2 border rounded"
-            >
-              {receiptTemplates.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          {!rawHtml && (
+            <div>
+              <label className="block text-sm font-medium mb-1">Template</label>
+              <select
+                value={selectedTemplate}
+                onChange={(e) => setSelectedTemplate(e.target.value)}
+                className="w-full p-2 border rounded"
+              >
+                {receiptTemplates.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           <div>
             <label className="block text-sm font-medium mb-1">Paper Size</label>
             <select

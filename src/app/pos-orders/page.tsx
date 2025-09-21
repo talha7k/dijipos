@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useAtom } from "jotai";
-import { selectedOrganizationAtom, organizationUserRoleAtom } from "@/atoms";
+import {  organizationUserRoleAtom } from "@/atoms";
 import { Order, OrderPayment, OrderStatus, PaymentStatus } from "@/types";
 import { useOrders } from "@/lib/hooks/useOrders";
 import { useCurrency } from "@/lib/hooks/useCurrency";
@@ -44,9 +44,7 @@ import { ActionButtons } from "@/components/ui/action-buttons";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 
 function OrdersContent() {
-  const [selectedOrganization] = useAtom(selectedOrganizationAtom);
   const [organizationUserRole] = useAtom(organizationUserRoleAtom);
-  const organizationId = selectedOrganization?.id || "";
   const {
     orders: fetchedOrders,
     loading: ordersLoading,
@@ -101,13 +99,13 @@ function OrdersContent() {
   const [filters, setFilters] = useState({});
 
   const columns = [
-    { accessorKey: 'orderNumber', header: 'Order #', filterType: 'text' },
-    { accessorKey: 'customerName', header: 'Customer', filterType: 'text' },
-    { accessorKey: 'createdByName', header: 'Created By', filterType: 'text' },
-    { accessorKey: 'tableName', header: 'Table', filterType: 'text' },
-    { accessorKey: 'orderType', header: 'Type', filterType: 'select', filterOptions: [{value: 'dine-in', label: 'Dine-in'}, {value: 'take-away', label: 'Take-away'}, {value: 'delivery', label: 'Delivery'}] },
-    { accessorKey: 'status', header: 'Status', filterType: 'select', filterOptions: Object.values(OrderStatus).map(s => ({ value: s, label: s })) },
-    { accessorKey: 'createdAt', header: 'Date', filterType: 'date' },
+    { accessorKey: 'orderNumber', header: 'Order #', filterType: 'text' as const },
+    { accessorKey: 'customerName', header: 'Customer', filterType: 'text' as const },
+    { accessorKey: 'createdByName', header: 'Created By', filterType: 'text' as const },
+    { accessorKey: 'tableName', header: 'Table', filterType: 'text' as const },
+    { accessorKey: 'orderType', header: 'Type', filterType: 'select' as const, filterOptions: [{value: 'dine-in', label: 'Dine-in'}, {value: 'take-away', label: 'Take-away'}, {value: 'delivery', label: 'Delivery'}] },
+    { accessorKey: 'status', header: 'Status', filterType: 'select' as const, filterOptions: Object.values(OrderStatus).map(s => ({ value: s, label: s })) },
+    { accessorKey: 'createdAt', header: 'Date', filterType: 'date' as const },
   ];
 
   const filteredOrders = useMemo(() => {
@@ -152,11 +150,6 @@ function OrdersContent() {
   const { formatCurrency } = useCurrency();
 
   const clearSelection = () => setSelectedOrder(null);
-
-  const handleMarkAsPaid = async (orderId: string) => {
-    await updateExistingOrder(orderId, { paymentStatus: PaymentStatus.PAID });
-    clearSelection();
-  };
 
   const handleUpdateOrderStatus = async (
     orderId: string,
