@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Users, User, Sofa } from "lucide-react";
 import { Table, Order } from "@/types";
 import { getTableStatusColor } from "@/lib/utils";
+import { QueueBadge } from "./QueueBadge";
 
 interface POSTableCardProps {
   table: Table;
@@ -22,43 +23,56 @@ export function POSTableCard({
   };
 
   return (
-    <Card 
+    <Card
       className={`group hover:shadow-lg transition-all duration-200 hover:scale-105 border-2 hover:border-primary/20 cursor-pointer ${!isAvailable ? 'opacity-60' : ''}`}
       onClick={isAvailable ? onClick : undefined}
     >
-      <CardContent className="p-6">
+      <CardContent className="px-6 py-3">
         <div className="flex flex-col items-center text-center space-y-4">
-          {/* Table Icon */}
-          <div
-            className={`w-16 h-16 rounded-full flex items-center justify-center ${getStatusColor(table.status, false).replace("border-", "bg-").replace("border", "bg-opacity-10")}`}
-          >
-            <Sofa
-              className={`h-8 w-8 ${getStatusColor(table.status, false).replace("border-", "text-").replace("border", "text")}`}
+          {/* Table Icon with Status Dot */}
+          <div className="relative">
+            <div
+              className={`w-16 h-16 rounded-full flex items-center justify-center ${getStatusColor(table.status, false).replace("border-", "bg-").replace("border", "bg-opacity-10")}`}
+            >
+              <Sofa
+                className={`h-8 w-8 ${getStatusColor(table.status, false).replace("border-", "text-").replace("border", "text")}`}
+              />
+            </div>
+            {/* Status Dot */}
+            <div
+              className={`absolute -top-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
+                tableOrder ? 'bg-red-500' : 'bg-green-500'
+              }`}
             />
           </div>
 
           {/* Table Info */}
           <div className="space-y-2 w-full">
-            <h3 className="font-semibold text-lg truncate">{table.name}</h3>
-            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-              <Users className="h-4 w-4" />
-              <span>{table.capacity} seats</span>
+            <div className="flex items-center justify-center gap-2">
+              <Users className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">{table.capacity}</span>
+              <h3 className="font-semibold text-lg truncate">{table.name}</h3>
             </div>
 
-            {/* Status Badge */}
-            <Badge
-              className={`${getStatusColor(table.status)} w-full justify-center`}
-            >
-              {table.status}
-            </Badge>
+            {/* Queue Badge and Order Total Row - Below Table Name */}
+            {tableOrder && (
+              <div className="flex items-center justify-center gap-2 w-full">
+                {tableOrder.queueNumber && (
+                  <QueueBadge queueNumber={tableOrder.queueNumber} className="text-xs" />
+                )}
+                <div className="bg-green-500 text-white font-bold text-sm py-1 px-2 rounded flex-1 text-center">
+                  ${tableOrder.total?.toFixed(2) || "0.00"}
+                </div>
+              </div>
+            )}
 
-             {/* Order Info */}
-             {tableOrder && (
-               <Badge variant="secondary" className="text-blue-600 bg-blue-50 border-blue-200 text-xs max-w-full whitespace-normal break-words flex items-start gap-1">
-                 <User className="h-3 w-3 mt-0.5 flex-shrink-0" />
-                 <span className="break-words">{tableOrder.customerName || "Customer"}</span>
-               </Badge>
-             )}
+            {/* Order Info */}
+            {tableOrder && (
+              <Badge variant="secondary" className="text-blue-600 bg-blue-50 border-blue-200 text-xs max-w-full whitespace-normal break-words flex items-start justify-start gap-1">
+                <User className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                <span className="break-words">{tableOrder.customerName || "Customer"}</span>
+              </Badge>
+            )}
           </div>
         </div>
       </CardContent>
