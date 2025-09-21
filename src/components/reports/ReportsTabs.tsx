@@ -181,32 +181,32 @@ export function ReportsTabs() {
                 <TabsTrigger value="short-summary">Short Summary</TabsTrigger>
                 <TabsTrigger value="detailed-report">Detailed Report</TabsTrigger>
               </TabsList>
-              <TabsContent value="short-summary">
-                <PosReportTab
-                  title="Short Summary"
-                  data={posReportData}
-                  date={posReportDate}
-                  onDateChange={handlePosReportDateChange}
-                  dateFilterType={dateFilterType}
-                  onDateFilterTypeChange={setDateFilterType}
-                  isDetailed={true}
-                  onPrint={() => setPrintDialogOpen(true)}
-                  setPrintDialogOpen={setPrintDialogOpen}
-                />
-              </TabsContent>
-              <TabsContent value="detailed-report">
-                <PosReportTab
-                  title="Detailed Report"
-                  data={posReportData}
-                  date={posReportDate}
-                  onDateChange={handlePosReportDateChange}
-                  dateFilterType={dateFilterType}
-                  onDateFilterTypeChange={setDateFilterType}
-                  isDetailed={true}
-                  onPrint={() => setPrintDialogOpen(true)}
-                  setPrintDialogOpen={setPrintDialogOpen}
-                />
-              </TabsContent>
+               <TabsContent value="short-summary">
+                 <PosReportTab
+                   title="Short Summary"
+                   data={posReportData}
+                   date={posReportDate}
+                   onDateChange={handlePosReportDateChange}
+                   dateFilterType={dateFilterType}
+                   onDateFilterTypeChange={setDateFilterType}
+                   isDetailed={false}
+                   onPrint={() => setPrintDialogOpen(true)}
+                   setPrintDialogOpen={setPrintDialogOpen}
+                 />
+               </TabsContent>
+               <TabsContent value="detailed-report">
+                 <PosReportTab
+                   title="Detailed Report"
+                   data={posReportData}
+                   date={posReportDate}
+                   onDateChange={handlePosReportDateChange}
+                   dateFilterType={dateFilterType}
+                   onDateFilterTypeChange={setDateFilterType}
+                   isDetailed={true}
+                   onPrint={() => setPrintDialogOpen(true)}
+                   setPrintDialogOpen={setPrintDialogOpen}
+                 />
+               </TabsContent>
             </Tabs>
           </CardContent>
         </Card>

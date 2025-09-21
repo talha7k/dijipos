@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   ReceiptTemplateData,
   InvoiceTemplateData,
@@ -5,7 +6,7 @@ import {
 } from "@/types/template";
 
 // A generic type to accept data for any kind of template.
-export type TemplateData = ReceiptTemplateData | InvoiceTemplateData | QuoteTemplateData;
+export type TemplateData = ReceiptTemplateData | InvoiceTemplateData | QuoteTemplateData | Record<string, any>;
 
 /**
  * A generic and robust template rendering engine.
@@ -28,7 +29,21 @@ export function renderTemplate(template: string, data: TemplateData): string {
     return match; // Return the original placeholder if key not found
   });
 
-  // 2. Handle conditional blocks like {{#variable}}...{{/variable}}
+  // 2. Handle conditional blocks like {{#if variable}}...{{/if}}
+  result = result.replace(
+    /{{#if (\w+)}}([\s\S]*?){{\/if}}/g,
+    (match, variable, content) => {
+      const value = (data as any)[variable];
+      // Show content if the value is truthy (e.g., not null, not false, not empty string)
+      // or if it's an array with items.
+      if (Array.isArray(value)) {
+        return value.length > 0 ? content : "";
+      }
+      return value ? content : "";
+    },
+  );
+
+  // 2b. Handle conditional blocks like {{#variable}}...{{/variable}}
   result = result.replace(
     /{{#(\w+)}}([\s\S]*?){{\/\1}}/g,
     (match, variable, content) => {
@@ -46,8 +61,9 @@ export function renderTemplate(template: string, data: TemplateData): string {
   result = result.replace(
     /{{#each items}}([\s\S]*?){{\/each}}/g,
     (match, itemTemplate) => {
-      if (!data.items || !Array.isArray(data.items)) return "";
-      return data.items
+      const items = (data as any).items;
+      if (!items || !Array.isArray(items)) return "";
+      return items
         .map((item: Record<string, unknown>) =>
           itemTemplate.replace(
             /{{\s*(\w+)\s*}}/g,
@@ -67,7 +83,7 @@ export function renderTemplate(template: string, data: TemplateData): string {
   result = result.replace(
     /{{#each payments}}([\s\S]*?){{\/each}}/g,
     (match, paymentTemplate) => {
-      const payments = (data as ReceiptTemplateData).payments;
+      const payments = (data as any).payments;
       if (!payments || !Array.isArray(payments)) return "";
       return payments
         .map((payment: { paymentType: string; amount: string }) =>
@@ -76,6 +92,28 @@ export function renderTemplate(template: string, data: TemplateData): string {
             .replace(/{{\s*amount\s*}}/g, payment.amount),
         )
         .join("");
+    },
+  );
+
+  // 5. Handle general loops: {{#each variable}}...{{/each}}
+  result = result.replace(
+    /{{#each (\w+)}}([\s\S]*?){{\/each}}/g,
+    (match, variable, content) => {
+      const value = (data as any)[variable];
+      if (!value || typeof value !== 'object') return "";
+      if (Array.isArray(value)) {
+        return value
+          .map((item: any) =>
+            content.replace(/{{\s*this\.(\w+)\s*}}/g, (_match: string, prop: string) => String(item[prop] ?? ""))
+          )
+          .join("");
+      } else {
+        return Object.entries(value as Record<string, unknown>)
+          .map(([key, val]) =>
+            content.replace(/{{\s*@key\s*}}/g, key).replace(/{{\s*this\s*}}/g, String(val ?? ""))
+          )
+          .join("");
+      }
     },
   );
 

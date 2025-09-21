@@ -7,6 +7,7 @@ import {
   PrinterFormat,
   FontSize,
 } from "./enums";
+import { PosReportData } from "./reports";
 
 export interface TemplateField {
   id: string;
@@ -84,6 +85,19 @@ export interface ReportTemplate {
   content: string; // HTML template content
   customHeader?: string;
   customFooter?: string;
+  defaultPaperSize?: string;
+  defaultMargins?: {
+    top: number;
+    right: number;
+    bottom: number;
+    left: number;
+  };
+  defaultPaddings?: {
+    top: number;
+    right: number;
+    bottom: number;
+    left: number;
+  };
 }
 
 export interface ReceiptTemplateData {
@@ -238,7 +252,8 @@ export interface QuoteTemplateData {
 export type TemplateData =
   | ReceiptTemplateData
   | InvoiceTemplateData
-  | QuoteTemplateData;
+  | QuoteTemplateData
+  | PosReportData;
 
 // Template categories
 export enum TemplateCategory {

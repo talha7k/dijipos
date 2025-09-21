@@ -1,0 +1,48 @@
+<html>
+<head>
+    <style>
+      body { font-family: monospace; font-size: 10px; margin: 5px; }
+      h1 { font-size: 12px; text-align: center; margin-bottom: 5px; }
+      table { width: 100%; border-collapse: collapse; margin-top: 5px; font-size: 10px; }
+      th, td { border: none; padding: 2px; text-align: left; }
+      th { font-weight: bold; }
+      .text-right { text-align: right; }
+      .capitalize { text-transform: capitalize; }
+    </style>
+</head>
+<body>
+    <h1>{{title}}</h1>
+
+    <p>Report generated on: {{generationTime}}</p>
+    <p>From: {{fromDate}} To: {{toDate}}</p>
+
+    <h2>Summary</h2>
+    <table>
+      <tbody>
+        <tr><td>Total Orders Processed</td><td class="text-right">{{totalOrders}}</td></tr>
+        <tr><td>Total Items Sold</td><td class="text-right">{{totalItemsSold}}</td></tr>
+        <tr><td>Subtotal</td><td class="text-right">{{totalSubtotal}}</td></tr>
+        <tr><td>Total VAT</td><td class="text-right">{{totalTax}}</td></tr>
+        <tr><td style="font-weight: bold;">Total Sales</td><td class="text-right" style="font-weight: bold;">{{totalSales}}</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Total by Payment Type</h2>
+    <table>
+      <tbody>
+        {{#each salesByPaymentType}}
+        <tr><td class="capitalize">{{@key}}</td><td class="text-right">{{this}}</td></tr>
+        {{/each}}
+      </tbody>
+    </table>
+
+    <h2>Total by Order Type</h2>
+    <table>
+      <tbody>
+        {{#each salesByOrderType}}
+        <tr><td class="capitalize">{{@key}}</td><td class="text-right">{{this}}</td></tr>
+        {{/each}}
+      </tbody>
+    </table>
+</body>
+</html>

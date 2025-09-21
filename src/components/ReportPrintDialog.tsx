@@ -45,6 +45,7 @@ interface ReportPrintDialogProps {
   printerSettings?: PrinterSettings | null;
   children: ReactNode;
   title?: string;
+  description?: string;
   onOpenChange?: (open: boolean) => void;
   allowedPageSizes?: Array<"80mm" | "58mm" | "210mm" | "letter">;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -56,6 +57,7 @@ export function ReportPrintDialog({
   printerSettings,
   children,
   title = "Print Report",
+  description,
   onOpenChange,
   allowedPageSizes,
   data,
@@ -85,7 +87,7 @@ export function ReportPrintDialog({
     left: 3,
   });
 
-  // Effect to initialize all settings when the dialog opens
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (open) {
       const settings = printerSettings?.receipts;
@@ -132,7 +134,7 @@ export function ReportPrintDialog({
         setRenderedHtml(""); // Clear preview on close
       }
     }
-  }, [open, printerSettings, reportTemplates, renderedHtml, pageSize, selectedTemplate, margins, paddings]);
+  }, [open, printerSettings, reportTemplates, renderedHtml, selectedTemplate, margins, paddings]);
 
   
 
@@ -166,6 +168,23 @@ export function ReportPrintDialog({
 
     renderPreview();
   }, [open, selectedTemplate, data, reportTemplates]);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!selectedTemplate) return;
+    const template = reportTemplates.find((t) => t.id === selectedTemplate);
+    if (template) {
+      if (template.defaultPaperSize && pageSize !== template.defaultPaperSize) {
+        setPageSize(template.defaultPaperSize);
+      }
+      if (template.defaultMargins && JSON.stringify(margins) !== JSON.stringify(template.defaultMargins)) {
+        setMargins(template.defaultMargins);
+      }
+      if (template.defaultPaddings && JSON.stringify(paddings) !== JSON.stringify(template.defaultPaddings)) {
+        setPaddings(template.defaultPaddings);
+      }
+    }
+  }, [selectedTemplate, reportTemplates]);
 
   const handlePrint = () => {
     const printWindow = window.open('', '_blank');
@@ -205,6 +224,7 @@ export function ReportPrintDialog({
       open={open}
       onOpenChange={handleOpenChange}
       title={title}
+      description={description}
       actions={
         <>
           <Button onClick={() => handleOpenChange(false)}>Cancel</Button>
@@ -239,29 +259,19 @@ export function ReportPrintDialog({
               ))}
             </select>
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Paper Size</label>
-            <select
-              value={pageSize}
-              onChange={(e) => setPageSize(e.target.value)}
-              className="w-full p-2 border rounded"
-            >
-              {allowedPageSizes ? (
-                <>
-                  {allowedPageSizes.includes("210mm") && <option value="210mm">A4</option>}
-                  {allowedPageSizes.includes("letter") && <option value="letter">Letter</option>}
-                  {allowedPageSizes.includes("80mm") && <option value="80mm">80mm Thermal</option>}
-                  {allowedPageSizes.includes("58mm") && <option value="58mm">58mm Thermal</option>}
-                </>
-              ) : (
-                <>
-                  <option value="80mm">80mm Thermal</option>
-                  <option value="58mm">58mm Thermal</option>
-                  <option value="210mm">A4</option>
-                </>
-              )}
-            </select>
-          </div>
+           <div>
+             <label className="block text-sm font-medium mb-1">Paper Size</label>
+             <select
+               value={pageSize}
+               onChange={(e) => setPageSize(e.target.value)}
+               className="w-full p-2 border rounded"
+             >
+               <option value="80mm">80mm Thermal</option>
+               <option value="58mm">58mm Thermal</option>
+               <option value="210mm">A4</option>
+               <option value="letter">Letter</option>
+             </select>
+           </div>
           <SettingsInputGroup
             label="Margins (mm)"
             values={margins}
