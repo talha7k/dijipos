@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CreditCard } from 'lucide-react';
+import { Wallet } from 'lucide-react';
 import { Loader } from '@/components/ui/loader';
 
 function PaymentsContent() {
@@ -62,7 +62,10 @@ function PaymentsContent() {
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Payments</h1>
+        <h1 className="text-3xl font-bold flex items-center gap-2">
+          <Wallet className="h-8 w-8" />
+          Payments
+        </h1>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button>Add Payment</Button>
@@ -153,7 +156,7 @@ function PaymentsContent() {
                 <TableRow>
                   <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
                     <div className="flex flex-col items-center gap-2">
-                      <CreditCard className="h-8 w-8" />
+                      <Wallet className="h-8 w-8" />
                       <p>No payments found. Click Add Payment to get started.</p>
                     </div>
                   </TableCell>

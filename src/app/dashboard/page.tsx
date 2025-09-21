@@ -21,6 +21,7 @@ import {
 import { useDashboard } from "@/lib/hooks/useDashboard";
 import { UserRole } from "@/types/enums";
 import { Loader } from "@/components/ui/loader";
+import { toReadableTitle } from "@/lib/utils/title-case";
 import {
   ShoppingCart,
   CheckCircle,
@@ -36,6 +37,7 @@ import {
   Star,
   Clock,
   FileText,
+  Home,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -88,36 +90,59 @@ function DashboardContent() {
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* Header with Company and User Info */}
-      <div className="flex justify-between items-start">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          {companyName && (
-            <div className="mt-2 space-y-1">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+      <div className="space-y-4">
+        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+          <Home className="h-8 w-8" />
+          Dashboard
+        </h1>
+        
+        {/* Info Badges */}
+        <div className="flex flex-wrap items-center gap-3">
+          {/* User Info Section */}
+          <div className="flex flex-wrap gap-3">
+            {/* User Name Badge */}
+            <Badge variant="secondary" className="flex items-center gap-2 px-3 py-1.5">
+              <User className="h-4 w-4" />
+              <span className="font-medium">{userName}</span>
+            </Badge>
+            
+            {/* User Role Badge */}
+            {userRole && (
+              <Badge variant="outline" className="flex items-center gap-2 px-3 py-1.5">
+                <Star className="h-4 w-4" />
+                <span className="font-medium">{toReadableTitle(userRole)}</span>
+              </Badge>
+            )}
+          </div>
+          
+          {/* Vertical Separator */}
+          {(companyName || companyVatNumber || companyAddress) && (
+            <div className="h-6 w-px bg-border mx-2"></div>
+          )}
+          
+          {/* Company Info Section */}
+          <div className="flex flex-wrap gap-3">
+            {/* Company Name Badge */}
+            {companyName && (
+              <Badge variant="default" className="flex items-center gap-2 px-3 py-1.5">
                 <Building className="h-4 w-4" />
                 <span className="font-medium">{companyName}</span>
-              </div>
-              {companyAddress && (
-                <div className="text-sm text-muted-foreground ml-6">
-                  {companyAddress}
-                </div>
-              )}
-              {companyVatNumber && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground ml-6">
-                  <Percent className="h-4 w-4" />
-                  <span>VAT: {companyVatNumber}</span>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-        <div className="text-right">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <User className="h-4 w-4" />
-            <span>{userName}</span>
-            {userRole && (
-              <Badge variant="outline" className="ml-2">
-                {userRole}
+              </Badge>
+            )}
+            
+            {/* Company Address Badge */}
+            {companyAddress && (
+              <Badge variant="outline" className="flex items-center gap-2 px-3 py-1.5">
+                <Building className="h-4 w-4" />
+                <span className="font-medium">{companyAddress}</span>
+              </Badge>
+            )}
+            
+            {/* Company VAT Badge */}
+            {companyVatNumber && (
+              <Badge variant="outline" className="flex items-center gap-2 px-3 py-1.5">
+                <Percent className="h-4 w-4" />
+                <span className="font-medium">VAT: {companyVatNumber}</span>
               </Badge>
             )}
           </div>

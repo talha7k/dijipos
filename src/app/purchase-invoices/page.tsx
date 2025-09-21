@@ -285,7 +285,10 @@ function InvoicesContent() {
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Purchase Invoices</h1>
+        <h1 className="text-3xl font-bold flex items-center gap-2">
+          <Receipt className="h-8 w-8" />
+          Purchase Invoices
+        </h1>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button>Create Purchase Invoice</Button>

@@ -15,10 +15,10 @@ function ProfileContent() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center space-x-2">
-        <User className="h-6 w-6" />
-        <h1 className="text-3xl font-bold">Profile Settings</h1>
-      </div>
+      <h1 className="text-3xl font-bold flex items-center gap-2">
+        <User className="h-8 w-8" />
+        Profile Settings
+      </h1>
 
       <Card>
         <CardHeader>

@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Package, Wrench, Search, Database } from 'lucide-react';
+import { Package, Wrench, Search, Database, BarChart3 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AddProductDialog } from '@/components/products_services/AddProductDialog';
 import { AddServiceDialog } from '@/components/products_services/AddServiceDialog';
@@ -146,7 +146,10 @@ export default function ProductsServicesPage() {
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Products & Services</h1>
+        <h1 className="text-3xl font-bold flex items-center gap-2">
+          <BarChart3 className="h-8 w-8" />
+          Products & Services
+        </h1>
       </div>
 
       <Tabs defaultValue="products" className="w-full">

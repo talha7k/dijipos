@@ -17,7 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { Package, Wrench } from 'lucide-react';
+import { Package, Wrench, BarChart3 } from 'lucide-react';
 import { Loader } from '@/components/ui/loader';
 function ProductsContent() {
   const selectedOrganization = useAtomValue(selectedOrganizationAtom);
@@ -117,7 +117,10 @@ function ProductsContent() {
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Purchase Products & Services</h1>
+        <h1 className="text-3xl font-bold flex items-center gap-2">
+          <BarChart3 className="h-8 w-8" />
+          Purchase Products & Services
+        </h1>
       </div>
 
       <Tabs defaultValue="products" className="w-full">

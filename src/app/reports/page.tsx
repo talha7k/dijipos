@@ -26,7 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
-import { Download, FileText, Receipt } from "lucide-react";
+import { Download, FileText, Receipt, PieChart } from "lucide-react";
 import { useInvoices } from "@/lib/hooks/useInvoices";
 import { useQuotes } from "@/lib/hooks/useQuotes";
 import { useOrders } from "@/lib/hooks/useOrders";
@@ -710,7 +710,10 @@ function ReportsPage() {
 
   return (
     <div className="container mx-auto p-4 space-y-6">
-      <h1 className="text-3xl font-bold tracking-tight">Reports</h1>
+      <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+        <PieChart className="h-8 w-8" />
+        Reports
+      </h1>
       <Tabs defaultValue="pos">
         <TabsList>
           <TabsTrigger value="pos">POS</TabsTrigger>

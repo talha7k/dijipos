@@ -10,7 +10,7 @@ import InvoiceForm from "@/components/invoices_quotes/InvoiceForm";
 import { InvoiceDetails } from "@/components/invoices_quotes/InvoiceDetails";
 import { InvoicePrintDialog } from "@/components/invoices_quotes/InvoicePrintDialog";
 import { Button } from "@/components/ui/button";
-import { Plus, Printer } from "lucide-react";
+import { Plus, Printer, Receipt } from "lucide-react";
 import { useSeparatedTemplates } from "@/lib/hooks/useSeparatedTemplates";
 import { useStoreSettings } from "@/lib/hooks/useStoreSettings";
 import { Loader } from "@/components/ui/loader";
@@ -123,7 +123,10 @@ export default function InvoicesPage() {
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Invoices</h1>
+        <h1 className="text-3xl font-bold flex items-center gap-2">
+          <Receipt className="h-8 w-8" />
+          Invoices
+        </h1>
         <Button onClick={() => setShowForm(true)}>
           <Plus className="w-4 h-4 mr-2" />
           New Invoice

@@ -142,7 +142,10 @@ export default function SuppliersPage() {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-2">
           <Users className="h-6 w-6" />
-          <h1 className="text-3xl font-bold">Suppliers</h1>
+          <h1 className="text-3xl font-bold flex items-center gap-2">
+            <Users className="h-8 w-8" />
+            Suppliers
+          </h1>
         </div>
         <Button onClick={handleAddSupplier}>
           <Plus className="h-4 w-4 mr-2" />

@@ -214,7 +214,10 @@ function UsersContent() {
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Users</h1>
+        <h1 className="text-3xl font-bold flex items-center gap-2">
+          <Users className="h-8 w-8" />
+          Users
+        </h1>
         <div className="flex space-x-2">
           <Dialog
             open={invitationDialogOpen}

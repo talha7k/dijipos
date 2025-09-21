@@ -17,6 +17,7 @@ import { QuoteDetails } from '@/components/invoices_quotes/QuoteDetails';
 import { QuoteActionsDialog } from '@/components/invoices_quotes/QuoteActionsDialog';
 import { QuotePrintDialog } from '@/components/invoices_quotes/QuotePrintDialog';
 import { Loader } from '@/components/ui/loader';
+import { FileText } from 'lucide-react';
 
 function QuotesContent() {
   const { quotes, loading: quotesLoading, createQuote, updateQuote } = useQuotes();
@@ -122,7 +123,10 @@ function QuotesContent() {
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Quotes</h1>
+        <h1 className="text-3xl font-bold flex items-center gap-2">
+          <FileText className="h-8 w-8" />
+          Quotes
+        </h1>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button>Create Quote</Button>
