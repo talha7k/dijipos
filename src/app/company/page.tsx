@@ -25,6 +25,7 @@ import { useAtom } from "jotai";
 import { selectedOrganizationIdAtom } from "@/atoms";
 import { OrganizationUser } from "@/types";
 import { UserRole } from "@/types/enums";
+import { Loader } from "@/components/ui/loader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -362,7 +363,14 @@ function CompanyContent() {
   };
 
   if (!user) return <div>Please log in</div>;
-  if (loading) return <div>Loading...</div>;
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen space-y-4">
+        <Loader size="lg" />
+        <p className="text-muted-foreground">Loading company settings...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -371,11 +379,7 @@ function CompanyContent() {
         <h1 className="text-3xl font-bold">Company & Account</h1>
       </div>
 
-      <Tabs
-        value={activeTab}
-        onValueChange={setActiveTab}
-        className="space-y-6"
-      >
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="company">Company Info</TabsTrigger>
           <TabsTrigger value="branding">Branding</TabsTrigger>
@@ -418,26 +422,26 @@ function CompanyContent() {
 
         <TabsContent value="team" className="space-y-6">
           <TeamTab
-             invitationCodes={invitationCodes}
-             organizationUsers={organizationUsers}
-             currentUser={user}
-             handleCreateInvitation={handleCreateInvitation}
-             handleDeleteInvitation={handleDeleteInvitation}
-             handleCopyInvitation={handleCopyInvitation}
-             handleUpdateUser={handleUpdateUser}
-             handleToggleUserStatus={handleToggleUserStatus}
-             openEditDialog={openEditDialog}
-             editingUser={editingUser}
-             setEditingUser={setEditingUser}
-             formData={formData}
-             setFormData={setFormData}
-             invitationFormData={invitationFormData}
-             setInvitationFormData={setInvitationFormData}
-             dialogOpen={dialogOpen}
-             setDialogOpen={setDialogOpen}
-             invitationDialogOpen={invitationDialogOpen}
-             setInvitationDialogOpen={setInvitationDialogOpen}
-           />
+            invitationCodes={invitationCodes}
+            organizationUsers={organizationUsers}
+            currentUser={user}
+            handleCreateInvitation={handleCreateInvitation}
+            handleDeleteInvitation={handleDeleteInvitation}
+            handleCopyInvitation={handleCopyInvitation}
+            handleUpdateUser={handleUpdateUser}
+            handleToggleUserStatus={handleToggleUserStatus}
+            openEditDialog={openEditDialog}
+            editingUser={editingUser}
+            setEditingUser={setEditingUser}
+            formData={formData}
+            setFormData={setFormData}
+            invitationFormData={invitationFormData}
+            setInvitationFormData={setInvitationFormData}
+            dialogOpen={dialogOpen}
+            setDialogOpen={setDialogOpen}
+            invitationDialogOpen={invitationDialogOpen}
+            setInvitationDialogOpen={setInvitationDialogOpen}
+          />
         </TabsContent>
 
         <TabsContent value="subscription" className="space-y-6">

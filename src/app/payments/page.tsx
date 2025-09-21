@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CreditCard } from 'lucide-react';
+import { Loader } from '@/components/ui/loader';
 
 function PaymentsContent() {
   const { payments, loading: paymentsLoading, createPayment } = usePayments();
@@ -49,7 +50,14 @@ function PaymentsContent() {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen space-y-4">
+        <Loader size="lg" />
+        <p className="text-muted-foreground">Loading payments...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-4">

@@ -171,7 +171,7 @@ export default function ProductsServicesPage() {
             <div className="w-full md:w-1/3">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
+                  <CardTitle className="flex items-center justify-between pb-2">
                     <div className="flex items-center gap-2">
                       <Package className="h-5 w-5" />
                       Product Categories
@@ -226,7 +226,7 @@ export default function ProductsServicesPage() {
             <div className="w-full md:w-2/3">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
+                  <CardTitle className="flex items-center justify-between pb-2">
                     <div className="flex items-center gap-2">
                       <Package className="h-5 w-5" />
                       All Products
@@ -269,7 +269,7 @@ export default function ProductsServicesPage() {
             <div className="w-full md:w-1/3">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
+                  <CardTitle className="flex items-center justify-between pb-2">
                     <div className="flex items-center gap-2">
                       <Wrench className="h-5 w-5" />
                       Service Categories
@@ -324,7 +324,7 @@ export default function ProductsServicesPage() {
             <div className="w-full md:w-2/3">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
+                  <CardTitle className="flex items-center justify-between pb-2">
                     <div className="flex items-center gap-2">
                       <Wrench className="h-5 w-5" />
                       All Services

@@ -11,6 +11,7 @@ import { auth } from '@/lib/firebase/config';
 import { applyActionCode, checkActionCode, verifyPasswordResetCode, confirmPasswordReset } from 'firebase/auth';
 import { Suspense } from 'react';
 import { toast } from 'sonner';
+import { Loader } from '@/components/ui/loader';
 
 function HomeContent() {
   const { loading: authLoading } = useAuth();
@@ -213,11 +214,9 @@ function HomeContent() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
-          <p className="mt-4">Loading...</p>
-        </div>
+      <div className="min-h-screen flex flex-col items-center justify-center space-y-4">
+        <Loader size="lg" />
+        <p className="text-muted-foreground">Loading...</p>
       </div>
     );
   }
@@ -227,11 +226,9 @@ function HomeContent() {
 export default function Home() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
-          <p className="mt-4">Loading...</p>
-        </div>
+      <div className="min-h-screen flex flex-col items-center justify-center space-y-4">
+        <Loader size="lg" />
+        <p className="text-muted-foreground">Loading...</p>
       </div>
     }>
       <HomeContent />

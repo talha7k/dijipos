@@ -110,7 +110,14 @@ function QuotesContent() {
     console.log('Download PDF for quote:', quote.id);
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen space-y-4">
+        <Loader size="lg" />
+        <p className="text-muted-foreground">Loading quotes...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-4">

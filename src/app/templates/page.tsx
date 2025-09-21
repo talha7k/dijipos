@@ -19,6 +19,7 @@ import { InvoiceTemplateType } from '@/types/enums';
 import { Plus, Edit, Trash2, Copy, Eye } from 'lucide-react';
 import { defaultInvoiceEnglish } from '@/components/templates/invoice/default-invoice-english';
 import { defaultInvoiceArabic } from '@/components/templates/invoice/default-invoice-arabic';
+import { Loader } from '@/components/ui/loader';
 
 const defaultFields: TemplateField[] = [
   {
@@ -219,7 +220,14 @@ function TemplatesContent() {
     });
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen space-y-4">
+        <Loader size="lg" />
+        <p className="text-muted-foreground">Loading templates...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-6 space-y-6">

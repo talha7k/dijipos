@@ -42,6 +42,7 @@ import { TableFilter } from "@/components/shared/TableFilter";
 import { OrderActionsDialog } from "@/components/pos/OrderStatusActionsDialog";
 import { ActionButtons } from "@/components/ui/action-buttons";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { Loader } from "@/components/ui/loader";
 
 function OrdersContent() {
   const [organizationUserRole] = useAtom(organizationUserRoleAtom);
@@ -194,7 +195,10 @@ function OrdersContent() {
   if (ordersLoading || paymentsLoading)
     return (
       <div className="flex items-center justify-center h-screen">
-        Loading...
+        <div className="flex flex-col items-center justify-center space-y-4">
+          <Loader size="lg" />
+          <p className="text-muted-foreground">Loading orders...</p>
+        </div>
       </div>
     );
 

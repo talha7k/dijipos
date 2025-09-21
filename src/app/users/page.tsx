@@ -15,6 +15,7 @@ import {
   updateUserStatus,
 } from "@/lib/firebase/firestore/organizations";
 import { OrganizationUser, UserRole } from "@/types";
+import { Loader } from "@/components/ui/loader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -203,7 +204,10 @@ function UsersContent() {
   if (loading)
     return (
       <div className="flex items-center justify-center h-screen">
-        Loading...
+        <div className="flex flex-col items-center justify-center space-y-4">
+          <Loader size="lg" />
+          <p className="text-muted-foreground">Loading users...</p>
+        </div>
       </div>
     );
 

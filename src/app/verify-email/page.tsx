@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
+import { Loader } from '@/components/ui/loader';
 
 function VerifyEmailContent() {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
@@ -129,7 +130,12 @@ function VerifyEmailContent() {
 
 function VerifyEmailPageComponent() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={
+      <div className="min-h-screen flex flex-col items-center justify-center space-y-4">
+        <Loader size="lg" />
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    }>
       <VerifyEmailContent />
     </Suspense>
   );

@@ -138,76 +138,75 @@ export function TeamTab({
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Team Management</h2>
-        <Dialog
-          open={invitationDialogOpen}
-          onOpenChange={setInvitationDialogOpen}
-        >
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Generate Invitation Code
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-lg">
-            <DialogHeader>
-              <DialogTitle>Generate Invitation Code</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="role">Role</Label>
-                  <Select
-                    value={invitationFormData.role}
-                    onValueChange={(value: string) =>
-                      setInvitationFormData({
-                        ...invitationFormData,
-                        role: value as UserRole,
-                      })
-                    }
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                       <SelectItem value={UserRole.MANAGER}>Manager</SelectItem>
-                       <SelectItem value={UserRole.WAITER}>Waiter</SelectItem>
-                       <SelectItem value={UserRole.CASHIER}>Cashier</SelectItem>
-                     </SelectContent>
-                  </Select>
-                </div>
-                <DatePicker
-                  onDateChange={(date: Date) =>
-                    setInvitationFormData({
-                      ...invitationFormData,
-                      expiresAt: date,
-                    })
-                  }
-                >
-                  <Button variant="outline" className="w-full justify-start text-left font-normal">
-                    {invitationFormData.expiresAt ? format(invitationFormData.expiresAt, "PPP") : "Expires At"}
-                  </Button>
-                </DatePicker>
-              </div>
-              <div className="flex justify-end space-x-2 pt-4">
-                <Button
-                  variant="outline"
-                  onClick={() => setInvitationDialogOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button onClick={handleCreateInvitation}>Generate Code</Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
 
       {/* Invitation Codes Section */}
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Invitation Codes</CardTitle>
+          <div className="flex justify-between items-center">
+            <CardTitle>Invitation Codes</CardTitle>
+            <Dialog
+              open={invitationDialogOpen}
+              onOpenChange={setInvitationDialogOpen}
+            >
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Generate Code
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-lg">
+                <DialogHeader>
+                  <DialogTitle>Generate Invitation Code</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="role">Role</Label>
+                      <Select
+                        value={invitationFormData.role}
+                        onValueChange={(value: string) =>
+                          setInvitationFormData({
+                            ...invitationFormData,
+                            role: value as UserRole,
+                          })
+                        }
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select role" />
+                        </SelectTrigger>
+                        <SelectContent>
+                           <SelectItem value={UserRole.MANAGER}>Manager</SelectItem>
+                           <SelectItem value={UserRole.WAITER}>Waiter</SelectItem>
+                           <SelectItem value={UserRole.CASHIER}>Cashier</SelectItem>
+                         </SelectContent>
+                      </Select>
+                    </div>
+                    <DatePicker
+                      onDateChange={(date: Date) =>
+                        setInvitationFormData({
+                          ...invitationFormData,
+                          expiresAt: date,
+                        })
+                      }
+                    >
+                      <Button variant="outline" className="w-full justify-start text-left font-normal">
+                        {invitationFormData.expiresAt ? format(invitationFormData.expiresAt, "PPP") : "Expires At"}
+                      </Button>
+                    </DatePicker>
+                  </div>
+                  <div className="flex justify-end space-x-2 pt-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => setInvitationDialogOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button onClick={handleCreateInvitation}>Generate Code</Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
         </CardHeader>
         <CardContent>
           <Table>

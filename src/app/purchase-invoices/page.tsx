@@ -23,6 +23,7 @@ import { defaultInvoiceEnglish } from '@/components/templates/invoice/default-in
 
 import InvoiceForm from '@/components/invoices_quotes/InvoiceForm';
 import { Receipt } from 'lucide-react';
+import { Loader } from '@/components/ui/loader';
 
 function InvoicesContent() {
   const { selectedOrganization: organization } = useOrganization();
@@ -272,7 +273,14 @@ function InvoicesContent() {
 
   
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen space-y-4">
+        <Loader size="lg" />
+        <p className="text-muted-foreground">Loading purchase invoices...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-4">

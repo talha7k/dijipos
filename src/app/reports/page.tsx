@@ -34,6 +34,7 @@ import { AdminManagerGuard } from "@/components/layout/RoleGuard";
 import { format } from "date-fns";
 import { PaymentStatus } from "@/types";
 import { OrderStatus } from "@/types";
+import { Loader } from "@/components/ui/loader";
 
 interface PosReportData {
   totalSales: number;
@@ -699,7 +700,12 @@ function ReportsPage() {
   }, [filteredOrders, paymentsByOrder, allOrdersForDate]);
 
   if (invoicesLoading || quotesLoading || ordersLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex flex-col items-center justify-center h-screen space-y-4">
+        <Loader size="lg" />
+        <p className="text-muted-foreground">Loading reports...</p>
+      </div>
+    );
   }
 
   return (

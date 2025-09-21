@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
+import { Loader } from '@/components/ui/loader';
 
 function ResetPasswordContent() {
   const [password, setPassword] = useState('');
@@ -176,7 +177,12 @@ function ResetPasswordContent() {
 
 function ResetPasswordPageComponent() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={
+      <div className="min-h-screen flex flex-col items-center justify-center space-y-4">
+        <Loader size="lg" />
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    }>
       <ResetPasswordContent />
     </Suspense>
   );

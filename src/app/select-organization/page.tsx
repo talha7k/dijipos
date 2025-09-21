@@ -2,6 +2,7 @@
 
 import { useAuth } from '@/lib/hooks/useAuth';
 import { OrganizationManager } from '@/components/organization/OrganizationManager';
+import { Loader } from '@/components/ui/loader';
 
 export default function SelectOrganizationPage() {
   const { loading } = useAuth();
@@ -9,11 +10,9 @@ export default function SelectOrganizationPage() {
   // Show loading state while auth is initializing
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
-          <p className="mt-4">Loading...</p>
-        </div>
+      <div className="min-h-screen flex flex-col items-center justify-center space-y-4">
+        <Loader size="lg" />
+        <p className="text-muted-foreground">Loading...</p>
       </div>
     );
   }
