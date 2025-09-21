@@ -397,7 +397,12 @@ export const Component = () => {
           gap: "8px",
         }}
       >
-        <Image src="/icon_logo.svg" alt="DijiPOS Logo" width={84} height={84} />
+        <Image
+          src="/icon_logo.svg"
+          alt="Dijitize.com Logo"
+          width={84}
+          height={84}
+        />
         <div
           style={{
             color: "rgba(255, 255, 255)",

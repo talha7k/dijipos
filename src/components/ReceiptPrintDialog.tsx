@@ -117,6 +117,7 @@ interface ReceiptPrintDialogProps {
   rawHtml?: string;
   title?: string;
   onOpenChange?: (open: boolean) => void;
+  allowedPageSizes?: Array<"80mm" | "58mm" | "210mm" | "letter">;
 }
 
 export function ReceiptPrintDialog({
@@ -129,6 +130,7 @@ export function ReceiptPrintDialog({
   rawHtml,
   title = "Print Receipt",
   onOpenChange,
+  allowedPageSizes,
 }: ReceiptPrintDialogProps) {
   const { getPaymentsForOrder } = useOrders();
   const [open, setOpen] = useState(false);
@@ -172,8 +174,11 @@ export function ReceiptPrintDialog({
         if (renderedHtml !== rawHtml) {
           setRenderedHtml(rawHtml);
         }
-        if (pageSize !== '210mm') {
-          setPageSize('210mm'); // Default to A4 for reports
+        // Default to A4 for reports, or letter if A4 is not allowed
+        const defaultPageSize = allowedPageSizes?.includes('210mm') ? '210mm' : 
+                               allowedPageSizes?.includes('letter') ? 'letter' : '210mm';
+        if (pageSize !== defaultPageSize) {
+          setPageSize(defaultPageSize);
         }
       } else {
         // 1. Set default template
@@ -323,7 +328,7 @@ export function ReceiptPrintDialog({
             <style>
               @media print {
                 @page {
-                  size: ${pageSize === '210mm' ? 'A4' : pageSize};
+                  size: ${pageSize === '210mm' ? 'A4' : pageSize === 'letter' ? 'letter' : pageSize};
                   margin: ${margins.top}mm ${margins.right}mm ${margins.bottom}mm ${margins.left}mm;
                 }
                 body {
@@ -394,9 +399,20 @@ export function ReceiptPrintDialog({
               onChange={(e) => setPageSize(e.target.value)}
               className="w-full p-2 border rounded"
             >
-              <option value="80mm">80mm Thermal</option>
-              <option value="58mm">58mm Thermal</option>
-              <option value="210mm">A4</option>
+              {allowedPageSizes ? (
+                <>
+                  {allowedPageSizes.includes("210mm") && <option value="210mm">A4</option>}
+                  {allowedPageSizes.includes("letter") && <option value="letter">Letter</option>}
+                  {allowedPageSizes.includes("80mm") && <option value="80mm">80mm Thermal</option>}
+                  {allowedPageSizes.includes("58mm") && <option value="58mm">58mm Thermal</option>}
+                </>
+              ) : (
+                <>
+                  <option value="80mm">80mm Thermal</option>
+                  <option value="58mm">58mm Thermal</option>
+                  <option value="210mm">A4</option>
+                </>
+              )}
             </select>
           </div>
           <SettingsInputGroup

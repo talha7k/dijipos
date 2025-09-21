@@ -397,6 +397,7 @@ function PosReportTab({
             rawHtml={reportHtml}
             title={`POS Sales Report - ${format(date, "PPP")}`}
             onOpenChange={setPrintDialogOpen}
+            allowedPageSizes={["210mm", "letter"]}
           >
             <Button onClick={onPrint}>
               <Download className="h-4 w-4 mr-2" />

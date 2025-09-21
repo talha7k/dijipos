@@ -19,12 +19,12 @@ export function SidebarHeader({
         <div className="flex items-center space-x-2">
           <Image
             src="/icon_logo.svg"
-            alt="DijiPOS Logo"
+            alt="Dijitize.com Logo"
             width={24}
             height={24}
             className="h-8 w-8"
           />
-          <span className="font-semibold">DijiPOS</span>
+          <span className="font-semibold">Dijitize.com</span>
         </div>
       )}
       <div className="flex items-center space-1">
