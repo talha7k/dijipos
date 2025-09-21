@@ -167,7 +167,7 @@ export function TableActionsDialog({ table, children }: TableActionsDialogProps)
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
@@ -175,44 +175,50 @@ export function TableActionsDialog({ table, children }: TableActionsDialogProps)
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-4">
-          {/* Current Table Info */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Current Status:</span>
-              <Badge className={getStatusColor(table.status)}>
-                {table.status}
-              </Badge>
+        <div className="grid grid-cols-2 gap-6">
+          {/* Left Column - Table Info */}
+          <div className="space-y-4">
+            <div>
+              <h4 className="font-medium mb-3">Table Information</h4>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Status:</span>
+                  <Badge className={getStatusColor(table.status)}>
+                    {table.status}
+                  </Badge>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Users className="h-4 w-4" />
+                  <span>Capacity: {table.capacity}</span>
+                </div>
+              </div>
             </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Users className="h-4 w-4" />
-              <span>Capacity: {table.capacity}</span>
-            </div>
+
+            {/* Order Information */}
+            {tableOrder && (
+              <div>
+                <h4 className="font-medium mb-3">Active Order</h4>
+                <Alert>
+                  <AlertDescription>
+                    <div className="space-y-1">
+                      <div><strong>Order:</strong> {tableOrder.orderNumber}</div>
+                      <div><strong>Customer:</strong> {tableOrder.customerName || 'Walk-in'}</div>
+                      <div><strong>Total:</strong> ${tableOrder.total.toFixed(2)}</div>
+                      <div><strong>Status:</strong> {tableOrder.status}</div>
+                    </div>
+                  </AlertDescription>
+                </Alert>
+              </div>
+            )}
           </div>
 
-          {/* Order Information */}
-          {tableOrder && (
-            <div className="space-y-2">
-              <h4 className="font-medium">Active Order</h4>
-              <Alert>
-                <AlertDescription>
-                  <div className="space-y-1">
-                    <div><strong>Order:</strong> {tableOrder.orderNumber}</div>
-                    <div><strong>Customer:</strong> {tableOrder.customerName || 'Walk-in'}</div>
-                    <div><strong>Total:</strong> ${tableOrder.total.toFixed(2)}</div>
-                    <div><strong>Status:</strong> {tableOrder.status}</div>
-                  </div>
-                </AlertDescription>
-              </Alert>
-            </div>
-          )}
-
-          {/* Actions */}
-          <div className="space-y-3">
+          {/* Right Column - Actions */}
+          <div className="space-y-4">
+            <h4 className="font-medium">Actions</h4>
+            
             {/* Release Table Action */}
             {tableOrder && (
               <div className="space-y-2">
-                <h4 className="font-medium">Release Table</h4>
                 <p className="text-sm text-muted-foreground">
                   Mark this table as available. The order will remain active but won&apos;t be assigned to any table.
                 </p>
@@ -231,30 +237,27 @@ export function TableActionsDialog({ table, children }: TableActionsDialogProps)
             {/* Move Order Action */}
             {tableOrder && availableTables.length > 0 && (
               <div className="space-y-2">
-                <h4 className="font-medium">Move Order to Another Table</h4>
                 <p className="text-sm text-muted-foreground">
                   Assign this order to a different available table.
                 </p>
-                <div className="flex items-center gap-2">
-                  <Select value={selectedTableId} onValueChange={setSelectedTableId}>
-                    <SelectTrigger className="flex-1">
-                      <SelectValue placeholder="Select target table" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableTables.map((targetTable) => (
-                        <SelectItem key={targetTable.id} value={targetTable.id}>
-                          {targetTable.name} (Capacity: {targetTable.capacity})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                </div>
+                <Select value={selectedTableId} onValueChange={setSelectedTableId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select target table" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableTables.map((targetTable) => (
+                      <SelectItem key={targetTable.id} value={targetTable.id}>
+                        {targetTable.name} (Capacity: {targetTable.capacity})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <Button 
                   onClick={handleMoveOrder}
                   disabled={!selectedTableId || isProcessing}
                   className="w-full"
                 >
+                  <ArrowRight className="h-4 w-4 mr-2" />
                   {isProcessing ? 'Moving...' : 'Move Order'}
                 </Button>
               </div>

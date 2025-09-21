@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { Table, Order } from '@/types';
+import { Table, Order } from "@/types";
 
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Users, ArrowLeft } from 'lucide-react';
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Users, ArrowLeft } from "lucide-react";
 // Utility function
-const isAvailable = (status: string) => status === 'available';
-import { TableCard } from '@/components/tables/TableCard';
+const isAvailable = (status: string) => status === "available";
+import { POSTableCard } from "./POSTableCard";
 
 interface POSTableGridProps {
   tables: Table[];
@@ -16,13 +16,22 @@ interface POSTableGridProps {
   onBack: () => void;
 }
 
-export function POSTableGrid({ tables, orders, onTableSelect, onBack }: POSTableGridProps) {
-
+export function POSTableGrid({
+  tables,
+  orders,
+  onTableSelect,
+  onBack,
+}: POSTableGridProps) {
   const availableTables = tables; // Show all tables regardless of status
 
   // Find orders for occupied tables
   const getTableOrder = (tableId: string) => {
-    return orders.find(order => order.tableId === tableId && order.status !== 'completed' && order.status !== 'cancelled');
+    return orders.find(
+      (order) =>
+        order.tableId === tableId &&
+        order.status !== "completed" &&
+        order.status !== "cancelled",
+    );
   };
 
   return (
@@ -46,13 +55,13 @@ export function POSTableGrid({ tables, orders, onTableSelect, onBack }: POSTable
       {/* Tables Grid */}
       <div className="flex-1 overflow-auto p-6 bg-background">
         {availableTables.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4  gap-6">
             {availableTables.map((table) => {
               const tableOrder = getTableOrder(table.id);
               const tableIsAvailable = isAvailable(table.status);
-              
+
               return (
-                <TableCard
+                <POSTableCard
                   key={table.id}
                   table={table}
                   tableOrder={tableOrder}
@@ -65,9 +74,7 @@ export function POSTableGrid({ tables, orders, onTableSelect, onBack }: POSTable
         ) : (
           <div className="text-center py-12 text-muted-foreground">
             <Users className="h-12 w-12 mx-auto mb-4" />
-            <p className="text-lg">
-              No tables found
-            </p>
+            <p className="text-lg">No tables found</p>
             <p className="text-sm mt-2">
               Please create tables in Settings → Tables tab first.
             </p>

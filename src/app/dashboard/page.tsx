@@ -1,36 +1,49 @@
-'use client';
+"use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useDashboard } from '@/lib/hooks/useDashboard';
-import { UserRole } from '@/types/enums';
-import { 
-  ShoppingCart, 
-  CheckCircle, 
-  Users, 
-  LayoutGrid, 
-  Package, 
-  Settings, 
-  TrendingUp, 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useDashboard } from "@/lib/hooks/useDashboard";
+import { UserRole } from "@/types/enums";
+import {
+  ShoppingCart,
+  CheckCircle,
+  Users,
+  LayoutGrid,
+  Package,
+  Settings,
+  TrendingUp,
   Building,
   User,
   CreditCard,
   Percent,
   Star,
   Clock,
-  FileText
-} from 'lucide-react';
-import Link from 'next/link';
+  FileText,
+} from "lucide-react";
+import Link from "next/link";
 
 function DashboardContent() {
   const { data, loading, dateFilter, setDateFilter } = useDashboard();
   const {
     openOrdersCount,
     completedOrdersCount,
-    
+
     totalOrdersYesterday,
     totalCustomers,
     totalTables,
@@ -53,9 +66,12 @@ function DashboardContent() {
     vatRate,
   } = data;
 
-  const isManagerOrAdmin = userRole === UserRole.MANAGER || userRole === UserRole.ADMIN;
-  const currentTopSellingItems = dateFilter === 'today' ? topSellingItemsToday : topSellingItemsYesterday;
-  const currentSalesByOrderType = dateFilter === 'today' ? salesByOrderTypeToday : salesByOrderTypeYesterday;
+  const isManagerOrAdmin =
+    userRole === UserRole.MANAGER || userRole === UserRole.ADMIN;
+  const currentTopSellingItems =
+    dateFilter === "today" ? topSellingItemsToday : topSellingItemsYesterday;
+  const currentSalesByOrderType =
+    dateFilter === "today" ? salesByOrderTypeToday : salesByOrderTypeYesterday;
 
   if (loading) {
     return (
@@ -83,7 +99,9 @@ function DashboardContent() {
                 <span className="font-medium">{companyName}</span>
               </div>
               {companyAddress && (
-                <div className="text-sm text-muted-foreground ml-6">{companyAddress}</div>
+                <div className="text-sm text-muted-foreground ml-6">
+                  {companyAddress}
+                </div>
               )}
               {companyVatNumber && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground ml-6">
@@ -124,7 +142,9 @@ function DashboardContent() {
         {/* Completed Orders */}
         <Card className="border-l-4 border-l-green-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completed Orders</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Completed Orders
+            </CardTitle>
             <CheckCircle className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
@@ -136,12 +156,16 @@ function DashboardContent() {
         {/* Total Customers */}
         <Card className="border-l-4 border-l-blue-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Customers</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total Customers
+            </CardTitle>
             <Users className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalCustomers}</div>
-            <p className="text-xs text-muted-foreground">Registered customers</p>
+            <p className="text-xs text-muted-foreground">
+              Registered customers
+            </p>
           </CardContent>
         </Card>
 
@@ -166,18 +190,27 @@ function DashboardContent() {
           {/* Today's Sales */}
           <Card className="border-l-4 border-l-emerald-500">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Today&apos;s Sales</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Today&apos;s Sales
+              </CardTitle>
               <TrendingUp className="h-4 w-4 text-emerald-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">SAR {totalSalesToday.toFixed(2)}</div>
+              <div className="text-2xl font-bold">
+                SAR {totalSalesToday.toFixed(2)}
+              </div>
               <p className="text-xs text-muted-foreground">
                 {totalOrdersYesterday > 0 && (
-                  <span className={totalSalesToday >= totalSalesYesterday ? 'text-green-600' : 'text-red-600'}>
-                    {totalSalesYesterday > 0 ? 
-                      `${(((totalSalesToday - totalSalesYesterday) / totalSalesYesterday) * 100).toFixed(1)}% from yesterday` : 
-                      'First day sales'
+                  <span
+                    className={
+                      totalSalesToday >= totalSalesYesterday
+                        ? "text-green-600"
+                        : "text-red-600"
                     }
+                  >
+                    {totalSalesYesterday > 0
+                      ? `${(((totalSalesToday - totalSalesYesterday) / totalSalesYesterday) * 100).toFixed(1)}% from yesterday`
+                      : "First day sales"}
                   </span>
                 )}
               </p>
@@ -187,13 +220,17 @@ function DashboardContent() {
           {/* VAT Amount */}
           <Card className="border-l-4 border-l-orange-500">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">VAT Collected</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                VAT Collected
+              </CardTitle>
               <Percent className="h-4 w-4 text-orange-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">SAR {vatAmountToday.toFixed(2)}</div>
+              <div className="text-2xl font-bold">
+                SAR {vatAmountToday.toFixed(2)}
+              </div>
               <p className="text-xs text-muted-foreground">
-                {vatRate ? `@ ${vatRate}%` : 'VAT rate not set'}
+                {vatRate ? `@ ${vatRate}%` : "VAT rate not set"}
               </p>
             </CardContent>
           </Card>
@@ -231,16 +268,19 @@ function DashboardContent() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>Top Selling Items</CardTitle>
-              <Tabs value={dateFilter} onValueChange={(value) => setDateFilter(value as 'today' | 'yesterday')}>
+              <Tabs
+                value={dateFilter}
+                onValueChange={(value) =>
+                  setDateFilter(value as "today" | "yesterday")
+                }
+              >
                 <TabsList>
                   <TabsTrigger value="today">Today</TabsTrigger>
                   <TabsTrigger value="yesterday">Yesterday</TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
-            <CardDescription>
-              Best performing items by revenue
-            </CardDescription>
+            <CardDescription>Best performing items by revenue</CardDescription>
           </CardHeader>
           <CardContent>
             {currentTopSellingItems.length > 0 ? (
@@ -257,18 +297,28 @@ function DashboardContent() {
                     <TableRow key={item.id}>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white ${
-                            index === 0 ? 'bg-yellow-500' : 
-                            index === 1 ? 'bg-gray-400' : 
-                            index === 2 ? 'bg-orange-600' : 'bg-gray-300'
-                          }`}>
+                          <div
+                            className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white ${
+                              index === 0
+                                ? "bg-yellow-500"
+                                : index === 1
+                                  ? "bg-gray-400"
+                                  : index === 2
+                                    ? "bg-orange-600"
+                                    : "bg-gray-300"
+                            }`}
+                          >
                             {index + 1}
                           </div>
                           {item.name}
                         </div>
                       </TableCell>
-                      <TableCell className="text-right">{item.quantity}</TableCell>
-                      <TableCell className="text-right font-medium">SAR {item.total.toFixed(2)}</TableCell>
+                      <TableCell className="text-right">
+                        {item.quantity}
+                      </TableCell>
+                      <TableCell className="text-right font-medium">
+                        SAR {item.total.toFixed(2)}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -303,15 +353,24 @@ function DashboardContent() {
                   </TableHeader>
                   <TableBody>
                     {Object.entries(currentSalesByOrderType)
-                      .sort(([,a], [,b]) => b - a)
+                      .sort(([, a], [, b]) => b - a)
                       .map(([type, amount]) => {
-                        const total = Object.values(currentSalesByOrderType).reduce((sum, val) => sum + val, 0);
-                        const percentage = total > 0 ? (amount / total) * 100 : 0;
+                        const total = Object.values(
+                          currentSalesByOrderType,
+                        ).reduce((sum, val) => sum + val, 0);
+                        const percentage =
+                          total > 0 ? (amount / total) * 100 : 0;
                         return (
                           <TableRow key={type}>
-                            <TableCell className="capitalize">{type.replace('_', ' ')}</TableCell>
-                            <TableCell className="text-right font-medium">SAR {amount.toFixed(2)}</TableCell>
-                            <TableCell className="text-right">{percentage.toFixed(1)}%</TableCell>
+                            <TableCell className="capitalize">
+                              {type.replace("_", " ")}
+                            </TableCell>
+                            <TableCell className="text-right font-medium">
+                              SAR {amount.toFixed(2)}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {percentage.toFixed(1)}%
+                            </TableCell>
                           </TableRow>
                         );
                       })}
@@ -331,21 +390,13 @@ function DashboardContent() {
         <Card>
           <CardHeader>
             <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>
-              Common tasks and navigation
-            </CardDescription>
+            <CardDescription>Common tasks and navigation</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-3 grid-cols-2 grid space-x-2">
             <Link href="/pos">
               <Button className="w-full justify-start" variant="outline">
                 <ShoppingCart className="h-4 w-4 mr-2" />
                 Point of Sale
-              </Button>
-            </Link>
-            <Link href="/tables">
-              <Button className="w-full justify-start" variant="outline">
-                <LayoutGrid className="h-4 w-4 mr-2" />
-                Table Management
               </Button>
             </Link>
             <Link href="/customers">
@@ -397,7 +448,7 @@ function DashboardContent() {
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">VAT Rate</span>
               <Badge variant={vatRate ? "default" : "destructive"}>
-                {vatRate ? `${vatRate}%` : 'Not Set'}
+                {vatRate ? `${vatRate}%` : "Not Set"}
               </Badge>
             </div>
             <div className="flex items-center justify-between">

@@ -1,6 +1,7 @@
 'use client';
 
 import { Table } from '@/types';
+import { TableStatus } from '@/types/enums';
 import { useAtomValue } from 'jotai';
 import { selectedOrganizationAtom } from '@/atoms';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,15 +10,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Table as TableIcon, Plus, Trash2, Users, MoreHorizontal } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { TableActionsDialog } from '@/components/tables/TableActionsDialog';
+
+import { Plus, Sofa } from 'lucide-react';
+
+
+import { TableCard } from '@/components/tables/TableCard';
 import { useState } from 'react';
 import { addDoc, deleteDoc, doc, collection } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { toast } from 'sonner';
-import { getTableStatusColor } from '@/lib/utils';
+
 
 interface TablesTabProps {
   tables: Table[];
@@ -30,30 +32,64 @@ export function TablesTab({ tables }: TablesTabProps) {
   // Local state management
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteTableId, setDeleteTableId] = useState<string | null>(null);
+  const [mode, setMode] = useState<'single' | 'bulk'>('single');
   const [newTable, setNewTable] = useState({
     name: '',
     capacity: 1,
-    status: 'available' as 'available' | 'occupied' | 'reserved' | 'maintenance'
+    status: TableStatus.AVAILABLE
   });
+  const [bulkCount, setBulkCount] = useState('');
+  const [bulkCapacity, setBulkCapacity] = useState('');
 
   // Table management functions
   const handleAddTable = async () => {
-    if (!organizationId || !newTable.name.trim()) return;
+    if (!organizationId) return;
 
     try {
-      await addDoc(collection(db, 'organizations', organizationId, 'tables'), {
-        ...newTable,
-        organizationId,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
+      if (mode === 'single') {
+        if (!newTable.name.trim()) return;
+        
+        await addDoc(collection(db, 'organizations', organizationId, 'tables'), {
+          ...newTable,
+          organizationId,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
 
-      setNewTable({ name: '', capacity: 1, status: 'available' });
+        setNewTable({ name: '', capacity: 1, status: TableStatus.AVAILABLE });
+        toast.success('Table added successfully');
+      } else {
+        const count = parseInt(bulkCount);
+        const capacity = parseInt(bulkCapacity);
+        
+        if (!count || !capacity || count < 1 || capacity < 1) return;
+
+        const tables = [];
+        for (let i = 1; i <= count; i++) {
+          tables.push({
+            name: `Table ${i}`,
+            capacity,
+            status: newTable.status,
+            organizationId,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          });
+        }
+
+        const promises = tables.map(table => 
+          addDoc(collection(db, 'organizations', organizationId, 'tables'), table)
+        );
+        await Promise.all(promises);
+
+        setBulkCount('');
+        setBulkCapacity('');
+        toast.success(`${count} tables added successfully`);
+      }
+      
       setDialogOpen(false);
-      toast.success('Table added successfully');
     } catch (error) {
-      console.error('Error adding table:', error);
-      toast.error('Failed to add table');
+      console.error('Error adding table(s):', error);
+      toast.error('Failed to add table(s)');
     }
   };
 
@@ -75,16 +111,14 @@ export function TablesTab({ tables }: TablesTabProps) {
     }
   };
 
-  const getStatusColor = (status: string, withBorder = true) => {
-    return getTableStatusColor(status, withBorder);
-  };
+  
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <TableIcon className="h-5 w-5" />
+            <Sofa className="h-5 w-5" />
             Tables
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -96,34 +130,93 @@ export function TablesTab({ tables }: TablesTabProps) {
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Add Table</DialogTitle>
+                <DialogTitle>Add Table{mode === 'bulk' ? 's' : ''}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
+                {/* Mode Selection */}
                 <div>
-                  <Label htmlFor="table-name">Name</Label>
-                  <Input
-                    id="table-name"
-                    placeholder="e.g., Table 1, Booth A"
-                    value={newTable.name}
-                    onChange={(e) => setNewTable({ ...newTable, name: e.target.value })}
-                  />
+                  <Label>Creation Mode</Label>
+                  <div className="flex gap-2 mt-2">
+                    <Button
+                      type="button"
+                      variant={mode === 'single' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setMode('single')}
+                      className="flex-1"
+                    >
+                      Single Table
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={mode === 'bulk' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setMode('bulk')}
+                      className="flex-1"
+                    >
+                      Bulk Create
+                    </Button>
+                  </div>
                 </div>
-                <div>
-                  <Label htmlFor="table-capacity">Capacity</Label>
-                  <Input
-                    id="table-capacity"
-                    type="number"
-                    min="1"
-                    placeholder="4"
-                    value={newTable.capacity}
-                    onChange={(e) => setNewTable({ ...newTable, capacity: parseInt(e.target.value) || 1 })}
-                  />
-                </div>
+                
+                {mode === 'single' ? (
+                  <>
+                    <div>
+                      <Label htmlFor="table-name">Name</Label>
+                      <Input
+                        id="table-name"
+                        placeholder="e.g., Table 1, Booth A"
+                        value={newTable.name}
+                        onChange={(e) => setNewTable({ ...newTable, name: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="table-capacity">Capacity</Label>
+                      <Input
+                        id="table-capacity"
+                        type="number"
+                        min="1"
+                        placeholder="4"
+                        value={newTable.capacity}
+                        onChange={(e) => setNewTable({ ...newTable, capacity: parseInt(e.target.value) || 1 })}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div>
+                      <Label htmlFor="bulk-count">Number of Tables</Label>
+                      <Input
+                        id="bulk-count"
+                        type="number"
+                        min="1"
+                        max="50"
+                        placeholder="How many tables to create?"
+                        value={bulkCount}
+                        onChange={(e) => setBulkCount(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="bulk-capacity">Default Capacity</Label>
+                      <Input
+                        id="bulk-capacity"
+                        type="number"
+                        min="1"
+                        placeholder="Seats per table"
+                        value={bulkCapacity}
+                        onChange={(e) => setBulkCapacity(e.target.value)}
+                      />
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Tables will be named: Table 1, Table 2, Table 3, etc.
+                    </div>
+                  </>
+                )}
+                
                 <div>
                   <Label htmlFor="table-status">Status</Label>
                   <Select
                     value={newTable.status}
-                    onValueChange={(value: 'available' | 'occupied' | 'reserved' | 'maintenance') =>
+                    onValueChange={(value: TableStatus) =>
                       setNewTable({ ...newTable, status: value })
                     }
                   >
@@ -131,16 +224,17 @@ export function TablesTab({ tables }: TablesTabProps) {
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="available">Available</SelectItem>
-                      <SelectItem value="occupied">Occupied</SelectItem>
-                      <SelectItem value="reserved">Reserved</SelectItem>
-                      <SelectItem value="maintenance">Maintenance</SelectItem>
+                      <SelectItem value={TableStatus.AVAILABLE}>Available</SelectItem>
+                      <SelectItem value={TableStatus.OCCUPIED}>Occupied</SelectItem>
+                      <SelectItem value={TableStatus.RESERVED}>Reserved</SelectItem>
+                      <SelectItem value={TableStatus.MAINTENANCE}>Maintenance</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-<Button onClick={() => handleAddTable()} className="w-full">
-                    Add Table
-                  </Button>
+                
+                <Button onClick={() => handleAddTable()} className="w-full">
+                  {mode === 'single' ? 'Add Table' : `Add ${bulkCount || 0} Tables`}
+                </Button>
               </div>
             </DialogContent>
           </Dialog>
@@ -148,62 +242,22 @@ export function TablesTab({ tables }: TablesTabProps) {
       </CardHeader>
       <CardContent>
         {tables.length === 0 ? (
-          <p className="text-muted-foreground">No tables added yet.</p>
+          <div className="text-center py-12">
+            <Sofa className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">No tables added yet.</p>
+            <p className="text-sm text-muted-foreground mt-2">Click &quot;Add Table&quot; to get started</p>
+          </div>
         ) : (
-          <div className="grid gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {tables.map((table) => (
-              <div key={table.id} className="flex items-center justify-between p-3 border rounded">
-                <div className="flex items-center gap-3">
-                  <TableIcon className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <h3 className="font-medium">{table.name}</h3>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Users className="h-3 w-3" />
-                      <span>{table.capacity} seats</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge className={getStatusColor(table.status)}>
-                    {table.status}
-                  </Badge>
-                  <TableActionsDialog table={table}>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="hover:bg-accent"
-                    >
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </TableActionsDialog>
-                  <AlertDialog open={deleteTableId === table.id} onOpenChange={(open) => !open && setDeleteTableId(null)}>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteTable(table.id)}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This will permanently delete the table &ldquo;{table.name}&rdquo;. This action cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel onClick={() => setDeleteTableId(null)}>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => confirmDeleteTable()} className="bg-destructive text-destructive-foreground">
-                          Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
-              </div>
+              <TableCard
+                key={table.id}
+                table={table}
+                onDeleteTable={handleDeleteTable}
+                deleteTableId={deleteTableId}
+                setDeleteTableId={setDeleteTableId}
+                confirmDeleteTable={confirmDeleteTable}
+              />
             ))}
           </div>
         )}
