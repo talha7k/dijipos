@@ -371,6 +371,21 @@ function ReportsPage() {
   const { quotes, loading: quotesLoading } = useQuotes();
   const { orders, loading: ordersLoading, getPaymentsForOrder } = useOrders();
 
+  // Log initial data load
+  useEffect(() => {
+    console.log('📊 [REPORTS DEBUG] Component mounted - initial data:', {
+      orders,
+      ordersLoading,
+      invoicesLoading,
+      quotesLoading
+    });
+  }, [orders, ordersLoading, invoicesLoading, quotesLoading]);
+
+  // Log when orders data changes
+  useEffect(() => {
+    console.log('📊 [REPORTS DEBUG] Orders data updated:', orders);
+  }, [orders]);
+
   const [posReportDate, setPosReportDate] = useState<Date>(new Date());
   const [dateFilterType, setDateFilterType] = useState('selectedDate');
   const [printDialogOpen, setPrintDialogOpen] = useState(false);
@@ -381,7 +396,7 @@ function ReportsPage() {
 
   // Filter orders for completed orders only (for sales calculations)
   const filteredOrders = useMemo(() => {
-    return orders.filter(order => {
+    const filtered = orders.filter(order => {
       // Date filter
       const dateToCompare = dateFilterType === 'selectedDate' ? (order.selectedDate ? new Date(order.selectedDate) : null) : order.createdAt;
       if (!dateToCompare || dateToCompare.toDateString() !== posReportDate.toDateString()) {
@@ -391,29 +406,46 @@ function ReportsPage() {
       // Order status filter - only completed orders for calculations
       return order.status === OrderStatus.COMPLETED;
     });
+    
+    console.log('📊 [REPORTS DEBUG] Raw orders data:', orders);
+    console.log('📊 [REPORTS DEBUG] Filtered orders (completed only):', filtered);
+    console.log('📊 [REPORTS DEBUG] Date filter type:', dateFilterType);
+    console.log('📊 [REPORTS DEBUG] Report date:', posReportDate.toDateString());
+    
+    return filtered;
   }, [orders, posReportDate, dateFilterType]);
 
   // Filter all orders for the selected date (for payments and status tracking)
   const allOrdersForDate = useMemo(() => {
-    return orders.filter(order => {
+    const allForDate = orders.filter(order => {
       const dateToCompare = dateFilterType === 'selectedDate' ? (order.selectedDate ? new Date(order.selectedDate) : null) : order.createdAt;
       return dateToCompare && dateToCompare.toDateString() === posReportDate.toDateString();
     });
+    
+    console.log('📊 [REPORTS DEBUG] All orders for date (including non-completed):', allForDate);
+    
+    return allForDate;
   }, [orders, posReportDate, dateFilterType]);
 
   useEffect(() => {
     const fetchPayments = async () => {
+      console.log('📊 [REPORTS DEBUG] Starting to fetch payments for orders:', allOrdersForDate.map(o => ({ id: o.id, status: o.status })));
       const payments: Record<string, Array<{ paymentMethod: string; amount: number }>> = {};
       // Fetch payments for ALL orders (not just completed ones)
       for (const order of allOrdersForDate) {
+        console.log(`📊 [REPORTS DEBUG] Fetching payments for order ${order.id} (status: ${order.status})`);
         const orderPayments = await getPaymentsForOrder(order.id);
+        console.log(`📊 [REPORTS DEBUG] Payments for order ${order.id}:`, orderPayments);
         payments[order.id] = orderPayments;
       }
+      console.log('📊 [REPORTS DEBUG] All payments fetched:', payments);
       setPaymentsByOrder(payments);
     };
 
     if (allOrdersForDate.length > 0) {
       fetchPayments();
+    } else {
+      console.log('📊 [REPORTS DEBUG] No orders found for date, skipping payments fetch');
     }
   }, [allOrdersForDate, getPaymentsForOrder]);
 
@@ -428,10 +460,17 @@ function ReportsPage() {
   };
 
   const posReportData = useMemo(() => {
+    console.log('📊 [REPORTS DEBUG] Calculating report data...');
+    console.log('📊 [REPORTS DEBUG] Input data - filteredOrders:', filteredOrders);
+    console.log('📊 [REPORTS DEBUG] Input data - paymentsByOrder:', paymentsByOrder);
+    console.log('📊 [REPORTS DEBUG] Input data - allOrdersForDate:', allOrdersForDate);
+
     // Sales calculations should only include completed orders
     const totalSales = filteredOrders.reduce((sum, order) => sum + order.total, 0);
     const totalTax = filteredOrders.reduce((sum, order) => sum + order.taxAmount, 0);
     const totalSubtotal = filteredOrders.reduce((sum, order) => sum + order.subtotal, 0);
+
+    console.log('📊 [REPORTS DEBUG] Sales calculations:', { totalSales, totalTax, totalSubtotal });
 
     // Payment calculations should include ALL orders (completed or not)
     const salesByPaymentType = Object.values(paymentsByOrder).flat().reduce((acc: Record<string, number>, payment) => {
@@ -439,11 +478,15 @@ function ReportsPage() {
       return acc;
     }, {} as Record<string, number>);
 
+    console.log('📊 [REPORTS DEBUG] Sales by payment type:', salesByPaymentType);
+
     // Order type calculations should only include completed orders
     const salesByOrderType = filteredOrders.reduce((acc: Record<string, number>, order) => {
       acc[order.orderType] = (acc[order.orderType] || 0) + order.total;
       return acc;
     }, {} as Record<string, number>);
+
+    console.log('📊 [REPORTS DEBUG] Sales by order type:', salesByOrderType);
 
     // Item calculations should only include completed orders
     const allItems = filteredOrders.flatMap(order => order.items);
@@ -462,13 +505,17 @@ function ReportsPage() {
       .sort((a, b) => b.total - a.total)
       .slice(0, 20);
 
+    console.log('📊 [REPORTS DEBUG] Item calculations:', { totalItemsSold, topSellingItems: topSellingItems.slice(0, 5) });
+
     // Orders by status should include ALL orders (not just completed ones)
     const ordersByStatus = allOrdersForDate.reduce((acc: Record<string, number>, order) => {
       acc[order.status] = (acc[order.status] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 
-    return {
+    console.log('📊 [REPORTS DEBUG] Orders by status:', ordersByStatus);
+
+    const result = {
       totalSales,
       totalTax,
       totalSubtotal,
@@ -480,6 +527,10 @@ function ReportsPage() {
       averageOrderValue: filteredOrders.length > 0 ? totalSales / filteredOrders.length : 0,
       ordersByStatus,
     };
+
+    console.log('📊 [REPORTS DEBUG] Final report data:', result);
+
+    return result;
   }, [filteredOrders, paymentsByOrder, allOrdersForDate]);
 
   if (invoicesLoading || quotesLoading || ordersLoading) {

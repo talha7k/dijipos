@@ -62,19 +62,19 @@ export function OrderActionsDialog({
           <DialogTitle>Order Actions</DialogTitle>
           <DialogDescription>
             Manage order status and actions for Order #{order.orderNumber}
-            <div className="mt-2 flex items-center gap-2">
-              <span className="text-sm">Payment Status:</span>
-               <span className={`text-sm font-medium px-2 py-1 rounded ${
-                 paymentStatus === PaymentStatus.PAID
-                   ? 'bg-green-100 text-green-800'
-                   : paymentStatus === PaymentStatus.PARTIAL
-                   ? 'bg-yellow-100 text-yellow-800'
-                   : 'bg-red-100 text-red-800'
-               }`}>
-                 {paymentStatus.replace('_', ' ')}
-               </span>
-            </div>
           </DialogDescription>
+          <div className="mt-2 flex items-center gap-2">
+            <span className="text-sm">Payment Status:</span>
+             <span className={`text-sm font-medium px-2 py-1 rounded ${
+               paymentStatus === PaymentStatus.PAID
+                 ? 'bg-green-100 text-green-800'
+                 : paymentStatus === PaymentStatus.PARTIAL
+                 ? 'bg-yellow-100 text-yellow-800'
+                 : 'bg-red-100 text-red-800'
+             }`}>
+               {paymentStatus.replace('_', ' ')}
+             </span>
+          </div>
         </DialogHeader>
         <div className="grid grid-cols-2 gap-4 py-4">
            <Button
