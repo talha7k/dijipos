@@ -160,8 +160,34 @@ function PosReportDetails({ data }) {
   );
 }
 
-function generateReportHtml(data, reportDate, dateFilterType) {
+function generateReportHtml(data, reportDate, dateFilterType, isDetailed) {
   const title = `POS Sales Report - ${format(reportDate, 'PPP')} (${dateFilterType === 'selectedDate' ? 'Business Date' : 'Order Date'})`;
+  const detailsHtml = isDetailed ? `
+    <h2>Sales by Payment Type</h2>
+    <table>
+      <thead><tr><th>Type</th><th class="text-right">Amount</th></tr></thead>
+      <tbody>
+        ${Object.entries(data.salesByPaymentType).map(([type, amount]) => `<tr><td class="capitalize">${type}</td><td class="text-right">${amount.toFixed(2)}</td></tr>`).join('')}
+      </tbody>
+    </table>
+
+    <h2>Sales by Order Type</h2>
+    <table>
+      <thead><tr><th>Type</th><th class="text-right">Amount</th></tr></thead>
+      <tbody>
+        ${Object.entries(data.salesByOrderType).map(([type, amount]) => `<tr><td class="capitalize">${type}</td><td class="text-right">${amount.toFixed(2)}</td></tr>`).join('')}
+      </tbody>
+    </table>
+
+    <h2>Top Selling Items</h2>
+    <table>
+      <thead><tr><th>Item</th><th class="text-right">Quantity</th><th class="text-right">Total</th></tr></thead>
+      <tbody>
+        ${data.topSellingItems.map(item => `<tr><td>${item.name}</td><td class="text-right">${item.quantity}</td><td class="text-right">${item.total.toFixed(2)}</td></tr>`).join('')}
+      </tbody>
+    </table>
+  ` : '';
+
   return `
     <style>
       body { font-family: sans-serif; margin: 20px; }
@@ -199,13 +225,7 @@ function generateReportHtml(data, reportDate, dateFilterType) {
       </div>
     </div>
 
-    <h2>Top Selling Items</h2>
-    <table>
-      <thead><tr><th>Item</th><th class="text-right">Quantity</th><th class="text-right">Total</th></tr></thead>
-      <tbody>
-        ${data.topSellingItems.map(item => `<tr><td>${item.name}</td><td class="text-right">${item.quantity}</td><td class="text-right">${item.total.toFixed(2)}</td></tr>`).join('')}
-      </tbody>
-    </table>
+    ${detailsHtml}
 
     <h2>Financial Summary</h2>
     <table>
@@ -220,22 +240,13 @@ function generateReportHtml(data, reportDate, dateFilterType) {
 
 import { ReceiptPrintDialog } from '@/components/ReceiptPrintDialog';
 
-function PosReportTab({ title, data, date, onDateChange, dateFilterType, onDateFilterTypeChange }) {
-  const [printDialogOpen, setPrintDialogOpen] = useState(false);
-  const [reportHtml, setReportHtml] = useState("");
-
-  const handlePrint = () => {
-    const html = generateReportHtml(data, date, dateFilterType);
-    setReportHtml(html);
-    setPrintDialogOpen(true);
-  };
-
+function PosReportTab({ title, data, date, onDateChange, dateFilterType, onDateFilterTypeChange, isDetailed, onPrint }) {
   return (
     <Card>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         <div className="flex items-center space-x-2">
-          <DatePicker onDateChange={onDateChange} defaultDate={date}>
+          <DatePicker onDateChange={onDateChange}>
             <Button variant="outline">
               {format(date, 'PPP')}
             </Button>
@@ -249,20 +260,30 @@ function PosReportTab({ title, data, date, onDateChange, dateFilterType, onDateF
               <SelectItem value="createdAt">Order Date</SelectItem>
             </SelectContent>
           </Select>
-          <Button onClick={handlePrint}><Download className="h-4 w-4 mr-2" />Print</Button>
+          <Button onClick={onPrint}><Download className="h-4 w-4 mr-2" />Print</Button>
         </div>
       </CardHeader>
       <CardContent>
-        <PosReportDetails data={data} />
-        <ReceiptPrintDialog
-          open={printDialogOpen}
-          onOpenChange={setPrintDialogOpen}
-          rawHtml={reportHtml}
-          title={`POS Sales Report - ${format(date, 'PPP')}`}
-        >
-          {/* This dialog is opened programmatically, so it doesn't need a trigger child */}
-          <div />
-        </ReceiptPrintDialog>
+        {isDetailed ? <PosReportDetails data={data} /> : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Description</TableHead>
+                <TableHead className="text-right">Amount</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <TableRow>
+                <TableCell>Total Sales</TableCell>
+                <TableCell className="text-right">{data.totalSales.toFixed(2)}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Total Tax</TableCell>
+                <TableCell className="text-right">{data.totalTax.toFixed(2)}</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        )}
       </CardContent>
     </Card>
   );
@@ -271,14 +292,13 @@ function PosReportTab({ title, data, date, onDateChange, dateFilterType, onDateF
 function ReportsPage() {
   const { salesInvoices, loading: invoicesLoading } = useInvoices();
   const { quotes, loading: quotesLoading } = useQuotes();
-  const { orders, loading: ordersLoading } = useOrders();
+  const { orders, loading: ordersLoading, getPaymentsForOrder } = useOrders();
 
   const [posReportDate, setPosReportDate] = useState<Date>(new Date());
   const [dateFilterType, setDateFilterType] = useState('selectedDate');
-
-  const handlePosReportDateChange = (date: Date) => {
-    setPosReportDate(date);
-  };
+  const [printDialogOpen, setPrintDialogOpen] = useState(false);
+  const [reportHtml, setReportHtml] = useState("");
+  const [paymentsByOrder, setPaymentsByOrder] = useState({});
 
   const filteredOrders = useMemo(() => {
     return orders.filter(order => {
@@ -293,15 +313,38 @@ function ReportsPage() {
     });
   }, [orders, posReportDate, dateFilterType]);
 
+  useEffect(() => {
+    const fetchPayments = async () => {
+      const payments = {};
+      for (const order of filteredOrders) {
+        const orderPayments = await getPaymentsForOrder(order.id);
+        payments[order.id] = orderPayments;
+      }
+      setPaymentsByOrder(payments);
+    };
+
+    if (filteredOrders.length > 0) {
+      fetchPayments();
+    }
+  }, [filteredOrders, getPaymentsForOrder]);
+
+  const handlePosReportDateChange = (date: Date) => {
+    setPosReportDate(date);
+  };
+
+  const handlePrint = (data, date, filterType, isDetailed) => {
+    const html = generateReportHtml(data, date, filterType, isDetailed);
+    setReportHtml(html);
+    setPrintDialogOpen(true);
+  };
+
   const posReportData = useMemo(() => {
     const totalSales = filteredOrders.reduce((sum, order) => sum + order.total, 0);
     const totalTax = filteredOrders.reduce((sum, order) => sum + order.taxAmount, 0);
     const totalSubtotal = filteredOrders.reduce((sum, order) => sum + order.subtotal, 0);
 
-    const salesByPaymentType = filteredOrders.reduce((acc, order) => {
-      order.payments?.forEach(p => {
-        acc[p.paymentMethod] = (acc[p.paymentMethod] || 0) + p.amount;
-      });
+    const salesByPaymentType = Object.values(paymentsByOrder).flat().reduce((acc, payment) => {
+      acc[payment.paymentMethod] = (acc[payment.paymentMethod] || 0) + payment.amount;
       return acc;
     }, {});
 
@@ -362,27 +405,31 @@ function ReportsPage() {
             <CardContent>
               <Tabs defaultValue="x-report">
                 <TabsList>
-                  <TabsTrigger value="x-report">X Report</TabsTrigger>
-                  <TabsTrigger value="z-report">Z Report</TabsTrigger>
+                  <TabsTrigger value="short-summary">Short Summary</TabsTrigger>
+                  <TabsTrigger value="detailed-report">Detailed Report</TabsTrigger>
                 </TabsList>
-                <TabsContent value="x-report">
+                <TabsContent value="short-summary">
                   <PosReportTab
-                    title="X Report"
+                    title="Short Summary"
                     data={posReportData}
                     date={posReportDate}
                     onDateChange={handlePosReportDateChange}
                     dateFilterType={dateFilterType}
                     onDateFilterTypeChange={setDateFilterType}
+                    isDetailed={false}
+                    onPrint={() => handlePrint(posReportData, posReportDate, dateFilterType, false)}
                   />
                 </TabsContent>
-                <TabsContent value="z-report">
+                <TabsContent value="detailed-report">
                   <PosReportTab
-                    title="Z Report"
+                    title="Detailed Report"
                     data={posReportData}
                     date={posReportDate}
                     onDateChange={handlePosReportDateChange}
                     dateFilterType={dateFilterType}
                     onDateFilterTypeChange={setDateFilterType}
+                    isDetailed={true}
+                    onPrint={() => handlePrint(posReportData, posReportDate, dateFilterType, true)}
                   />
                 </TabsContent>
               </Tabs>
@@ -452,6 +499,15 @@ function ReportsPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <ReceiptPrintDialog
+        open={printDialogOpen}
+        onOpenChange={setPrintDialogOpen}
+        rawHtml={reportHtml}
+        title={`POS Sales Report - ${format(posReportDate, 'PPP')}`}
+      >
+        <div />
+      </ReceiptPrintDialog>
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback, useMemo } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { format } from "date-fns";
 import { selectedOrganizationAtom } from "@/atoms";
 import {
   CartItem,
@@ -1029,12 +1030,12 @@ export default function SimplifiedPOSPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Select Business Date</AlertDialogTitle>
             <AlertDialogDescription>
-              Please select a business date to record sales.
+              Please select a business date to record sales. Current date: {selectedDate ? format(new Date(selectedDate), 'PPP') : format(new Date(), 'PPP')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="flex justify-center">
-            <DatePicker onDateChange={handleDateChange} defaultDate={new Date()}>
-              <Button>Select Date</Button>
+            <DatePicker onDateChange={handleDateChange} defaultDate={selectedDate ? new Date(selectedDate) : new Date()}>
+              <Button>Save</Button>
             </DatePicker>
           </div>
         </AlertDialogContent>

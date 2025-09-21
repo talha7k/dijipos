@@ -114,8 +114,8 @@ function OrdersContent() {
     return (fetchedOrders || []).filter(order => {
       return Object.entries(filters).every(([key, value]) => {
         if (!value) return true;
-        const orderValue = order[key];
-        if (typeof orderValue === 'string') {
+        const orderValue = order[key as keyof Order];
+        if (typeof orderValue === 'string' && typeof value === 'string') {
           return orderValue.toLowerCase().includes(value.toLowerCase());
         }
         if (orderValue === value) {
