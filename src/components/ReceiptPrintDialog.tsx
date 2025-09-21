@@ -401,14 +401,35 @@ export function ReceiptPrintDialog({
     `);
     iframeDoc.close();
 
-    // 4. Print the iframe's content
-    iframe.contentWindow?.focus();
-    iframe.contentWindow?.print();
+    // 4. Wait for images to load before printing
+    const images = iframeDoc.querySelectorAll('img');
+    const imagePromises = Array.from(images).map(img => {
+      return new Promise<void>((resolve) => {
+        if (img.complete) {
+          resolve();
+        } else {
+          img.onload = () => resolve();
+          img.onerror = () => resolve(); // Resolve even on error to avoid hanging
+          // Set a timeout to resolve after 3 seconds in case image takes too long
+          setTimeout(() => resolve(), 3000);
+        }
+      });
+    });
 
-    // 5. Clean up the iframe
-    setTimeout(() => {
-      document.body.removeChild(iframe);
-    }, 1000);
+    // Wait for all images to load (or timeout)
+    Promise.all(imagePromises).then(() => {
+      // 5. Close the dialog immediately since browser print will handle the rest
+      handleOpenChange(false);
+
+      // 6. Print the iframe's content
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+
+      // 7. Clean up the iframe
+      setTimeout(() => {
+        document.body.removeChild(iframe);
+      }, 1000);
+    });
   };
 
   return (

@@ -108,13 +108,19 @@ export function PosReportTab({
         </div>
       </CardHeader>
        <CardContent>
-         {isDetailed ? (
-           <PosReportDetails data={data} />
-         ) : (
+          {isDetailed ? (
+            <PosReportDetails
+              data={data}
+              dateRange={dateRange}
+              generationDate={new Date()}
+            />
+          ) : (
            <div className="space-y-6">
               <div>
-                <p>Report generated on: {new Date().toLocaleString()}</p>
-                <div className="flex gap-2 mt-2">
+                <div className="flex gap-2 flex-wrap">
+                  <Badge variant="outline">
+                    Generated: {new Date().toLocaleString()}
+                  </Badge>
                   <Badge variant="outline">
                     From: {format(dateRange.from, "PPP")}
                   </Badge>

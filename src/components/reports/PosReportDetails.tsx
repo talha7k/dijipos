@@ -1,10 +1,29 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PosReportData } from "@/types/reports";
+import { format } from "date-fns";
 
-export function PosReportDetails({ data }: { data: PosReportData }) {
+interface PosReportDetailsProps {
+  data: PosReportData;
+  dateRange: { from: Date; to: Date };
+  generationDate: Date;
+}
+
+export function PosReportDetails({ data, dateRange, generationDate }: PosReportDetailsProps) {
   return (
     <div className="space-y-4 mt-4">
+      <div className="flex gap-2 flex-wrap">
+        <Badge variant="outline">
+          Generated: {generationDate.toLocaleString()}
+        </Badge>
+        <Badge variant="outline">
+          From: {format(dateRange.from, "PPP")}
+        </Badge>
+        <Badge variant="outline">
+          To: {format(dateRange.to, "PPP")}
+        </Badge>
+      </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-2">
