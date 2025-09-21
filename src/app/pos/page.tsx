@@ -1033,7 +1033,7 @@ export default function SimplifiedPOSPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="flex justify-center">
-            <DatePicker onDateChange={handleDateChange}>
+            <DatePicker onDateChange={handleDateChange} defaultDate={new Date()}>
               <Button>Select Date</Button>
             </DatePicker>
           </div>

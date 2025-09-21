@@ -14,10 +14,11 @@ import {
 interface DatePickerProps {
   onDateChange: (date: Date) => void;
   children: React.ReactNode;
+  defaultDate?: Date;
 }
 
-export function DatePicker({ onDateChange, children }: DatePickerProps) {
-  const [date, setDate] = React.useState<Date>()
+export function DatePicker({ onDateChange, children, defaultDate }: DatePickerProps) {
+  const [date, setDate] = React.useState<Date | undefined>(defaultDate || new Date())
 
   const handleDateSelect = (selectedDate: Date | undefined) => {
     if (selectedDate) {
