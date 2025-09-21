@@ -95,52 +95,67 @@ function DashboardContent() {
           <Home className="h-8 w-8" />
           Dashboard
         </h1>
-        
+
         {/* Info Badges */}
         <div className="flex flex-wrap items-center gap-3">
           {/* User Info Section */}
           <div className="flex flex-wrap gap-3">
             {/* User Name Badge */}
-            <Badge variant="secondary" className="flex items-center gap-2 px-3 py-1.5">
+            <Badge
+              variant="secondary"
+              className="flex items-center gap-2 px-3 py-1.5"
+            >
               <User className="h-4 w-4" />
               <span className="font-medium">{userName}</span>
             </Badge>
-            
+
             {/* User Role Badge */}
             {userRole && (
-              <Badge variant="outline" className="flex items-center gap-2 px-3 py-1.5">
+              <Badge
+                variant="outline"
+                className="flex items-center gap-2 px-3 py-1.5"
+              >
                 <Star className="h-4 w-4" />
                 <span className="font-medium">{toReadableTitle(userRole)}</span>
               </Badge>
             )}
           </div>
-          
+
           {/* Vertical Separator */}
           {(companyName || companyVatNumber || companyAddress) && (
             <div className="h-6 w-px bg-border mx-2"></div>
           )}
-          
+
           {/* Company Info Section */}
           <div className="flex flex-wrap gap-3">
             {/* Company Name Badge */}
             {companyName && (
-              <Badge variant="default" className="flex items-center gap-2 px-3 py-1.5">
+              <Badge
+                variant="default"
+                className="flex items-center gap-2 px-3 py-1.5"
+              >
                 <Building className="h-4 w-4" />
                 <span className="font-medium">{companyName}</span>
               </Badge>
             )}
-            
+
             {/* Company Address Badge */}
             {companyAddress && (
-              <Badge variant="outline" className="flex items-center gap-2 px-3 py-1.5">
+              <Badge
+                variant="outline"
+                className="flex items-center gap-2 px-3 py-1.5"
+              >
                 <Building className="h-4 w-4" />
                 <span className="font-medium">{companyAddress}</span>
               </Badge>
             )}
-            
+
             {/* Company VAT Badge */}
             {companyVatNumber && (
-              <Badge variant="outline" className="flex items-center gap-2 px-3 py-1.5">
+              <Badge
+                variant="outline"
+                className="flex items-center gap-2 px-3 py-1.5"
+              >
                 <Percent className="h-4 w-4" />
                 <span className="font-medium">VAT: {companyVatNumber}</span>
               </Badge>

@@ -324,20 +324,23 @@ export function ReceiptPrintDialog({
         <html>
           <head>
             <title>${title}</title>
-            <style>
-              @media print {
-                @page {
-                  size: ${pageSize === "210mm" ? "A4" : pageSize};
-                  margin: ${margins.top}mm ${margins.right}mm ${margins.bottom}mm ${margins.left}mm;
+             <style>
+                @media print {
+                  @page {
+                    size: ${pageSize === "210mm" ? "A4" : "auto"};
+                    margin: ${margins.top}mm ${margins.right}mm ${margins.bottom}mm ${margins.left}mm;
+                  }
+                  body {
+                    width: ${pageSize === "210mm" ? "auto" : pageSize};
+                    padding: ${paddings.top}mm ${paddings.right}mm ${paddings.bottom}mm ${paddings.left}mm;
+                    page-break-inside: avoid;
+                    box-sizing: border-box;
+                  }
                 }
-                body {
-                  padding: ${paddings.top}mm ${paddings.right}mm ${paddings.bottom}mm ${paddings.left}mm;
-                }
-              }
-              body {
-                font-family: sans-serif;
-              }
-            </style>
+               body {
+                 font-family: sans-serif;
+               }
+             </style>
           </head>
           <body>
             <div dir="${direction}">${renderedHtml}</div>

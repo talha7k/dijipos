@@ -8,6 +8,8 @@ import {
 // A generic type to accept data for any kind of template.
 export type TemplateData = ReceiptTemplateData | InvoiceTemplateData | QuoteTemplateData | Record<string, any>;
 
+export type { ReceiptTemplateData };
+
 /**
  * A generic and robust template rendering engine.
  * Replaces placeholders for variables, conditionals, and loops in a template string.

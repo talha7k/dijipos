@@ -46,14 +46,14 @@ export const defaultArabicReceiptTemplate = `<!DOCTYPE html>
           {{/companyNameAr}}
         </div>
        <div class="bilingual">
-         <p><strong>Address</strong> <span style="color: #666;">(العنوان)</span>: {{companyAddress}}</p>
+         <p><strong>Address</strong>           <span style="color: #666; font-weight: bold;">(العنوان)</span>: {{companyAddress}}</p>
        </div>
        <div class="bilingual">
-         <p><strong>Tel</strong> <span style="color: #666;">(الهاتف)</span>: {{companyPhone}}</p>
+         <p><strong>Tel</strong>           <span style="color: #666; font-weight: bold;">(الهاتف)</span>: {{companyPhone}}</p>
        </div>
        {{#companyVat}}
        <div class="bilingual">
-         <p><strong>VAT Number</strong> <span style="color: #666;">(الرقم الضريبي)</span>: {{companyVat}}</p>
+         <p><strong>VAT Number</strong>           <span style="color: #666; font-weight: bold;">(الرقم الضريبي)</span>: {{companyVat}}</p>
        </div>
        {{/companyVat}}
        <hr>
@@ -64,24 +64,24 @@ export const defaultArabicReceiptTemplate = `<!DOCTYPE html>
           <hr>
        {{/customHeader}}
        <div class="bilingual">
-         <p><strong>Order #</strong> <span style="color: #666;">(طلب #)</span>: {{orderNumber}}</p>
-         {{#queueNumber}}<p><strong>Queue #</strong> <span style="color: #666;">(رقم الدور)</span>: {{queueNumber}}</p>{{/queueNumber}}
-         <p><strong>Type</strong> <span style="color: #666;">(النوع)</span>: {{orderType}}</p>
-         <p><strong>Date</strong> <span style="color: #666;">(التاريخ)</span>: {{formattedDate}}</p>
+         <p><strong>Order #</strong>           <span style="color: #666; font-weight: bold;">(طلب #)</span>: {{orderNumber}}</p>
+         {{#queueNumber}}<p><strong>Queue #</strong>           <span style="color: #666; font-weight: bold;">(رقم الدور)</span>: {{queueNumber}}</p>{{/queueNumber}}
+         <p><strong>Type</strong>           <span style="color: #666; font-weight: bold;">(النوع)</span>: {{orderType}}</p>
+         <p><strong>Date</strong>           <span style="color: #666; font-weight: bold;">(التاريخ)</span>: {{formattedDate}}</p>
        </div>
        {{#tableName}}
        <div class="bilingual">
-         <p><strong>Table</strong> <span style="color: #666;">(الطاولة)</span>: {{tableName}}</p>
+         <p><strong>Table</strong>           <span style="color: #666; font-weight: bold;">(الطاولة)</span>: {{tableName}}</p>
        </div>
        {{/tableName}}
        {{#customerName}}
        <div class="bilingual">
-         <p><strong>Customer</strong> <span style="color: #666;">(العميل)</span>: {{customerName}}</p>
+         <p><strong>Customer</strong>           <span style="color: #666; font-weight: bold;">(العميل)</span>: {{customerName}}</p>
        </div>
        {{/customerName}}
        {{#createdByName}}
        <div class="bilingual">
-         <p><strong>Served by</strong> <span style="color: #666;">(خدم من قبل)</span>: {{createdByName}}</p>
+         <p><strong>Served by</strong>           <span style="color: #666; font-weight: bold;">(خدم من قبل)</span>: {{createdByName}}</p>
        </div>
        {{/createdByName}}
       <hr>
@@ -92,13 +92,13 @@ export const defaultArabicReceiptTemplate = `<!DOCTYPE html>
          <thead>
            <tr>
              <th class="item-col">
-               <strong>Item</strong><br><span style="color: #666; font-size: 11px;">(الصنف)</span>
+               <strong>Item</strong><br>                <span style="color: #666; font-size: 11px; font-weight: bold;">(الصنف)</span>
              </th>
              <th class="qty-col">
-               <strong>Qty</strong><br><span style="color: #666; font-size: 11px;">(الكمية)</span>
+               <strong>Qty</strong><br>                <span style="color: #666; font-size: 11px; font-weight: bold;">(الكمية)</span>
              </th>
              <th class="amount-col">
-               <strong>Amount</strong><br><span style="color: #666; font-size: 11px;">(المبلغ)</span>
+               <strong>Amount</strong><br><span style="color: #666; font-size: 11px; font-weight: bold;">(المبلغ)</span>
              </th>
            </tr>
          </thead>
@@ -117,25 +117,25 @@ export const defaultArabicReceiptTemplate = `<!DOCTYPE html>
      <div class="total">
         <div class="bilingual">
           <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span><strong>Qty</strong> <span style="color: #666;">(إجمالي الكمية)</span></span>
+            <span><strong>Qty</strong>              <span style="color: #666; font-weight: bold;">(إجمالي الكمية)</span></span>
           </div>
           <div style="text-align: right; font-weight: bold;">{{totalQty}}</div>
         </div>
          <div class="bilingual">
            <div style="display: flex; justify-content: space-between; align-items: center;">
-             <span><strong>Subtotal</strong> <span style="color: #666;">(المجموع الفرعي)</span></span>
+             <span><strong>Subtotal</strong>               <span style="color: #666; font-weight: bold;">(المجموع الفرعي)</span></span>
            </div>
            <div style="text-align: right; font-weight: bold;">{{subtotal}}</div>
          </div>
          <div class="bilingual">
            <div style="display: flex; justify-content: space-between; align-items: center;">
-             <span><strong>VAT ({{vatRate}}%)</strong> <span style="color: #666;">(ضريبة)</span></span>
+             <span><strong>VAT ({{vatRate}}%)</strong>               <span style="color: #666; font-weight: bold;">(ضريبة)</span></span>
            </div>
            <div style="text-align: right; font-weight: bold;">{{vatAmount}}</div>
          </div>
  <div class="bilingual total-amount">
            <div style="display: flex; justify-content: space-between; align-items: center;">
-             <span><strong>TOTAL</strong> <span style="color: #666;">(المبلغ الإجمالي)</span></span>
+             <span><strong>TOTAL</strong>               <span style="color: #666; font-weight: bold;">(المبلغ الإجمالي)</span></span>
            </div>
            <div style="text-align: right; font-weight: bold; font-size: 16px;">{{total}}</div>
          </div>
@@ -147,10 +147,10 @@ export const defaultArabicReceiptTemplate = `<!DOCTYPE html>
          <thead>
            <tr>
               <th style="text-align: right; border-bottom: 1px solid #000; padding: 2px 10px;">
-                <strong>Payment</strong><br><span style="color: #666; font-size: 11px;">(نوع الدفع)</span>
+                <strong>Payment</strong><br>                 <span style="color: #666; font-size: 11px; font-weight: bold;">(نوع الدفع)</span>
               </th>
               <th style="text-align: right; border-bottom: 1px solid #000; padding: 2px 10px;">
-                <strong>Amount</strong><br><span style="color: #666; font-size: 11px;">(المبلغ)</span>
+                <strong>Amount</strong><br><span style="color: #666; font-size: 11px; font-weight: bold;">(المبلغ)</span>
               </th>
            </tr>
          </thead>
