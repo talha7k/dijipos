@@ -145,14 +145,12 @@ export function POSHeader({
             ) : (
               <Badge variant="destructive">No Internet</Badge>
             )}
-            {selectedDate && (
-              <DatePicker onDateChange={onDateChange} defaultDate={new Date(selectedDate)}>
-                <Badge variant="outline" className="ml-2 flex items-center space-x-1 cursor-pointer hover:bg-accent">
-                  <Calendar className="h-4 w-4 mr-1" />
-                  <span>{format(new Date(selectedDate), 'MMM dd')}</span>
-                </Badge>
-              </DatePicker>
-            )}
+            <DatePicker onDateChange={onDateChange} defaultDate={selectedDate ? new Date(selectedDate) : new Date()}>
+              <Badge variant={selectedDate ? "outline" : "destructive"} className={`ml-2 flex items-center space-x-1 cursor-pointer hover:bg-accent ${selectedDate ? '' : 'animate-pulse'}`}>
+                <Calendar className="h-4 w-4 mr-1" />
+                <span>{selectedDate ? format(new Date(selectedDate), 'MMM dd') : 'No Day Selected'}</span>
+              </Badge>
+            </DatePicker>
           </div>
         </div>
         <div className="flex items-center space-x-4">
