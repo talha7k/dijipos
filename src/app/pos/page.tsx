@@ -70,6 +70,7 @@ import { PaymentSuccessDialog } from "@/components/PaymentSuccessDialog";
 import { CartItemModal } from "@/components/pos/CartItemModal";
 import { BusinessDaySelectionDialog } from "@/components/pos/BusinessDaySelectionDialog";
 import { Loader2 } from "lucide-react";
+import { useDateExpiryTimer } from "@/lib/utils/dateTimer";
 
 export default function SimplifiedPOSPage() {
   const pathname = usePathname();
@@ -169,7 +170,7 @@ export default function SimplifiedPOSPage() {
   }, [user]);
 
   React.useEffect(() => {
-    if (!selectedDate) {
+    if (!selectedDate || selectedDate === "") {
       setShowDateSelectionDialog(true);
     }
   }, [selectedDate]);
@@ -188,6 +189,13 @@ export default function SimplifiedPOSPage() {
       setVatSettings(storeSettings.vatSettings);
     }
   }, [storeSettings, setVatSettings]);
+
+  // Auto-clear selected date after 20 hours
+  useDateExpiryTimer(
+    selectedDate,
+    () => setSelectedDate(""),
+    20
+  );
 
   const handleDateChange = (date: Date) => {
     setSelectedDate(date.toISOString());
