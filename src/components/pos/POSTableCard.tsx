@@ -52,13 +52,13 @@ export function POSTableCard({
               {table.status}
             </Badge>
 
-            {/* Order Info */}
-            {tableOrder && (
-              <Badge variant="secondary" className="text-blue-600 bg-blue-50 border-blue-200 text-xs">
-                <User className="h-3 w-3 mr-1" />
-                {tableOrder.customerName || "Customer"}
-              </Badge>
-            )}
+             {/* Order Info */}
+             {tableOrder && (
+               <Badge variant="secondary" className="text-blue-600 bg-blue-50 border-blue-200 text-xs max-w-full whitespace-normal break-words flex items-start gap-1">
+                 <User className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                 <span className="break-words">{tableOrder.customerName || "Customer"}</span>
+               </Badge>
+             )}
           </div>
         </div>
       </CardContent>

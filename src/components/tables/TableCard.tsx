@@ -52,11 +52,12 @@ export function TableCard({
                 <Button
                   variant="outline"
                   size="sm"
+                  disabled={!!tableOrder}
                   onClick={(e) => {
                     e.stopPropagation();
                     onDeleteTable(table.id);
                   }}
-                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
