@@ -21,7 +21,7 @@ export function CategoryCard({
 }: CategoryCardProps) {
   return (
     <div
-      className={`border-3 border-primary/60 dark:border-primary/20 cursor-pointer bg-card rounded-lg hover:shadow-lg transition-all duration-200 transform hover:scale-105 h-36 flex flex-col active:scale-95 hover:bg-accent/50 ${styling} ${className}`}
+      className={`border-3 border-primary/60 dark:border-primary/20 cursor-pointer bg-card rounded-lg hover:shadow-lg transition-all duration-200 transform hover:scale-105 h-36 flex flex-col active:scale-95 ${styling} ${className}`}
       onClick={() => onClick(category.id)}
     >
       <div className="pt-4">

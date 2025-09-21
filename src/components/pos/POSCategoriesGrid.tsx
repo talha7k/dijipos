@@ -65,16 +65,16 @@ export function POSCategoriesGrid({
   // Get styling based on hierarchy level
   const getCategoryStyling = (categoryId: string) => {
     const level = getCategoryHierarchyLevel(categoryId);
-    
+
     switch (level) {
       case 0: // Root level
-        return "bg-secondary/50 hover:bg-secondary/70 border-secondary/50";
+        return "bg-primary/20 hover:bg-accent-hover border-secondary/50";
       case 1: // First level child
-        return "bg-accent/30 hover:bg-accent/50 border-accent/50";
+        return "bg-primary/15 hover:bg-accent-hover border-accent/50";
       case 2: // Second level child
-        return "bg-secondary/10 hover:bg-secondary/20 border-primary/30";
+        return "bg-primary/10 hover:bg-accent-hover border-primary/30";
       default: // Deeper levels
-        return "bg-secondary/50 hover:bg-secondary/70 border-muted/50";
+        return "bg-primary/20 hover:bg-accent-hover border-muted/50";
     }
   };
 

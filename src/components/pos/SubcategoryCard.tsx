@@ -19,7 +19,7 @@ export function SubcategoryCard({
 }: SubcategoryCardProps) {
   return (
     <div
-      className={`border-3 border-blue-500/60 dark:border-blue-400/20 cursor-pointer bg-card rounded-lg hover:shadow-lg transition-all duration-200 transform hover:scale-105 h-48 flex flex-col active:scale-95 hover:bg-accent/50 ${className}`}
+      className={`border-3 border-blue-500/60 dark:border-blue-400/20 cursor-pointer bg-card rounded-lg hover:shadow-lg transition-all duration-200 transform hover:scale-105 h-48 flex flex-col active:scale-95 hover:bg-accent-hover ${className}`}
       onClick={() => onClick(subcategory.id)}
     >
       <div className="pt-4">

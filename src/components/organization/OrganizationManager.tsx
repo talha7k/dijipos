@@ -9,14 +9,13 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/lib/hooks/useAuth";
-import { useOrganization } from "@/lib/hooks/useOrganization";
+import { useOrganization, useOrganizationActions } from "@/lib/hooks/useOrganization";
 import { useInvitationsActions } from "@/lib/hooks/useInvitations";
 import { useAtom } from "jotai";
 import {
   selectedOrganizationIdAtom,
   userOrganizationsAtom,
   userOrganizationAssociationsAtom,
-  organizationUsersAtom,
 } from "@/atoms";
 import { organizationsLoadingAtom } from "@/atoms";
 import { themeAtom } from "@/atoms/uiAtoms";
@@ -33,9 +32,6 @@ import {
   MapPin,
 } from "lucide-react";
 import {
-  collection,
-  addDoc,
-  serverTimestamp,
   doc,
   getDoc,
 } from "firebase/firestore";
@@ -61,6 +57,9 @@ export function OrganizationManager() {
 
   // Use the invitation codes actions hook
   const { validateAndUseInvitation } = useInvitationsActions(undefined);
+
+  // Use the organization actions hook
+  const { createOrganization } = useOrganizationActions();
 
   const selectOrganization = (orgId: string) => {
     setOrganizationId(orgId);
@@ -179,29 +178,7 @@ export function OrganizationManager() {
 
     setLoading(true);
     try {
-      // Create new organization
-      const organizationRef = await addDoc(collection(db, "organizations"), {
-        name: newOrganizationName,
-        email: newOrganizationEmail,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        subscriptionStatus: "trial",
-      });
-
-      // Add creator as admin
-      await addDoc(collection(db, "organizationUsers"), {
-        userId: user.uid,
-        organizationId: organizationRef.id,
-        role: "admin",
-        isActive: true,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      });
-
-      // Organization data will be refreshed automatically by the hook
-
-      // Switch to the new organization
-      await selectOrganization(organizationRef.id);
+      await createOrganization(newOrganizationName, newOrganizationEmail);
 
       setShowCreateForm(false);
       setNewOrganizationName("");
