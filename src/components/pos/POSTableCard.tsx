@@ -54,12 +54,10 @@ export function POSTableCard({
 
             {/* Order Info */}
             {tableOrder && (
-              <div className="flex items-center justify-center gap-2 text-sm">
-                <User className="h-4 w-4 text-blue-600" />
-                <span className="text-blue-600 font-medium truncate">
-                  {tableOrder.customerName || "Customer"}
-                </span>
-              </div>
+              <Badge variant="secondary" className="text-blue-600 bg-blue-50 border-blue-200 text-xs">
+                <User className="h-3 w-3 mr-1" />
+                {tableOrder.customerName || "Customer"}
+              </Badge>
             )}
           </div>
         </div>
