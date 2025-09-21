@@ -1,5 +1,6 @@
 import { Customer } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Mail, Phone, MapPin, Receipt } from 'lucide-react';
 import { truncateText } from '@/lib/utils';
 
@@ -16,42 +17,42 @@ export function CustomerCard({ customer, onClick }: CustomerCardProps) {
       className="cursor-pointer hover:shadow-lg transition-all duration-200 transform hover:scale-105 active:scale-95"
       onClick={() => onClick?.(customer)}
     >
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-bold break-words" title={customer.name}>
+      <CardHeader className="pb-0">
+        <CardTitle className="text-md font-bold break-words" title={customer.name}>
           {truncateText(customer.name, MAX_DISPLAY_LENGTH)}
         </CardTitle>
       </CardHeader>
-      <CardContent className="pt-0">
+      <CardContent className="px-4 py-0 -mt-4">
         <div className="space-y-2">
           {customer.email && customer.email.trim() !== '' && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground break-words" title={customer.email}>
-              <Mail className="h-4 w-4 flex-shrink-0" />
+            <Badge variant="secondary" className="flex items-center gap-1 w-full justify-start text-xs max-w-full whitespace-normal break-words" title={customer.email}>
+              <Mail className="h-3 w-3 flex-shrink-0" />
               {truncateText(customer.email, MAX_DISPLAY_LENGTH)}
-            </div>
+            </Badge>
           )}
           {customer.nameAr && customer.nameAr.trim() !== '' && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground break-words" title={customer.nameAr}>
-              <span className="h-4 w-4 flex-shrink-0 text-xs">ع</span>
+            <Badge variant="secondary" className="flex items-center gap-1 w-full justify-start text-xs max-w-full whitespace-normal break-words" title={customer.nameAr}>
+              <span className="text-xs flex-shrink-0">ع</span>
               {truncateText(customer.nameAr, MAX_DISPLAY_LENGTH)}
-            </div>
+            </Badge>
           )}
           {customer.phone && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground break-words">
-              <Phone className="h-4 w-4 flex-shrink-0" />
+            <Badge variant="outline" className="flex items-center gap-1 w-full justify-start text-xs max-w-full whitespace-normal break-words">
+              <Phone className="h-3 w-3 flex-shrink-0" />
               {truncateText(customer.phone, MAX_DISPLAY_LENGTH)}
-            </div>
+            </Badge>
           )}
           {customer.address && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground break-words" title={customer.address}>
-              <MapPin className="h-4 w-4 flex-shrink-0" />
+            <Badge variant="outline" className="flex items-center gap-1 w-full justify-start text-xs max-w-full whitespace-normal break-words" title={customer.address}>
+              <MapPin className="h-3 w-3 flex-shrink-0" />
               {truncateText(customer.address, MAX_DISPLAY_LENGTH)}
-            </div>
+            </Badge>
           )}
           {customer.vatNumber && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground break-words">
-              <Receipt className="h-4 w-4 flex-shrink-0" />
+            <Badge variant="default" className="flex items-center gap-1 w-full justify-start text-xs max-w-full whitespace-normal break-words bg-blue-100 text-blue-800 border-blue-200">
+              <Receipt className="h-3 w-3 flex-shrink-0" />
               VAT: {truncateText(customer.vatNumber, MAX_DISPLAY_LENGTH)}
-            </div>
+            </Badge>
           )}
         </div>
       </CardContent>

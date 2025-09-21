@@ -24,10 +24,10 @@ export function POSTableCard({
 
   return (
     <Card
-      className={`group hover:shadow-lg transition-all duration-200 hover:scale-105 border-2 hover:border-primary/20 cursor-pointer ${!isAvailable ? 'opacity-60' : ''}`}
+      className={`group hover:shadow-lg transition-all duration-200 hover:scale-105 border-2 hover:border-primary/20 cursor-pointer ${!isAvailable ? "opacity-60" : ""}`}
       onClick={isAvailable ? onClick : undefined}
     >
-      <CardContent className="px-6 py-3">
+      <CardContent className="px-4 py-1">
         <div className="flex flex-col items-center text-center space-y-4">
           {/* Table Icon with Status Dot */}
           <div className="relative">
@@ -40,17 +40,19 @@ export function POSTableCard({
             </div>
             {/* Status Dot */}
             <div
-              className={`absolute -top-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
-                tableOrder ? 'bg-red-500' : 'bg-green-500'
+              className={`absolute -top-0 -right-0 w-4 h-4 rounded-full border-2 border-white ${
+                tableOrder ? "bg-red-500" : "bg-green-500"
               }`}
             />
           </div>
 
           {/* Table Info */}
           <div className="space-y-2 w-full">
-            <div className="flex items-center justify-center gap-2">
+            <div className="flex items-center justify-center gap-1">
               <Users className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">{table.capacity}</span>
+              <span className="text-sm text-muted-foreground mr-2">
+                {table.capacity}
+              </span>
               <h3 className="font-semibold text-lg truncate">{table.name}</h3>
             </div>
 
@@ -58,7 +60,10 @@ export function POSTableCard({
             {tableOrder && (
               <div className="flex items-center justify-center gap-2 w-full">
                 {tableOrder.queueNumber && (
-                  <QueueBadge queueNumber={tableOrder.queueNumber} className="text-xs" />
+                  <QueueBadge
+                    queueNumber={tableOrder.queueNumber}
+                    className="text-xs"
+                  />
                 )}
                 <div className="bg-green-500 text-white font-bold text-sm py-1 px-2 rounded flex-1 text-center">
                   ${tableOrder.total?.toFixed(2) || "0.00"}
@@ -68,9 +73,14 @@ export function POSTableCard({
 
             {/* Order Info */}
             {tableOrder && (
-              <Badge variant="secondary" className="text-blue-600 bg-blue-50 border-blue-200 text-xs max-w-full whitespace-normal break-words flex items-start justify-start gap-1">
-                <User className="h-3 w-3 mt-0.5 flex-shrink-0" />
-                <span className="break-words">{tableOrder.customerName || "Customer"}</span>
+              <Badge
+                variant="secondary"
+                className="text-blue-600 py-1 mt-4 w-full bg-blue-50 border-blue-200 text-xs max-w-full whitespace-normal break-words flex items-start justify-start gap-1"
+              >
+                <User className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                <span className="break-words">
+                  {tableOrder.customerName || "Customer"}
+                </span>
               </Badge>
             )}
           </div>
