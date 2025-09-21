@@ -68,7 +68,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { PaymentSuccessDialog } from "@/components/PaymentSuccessDialog";
 import { CartItemModal } from "@/components/pos/CartItemModal";
-import { DatePicker } from '@/components/ui/date-picker';
+import { BusinessDaySelectionDialog } from "@/components/pos/BusinessDaySelectionDialog";
 import { Loader2 } from "lucide-react";
 
 export default function SimplifiedPOSPage() {
@@ -116,10 +116,13 @@ export default function SimplifiedPOSPage() {
   const [selectedDate, setSelectedDate] = useAtom(selectedDateAtom);
 
   // Local state for UI
-  const [showOrderConfirmationDialog, setShowOrderConfirmationDialog] = useState(false);
+  const [showOrderConfirmationDialog, setShowOrderConfirmationDialog] =
+    useState(false);
   const [showDateSelectionDialog, setShowDateSelectionDialog] = useState(false);
-  const [pendingOrderToReopen, setPendingOrderToReopen] = useState<Order | null>(null);
-  const [showPaymentSuccessDialog, setShowPaymentSuccessDialog] = useState(false);
+  const [pendingOrderToReopen, setPendingOrderToReopen] =
+    useState<Order | null>(null);
+  const [showPaymentSuccessDialog, setShowPaymentSuccessDialog] =
+    useState(false);
   const [paymentSuccessData, setPaymentSuccessData] = useState<{
     totalPaid: number;
     order?: Order;
@@ -509,7 +512,10 @@ export default function SimplifiedPOSPage() {
           // Save each payment record
           for (const payment of payments) {
             try {
-              const paymentData: Omit<OrderPayment, 'id' | 'orderId' | 'createdAt'> = {
+              const paymentData: Omit<
+                OrderPayment,
+                "id" | "orderId" | "createdAt"
+              > = {
                 organizationId: selectedOrder.organizationId,
                 amount: payment.amount,
                 paymentMethod: payment.paymentMethod,
@@ -611,11 +617,18 @@ export default function SimplifiedPOSPage() {
     setSelectedTable(null);
     if (selectedOrder) {
       setSelectedOrder((prevOrder) =>
-        prevOrder ? { ...prevOrder, tableId: undefined, tableName: undefined } : null,
+        prevOrder
+          ? { ...prevOrder, tableId: undefined, tableName: undefined }
+          : null,
       );
       setIsSavedOrderModified(true);
     }
-  }, [setSelectedTable, selectedOrder, setSelectedOrder, setIsSavedOrderModified]);
+  }, [
+    setSelectedTable,
+    selectedOrder,
+    setSelectedOrder,
+    setIsSavedOrderModified,
+  ]);
 
   const handleCustomerDeselect = useCallback(() => {
     setSelectedCustomer(null);
@@ -1024,21 +1037,14 @@ export default function SimplifiedPOSPage() {
         />
       )}
 
-      <AlertDialog open={showDateSelectionDialog} onOpenChange={setShowDateSelectionDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Select Business Date</AlertDialogTitle>
-            <AlertDialogDescription>
-              Please select a business date to record sales. Current date: {selectedDate ? format(new Date(selectedDate), 'PPP') : format(new Date(), 'PPP')}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="flex justify-center">
-            <DatePicker onDateChange={handleDateChange} defaultDate={selectedDate ? new Date(selectedDate) : new Date()}>
-              <Button>Save</Button>
-            </DatePicker>
-          </div>
-        </AlertDialogContent>
-      </AlertDialog>
+      <BusinessDaySelectionDialog
+        open={showDateSelectionDialog}
+        onOpenChange={setShowDateSelectionDialog}
+        onDateSelect={handleDateChange}
+        currentDate={selectedDate ? new Date(selectedDate) : null}
+        title="Select Business Date"
+        description="Please select a business date to record sales"
+      />
     </POSLayout>
   );
 }
