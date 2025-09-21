@@ -248,7 +248,7 @@ export function TablesTab({ tables }: TablesTabProps) {
             <p className="text-sm text-muted-foreground mt-2">Click &quot;Add Table&quot; to get started</p>
           </div>
         ) : (
-           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {tables.map((table) => (
               <TableCard
                 key={table.id}

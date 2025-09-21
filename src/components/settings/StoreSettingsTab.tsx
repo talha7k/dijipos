@@ -8,13 +8,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { EditableSetting } from '@/components/ui/editable-setting';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Percent, FileText, DollarSign } from 'lucide-react';
+import { DialogWithActions } from '@/components/ui/DialogWithActions';
+import { Percent, FileText, DollarSign, Database } from 'lucide-react';
 import { toast } from 'sonner';
 import { updateVATSettings, updateCurrencySettings, createVATSettings, createCurrencySettings } from '@/lib/firebase/firestore/settings/storeSettings';
 
 export function StoreSettingsTab() {
   const { storeSettings } = useStoreSettings();
   const [showSampleDataConfirm, setShowSampleDataConfirm] = useState(false);
+  const [showSampleDataDialog, setShowSampleDataDialog] = useState(false);
 
   // Default VAT settings
   const defaultVatSettings: VATSettings = {
@@ -116,6 +118,10 @@ export function StoreSettingsTab() {
     setShowSampleDataConfirm(true);
   };
 
+  const handleShowSampleDataInfo = () => {
+    setShowSampleDataDialog(true);
+  };
+
   const confirmGenerateSampleData = async () => {
     if (!storeSettings?.organizationId) return;
 
@@ -133,92 +139,115 @@ export function StoreSettingsTab() {
   };
 
   return (
-    <div className="space-y-4">
-      {/* VAT Settings */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Percent className="h-5 w-5" />
-            VAT Settings
-            <span className="text-sm text-muted-foreground">(Double-click to edit)</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <EditableSetting
-              label="VAT Status"
-              value={storeSettings?.vatSettings?.isEnabled ?? defaultVatSettings.isEnabled}
-              type="switch"
-              onSave={(value) => handleUpdateVatSettings('isEnabled', value)}
-            />
-            {(storeSettings?.vatSettings?.isEnabled ?? defaultVatSettings.isEnabled) && (
-              <>
-                <EditableSetting
-                  label="VAT Inclusive Pricing"
-                  value={storeSettings?.vatSettings?.isVatInclusive ?? defaultVatSettings.isVatInclusive}
-                  type="switch"
-                  onSave={(value) => handleUpdateVatSettings('isVatInclusive', value)}
-                />
-                <EditableSetting
-                  label="VAT Rate"
-                  value={storeSettings?.vatSettings?.rate ?? defaultVatSettings.rate}
-                  type="number"
-                  onSave={(value) => handleUpdateVatSettings('rate', value)}
-                  placeholder="15"
-                />
-              </>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+    <>
+      {/* Two Column Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* VAT Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Percent className="h-5 w-5" />
+              VAT Settings
+              <span className="text-sm text-muted-foreground">(Double-click to edit)</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <EditableSetting
+                label="VAT Status"
+                value={storeSettings?.vatSettings?.isEnabled ?? defaultVatSettings.isEnabled}
+                type="switch"
+                onSave={(value) => handleUpdateVatSettings('isEnabled', value)}
+              />
+              {(storeSettings?.vatSettings?.isEnabled ?? defaultVatSettings.isEnabled) && (
+                <>
+                  <EditableSetting
+                    label="VAT Inclusive Pricing"
+                    value={storeSettings?.vatSettings?.isVatInclusive ?? defaultVatSettings.isVatInclusive}
+                    type="switch"
+                    onSave={(value) => handleUpdateVatSettings('isVatInclusive', value)}
+                  />
+                  <EditableSetting
+                    label="VAT Rate"
+                    value={storeSettings?.vatSettings?.rate ?? defaultVatSettings.rate}
+                    type="number"
+                    onSave={(value) => handleUpdateVatSettings('rate', value)}
+                    placeholder="15"
+                  />
+                </>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
-      {/* Currency Settings */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <DollarSign className="h-5 w-5" />
-            Currency Settings
-            <span className="text-sm text-muted-foreground">(Double-click to edit)</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <EditableSetting
-              label="Currency Format"
-              value={storeSettings?.currencySettings?.locale ?? defaultCurrencySettings.locale}
-              type="select"
-              options={[
-                { value: CurrencyLocale.AR_SA, label: 'Arabic (SAR)' },
-                { value: CurrencyLocale.EN_US, label: 'English (USD)' },
-                { value: CurrencyLocale.EN_GB, label: 'English (GBP)' },
-                { value: CurrencyLocale.DE_DE, label: 'German (EUR)' },
-                { value: CurrencyLocale.FR_FR, label: 'French (EUR)' },
-                { value: CurrencyLocale.AR_AE, label: 'Arabic UAE (AED)' },
-                { value: CurrencyLocale.AR_KW, label: 'Arabic Kuwait (KWD)' },
-                { value: CurrencyLocale.AR_BH, label: 'Arabic Bahrain (BHD)' },
-                { value: CurrencyLocale.AR_OM, label: 'Arabic Oman (OMR)' },
-                { value: CurrencyLocale.AR_QA, label: 'Arabic Qatar (QAR)' },
-              ]}
-              onSave={handleUpdateCurrencySettings}
-            />
-          </div>
-        </CardContent>
-      </Card>
+        {/* Currency Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5" />
+              Currency Settings
+              <span className="text-sm text-muted-foreground">(Double-click to edit)</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <EditableSetting
+                label="Currency Format"
+                value={storeSettings?.currencySettings?.locale ?? defaultCurrencySettings.locale}
+                type="select"
+                options={[
+                  { value: CurrencyLocale.AR_SA, label: 'Arabic (SAR)' },
+                  { value: CurrencyLocale.EN_US, label: 'English (USD)' },
+                  { value: CurrencyLocale.EN_GB, label: 'English (GBP)' },
+                  { value: CurrencyLocale.DE_DE, label: 'German (EUR)' },
+                  { value: CurrencyLocale.FR_FR, label: 'French (EUR)' },
+                  { value: CurrencyLocale.AR_AE, label: 'Arabic UAE (AED)' },
+                  { value: CurrencyLocale.AR_KW, label: 'Arabic Kuwait (KWD)' },
+                  { value: CurrencyLocale.AR_BH, label: 'Arabic Bahrain (BHD)' },
+                  { value: CurrencyLocale.AR_OM, label: 'Arabic Oman (OMR)' },
+                  { value: CurrencyLocale.AR_QA, label: 'Arabic Qatar (QAR)' },
+                ]}
+                onSave={handleUpdateCurrencySettings}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
-      {/* Sample Data Generation */}
+      {/* Sample Data Button */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
+              <Database className="h-5 w-5" />
               Sample Data
             </div>
-            <Button onClick={handleGenerateSampleData} variant="outline">
-              Generate Sample Data
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={handleShowSampleDataInfo} variant="outline">
+                View Details
+              </Button>
+              <Button onClick={handleGenerateSampleData}>
+                Generate Sample Data
+              </Button>
+            </div>
           </CardTitle>
         </CardHeader>
-        <CardContent>
+      </Card>
+
+      {/* Sample Data Info Dialog */}
+      <DialogWithActions
+        open={showSampleDataDialog}
+        onOpenChange={setShowSampleDataDialog}
+        title="Sample Data Information"
+        description="Comprehensive sample data for testing your application"
+        actions={
+          <Button onClick={() => setShowSampleDataDialog(false)} variant="outline">
+            Close
+          </Button>
+        }
+        maxWidth="max-w-2xl"
+      >
+        <div className="space-y-4">
           <div className="space-y-2 text-sm text-muted-foreground">
             <p>Generate comprehensive sample data to test the application:</p>
             <ul className="list-disc list-inside space-y-1">
@@ -235,8 +264,8 @@ export function StoreSettingsTab() {
               ⚠️ This will add data to your database. Make sure this is a test environment.
             </p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </DialogWithActions>
 
       {/* Sample Data Confirmation AlertDialog */}
       <AlertDialog open={showSampleDataConfirm} onOpenChange={setShowSampleDataConfirm}>
@@ -255,6 +284,6 @@ export function StoreSettingsTab() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </>
   );
 }

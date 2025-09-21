@@ -119,42 +119,60 @@ export function OrderTypesTab({ orderTypes: propOrderTypes }: OrderTypesTabProps
         {(storeSettings?.orderTypes || []).length === 0 ? (
           <p className="text-muted-foreground">No order types added yet.</p>
         ) : (
-          <div className="grid gap-2">
+          <div className="grid grid-cols-4 gap-4">
             {(storeSettings?.orderTypes || []).map((type) => (
-              <div key={type.id} className="flex items-center justify-between p-3 border rounded">
-                <div>
-                  <h3 className="font-medium">{type.name}</h3>
-                  {type.description && (
-                    <p className="text-sm text-muted-foreground">{type.description}</p>
-                  )}
-                </div>
-                <AlertDialog open={deleteOrderTypeId === type.id} onOpenChange={(open) => !open && setDeleteOrderTypeId(null)}>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeleteOrderType(type.id)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This will permanently delete the order type &ldquo;{type.name}&rdquo;. This action cannot be undone.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel onClick={() => setDeleteOrderTypeId(null)}>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={confirmDeleteOrderType} className="bg-destructive text-destructive-foreground" disabled={isSubmitting}>
-                        {isSubmitting ? 'Deleting...' : 'Delete'}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
+              <Card key={type.id} className="group hover:shadow-lg transition-all duration-200 hover:scale-105 border-2 hover:border-primary/20 relative">
+                <CardHeader className="pb-2">
+                  {/* Delete Button */}
+                  <div className="absolute top-2 right-2">
+                    <AlertDialog open={deleteOrderTypeId === type.id} onOpenChange={(open) => !open && setDeleteOrderTypeId(null)}>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteOrderType(type.id);
+                          }}
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will permanently delete the order type &ldquo;{type.name}&rdquo;. This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel onClick={() => setDeleteOrderTypeId(null)}>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={confirmDeleteOrderType} className="bg-destructive text-destructive-foreground" disabled={isSubmitting}>
+                            {isSubmitting ? 'Deleting...' : 'Delete'}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-6 pt-0">
+                  <div className="flex flex-col items-center text-center space-y-4">
+                    {/* Order Type Icon */}
+                    <div className="w-16 h-16 rounded-full flex items-center justify-center bg-primary/10">
+                      <UtensilsCrossed className="h-8 w-8 text-primary" />
+                    </div>
+
+                    {/* Order Type Info */}
+                    <div className="space-y-2 w-full">
+                      <h3 className="font-semibold text-lg truncate">{type.name}</h3>
+                      {type.description && (
+                        <p className="text-sm text-muted-foreground">{type.description}</p>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         )}

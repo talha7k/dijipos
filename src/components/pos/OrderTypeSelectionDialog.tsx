@@ -44,31 +44,31 @@ export function OrderTypeSelectionDialog({
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Select Order Type</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           {orderTypes.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className="text-center py-8 text-muted-foreground col-span-3">
               <ShoppingBag className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p>No order types configured</p>
               <p className="text-sm mt-2">Please add order types in settings</p>
             </div>
           ) : (
-            <div className="grid gap-3">
+            <div className="grid grid-cols-3 gap-3">
               {orderTypes.map((orderType) => (
                 <Button
                   key={orderType.id}
                   variant={selectedOrderType?.id === orderType.id ? "default" : "outline"}
-                  className="h-auto p-4 justify-start"
+                  className="h-auto p-4 flex flex-col items-center text-center"
                   onClick={() => handleOrderTypeSelect(orderType)}
                 >
-                  <div className="flex items-center gap-3 w-full">
+                  <div className="flex flex-col items-center gap-2 w-full">
                     <div className="text-primary">
                       {getOrderTypeIcon(orderType.name)}
                     </div>
-                    <div className="flex-1 text-left">
+                    <div className="flex-1 text-center">
                       <div className="font-medium">{orderType.name}</div>
                       {orderType.description && (
                         <div className="text-sm text-muted-foreground mt-1">
@@ -77,7 +77,7 @@ export function OrderTypeSelectionDialog({
                       )}
                     </div>
                     {selectedOrderType?.id === orderType.id && (
-                      <Badge variant="secondary" className="ml-auto">
+                      <Badge variant="secondary" className="mt-2">
                         Selected
                       </Badge>
                     )}

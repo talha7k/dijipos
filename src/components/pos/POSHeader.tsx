@@ -81,34 +81,46 @@ export function POSHeader({
         <div className="flex flex-col items-start space-y-2 flex-1">
           <div className="flex items-center space-x-2">
             {selectedOrder ? (
-              cartItems.length > 0 ? (
-                <ClearOrderDialog
-                  title="Reset Order?"
-                  description="This will clear all items from the current cart. Any unsaved changes will be lost."
-                  confirmText="Reset"
-                  onConfirm={handleConfirmOrderReset}
-                >
-                  {({ openDialog }) => (
-                    <Badge
-                      variant="default"
-                      className="flex py-1 items-center space-x-1 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white"
-                      onClick={openDialog}
-                    >
-                      <RotateCcw className="h-4 w-4" />
-                      <span>Order #{selectedOrder.orderNumber}</span>
-                    </Badge>
-                  )}
-                </ClearOrderDialog>
-              ) : (
-                <Badge
-                  variant="default"
-                  className="flex py-1 items-center space-x-1 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white"
-                  onClick={onClearSelectedOrder}
-                >
-                  <RotateCcw className="h-5 w-5" />
-                  <span>Order #{selectedOrder.orderNumber}</span>
-                </Badge>
-              )
+              <>
+                {currentView !== 'items' && (
+                  <Badge
+                    variant="secondary"
+                    className="flex items-center py-1 space-x-1 cursor-pointer bg-blue-100 text-blue-800 hover:bg-blue-200"
+                    onClick={handleOrderToggle}
+                  >
+                    <ShoppingBag className="h-5 w-5" />
+                    <span>POS</span>
+                  </Badge>
+                )}
+                {cartItems.length > 0 ? (
+                  <ClearOrderDialog
+                    title="Reset Order?"
+                    description="This will clear all items from the current cart. Any unsaved changes will be lost."
+                    confirmText="Reset"
+                    onConfirm={handleConfirmOrderReset}
+                  >
+                    {({ openDialog }) => (
+                      <Badge
+                        variant="default"
+                        className="flex py-1 items-center space-x-1 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white"
+                        onClick={openDialog}
+                      >
+                        <RotateCcw className="h-4 w-4" />
+                        <span>Queue #{selectedOrder.queueNumber || selectedOrder.orderNumber}</span>
+                      </Badge>
+                    )}
+                  </ClearOrderDialog>
+                ) : (
+                  <Badge
+                    variant="default"
+                    className="flex py-1 items-center space-x-1 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white"
+                    onClick={onClearSelectedOrder}
+                  >
+                    <RotateCcw className="h-5 w-5" />
+                    <span>Queue #{selectedOrder.queueNumber || selectedOrder.orderNumber}</span>
+                  </Badge>
+                )}
+              </>
             ) : (
               // Always show New Order button when no selected order
               currentView === 'items' && cartItems.length > 0 ? (
