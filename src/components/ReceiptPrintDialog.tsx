@@ -318,6 +318,9 @@ export function ReceiptPrintDialog({
   }, [open, selectedTemplate, renderData, paymentsLoading, receiptTemplates]);
 
   const handlePrint = () => {
+    // We'll keep this console log as a helpful debugging tool.
+    console.log("Printing with page size:", pageSize);
+
     // 1. Create a hidden iframe
     const iframe = document.createElement("iframe");
     iframe.style.position = "absolute";
@@ -341,16 +344,19 @@ export function ReceiptPrintDialog({
       printStyles = `
         @media print {
           @page {
-            size: A4; /* Explicitly set page size */
-            margin: 15mm; /* Standard A4 margins */
+            size: A4;
+            /* Using your component's 'margins' state */
+            margin: ${margins.top}mm ${margins.right}mm ${margins.bottom}mm ${margins.left}mm;
           }
           html, body {
             width: 100%;
-            font-size: 12pt; /* Use points for A4 for better scaling */
+            font-size: 12pt;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
           }
           #receipt-content {
             width: 100%;
+            /* Using your component's 'paddings' state */
+            padding: ${paddings.top}mm ${paddings.right}mm ${paddings.bottom}mm ${paddings.left}mm;
           }
         }
       `;
@@ -359,15 +365,17 @@ export function ReceiptPrintDialog({
       printStyles = `
         @media print {
           @page {
+            /* Margins are best kept at 0 for thermal drivers */
             margin: 0;
-            size: auto;
           }
           html, body {
             margin: 0;
             padding: 0;
           }
           #receipt-content {
-            width: ${pageSize}; /* Use the selected 80mm or 58mm */
+            width: ${pageSize};
+            /* Using your component's 'paddings' state */
+            padding: ${paddings.top}mm ${paddings.right}mm ${paddings.bottom}mm ${paddings.left}mm;
             page-break-after: always; /* Crucial for thermal printers */
           }
         }
@@ -429,7 +437,9 @@ export function ReceiptPrintDialog({
         style={{ maxHeight: "calc(100vh - 180px)" }}
       >
         <div className="w-1/3 p-4 border-r bg-muted overflow-y-auto space-y-4">
-          <h2 className="text-lg font-bold">Print Settings - ({pageSize})</h2>
+          <h2 className="text-lg font-bold">
+            Print Settings - (Paper:{pageSize})
+          </h2>
           <div>
             <label className="block text-sm font-medium mb-1">Template</label>
             <select
