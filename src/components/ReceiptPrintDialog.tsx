@@ -32,6 +32,7 @@ async function renderReceipt(
   payments: OrderPayment[] = [],
   printerSettings?: PrinterSettings,
 ): Promise<string> {
+  console.log("ReceiptPrintDialog: organization logoUrl:", organization?.logoUrl);
   const qrCodeBase64 = await generateZatcaQRCode(
     createReceiptQRData(order, organization),
   );
@@ -135,6 +136,7 @@ export function ReceiptPrintDialog({
   title = "Print Receipt",
   onOpenChange,
 }: ReceiptPrintDialogProps) {
+  console.log("ReceiptPrintDialog: organization data:", organization);
   const { getPaymentsForOrder } = useOrders();
   const [open, setOpen] = useState(false);
 

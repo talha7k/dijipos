@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -113,7 +114,14 @@ export function PosReportTab({
            <div className="space-y-6">
               <div>
                 <p>Report generated on: {new Date().toLocaleString()}</p>
-                <p>From: {format(dateRange.from, "PPP")} To: {format(dateRange.to, "PPP")}</p>
+                <div className="flex gap-2 mt-2">
+                  <Badge variant="outline">
+                    From: {format(dateRange.from, "PPP")}
+                  </Badge>
+                  <Badge variant="outline">
+                    To: {format(dateRange.to, "PPP")}
+                  </Badge>
+                </div>
               </div>
 
              <div>
