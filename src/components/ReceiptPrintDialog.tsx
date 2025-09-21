@@ -1,4 +1,4 @@
-import React, { useState, useEffect, ReactNode, useCallback } from "react";
+import React, { useState, useEffect, ReactNode, useCallback, useMemo, useRef } from "react";
 import { Printer } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -116,6 +116,7 @@ interface ReceiptPrintDialogProps {
   children: React.ReactNode;
   rawHtml?: string;
   title?: string;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export function ReceiptPrintDialog({
@@ -127,9 +128,16 @@ export function ReceiptPrintDialog({
   children,
   rawHtml,
   title = "Print Receipt",
+  onOpenChange,
 }: ReceiptPrintDialogProps) {
   const { getPaymentsForOrder } = useOrders();
   const [open, setOpen] = useState(false);
+  
+  // Use external onOpenChange if provided
+  const handleOpenChange = useCallback((newOpen: boolean) => {
+    setOpen(newOpen);
+    onOpenChange?.(newOpen);
+  }, [onOpenChange]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
   const [renderedHtml, setRenderedHtml] = useState("");
@@ -149,6 +157,10 @@ export function ReceiptPrintDialog({
     bottom: 3,
     left: 3,
   });
+  
+  // Ref to prevent infinite loops
+  const isRenderingRef = useRef(false);
+  const lastRenderKeyRef = useRef("");
 
   // Effect to initialize all settings when the dialog opens
   useEffect(() => {
@@ -165,52 +177,36 @@ export function ReceiptPrintDialog({
       const isValidDefault =
         defaultTemplateId &&
         receiptTemplates.some((t) => t.id === defaultTemplateId);
-      setSelectedTemplate(
-        isValidDefault ? defaultTemplateId : receiptTemplates[0]?.id || "",
-      );
+      const newSelectedTemplate = isValidDefault ? defaultTemplateId : receiptTemplates[0]?.id || "";
 
       // 2. Set paper size
-      setPageSize(settings?.paperWidth ? `${settings.paperWidth}mm` : "80mm");
+      const newPageSize = settings?.paperWidth ? `${settings.paperWidth}mm` : "80mm";
 
       // 3. Set margins and paddings
-      setMargins({
+      const newMargins = {
         top: settings?.marginTop ?? 0,
         right: settings?.marginRight ?? 0,
         bottom: settings?.marginBottom ?? 0,
         left: settings?.marginLeft ?? 0,
-      });
-      setPaddings({
+      };
+      const newPaddings = {
         top: settings?.paddingTop ?? 3,
         right: settings?.paddingRight ?? 3,
         bottom: settings?.paddingBottom ?? 3,
         left: settings?.paddingLeft ?? 3,
-      });
+      };
+
+      // Set all states at once to minimize re-renders
+      setSelectedTemplate(newSelectedTemplate);
+      setPageSize(newPageSize);
+      setMargins(newMargins);
+      setPaddings(newPaddings);
     } else {
       setRenderedHtml(""); // Clear preview on close
     }
   }, [open, printerSettings, receiptTemplates, rawHtml]);
 
-  const renderPreview = useCallback(async (template: ReceiptTemplate) => {
-    if (paymentsLoading) {
-      setRenderedHtml("<p style='color: gray;'>Loading payment information...</p>");
-      return;
-    }
-    if (!order) return;
-
-    try {
-      const content = await renderReceipt(
-        template,
-        order,
-        organization || null,
-        payments,
-        printerSettings ?? undefined,
-      );
-      setRenderedHtml(content);
-    } catch (error) {
-      console.error("Failed to render receipt preview:", error);
-      setRenderedHtml("<p style='color: red;'>Error rendering preview.</p>");
-    }
-  }, [paymentsLoading, order, organization, payments, printerSettings]);
+  
 
   // Effect to fetch payments when dialog opens
   useEffect(() => {
@@ -234,26 +230,64 @@ export function ReceiptPrintDialog({
     }
   }, [open, order, initialPayments, getPaymentsForOrder]);
 
+  // Memoize the render data to prevent unnecessary re-renders
+  const renderData = useMemo(() => ({
+    order,
+    organization: organization || null,
+    payments,
+    printerSettings: printerSettings ?? undefined,
+  }), [order, organization, payments, printerSettings]);
+
   // Effect to render the preview when settings change
   useEffect(() => {
-    if (open && !rawHtml && selectedTemplate && !paymentsLoading) {
-      const template = receiptTemplates.find((t) => t.id === selectedTemplate);
-      if (template) {
-        setDirection(template.type?.includes("arabic") ? "rtl" : "ltr");
-        renderPreview(template);
-      }
+    // Only render if dialog is open, we're not using raw HTML, have a template, and payments are loaded
+    if (!open || rawHtml || !selectedTemplate || paymentsLoading || isRenderingRef.current) {
+      return;
     }
+
+    const template = receiptTemplates.find((t) => t.id === selectedTemplate);
+    if (!template || !renderData.order) {
+      return;
+    }
+
+    // Create a unique key for this render to prevent duplicate renders
+    const renderKey = `${selectedTemplate}-${JSON.stringify(renderData)}`;
+    if (lastRenderKeyRef.current === renderKey) {
+      return;
+    }
+
+    // Set direction based on template type
+    setDirection(template.type?.includes("arabic") ? "rtl" : "ltr");
+
+    const renderPreview = async () => {
+      isRenderingRef.current = true;
+      lastRenderKeyRef.current = renderKey;
+      
+      try {
+        const content = await renderReceipt(
+          template,
+          renderData.order!,
+          renderData.organization,
+          renderData.payments,
+          renderData.printerSettings,
+        );
+        setRenderedHtml(content);
+      } catch (error) {
+        console.error("Failed to render receipt preview:", error);
+        setRenderedHtml("<p style='color: red;'>Error rendering preview.</p>");
+      } finally {
+        isRenderingRef.current = false;
+      }
+    };
+
+    renderPreview();
   }, [
     open,
     rawHtml,
     selectedTemplate,
-    pageSize,
-    order,
-    organization,
-    payments,
-    printerSettings,
+    renderData,
     paymentsLoading,
-    renderPreview,
+    receiptTemplates,
   ]);
 
   const handlePrint = () => {
@@ -292,11 +326,11 @@ export function ReceiptPrintDialog({
   return (
     <DialogWithActions
       open={open}
-      onOpenChange={(newOpen) => setOpen(newOpen)}
+      onOpenChange={handleOpenChange}
       title={title}
       actions={
         <>
-          <Button onClick={() => setOpen(false)}>Cancel</Button>
+          <Button onClick={() => handleOpenChange(false)}>Cancel</Button>
           <Button
             onClick={handlePrint}
             disabled={!rawHtml && (!selectedTemplate || isGenerating || paymentsLoading)}

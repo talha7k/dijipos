@@ -363,6 +363,24 @@ function ReportsPage() {
   const [dateFilterType, setDateFilterType] = useState('selectedDate');
   const [printDialogOpen, setPrintDialogOpen] = useState(false);
   const [reportHtml, setReportHtml] = useState("");
+  
+  // Memoize the dialog to prevent unnecessary re-renders
+  const receiptPrintDialog = useMemo(() => {
+    if (!printDialogOpen) return null;
+    
+    return (
+      <ReceiptPrintDialog
+        rawHtml={reportHtml}
+        title={`POS Sales Report - ${format(posReportDate, 'PPP')}`}
+        onOpenChange={setPrintDialogOpen}
+      >
+        <Button variant="outline" size="sm">
+          <Download className="h-4 w-4 mr-2" />
+          Print Report
+        </Button>
+      </ReceiptPrintDialog>
+    );
+  }, [printDialogOpen, reportHtml, posReportDate]);
   const [paymentsByOrder, setPaymentsByOrder] = useState<Record<string, Array<{ paymentMethod: string; amount: number }>>>({});
 
   const filteredOrders = useMemo(() => {
@@ -577,15 +595,7 @@ function ReportsPage() {
         </TabsContent>
       </Tabs>
 
-      <ReceiptPrintDialog
-        rawHtml={reportHtml}
-        title={`POS Sales Report - ${format(posReportDate, 'PPP')}`}
-      >
-        <Button variant="outline" size="sm">
-          <Download className="h-4 w-4 mr-2" />
-          Print Report
-        </Button>
-      </ReceiptPrintDialog>
+      {receiptPrintDialog}
     </div>
   );
 }
