@@ -83,12 +83,12 @@ export function ReportPrintDialog({
   const [direction, setDirection] = useState<"ltr" | "rtl">("ltr");
 
   const [margins, setMargins] = useState(() => {
-    const settings = printerSettings?.receipts;
+    // No margins for thermal receipts/reports
     return {
-      top: settings?.marginTop ?? 0,
-      right: settings?.marginRight ?? 0,
-      bottom: settings?.marginBottom ?? 0,
-      left: settings?.marginLeft ?? 0,
+      top: 0,
+      right: 0,
+      bottom: 0,
+      left: 0,
     };
   });
   const [paddings, setPaddings] = useState(() => {
@@ -118,11 +118,12 @@ export function ReportPrintDialog({
     setPageSize(newPageSize);
 
     // 3. Set margins and paddings
+    // No margins for thermal receipts/reports
     const newMargins = {
-      top: settings?.marginTop ?? 0,
-      right: settings?.marginRight ?? 0,
-      bottom: settings?.marginBottom ?? 0,
-      left: settings?.marginLeft ?? 0,
+      top: 0,
+      right: 0,
+      bottom: 0,
+      left: 0,
     };
     const newPaddings = {
       top: settings?.paddingTop ?? 3,

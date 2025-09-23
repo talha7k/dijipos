@@ -172,12 +172,12 @@ export function ReceiptPrintDialog({
     return settings?.paperWidth ? `${settings.paperWidth}mm` : "80mm";
   });
   const [margins, setMargins] = useState(() => {
-    const settings = printerSettings?.receipts;
+    // No margins for thermal receipts
     return {
-      top: settings?.marginTop ?? 0,
-      right: settings?.marginRight ?? 0,
-      bottom: settings?.marginBottom ?? 0,
-      left: settings?.marginLeft ?? 0,
+      top: 0,
+      right: 0,
+      bottom: 0,
+      left: 0,
     };
   });
   const [paddings, setPaddings] = useState(() => {
@@ -215,11 +215,12 @@ export function ReceiptPrintDialog({
     setPageSize(newPageSize);
 
     // 3. Set margins and paddings (apply for both raw HTML and template modes)
+    // No margins for thermal receipts
     const newMargins = {
-      top: settings?.marginTop ?? 0,
-      right: settings?.marginRight ?? 0,
-      bottom: settings?.marginBottom ?? 0,
-      left: settings?.marginLeft ?? 0,
+      top: 0,
+      right: 0,
+      bottom: 0,
+      left: 0,
     };
     const newPaddings = {
       top: settings?.paddingTop ?? 1,

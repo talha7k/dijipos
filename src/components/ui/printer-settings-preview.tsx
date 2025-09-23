@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { ChevronDown, ChevronRight, Settings } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { PrinterSettings } from '@/types';
+import { PrinterSettings, DocumentPrintSettings } from '@/types';
 import { FontSize } from '@/types/enums';
 
 interface PrinterSettingsPreviewProps {
@@ -72,19 +72,19 @@ export function PrinterSettingsPreview({
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="flex justify-between">
                 <span>Top:</span>
-                <Badge variant="outline">{settings.marginTop ?? 0}</Badge>
+                <Badge variant="outline">{documentType === 'receipts' ? 0 : (settings as DocumentPrintSettings).marginTop ?? 0}</Badge>
               </div>
               <div className="flex justify-between">
                 <span>Bottom:</span>
-                <Badge variant="outline">{settings.marginBottom ?? 0}</Badge>
+                <Badge variant="outline">{documentType === 'receipts' ? 0 : (settings as DocumentPrintSettings).marginBottom ?? 0}</Badge>
               </div>
               <div className="flex justify-between">
                 <span>Left:</span>
-                <Badge variant="outline">{settings.marginLeft ?? 0}</Badge>
+                <Badge variant="outline">{documentType === 'receipts' ? 0 : (settings as DocumentPrintSettings).marginLeft ?? 0}</Badge>
               </div>
               <div className="flex justify-between">
                 <span>Right:</span>
-                <Badge variant="outline">{settings.marginRight ?? 0}</Badge>
+                <Badge variant="outline">{documentType === 'receipts' ? 0 : (settings as DocumentPrintSettings).marginRight ?? 0}</Badge>
               </div>
             </div>
           </div>
