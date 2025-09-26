@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus } from 'lucide-react';
-import { Category, CategoryType } from '@/types';
+import { Product, Category, CategoryType } from '@/types';
 import { useAtomValue } from 'jotai';
 import { vatSettingsAtom } from '@/atoms/posAtoms';
 import { getVATIndicationText } from '@/lib/vat-calculator';
@@ -16,12 +16,9 @@ import { getVATIndicationText } from '@/lib/vat-calculator';
 interface AddProductDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAddProduct: (product: {
-    name: string;
-    description: string;
-    price: number;
-    categoryId: string | null;
-  }) => void;
+  onAddProduct: (product: Omit<Product, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => void;
+  onUpdateProduct: (productId: string, product: Partial<Omit<Product, 'id' | 'createdAt'>>) => void;
+  productToEdit: Product | null;
   categories: Category[];
   selectedCategory?: string | null;
 }
@@ -30,38 +27,49 @@ export function AddProductDialog({
   open,
   onOpenChange,
   onAddProduct,
+  onUpdateProduct,
+  productToEdit,
   categories,
   selectedCategory
 }: AddProductDialogProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
-  const [categoryId, setCategoryId] = useState<string>(selectedCategory || '');
+  const [categoryId, setCategoryId] = useState<string>('');
   const vatSettings = useAtomValue(vatSettingsAtom);
 
-  // Update categoryId when selectedCategory changes
+  const isEditMode = productToEdit !== null;
+
   useEffect(() => {
-    if (selectedCategory) {
-      setCategoryId(selectedCategory);
+    if (isEditMode) {
+      setName(productToEdit.name);
+      setDescription(productToEdit.description || '');
+      setPrice(productToEdit.price.toString());
+      setCategoryId(productToEdit.categoryId || '');
+    } else {
+      // Reset form for adding new product
+      setName('');
+      setDescription('');
+      setPrice('');
+      setCategoryId(selectedCategory || '');
     }
-  }, [selectedCategory]);
+  }, [productToEdit, isEditMode, selectedCategory]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    onAddProduct({
+    const productData = {
       name,
       description,
       price: parseFloat(price),
-      categoryId: categoryId || null
-    });
+      categoryId: categoryId || undefined
+    };
 
-    // Reset form
-    setName('');
-    setDescription('');
-    setPrice('');
-    setCategoryId('');
-    onOpenChange(false);
+    if (isEditMode) {
+      onUpdateProduct(productToEdit.id, productData);
+    } else {
+      onAddProduct(productData);
+    }
   };
 
   const renderCategoryOptions = (parentId: string | null = null, level = 0) => {
@@ -82,15 +90,17 @@ export function AddProductDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
-        <Button size="sm">
-          <Plus className="h-4 w-4 mr-2" />
-          Add
-        </Button>
-      </DialogTrigger>
+      {!isEditMode && (
+        <DialogTrigger asChild>
+          <Button size="sm">
+            <Plus className="h-4 w-4 mr-2" />
+            Add
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add New Product</DialogTitle>
+          <DialogTitle>{isEditMode ? 'Edit Product' : 'Add New Product'}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -148,7 +158,7 @@ export function AddProductDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit">Add Product</Button>
+            <Button type="submit">{isEditMode ? 'Update Product' : 'Add Product'}</Button>
           </div>
         </form>
       </DialogContent>

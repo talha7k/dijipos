@@ -12,6 +12,7 @@ interface ProductListProps {
   categories: Category[];
   selectedCategory: string | null;
   searchTerm: string;
+  onEditProduct: (product: Product) => void;
   onDeleteProduct: (productId: string) => void;
 }
 
@@ -20,6 +21,7 @@ export function ProductList({
   categories,
   selectedCategory,
   searchTerm,
+  onEditProduct,
   onDeleteProduct
 }: ProductListProps) {
   const { formatCurrency } = useCurrency();
@@ -81,8 +83,9 @@ export function ProductList({
                   </p>
                   <div className="flex justify-end">
                     <ActionButtons
+                      onEdit={() => onEditProduct(product)}
                       onDelete={() => onDeleteProduct(product.id)}
-                      showEdit={false}
+                      showEdit={true}
                     />
                   </div>
                 </CardContent>

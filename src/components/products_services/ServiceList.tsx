@@ -12,6 +12,7 @@ interface ServiceListProps {
   categories: Category[];
   selectedCategory: string | null;
   searchTerm: string;
+  onEditService: (service: Service) => void;
   onDeleteService: (serviceId: string) => void;
 }
 
@@ -20,6 +21,7 @@ export function ServiceList({
   categories,
   selectedCategory,
   searchTerm,
+  onEditService,
   onDeleteService
 }: ServiceListProps) {
   const { formatCurrency } = useCurrency();
@@ -81,8 +83,9 @@ export function ServiceList({
                   </p>
                   <div className="flex justify-end">
                     <ActionButtons
+                      onEdit={() => onEditService(service)}
                       onDelete={() => onDeleteService(service.id)}
-                      showEdit={false}
+                      showEdit={true}
                     />
                   </div>
                 </CardContent>

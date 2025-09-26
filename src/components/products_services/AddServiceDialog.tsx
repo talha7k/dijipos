@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus } from 'lucide-react';
-import { Category, CategoryType } from '@/types';
+import { Service, Category, CategoryType } from '@/types';
 import { useAtomValue } from 'jotai';
 import { vatSettingsAtom } from '@/atoms/posAtoms';
 import { getVATIndicationText } from '@/lib/vat-calculator';
@@ -16,12 +16,9 @@ import { getVATIndicationText } from '@/lib/vat-calculator';
 interface AddServiceDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAddService: (service: {
-    name: string;
-    description: string;
-    price: number;
-    categoryId: string | null;
-  }) => void;
+  onAddService: (service: Omit<Service, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => void;
+  onUpdateService: (serviceId: string, service: Partial<Omit<Service, 'id' | 'createdAt'>>) => void;
+  serviceToEdit: Service | null;
   categories: Category[];
   selectedCategory?: string | null;
 }
@@ -30,38 +27,49 @@ export function AddServiceDialog({
   open,
   onOpenChange,
   onAddService,
+  onUpdateService,
+  serviceToEdit,
   categories,
   selectedCategory
 }: AddServiceDialogProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
-  const [categoryId, setCategoryId] = useState<string>(selectedCategory || '');
+  const [categoryId, setCategoryId] = useState<string>('');
   const vatSettings = useAtomValue(vatSettingsAtom);
 
-  // Update categoryId when selectedCategory changes
+  const isEditMode = serviceToEdit !== null;
+
   useEffect(() => {
-    if (selectedCategory) {
-      setCategoryId(selectedCategory);
+    if (isEditMode) {
+      setName(serviceToEdit.name);
+      setDescription(serviceToEdit.description || '');
+      setPrice(serviceToEdit.price.toString());
+      setCategoryId(serviceToEdit.categoryId || '');
+    } else {
+      // Reset form for adding new service
+      setName('');
+      setDescription('');
+      setPrice('');
+      setCategoryId(selectedCategory || '');
     }
-  }, [selectedCategory]);
+  }, [serviceToEdit, isEditMode, selectedCategory]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    onAddService({
+    const serviceData = {
       name,
       description,
       price: parseFloat(price),
-      categoryId: categoryId || null
-    });
+      categoryId: categoryId || undefined
+    };
 
-    // Reset form
-    setName('');
-    setDescription('');
-    setPrice('');
-    setCategoryId('');
-    onOpenChange(false);
+    if (isEditMode) {
+      onUpdateService(serviceToEdit.id, serviceData);
+    } else {
+      onAddService(serviceData);
+    }
   };
 
   const renderCategoryOptions = (parentId: string | null = null, level = 0) => {
@@ -82,15 +90,17 @@ export function AddServiceDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
-        <Button size="sm">
-          <Plus className="h-4 w-4 mr-2" />
-          Add
-        </Button>
-      </DialogTrigger>
+      {!isEditMode && (
+        <DialogTrigger asChild>
+          <Button size="sm">
+            <Plus className="h-4 w-4 mr-2" />
+            Add
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add New Service</DialogTitle>
+          <DialogTitle>{isEditMode ? 'Edit Service' : 'Add New Service'}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -148,7 +158,7 @@ export function AddServiceDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit">Add Service</Button>
+            <Button type="submit">{isEditMode ? 'Update Service' : 'Add Service'}</Button>
           </div>
         </form>
       </DialogContent>

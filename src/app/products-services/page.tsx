@@ -25,51 +25,71 @@ import { ExportImportProducts } from '@/components/ExportImportProducts';
 export default function ProductsServicesPage() {
   const { selectedOrganization } = useOrganization();
   const organizationId = selectedOrganization?.id;
-  const { products, categories, loading: productsLoading, createProduct, deleteProduct, createCategory, deleteCategory } = useProducts();
-  const { services, loading: servicesLoading, createNewService, deleteExistingService } = useServices();
+  const { products, categories, loading: productsLoading, createProduct, updateProduct, deleteProduct, createCategory, deleteCategory } = useProducts();
+  const { services, loading: servicesLoading, createNewService, updateExistingService, deleteExistingService } = useServices();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [productDialogOpen, setProductDialogOpen] = useState(false);
   const [serviceDialogOpen, setServiceDialogOpen] = useState(false);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
+  const [productToEdit, setProductToEdit] = useState<Product | null>(null);
+  const [serviceToEdit, setServiceToEdit] = useState<Service | null>(null);
   const [deleteCategoryId, setDeleteCategoryId] = useState<string | null>(null);
   const [deleteCategoryName, setDeleteCategoryName] = useState<string>('');
   const [deleteCategoryItemCount, setDeleteCategoryItemCount] = useState<number>(0);
 
   const loading = productsLoading || servicesLoading;
 
-  const handleAddProduct = async (product: {
-    name: string;
-    description: string;
-    price: number;
-    categoryId: string | null;
-  }) => {
+  const handleAddProduct = async (product: Omit<Product, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => {
     try {
-      await createProduct({
-        ...product,
-        categoryId: product.categoryId || undefined,
-      });
+      await createProduct(product);
+      setProductDialogOpen(false);
     } catch (error) {
       console.error('Error creating product:', error);
       toast.error('Failed to create product');
     }
   };
 
-  const handleAddService = async (service: {
-    name: string;
-    description: string;
-    price: number;
-    categoryId: string | null;
-  }) => {
+  const handleUpdateProduct = async (productId: string, product: Partial<Omit<Product, 'id' | 'createdAt'>>) => {
     try {
-      await createNewService({
-        ...service,
-        categoryId: service.categoryId || undefined,
-      });
+      await updateProduct(productId, product);
+      setProductToEdit(null);
+      setProductDialogOpen(false);
+    } catch (error) {
+      console.error('Error updating product:', error);
+      toast.error('Failed to update product');
+    }
+  };
+
+  const handleEditProduct = (product: Product) => {
+    setProductToEdit(product);
+    setProductDialogOpen(true);
+  };
+
+  const handleAddService = async (service: Omit<Service, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => {
+    try {
+      await createNewService(service);
+      setServiceDialogOpen(false);
     } catch (error) {
       console.error('Error creating service:', error);
       toast.error('Failed to create service');
     }
+  };
+
+  const handleUpdateService = async (serviceId: string, service: Partial<Omit<Service, 'id' | 'createdAt'>>) => {
+    try {
+      await updateExistingService(serviceId, service);
+      setServiceToEdit(null);
+      setServiceDialogOpen(false);
+    } catch (error) {
+      console.error('Error updating service:', error);
+      toast.error('Failed to update service');
+    }
+  };
+
+  const handleEditService = (service: Service) => {
+    setServiceToEdit(service);
+    setServiceDialogOpen(true);
   };
 
   const handleAddCategory = async (category: {
@@ -238,6 +258,8 @@ export default function ProductsServicesPage() {
                       open={productDialogOpen}
                       onOpenChange={setProductDialogOpen}
                       onAddProduct={handleAddProduct}
+                      onUpdateProduct={handleUpdateProduct}
+                      productToEdit={productToEdit}
                       categories={categories}
                       selectedCategory={selectedCategory}
                     />
@@ -258,6 +280,7 @@ export default function ProductsServicesPage() {
                     categories={categories}
                     selectedCategory={selectedCategory}
                     searchTerm={searchTerm}
+                    onEditProduct={handleEditProduct}
                     onDeleteProduct={handleDeleteProduct}
                   />
                 </CardContent>
@@ -336,6 +359,8 @@ export default function ProductsServicesPage() {
                       open={serviceDialogOpen}
                       onOpenChange={setServiceDialogOpen}
                       onAddService={handleAddService}
+                      onUpdateService={handleUpdateService}
+                      serviceToEdit={serviceToEdit}
                       categories={categories}
                       selectedCategory={selectedCategory}
                     />
@@ -356,6 +381,7 @@ export default function ProductsServicesPage() {
                     categories={categories}
                     selectedCategory={selectedCategory}
                     searchTerm={searchTerm}
+                    onEditService={handleEditService}
                     onDeleteService={handleDeleteService}
                   />
                 </CardContent>
