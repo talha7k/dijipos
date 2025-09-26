@@ -27,19 +27,26 @@ service cloud.firestore {
       allow read, write: if isAuthenticated() && request.auth.uid == userId;
     }
 
+    // Super-admins collection - authenticated users can read and create
+    match /super-admins/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+    }
+
     // Invitations collection - authenticated users can read/write
     match /invitations/{document=**} {
       allow read, write: if isAuthenticated();
     }
 
-// Invitations collection - authenticated users can read/write
-match /invitations/{document=**} {
-  allow read, write: if isAuthenticated();
-}
-
     // Used invitation codes collection - authenticated users can read/write
     match /usedInvitations/{document=**} {
       allow read, write: if isAuthenticated();
+    }
+
+    // Organization creation codes collection - super-admins can read/write
+    match /organization-creation-codes/{document=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
     }
 
     // Business data collections - authenticated users can access organization-scoped data

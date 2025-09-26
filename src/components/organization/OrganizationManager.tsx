@@ -89,6 +89,7 @@ export function OrganizationManager() {
   const [joinCode, setJoinCode] = useState("");
   const [newOrganizationName, setNewOrganizationName] = useState("");
   const [newOrganizationEmail, setNewOrganizationEmail] = useState("");
+  const [organizationCreationCode, setOrganizationCreationCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [joinError, setJoinError] = useState("");
   const [organizations, setOrganizations] = useState<{
@@ -174,15 +175,16 @@ export function OrganizationManager() {
   };
 
   const handleCreateOrganization = async () => {
-    if (!newOrganizationName || !newOrganizationEmail || !user) return;
+    if (!newOrganizationName || !newOrganizationEmail || !user || !organizationCreationCode) return;
 
     setLoading(true);
     try {
-      await createOrganization(newOrganizationName, newOrganizationEmail);
+      await createOrganization(newOrganizationName, newOrganizationEmail, organizationCreationCode);
 
       setShowCreateForm(false);
       setNewOrganizationName("");
       setNewOrganizationEmail("");
+      setOrganizationCreationCode("");
       router.push("/dashboard");
     } catch (error) {
       console.error("Error creating organization:", error);
@@ -679,6 +681,29 @@ export function OrganizationManager() {
                           }`}
                         />
                       </div>
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="organizationCreationCode"
+                          className={`${
+                            isDark ? "text-gray-300" : "text-gray-700"
+                          }`}
+                        >
+                          Organization Creation Code
+                        </Label>
+                        <Input
+                          id="organizationCreationCode"
+                          placeholder="Enter organization creation code"
+                          value={organizationCreationCode}
+                          onChange={(e) =>
+                            setOrganizationCreationCode(e.target.value)
+                          }
+                          className={`py-2 ${
+                            isDark
+                              ? "bg-gray-800 border-gray-700 text-white"
+                              : ""
+                          }`}
+                        />
+                      </div>
                       <div className="flex gap-3">
                         <Button
                           variant="outline"
@@ -687,6 +712,7 @@ export function OrganizationManager() {
                             setShowCreateForm(false);
                             setNewOrganizationName("");
                             setNewOrganizationEmail("");
+                            setOrganizationCreationCode("");
                           }}
                           className={`flex-1 py-2 text-sm ${
                             isDark
@@ -701,6 +727,7 @@ export function OrganizationManager() {
                           disabled={
                             !newOrganizationName ||
                             !newOrganizationEmail ||
+                            !organizationCreationCode ||
                             loading
                           }
                           variant="success"

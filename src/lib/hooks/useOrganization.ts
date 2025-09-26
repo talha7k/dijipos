@@ -337,12 +337,26 @@ export function useOrganizationActions() {
     }
   };
 
-  const createOrganization = async (name: string, email: string) => {
-    if (!name || !email || !user) {
-      throw new Error('Organization name, email, and user authentication required');
+  const createOrganization = async (name: string, email: string, organizationCreationCode: string) => {
+    if (!name || !email || !user || !organizationCreationCode) {
+      throw new Error('Organization name, email, creation code, and user authentication required');
     }
 
     try {
+      // Find the creation code
+      const codesQuery = query(
+        collection(db, 'organization-creation-codes'),
+        where('code', '==', organizationCreationCode),
+        where('used', '==', false)
+      );
+      const codesSnapshot = await getDocs(codesQuery);
+
+      if (codesSnapshot.empty) {
+        throw new Error('Invalid or already used organization creation code');
+      }
+
+      const codeId = codesSnapshot.docs[0].id;
+
       // Create new organization
       const organizationRef = await addDoc(collection(db, 'organizations'), {
         name,
@@ -360,6 +374,15 @@ export function useOrganizationActions() {
         isActive: true,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
+      });
+
+      // Mark creation code as used
+      const codeDocRef = doc(db, 'organization-creation-codes', codeId);
+      await updateDoc(codeDocRef, {
+        used: true,
+        usedBy: user.uid,
+        usedAt: serverTimestamp(),
+        organizationId: organizationRef.id,
       });
 
       // Refresh organizations and switch to the new one
