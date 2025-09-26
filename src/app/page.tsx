@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 import { Loader } from '@/components/ui/loader';
 
 function HomeContent() {
-  const { loading: authLoading } = useAuth();
+  const { loading: authLoading, user } = useAuth();
   const [selectedOrganization] = useAtom(selectedOrganizationAtom);
 
   const router = useRouter();
@@ -27,7 +27,13 @@ function HomeContent() {
   const [resetSuccess, setResetSuccess] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
 
-
+  // Redirect authenticated users to dashboard
+  useEffect(() => {
+    if (user && !authLoading && !resetMode && !isProcessing) {
+      console.log('HomeContent: User authenticated, redirecting to dashboard');
+      router.push('/dashboard');
+    }
+  }, [user, authLoading, resetMode, isProcessing, router]);
 
   // Note: Authentication and organization routing is now handled by RouteGuard component
   // This useEffect only handles Firebase action codes (email verification, password reset)
