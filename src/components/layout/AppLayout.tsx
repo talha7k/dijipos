@@ -19,6 +19,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     "/verify-email",
     "/reset-password",
     "/select-organization",
+    "/superadmin",
   ];
   if (pathname && (noLayoutRoutes.includes(pathname) || pathname.startsWith("/auth"))) {
     return <>{children}</>;

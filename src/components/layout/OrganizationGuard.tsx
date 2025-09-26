@@ -24,6 +24,7 @@ export function OrganizationGuard({ children }: { children: React.ReactNode }) {
     "/register",
     "/verify-email",
     "/reset-password",
+    "/superadmin",
   ].concat(
     pathname && pathname.startsWith("/auth") ? [pathname] : []
   );
