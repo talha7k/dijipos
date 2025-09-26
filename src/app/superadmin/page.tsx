@@ -19,6 +19,7 @@ import {
 import { getAuth } from "firebase/auth";
 import { db } from "@/lib/firebase/config";
 import { useAuth } from "@/lib/hooks/useAuth";
+import { formatDate, formatDateTime } from "@/lib/utils";
 import { Organization, User } from "@/types";
 import { SubscriptionStatus } from "@/types/enums";
 
@@ -544,7 +545,7 @@ const SuperAdminPage = () => {
                       </span>
                     </td>
                     <td className="py-3 px-4 border-b">
-                      {orgStat.organization.createdAt.toLocaleDateString()}
+                      {formatDate(orgStat.organization.createdAt)}
                     </td>
                     <td className="py-3 px-4 border-b">
                       <span className={`px-2 py-1 rounded-full text-sm ${
@@ -592,7 +593,7 @@ const SuperAdminPage = () => {
                 <tr key={c.id} className="hover:bg-gray-50">
                   <td className="py-3 px-4 border-b font-mono">{c.code}</td>
                   <td className="py-3 px-4 border-b">
-                    {c.createdAt?.toDate().toLocaleString()}
+                    {formatDateTime(c.createdAt?.toDate())}
                   </td>
                   <td className="py-3 px-4 border-b">
                     <span className={`px-2 py-1 rounded-full text-sm ${
@@ -615,7 +616,7 @@ const SuperAdminPage = () => {
                     )}
                   </td>
                   <td className="py-3 px-4 border-b">
-                    {c.usedAt?.toDate().toLocaleString() || "-"}
+                    {formatDateTime(c.usedAt?.toDate()) || "-"}
                   </td>
                   <td className="py-3 px-4 border-b">
                     {c.organizationId ? (
