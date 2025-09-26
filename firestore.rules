@@ -10,6 +10,9 @@ service cloud.firestore {
     match /organizations/{organizationId} {
       allow read: if isAuthenticated();
       allow write: if false; // Organizations should be created/managed by admin only
+      
+      // Special rule for super admins to delete organizations
+      allow delete: if exists(/databases/$(database)/documents/super-admins/$(request.auth.uid));
     }
 
     // Organization users collection - users can read/write their own associations and read users in organizations
@@ -59,7 +62,22 @@ service cloud.firestore {
           'purchaseProducts', 'purchaseServices',
           'storeSettings', 'vatSettings', 'currencySettings',
           'orderTypes', 'paymentTypes', 'printerSettings',
-          'receiptTemplates', 'invoiceTemplates', 'quoteTemplates'
+          'receiptTemplates', 'invoiceTemplates', 'quoteTemplates',
+          'tables', 'templates'
+        ];
+      
+      // Super admin rule for all business data collections
+      allow read, write, delete: if 
+        exists(/databases/$(database)/documents/super-admins/$(request.auth.uid)) &&
+        collectionName in [
+          'categories', 'products', 'services', 'customers', 'suppliers',
+          'orders', 'invoices', 'quotes', 'payments',
+          'salesInvoices', 'purchaseInvoices', 'orderPayments',
+          'purchaseProducts', 'purchaseServices',
+          'storeSettings', 'vatSettings', 'currencySettings',
+          'orderTypes', 'paymentTypes', 'printerSettings',
+          'receiptTemplates', 'invoiceTemplates', 'quoteTemplates',
+          'tables', 'templates', 'organizationUsers', 'invitations'
         ];
     }
 

@@ -215,9 +215,10 @@ const SuperAdminPage = () => {
         "templates"
       ];
 
-      let totalDeleted = 0;
+      // First, scan all collections to count total documents and validate permissions
+      let totalDocuments = 0;
+      const collectionData: { [key: string]: any[] } = {};
 
-      // Process collections in smaller batches to avoid Firestore limits
       for (const collectionName of collectionsToDelete) {
         try {
           const collectionRef = collection(db, collectionName);
@@ -225,50 +226,75 @@ const SuperAdminPage = () => {
           const snapshot = await getDocs(q);
           
           if (snapshot.size > 0) {
+            collectionData[collectionName] = snapshot.docs;
+            totalDocuments += snapshot.size;
             console.log(`Found ${snapshot.size} documents in ${collectionName}`);
-            
-            // Process in batches of 500 (Firestore limit)
-            const docs = snapshot.docs;
-            for (let i = 0; i < docs.length; i += 500) {
-              const batch = writeBatch(db);
-              const batchDocs = docs.slice(i, i + 500);
-              
-              batchDocs.forEach((doc) => {
-                batch.delete(doc.ref);
-              });
-              
-              await batch.commit();
-              totalDeleted += batchDocs.length;
-              console.log(`Deleted ${batchDocs.length} documents from ${collectionName}`);
-            }
           }
         } catch (collectionError) {
-          console.warn(`Error processing collection ${collectionName}:`, collectionError);
-          // Continue with other collections even if one fails
+          console.error(`Permission error accessing collection ${collectionName}:`, collectionError);
+          throw new Error(`Cannot access collection ${collectionName}. Check Firestore permissions.`);
         }
       }
 
-      // Handle organization-creation-codes separately (update instead of delete)
+      // Also check organization-creation-codes
       try {
         const codesCollection = collection(db, "organization-creation-codes");
         const codesQuery = query(codesCollection, where("organizationId", "==", organizationId));
         const codesSnapshot = await getDocs(codesQuery);
         
         if (!codesSnapshot.empty) {
-          const batch = writeBatch(db);
-          codesSnapshot.docs.forEach((doc) => {
-            batch.update(doc.ref, {
-              organizationId: null,
-              used: false,
-              usedBy: null,
-              usedAt: null
-            });
-          });
-          await batch.commit();
-          console.log(`Updated ${codesSnapshot.size} organization creation codes`);
+          collectionData['organization-creation-codes'] = codesSnapshot.docs;
+          console.log(`Found ${codesSnapshot.size} organization creation codes`);
         }
       } catch (codesError) {
-        console.warn("Error updating organization creation codes:", codesError);
+        console.error("Error accessing organization creation codes:", codesError);
+        throw new Error("Cannot access organization creation codes. Check Firestore permissions.");
+      }
+
+      console.log(`Total documents to delete/update: ${totalDocuments}`);
+
+      // Process all deletions in batches
+      let totalDeleted = 0;
+
+      // Delete documents from each collection
+      for (const collectionName of collectionsToDelete) {
+        const docs = collectionData[collectionName];
+        if (docs && docs.length > 0) {
+          // Process in batches of 500 (Firestore limit)
+          for (let i = 0; i < docs.length; i += 500) {
+            const batch = writeBatch(db);
+            const batchDocs = docs.slice(i, i + 500);
+            
+            batchDocs.forEach((doc: any) => {
+              batch.delete(doc.ref);
+            });
+            
+            try {
+              await batch.commit();
+              totalDeleted += batchDocs.length;
+              console.log(`Deleted ${batchDocs.length} documents from ${collectionName}`);
+            } catch (batchError) {
+              console.error(`Error deleting batch from ${collectionName}:`, batchError);
+              throw new Error(`Failed to delete documents from ${collectionName}: ${batchError instanceof Error ? batchError.message : "Unknown error"}`);
+            }
+          }
+        }
+      }
+
+      // Update organization-creation-codes (reset instead of delete)
+      const codeDocs = collectionData['organization-creation-codes'];
+      if (codeDocs && codeDocs.length > 0) {
+        const batch = writeBatch(db);
+        codeDocs.forEach((doc: any) => {
+          batch.update(doc.ref, {
+            organizationId: null,
+            used: false,
+            usedBy: null,
+            usedAt: null
+          });
+        });
+        await batch.commit();
+        console.log(`Updated ${codeDocs.length} organization creation codes`);
       }
 
       // Finally delete the organization document itself
@@ -279,10 +305,10 @@ const SuperAdminPage = () => {
         totalDeleted++;
       } catch (orgError) {
         console.error("Error deleting organization document:", orgError);
-        throw orgError; // Re-throw this error as it's critical
+        throw new Error(`Cannot delete organization document: ${orgError instanceof Error ? orgError.message : "Unknown error"}`);
       }
 
-      console.log(`Successfully deleted organization ${organizationId} and ${totalDeleted} related documents`);
+      console.log(`Successfully deleted organization ${organizationId} and ${totalDeleted} documents/records`);
 
       // Refresh the data
       await fetchOrganizationStats();
