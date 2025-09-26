@@ -15,12 +15,12 @@ interface PageHeaderProps {
   children?: React.ReactNode;
 }
 
-export function PageHeader({ 
-  title = "DijiBill", 
-  subtitle, 
-  showLogout = true, 
+export function PageHeader({
+  title = "DijiBill",
+  subtitle,
+  showLogout = true,
   showThemeToggle = true,
-  children 
+  children,
 }: PageHeaderProps) {
   const [theme, setTheme] = useAtom(themeAtom);
   const isDark = theme === "dark";
@@ -105,7 +105,7 @@ export function PageHeader({
             />
           </div>
           <h1
-            className={`text-5xl font-bold ml-6 ${
+            className={`text-3xl font-bold ml-6 ${
               isDark ? "text-white" : "text-gray-900"
             }`}
           >
@@ -115,7 +115,7 @@ export function PageHeader({
         {subtitle && (
           <div className="flex-2 flex items-center">
             <p
-              className={`text-xl ${
+              className={`text-lg ${
                 isDark ? "text-gray-300" : "text-gray-600"
               }`}
             >
@@ -123,11 +123,7 @@ export function PageHeader({
             </p>
           </div>
         )}
-        {children && (
-          <div className="flex-2 flex items-center">
-            {children}
-          </div>
-        )}
+        {children && <div className="flex-2 flex items-center">{children}</div>}
       </div>
 
       {/* Content Section Separator */}
