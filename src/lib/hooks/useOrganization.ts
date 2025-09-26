@@ -381,6 +381,8 @@ export function useOrganizationActions() {
       await updateDoc(codeDocRef, {
         used: true,
         usedBy: user.uid,
+        userName: user.displayName || null,
+        userEmail: user.email || null,
         usedAt: serverTimestamp(),
         organizationId: organizationRef.id,
       });

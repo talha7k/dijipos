@@ -28,6 +28,8 @@ interface OrgCreationCode {
   createdAt: Timestamp;
   used: boolean;
   usedBy: string | null;
+  userName: string | null;
+  userEmail: string | null;
   usedAt: Timestamp | null;
   organizationId: string | null;
 }
@@ -140,70 +142,18 @@ const SuperAdminPage = () => {
             console.log("Code data:", codeData);
             
             if (codeData.usedBy) {
-              console.log("Fetching creator user data for UID:", codeData.usedBy);
-              try {
-                // Try to get user from Firestore users collection first
-                const userDoc = await getDoc(doc(db, "users", codeData.usedBy));
-                if (userDoc.exists()) {
-                  const userData = userDoc.data();
-                  creator = {
-                    id: userDoc.id,
-                    ...userData,
-                    createdAt: userData.createdAt?.toDate() || new Date(),
-                    updatedAt: userData.updatedAt?.toDate() || new Date(),
-                  } as User;
-                  console.log("Creator found from users collection:", creator.name, creator.email);
-                } else {
-                  console.log("User not found in users collection, trying organizationUsers...");
-                  
-                  // Try to get from organizationUsers collection
-                  const orgUserQuery = query(
-                    collection(db, "organizationUsers"),
-                    where("userId", "==", codeData.usedBy),
-                    where("organizationId", "==", organization.id)
-                  );
-                  const orgUserSnapshot = await getDocs(orgUserQuery);
-                  
-                  if (!orgUserSnapshot.empty) {
-                    const orgUserData = orgUserSnapshot.docs[0].data();
-                    console.log("Found organization user data:", orgUserData);
-                    
-                    // Create a basic user object from organization user data
-                    creator = {
-                      id: codeData.usedBy,
-                      name: orgUserData.name || `User ${codeData.usedBy.substring(0, 8)}...`,
-                      email: orgUserData.email || `user-${codeData.usedBy.substring(0, 8)}@example.com`,
-                      isActive: orgUserData.isActive || true,
-                      createdAt: orgUserData.createdAt?.toDate() || new Date(),
-                      updatedAt: orgUserData.updatedAt?.toDate() || new Date(),
-                    } as User;
-                    console.log("Creator created from organizationUsers:", creator.name, creator.email);
-                  } else {
-                    console.log("No organization user found, creating minimal display...");
-                    // Create a minimal creator object with the UID
-                    creator = {
-                      id: codeData.usedBy,
-                      name: `User ${codeData.usedBy.substring(0, 8)}...`,
-                      email: `user-${codeData.usedBy.substring(0, 8)}@example.com`,
-                      isActive: true,
-                      createdAt: new Date(),
-                      updatedAt: new Date(),
-                    } as User;
-                    console.log("Created minimal creator object for UID:", codeData.usedBy);
-                  }
-                }
-              } catch (error) {
-                console.error("Error fetching creator data:", error);
-                // Fallback: create minimal creator object
-                creator = {
-                  id: codeData.usedBy,
-                  name: `User ${codeData.usedBy.substring(0, 8)}...`,
-                  email: `user-${codeData.usedBy.substring(0, 8)}@example.com`,
-                  isActive: true,
-                  createdAt: new Date(),
-                  updatedAt: new Date(),
-                } as User;
-              }
+              console.log("Creating creator from stored code data for UID:", codeData.usedBy);
+              
+              // Use the stored user name and email from the creation code
+              creator = {
+                id: codeData.usedBy,
+                name: codeData.userName || `User ${codeData.usedBy.substring(0, 8)}...`,
+                email: codeData.userEmail || `user-${codeData.usedBy.substring(0, 8)}@example.com`,
+                isActive: true,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+              } as User;
+              console.log("Creator created from stored code data:", creator.name, creator.email);
             } else {
               console.log("No usedBy field in code data for org:", organization.id);
             }
@@ -268,6 +218,8 @@ const SuperAdminPage = () => {
         createdAt: serverTimestamp(),
         used: false,
         usedBy: null,
+        userName: null,
+        userEmail: null,
         usedAt: null,
         organizationId: null,
       });
@@ -406,6 +358,8 @@ const SuperAdminPage = () => {
             organizationId: null,
             used: false,
             usedBy: null,
+            userName: null,
+            userEmail: null,
             usedAt: null
           });
         });
@@ -630,7 +584,7 @@ const SuperAdminPage = () => {
                 <th className="py-3 px-4 text-left border-b">Used</th>
                 <th className="py-3 px-4 text-left border-b">Used By</th>
                 <th className="py-3 px-4 text-left border-b">Used At</th>
-                <th className="py-3 px-4 text-left border-b">Organization ID</th>
+                <th className="py-3 px-4 text-left border-b">Organization</th>
               </tr>
             </thead>
             <tbody>
@@ -649,12 +603,31 @@ const SuperAdminPage = () => {
                       {c.used ? "Yes" : "No"}
                     </span>
                   </td>
-                  <td className="py-3 px-4 border-b">{c.usedBy || "-"}</td>
+                  <td className="py-3 px-4 border-b">
+                    {c.usedBy ? (
+                      <div>
+                        <div className="font-medium">{c.userName || 'No Name'}</div>
+                        <div className="text-sm text-gray-500">{c.userEmail || 'No Email'}</div>
+                        <div className="text-xs text-gray-400">ID: {c.usedBy}</div>
+                      </div>
+                    ) : (
+                      "-"
+                    )}
+                  </td>
                   <td className="py-3 px-4 border-b">
                     {c.usedAt?.toDate().toLocaleString() || "-"}
                   </td>
-                  <td className="py-3 px-4 border-b font-mono text-sm">
-                    {c.organizationId || "-"}
+                  <td className="py-3 px-4 border-b">
+                    {c.organizationId ? (
+                      <div>
+                        <div className="font-medium">
+                          {organizations.find(org => org.organization.id === c.organizationId)?.organization.name || 'Unknown Organization'}
+                        </div>
+                        <div className="text-xs text-gray-400 font-mono">ID: {c.organizationId}</div>
+                      </div>
+                    ) : (
+                      "-"
+                    )}
                   </td>
                 </tr>
               ))}
