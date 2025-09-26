@@ -83,10 +83,10 @@ export function POSItemsGrid({
   };
 
   const currentCategoryId = getCurrentCategoryId();
-  const currentChildCategories = currentCategoryId ? getChildCategories(currentCategoryId) : [];
+  const currentChildCategories = currentCategoryId ? getChildCategories(currentCategoryId).sort((a, b) => a.name.localeCompare(b.name)) : [];
   
    // Get items for current category
-   const filteredItems = isViewingUncategorized ? [
+   const filteredItems = (isViewingUncategorized ? [
      // Show uncategorized items
      ...products.filter((p: Product) => !p.categoryId),
      ...services.filter((s: Service) => !s.categoryId)
@@ -98,7 +98,7 @@ export function POSItemsGrid({
      // At root level, show items that don't have a category assigned
      ...products.filter((p: Product) => !p.categoryId),
      ...services.filter((s: Service) => !s.categoryId)
-   ];
+   ]).sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <div className="space-y-8">

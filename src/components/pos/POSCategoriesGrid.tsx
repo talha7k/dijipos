@@ -78,7 +78,7 @@ export function POSCategoriesGrid({
     }
   };
 
-  const currentCategories = getCurrentChildCategories();
+  const currentCategories = getCurrentChildCategories().sort((a, b) => a.name.localeCompare(b.name));
 
   // Debug logging
   console.log('POSCategoriesGrid Debug:', {
