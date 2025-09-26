@@ -14,7 +14,9 @@ import {
   where,
   writeBatch,
   deleteDoc,
+  DocumentSnapshot,
 } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 import { db } from "@/lib/firebase/config";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { Organization, User } from "@/types";
@@ -32,7 +34,7 @@ interface OrgCreationCode {
 
 interface OrganizationStats {
   organization: Organization;
-  creator: User | null;
+  creator: User;
   userCount: number;
 }
 
@@ -43,33 +45,50 @@ const SuperAdminPage = () => {
   const [loading, setLoading] = useState(true);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [deletingOrg, setDeletingOrg] = useState<string | null>(null);
+  const [generatingCode, setGeneratingCode] = useState(false);
+  const [loadingOrganizations, setLoadingOrganizations] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
+      console.log("fetchUserData called, user:", user?.uid);
       if (user?.uid) {
         try {
+          console.log("Checking super admin status for user:", user.uid);
           const superAdminDoc = await getDoc(doc(db, "super-admins", user.uid));
+          console.log("Super admin doc exists:", superAdminDoc.exists());
           if (superAdminDoc.exists()) {
+            console.log("User is super admin, fetching data");
             setIsSuperAdmin(true);
             
             // Fetch organization creation codes
+            console.log("Fetching organization creation codes");
             const codesCollection = collection(db, "organization-creation-codes");
             const codesSnapshot = await getDocs(codesCollection);
+            console.log("Codes snapshot size:", codesSnapshot.size);
             const codesList = codesSnapshot.docs.map((doc) => ({
               id: doc.id,
               ...doc.data(),
             })) as OrgCreationCode[];
             setCodes(codesList);
+            console.log("Codes set, length:", codesList.length);
             
             // Fetch all organizations and their stats
+            console.log("Fetching organization stats");
+            setLoadingOrganizations(true);
             await fetchOrganizationStats();
+            setLoadingOrganizations(false);
+          } else {
+            console.log("User is not a super admin");
+            setIsSuperAdmin(false);
           }
         } catch (error) {
           console.error("Error fetching data:", error);
+          setIsSuperAdmin(false);
         } finally {
           setLoading(false);
         }
       } else if (user === null) {
+        console.log("User is not logged in");
         // User is not logged in
         setLoading(false);
       }
@@ -80,13 +99,16 @@ const SuperAdminPage = () => {
 
   const fetchOrganizationStats = async () => {
     try {
+      console.log("Starting to fetch organization stats");
       // Fetch all organizations
       const organizationsCollection = collection(db, "organizations");
       const organizationsSnapshot = await getDocs(organizationsCollection);
+      console.log("Found organizations:", organizationsSnapshot.size);
       
       const orgStats: OrganizationStats[] = [];
       
       for (const orgDoc of organizationsSnapshot.docs) {
+        console.log("Processing organization:", orgDoc.id);
         const orgData = orgDoc.data();
         const organization: Organization = {
           id: orgDoc.id,
@@ -96,49 +118,134 @@ const SuperAdminPage = () => {
         } as Organization;
         
         // Find the creator from organization creation codes
-        let creator: User | null = null;
-        const codeQuery = query(
-          collection(db, "organization-creation-codes"),
-          where("organizationId", "==", organization.id),
-          where("used", "==", true)
-        );
-        const codeSnapshot = await getDocs(codeQuery);
-        
-        if (!codeSnapshot.empty) {
-          const codeData = codeSnapshot.docs[0].data();
-          if (codeData.usedBy) {
-            const userDoc = await getDoc(doc(db, "users", codeData.usedBy));
-            if (userDoc.exists()) {
-              const userData = userDoc.data();
-              creator = {
-                id: userDoc.id,
-                ...userData,
-                createdAt: userData.createdAt?.toDate() || new Date(),
-                updatedAt: userData.updatedAt?.toDate() || new Date(),
-              } as User;
+        let creator: User = {
+          id: "unknown",
+          name: "Unknown User",
+          email: "unknown@example.com",
+          isActive: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        try {
+          const codeQuery = query(
+            collection(db, "organization-creation-codes"),
+            where("organizationId", "==", organization.id),
+            where("used", "==", true)
+          );
+          const codeSnapshot = await getDocs(codeQuery);
+          console.log("Found creation codes for org:", codeSnapshot.size);
+          
+          if (!codeSnapshot.empty) {
+            const codeData = codeSnapshot.docs[0].data();
+            console.log("Code data:", codeData);
+            
+            if (codeData.usedBy) {
+              console.log("Fetching creator user data for UID:", codeData.usedBy);
+              try {
+                // Try to get user from Firestore users collection first
+                const userDoc = await getDoc(doc(db, "users", codeData.usedBy));
+                if (userDoc.exists()) {
+                  const userData = userDoc.data();
+                  creator = {
+                    id: userDoc.id,
+                    ...userData,
+                    createdAt: userData.createdAt?.toDate() || new Date(),
+                    updatedAt: userData.updatedAt?.toDate() || new Date(),
+                  } as User;
+                  console.log("Creator found from users collection:", creator.name, creator.email);
+                } else {
+                  console.log("User not found in users collection, trying organizationUsers...");
+                  
+                  // Try to get from organizationUsers collection
+                  const orgUserQuery = query(
+                    collection(db, "organizationUsers"),
+                    where("userId", "==", codeData.usedBy),
+                    where("organizationId", "==", organization.id)
+                  );
+                  const orgUserSnapshot = await getDocs(orgUserQuery);
+                  
+                  if (!orgUserSnapshot.empty) {
+                    const orgUserData = orgUserSnapshot.docs[0].data();
+                    console.log("Found organization user data:", orgUserData);
+                    
+                    // Create a basic user object from organization user data
+                    creator = {
+                      id: codeData.usedBy,
+                      name: orgUserData.name || `User ${codeData.usedBy.substring(0, 8)}...`,
+                      email: orgUserData.email || `user-${codeData.usedBy.substring(0, 8)}@example.com`,
+                      isActive: orgUserData.isActive || true,
+                      createdAt: orgUserData.createdAt?.toDate() || new Date(),
+                      updatedAt: orgUserData.updatedAt?.toDate() || new Date(),
+                    } as User;
+                    console.log("Creator created from organizationUsers:", creator.name, creator.email);
+                  } else {
+                    console.log("No organization user found, creating minimal display...");
+                    // Create a minimal creator object with the UID
+                    creator = {
+                      id: codeData.usedBy,
+                      name: `User ${codeData.usedBy.substring(0, 8)}...`,
+                      email: `user-${codeData.usedBy.substring(0, 8)}@example.com`,
+                      isActive: true,
+                      createdAt: new Date(),
+                      updatedAt: new Date(),
+                    } as User;
+                    console.log("Created minimal creator object for UID:", codeData.usedBy);
+                  }
+                }
+              } catch (error) {
+                console.error("Error fetching creator data:", error);
+                // Fallback: create minimal creator object
+                creator = {
+                  id: codeData.usedBy,
+                  name: `User ${codeData.usedBy.substring(0, 8)}...`,
+                  email: `user-${codeData.usedBy.substring(0, 8)}@example.com`,
+                  isActive: true,
+                  createdAt: new Date(),
+                  updatedAt: new Date(),
+                } as User;
+              }
+            } else {
+              console.log("No usedBy field in code data for org:", organization.id);
             }
+          } else {
+            console.log("No creation codes found for org:", organization.id);
           }
+        } catch (creatorError) {
+          console.error("Error fetching creator for org:", organization.id, creatorError);
         }
         
         // Count users in this organization
-        const orgUsersQuery = query(
-          collection(db, "organizationUsers"),
-          where("organizationId", "==", organization.id),
-          where("isActive", "==", true)
-        );
-        const orgUsersSnapshot = await getDocs(orgUsersQuery);
-        const userCount = orgUsersSnapshot.size;
-        
-        orgStats.push({
-          organization,
-          creator,
-          userCount,
-        });
+        try {
+          const orgUsersQuery = query(
+            collection(db, "organizationUsers"),
+            where("organizationId", "==", organization.id),
+            where("isActive", "==", true)
+          );
+          const orgUsersSnapshot = await getDocs(orgUsersQuery);
+          const userCount = orgUsersSnapshot.size;
+          console.log("User count for org:", userCount);
+          
+          orgStats.push({
+            organization,
+            creator,
+            userCount,
+          });
+        } catch (userCountError) {
+          console.error("Error counting users for org:", organization.id, userCountError);
+          orgStats.push({
+            organization,
+            creator,
+            userCount: 0,
+          });
+        }
       }
       
+      console.log("Setting organizations state, length:", orgStats.length);
       setOrganizations(orgStats);
     } catch (error) {
       console.error("Error fetching organization stats:", error);
+    } finally {
+      setLoadingOrganizations(false);
     }
   };
 
@@ -148,6 +255,8 @@ const SuperAdminPage = () => {
       console.log("User is not super admin, returning");
       return;
     }
+    
+    setGeneratingCode(true);
     try {
       const newCode = Math.random().toString(36).substring(2, 10).toUpperCase();
       console.log("Generated code:", newCode);
@@ -175,6 +284,8 @@ const SuperAdminPage = () => {
       console.log("Codes state updated");
     } catch (error) {
       console.error("Error generating code:", error);
+    } finally {
+      setGeneratingCode(false);
     }
   };
 
@@ -217,7 +328,7 @@ const SuperAdminPage = () => {
 
       // First, scan all collections to count total documents and validate permissions
       let totalDocuments = 0;
-      const collectionData: { [key: string]: any[] } = {};
+      const collectionData: { [key: string]: DocumentSnapshot[] } = {};
 
       for (const collectionName of collectionsToDelete) {
         try {
@@ -253,10 +364,16 @@ const SuperAdminPage = () => {
 
       console.log(`Total documents to delete/update: ${totalDocuments}`);
 
-      // Process all deletions in batches
-      let totalDeleted = 0;
+      // Collect all operations into batches for transactional execution
+      const allBatches: Array<{
+        type: 'delete' | 'update';
+        collection: string;
+        batch: ReturnType<typeof writeBatch>;
+        count: number;
+      }> = [];
+      let totalOperations = 0;
 
-      // Delete documents from each collection
+      // Prepare deletion operations for each collection
       for (const collectionName of collectionsToDelete) {
         const docs = collectionData[collectionName];
         if (docs && docs.length > 0) {
@@ -265,52 +382,74 @@ const SuperAdminPage = () => {
             const batch = writeBatch(db);
             const batchDocs = docs.slice(i, i + 500);
             
-            batchDocs.forEach((doc: any) => {
-              batch.delete(doc.ref);
+            batchDocs.forEach((docSnapshot: DocumentSnapshot) => {
+              batch.delete(docSnapshot.ref);
             });
             
-            try {
-              await batch.commit();
-              totalDeleted += batchDocs.length;
-              console.log(`Deleted ${batchDocs.length} documents from ${collectionName}`);
-            } catch (batchError) {
-              console.error(`Error deleting batch from ${collectionName}:`, batchError);
-              throw new Error(`Failed to delete documents from ${collectionName}: ${batchError instanceof Error ? batchError.message : "Unknown error"}`);
-            }
+            allBatches.push({
+              type: 'delete',
+              collection: collectionName,
+              batch: batch,
+              count: batchDocs.length
+            });
+            totalOperations += batchDocs.length;
           }
         }
       }
 
-      // Update organization-creation-codes (reset instead of delete)
+      // Prepare update operations for organization-creation-codes
       const codeDocs = collectionData['organization-creation-codes'];
       if (codeDocs && codeDocs.length > 0) {
         const batch = writeBatch(db);
-        codeDocs.forEach((doc: any) => {
-          batch.update(doc.ref, {
+        codeDocs.forEach((docSnapshot: DocumentSnapshot) => {
+          batch.update(docSnapshot.ref, {
             organizationId: null,
             used: false,
             usedBy: null,
             usedAt: null
           });
         });
-        await batch.commit();
-        console.log(`Updated ${codeDocs.length} organization creation codes`);
+        allBatches.push({
+          type: 'update',
+          collection: 'organization-creation-codes',
+          batch: batch,
+          count: codeDocs.length
+        });
+        totalOperations += codeDocs.length;
       }
 
-      // Finally delete the organization document itself
-      try {
-        const orgDocRef = doc(db, "organizations", organizationId);
-        await deleteDoc(orgDocRef);
-        console.log("Deleted organization document");
-        totalDeleted++;
-      } catch (orgError) {
-        console.error("Error deleting organization document:", orgError);
-        throw new Error(`Cannot delete organization document: ${orgError instanceof Error ? orgError.message : "Unknown error"}`);
+      // Add organization document deletion as the final operation
+      const orgDocRef = doc(db, "organizations", organizationId);
+      const finalBatch = writeBatch(db);
+      finalBatch.delete(orgDocRef);
+      allBatches.push({
+        type: 'delete',
+        collection: 'organizations',
+        batch: finalBatch,
+        count: 1
+      });
+      totalOperations += 1;
+
+      console.log(`Prepared ${allBatches.length} batches with ${totalOperations} total operations`);
+
+      // Execute all batches transactionally - if any fails, we stop
+      let totalExecuted = 0;
+      for (let i = 0; i < allBatches.length; i++) {
+        const batchOperation = allBatches[i];
+        try {
+          await batchOperation.batch.commit();
+          totalExecuted += batchOperation.count;
+          console.log(`Successfully executed ${batchOperation.type} batch for ${batchOperation.collection} (${batchOperation.count} operations)`);
+        } catch (batchError) {
+          console.error(`CRITICAL: Failed to execute batch ${i + 1}/${allBatches.length} for ${batchOperation.collection}:`, batchError);
+          throw new Error(`Transaction failed during ${batchOperation.type} operation on ${batchOperation.collection}. Some data may have been deleted. Manual cleanup may be required: ${batchError instanceof Error ? batchError.message : "Unknown error"}`);
+        }
       }
 
-      console.log(`Successfully deleted organization ${organizationId} and ${totalDeleted} documents/records`);
+      console.log(`Successfully executed all ${allBatches.length} batches transactionally. Total operations: ${totalExecuted}`);
 
       // Refresh the data
+      setLoadingOrganizations(true);
       await fetchOrganizationStats();
       
       // Refresh codes list
@@ -332,11 +471,28 @@ const SuperAdminPage = () => {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="container mx-auto p-4">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading Super Admin Dashboard...</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!isSuperAdmin) {
-    return <div>You are not authorized to view this page.</div>;
+    return (
+      <div className="container mx-auto p-4">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+          <h2 className="text-xl font-semibold text-red-800 mb-2">Access Denied</h2>
+          <p className="text-red-600">You are not authorized to view this page.</p>
+          <p className="text-sm text-red-500 mt-2">User ID: {user?.uid || 'Not logged in'}</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -369,72 +525,96 @@ const SuperAdminPage = () => {
           <h2 className="text-xl font-bold">Organizations</h2>
           <button
             onClick={generateCode}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            disabled={generatingCode}
+            className="bg-blue-500 hover:bg-blue-700 disabled:bg-blue-300 text-white font-bold py-2 px-4 rounded"
           >
-            Generate New Code
+            {generatingCode ? "Generating..." : "Generate New Code"}
           </button>
         </div>
         
         <div className="bg-white rounded shadow overflow-hidden">
-          <table className="min-w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="py-3 px-4 text-left border-b">Organization</th>
-                <th className="py-3 px-4 text-left border-b">Created By</th>
-                <th className="py-3 px-4 text-left border-b">Creator Email</th>
-                <th className="py-3 px-4 text-left border-b">Users</th>
-                <th className="py-3 px-4 text-left border-b">Created</th>
-                <th className="py-3 px-4 text-left border-b">Status</th>
-                <th className="py-3 px-4 text-left border-b">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {organizations.map((orgStat) => (
-                <tr key={orgStat.organization.id} className="hover:bg-gray-50">
-                  <td className="py-3 px-4 border-b">
-                    <div>
-                      <div className="font-medium">{orgStat.organization.name}</div>
-                      {orgStat.organization.nameAr && (
-                        <div className="text-sm text-gray-500">{orgStat.organization.nameAr}</div>
-                      )}
-                    </div>
-                  </td>
-                  <td className="py-3 px-4 border-b">
-                    {orgStat.creator ? orgStat.creator.name : "Unknown"}
-                  </td>
-                  <td className="py-3 px-4 border-b">
-                    {orgStat.creator ? orgStat.creator.email : "Unknown"}
-                  </td>
-                  <td className="py-3 px-4 border-b">
-                    <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm">
-                      {orgStat.userCount}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4 border-b">
-                    {orgStat.organization.createdAt.toLocaleDateString()}
-                  </td>
-                  <td className="py-3 px-4 border-b">
-                    <span className={`px-2 py-1 rounded-full text-sm ${
-                      orgStat.organization.subscriptionStatus === SubscriptionStatus.ACTIVE 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {orgStat.organization.subscriptionStatus}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4 border-b">
-                    <button
-                      onClick={() => deleteOrganization(orgStat.organization.id)}
-                      disabled={deletingOrg === orgStat.organization.id}
-                      className="bg-red-500 hover:bg-red-700 disabled:bg-red-300 text-white font-bold py-1 px-3 rounded text-sm"
-                    >
-                      {deletingOrg === orgStat.organization.id ? "Deleting..." : "Delete"}
-                    </button>
-                  </td>
+          {loadingOrganizations ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading organizations...</p>
+              </div>
+            </div>
+          ) : (
+            <table className="min-w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="py-3 px-4 text-left border-b">Organization</th>
+                  <th className="py-3 px-4 text-left border-b">Created By</th>
+                  <th className="py-3 px-4 text-left border-b">Users</th>
+                  <th className="py-3 px-4 text-left border-b">Created</th>
+                  <th className="py-3 px-4 text-left border-b">Status</th>
+                  <th className="py-3 px-4 text-left border-b">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {organizations.map((orgStat) => (
+                  <tr key={orgStat.organization.id} className="hover:bg-gray-50">
+                    <td className="py-3 px-4 border-b">
+                      <div>
+                        <div className="font-medium">{orgStat.organization.name}</div>
+                        {orgStat.organization.nameAr && (
+                          <div className="text-sm text-gray-500">{orgStat.organization.nameAr}</div>
+                        )}
+                        {orgStat.organization.phone && (
+                          <div className="text-sm text-gray-500 flex items-center">
+                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                            </svg>
+                            {orgStat.organization.phone}
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                    <td className="py-3 px-4 border-b">
+                      {orgStat.creator ? (
+                        <div>
+                          <div className="font-medium">{orgStat.creator.name || 'No Name'}</div>
+                          <div className="text-sm text-gray-500">{orgStat.creator.email || 'No Email'}</div>
+                        </div>
+                      ) : (
+                        <div>
+                          <div className="font-medium">Unknown User</div>
+                          <div className="text-sm text-gray-500">Data not available</div>
+                        </div>
+                      )}
+                    </td>
+                    <td className="py-3 px-4 border-b">
+                      <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm">
+                        {orgStat.userCount}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 border-b">
+                      {orgStat.organization.createdAt.toLocaleDateString()}
+                    </td>
+                    <td className="py-3 px-4 border-b">
+                      <span className={`px-2 py-1 rounded-full text-sm ${
+                        orgStat.organization.subscriptionStatus === SubscriptionStatus.ACTIVE 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {orgStat.organization.subscriptionStatus}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 border-b">
+                      <button
+                        onClick={() => deleteOrganization(orgStat.organization.id)}
+                        disabled={deletingOrg === orgStat.organization.id}
+                        className="bg-red-500 hover:bg-red-700 disabled:bg-red-300 text-white font-bold py-1 px-3 rounded text-sm"
+                      >
+                        {deletingOrg === orgStat.organization.id ? "Deleting..." : "Delete"}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
       
