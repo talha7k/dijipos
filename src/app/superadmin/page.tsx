@@ -1,5 +1,3 @@
-
-
 "use client";
 import React, { useState, useEffect } from "react";
 import {
@@ -13,19 +11,15 @@ import {
   query,
   where,
   writeBatch,
-  deleteDoc,
   DocumentSnapshot,
 } from "firebase/firestore";
-import { getAuth, signOut } from "firebase/auth";
 import { db } from "@/lib/firebase/config";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { formatDate, formatDateTime } from "@/lib/utils";
 import { Organization, User } from "@/types";
 import { SubscriptionStatus } from "@/types/enums";
-import { useAtom } from "jotai";
-import { themeAtom } from "@/atoms/uiAtoms";
-import { Button } from "@/components/ui/button";
-import { Sun, Moon, LogOut } from "lucide-react";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface OrgCreationCode {
   id: string;
@@ -54,13 +48,6 @@ const SuperAdminPage = () => {
   const [deletingOrg, setDeletingOrg] = useState<string | null>(null);
   const [generatingCode, setGeneratingCode] = useState(false);
   const [loadingOrganizations, setLoadingOrganizations] = useState(false);
-  const [theme, setTheme] = useAtom(themeAtom);
-
-  const toggleTheme = () => {
-    setTheme(theme === "light" ? "dark" : "light");
-  };
-
-  const isDark = theme === "dark";
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -462,189 +449,200 @@ const SuperAdminPage = () => {
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Super Admin Dashboard</h1>
-      
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-card p-4 rounded shadow">
-          <h3 className="text-lg font-semibold">Total Organizations</h3>
-          <p className="text-3xl font-bold">{organizations.length}</p>
-        </div>
-        <div className="bg-card p-4 rounded shadow">
-          <h3 className="text-lg font-semibold">Total Users</h3>
-          <p className="text-3xl font-bold">
-            {organizations.reduce((sum, org) => sum + org.userCount, 0)}
-          </p>
-        </div>
-        <div className="bg-card p-4 rounded shadow">
-          <h3 className="text-lg font-semibold">Active Codes</h3>
-          <p className="text-3xl font-bold">
-            {codes.filter(c => !c.used).length}
-          </p>
-        </div>
-      </div>
-      
-      {/* Organization Management */}
-      <div className="mb-6">
-        <h2 className="text-xl font-bold mb-4">Organizations</h2>
+    <div className="min-h-screen bg-background overflow-y-auto">
+      <div className="w-full max-w-7xl mx-auto p-4 pt-20">
+        <PageHeader 
+          title="Super Admin"
+          subtitle="Manage organizations, users, and system-wide settings"
+        />
         
-        <div className="bg-card rounded shadow overflow-hidden">
-          {loadingOrganizations ? (
-            <div className="flex items-center justify-center h-64">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                <p className="text-muted-foreground">Loading organizations...</p>
-              </div>
-            </div>
-          ) : (
-            <table className="min-w-full">
-              <thead className="bg-muted">
-                <tr>
-                  <th className="py-3 px-4 text-left border-b">Organization</th>
-                  <th className="py-3 px-4 text-left border-b">Created By</th>
-                  <th className="py-3 px-4 text-left border-b">Users</th>
-                  <th className="py-3 px-4 text-left border-b">Created</th>
-                  <th className="py-3 px-4 text-left border-b">Status</th>
-                  <th className="py-3 px-4 text-left border-b">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {organizations.map((orgStat) => (
-                  <tr key={orgStat.organization.id} className="hover:bg-muted/50">
-                    <td className="py-3 px-4 border-b">
-                      <div>
-                        <div className="font-medium">{orgStat.organization.name}</div>
-                        {orgStat.organization.nameAr && (
-                          <div className="text-sm text-muted-foreground">{orgStat.organization.nameAr}</div>
-                        )}
-                        {orgStat.organization.phone && (
-                          <div className="text-sm text-muted-foreground flex items-center">
-                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                            </svg>
-                            {orgStat.organization.phone}
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="bg-card p-4 rounded-lg shadow-sm border">
+            <h3 className="text-lg font-semibold">Total Organizations</h3>
+            <p className="text-3xl font-bold">{organizations.length}</p>
+          </div>
+          <div className="bg-card p-4 rounded-lg shadow-sm border">
+            <h3 className="text-lg font-semibold">Total Users</h3>
+            <p className="text-3xl font-bold">
+              {organizations.reduce((sum, org) => sum + org.userCount, 0)}
+            </p>
+          </div>
+          <div className="bg-card p-4 rounded-lg shadow-sm border">
+            <h3 className="text-lg font-semibold">Active Codes</h3>
+            <p className="text-3xl font-bold">
+              {codes.filter(c => !c.used).length}
+            </p>
+          </div>
+        </div>
+        
+        {/* Tabbed Interface */}
+        <Tabs defaultValue="organizations" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="organizations">Organizations</TabsTrigger>
+            <TabsTrigger value="codes">Generated Codes</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="organizations" className="space-y-4">
+            <div className="bg-card rounded-lg shadow-sm border overflow-hidden">
+              {loadingOrganizations ? (
+                <div className="flex items-center justify-center h-64">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p className="text-muted-foreground">Loading organizations...</p>
+                  </div>
+                </div>
+              ) : (
+                <table className="min-w-full">
+                  <thead className="bg-muted">
+                    <tr>
+                      <th className="py-3 px-4 text-left border-b">Organization</th>
+                      <th className="py-3 px-4 text-left border-b">Created By</th>
+                      <th className="py-3 px-4 text-left border-b">Users</th>
+                      <th className="py-3 px-4 text-left border-b">Created</th>
+                      <th className="py-3 px-4 text-left border-b">Status</th>
+                      <th className="py-3 px-4 text-left border-b">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {organizations.map((orgStat) => (
+                      <tr key={orgStat.organization.id} className="hover:bg-muted/50">
+                        <td className="py-3 px-4 border-b">
+                          <div>
+                            <div className="font-medium">{orgStat.organization.name}</div>
+                            {orgStat.organization.nameAr && (
+                              <div className="text-sm text-muted-foreground">{orgStat.organization.nameAr}</div>
+                            )}
+                            {orgStat.organization.phone && (
+                              <div className="text-sm text-muted-foreground flex items-center">
+                                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                </svg>
+                                {orgStat.organization.phone}
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 border-b">
-                      {orgStat.creator ? (
-                        <div>
-                          <div className="font-medium">{orgStat.creator.name || 'No Name'}</div>
-                          <div className="text-sm text-muted-foreground">{orgStat.creator.email || 'No Email'}</div>
-                        </div>
-                      ) : (
-                        <div>
-                          <div className="font-medium">Unknown User</div>
-                          <div className="text-sm text-muted-foreground">Data not available</div>
-                        </div>
-                      )}
-                    </td>
-                    <td className="py-3 px-4 border-b">
-                      <span className="bg-blue-500/10 text-blue-600 px-2 py-1 rounded-full text-sm">
-                        {orgStat.userCount}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 border-b">
-                      {formatDate(orgStat.organization.createdAt)}
-                    </td>
-                    <td className="py-3 px-4 border-b">
-                      <span className={`px-2 py-1 rounded-full text-sm ${
-                        orgStat.organization.subscriptionStatus === SubscriptionStatus.ACTIVE
-                          ? 'bg-green-500/10 text-green-600'
-                          : 'bg-destructive/10 text-destructive'
-                      }`}>
-                        {orgStat.organization.subscriptionStatus}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 border-b">
-                      <button
-                        onClick={() => deleteOrganization(orgStat.organization.id)}
-                        disabled={deletingOrg === orgStat.organization.id}
-                        className="bg-destructive hover:bg-destructive/90 disabled:bg-destructive/50 text-destructive-foreground font-bold py-1 px-3 rounded text-sm"
-                      >
-                        {deletingOrg === orgStat.organization.id ? "Deleting..." : "Delete"}
-                      </button>
-                    </td>
+                        </td>
+                        <td className="py-3 px-4 border-b">
+                          {orgStat.creator ? (
+                            <div>
+                              <div className="font-medium">{orgStat.creator.name || 'No Name'}</div>
+                              <div className="text-sm text-muted-foreground">{orgStat.creator.email || 'No Email'}</div>
+                            </div>
+                          ) : (
+                            <div>
+                              <div className="font-medium">Unknown User</div>
+                              <div className="text-sm text-muted-foreground">Data not available</div>
+                            </div>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 border-b">
+                          <span className="bg-primary/10 text-primary px-2 py-1 rounded-full text-sm">
+                            {orgStat.userCount}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 border-b">
+                          {formatDate(orgStat.organization.createdAt)}
+                        </td>
+                        <td className="py-3 px-4 border-b">
+                          <span className={`px-2 py-1 rounded-full text-sm ${
+                            orgStat.organization.subscriptionStatus === SubscriptionStatus.ACTIVE
+                              ? 'bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-400'
+                              : 'bg-destructive/10 text-destructive'
+                          }`}>
+                            {orgStat.organization.subscriptionStatus}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 border-b">
+                          <button
+                            onClick={() => deleteOrganization(orgStat.organization.id)}
+                            disabled={deletingOrg === orgStat.organization.id}
+                            className="bg-destructive hover:bg-destructive/90 disabled:bg-destructive/50 text-destructive-foreground font-medium py-1 px-3 rounded text-sm"
+                          >
+                            {deletingOrg === orgStat.organization.id ? "Deleting..." : "Delete"}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="codes" className="space-y-4">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Generated Codes</h2>
+              <button
+                onClick={generateCode}
+                disabled={generatingCode}
+                className="bg-primary hover:bg-primary/90 disabled:bg-primary/50 text-primary-foreground font-medium py-2 px-4 rounded"
+              >
+                {generatingCode ? "Generating..." : "Generate New Code"}
+              </button>
+            </div>
+            <div className="bg-card rounded-lg shadow-sm border overflow-hidden">
+              <table className="min-w-full">
+                <thead className="bg-muted">
+                  <tr>
+                    <th className="py-3 px-4 text-left border-b">Code</th>
+                    <th className="py-3 px-4 text-left border-b">Created At</th>
+                    <th className="py-3 px-4 text-left border-b">Used</th>
+                    <th className="py-3 px-4 text-left border-b">Used By</th>
+                    <th className="py-3 px-4 text-left border-b">Used At</th>
+                    <th className="py-3 px-4 text-left border-b">Organization</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+                </thead>
+                <tbody>
+                  {codes.map((c: OrgCreationCode) => (
+                    <tr key={c.id} className="hover:bg-muted/50">
+                      <td className="py-3 px-4 border-b font-mono">{c.code}</td>
+                      <td className="py-3 px-4 border-b">
+                        {formatDateTime(c.createdAt?.toDate())}
+                      </td>
+                      <td className="py-3 px-4 border-b">
+                        <span className={`px-2 py-1 rounded-full text-sm ${
+                          c.used
+                            ? 'bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-400'
+                            : 'bg-yellow-500/10 text-yellow-600 dark:bg-yellow-500/20 dark:text-yellow-400'
+                        }`}>
+                          {c.used ? "Yes" : "No"}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 border-b">
+                        {c.usedBy ? (
+                          <div>
+                            <div className="font-medium">{c.userName || 'No Name'}</div>
+                            <div className="text-sm text-muted-foreground">{c.userEmail || 'No Email'}</div>
+                            <div className="text-xs text-muted-foreground/80">ID: {c.usedBy}</div>
+                          </div>
+                        ) : (
+                          "-"
+                        )}
+                      </td>
+                      <td className="py-3 px-4 border-b">
+                        {formatDateTime(c.usedAt?.toDate()) || "-"}
+                      </td>
+                      <td className="py-3 px-4 border-b">
+                        {c.organizationId ? (
+                          <div>
+                            <div className="font-medium">
+                              {organizations.find(org => org.organization.id === c.organizationId)?.organization.name || 'Unknown Organization'}
+                            </div>
+                            <div className="text-xs text-muted-foreground/80 font-mono">ID: {c.organizationId}</div>
+                          </div>
+                        ) : (
+                          "-"
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
-      
-      {/* Generated Codes Section */}
-      <div>
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">Generated Codes</h2>
-          <button
-            onClick={generateCode}
-            disabled={generatingCode}
-            className="bg-primary hover:bg-primary/90 disabled:bg-primary/50 text-primary-foreground font-bold py-2 px-4 rounded"
-          >
-            {generatingCode ? "Generating..." : "Generate New Code"}
-          </button>
-        </div>
-        <div className="bg-card rounded shadow overflow-hidden">
-          <table className="min-w-full">
-            <thead className="bg-muted">
-              <tr>
-                <th className="py-3 px-4 text-left border-b">Code</th>
-                <th className="py-3 px-4 text-left border-b">Created At</th>
-                <th className="py-3 px-4 text-left border-b">Used</th>
-                <th className="py-3 px-4 text-left border-b">Used By</th>
-                <th className="py-3 px-4 text-left border-b">Used At</th>
-                <th className="py-3 px-4 text-left border-b">Organization</th>
-              </tr>
-            </thead>
-            <tbody>
-              {codes.map((c: OrgCreationCode) => (
-                <tr key={c.id} className="hover:bg-muted/50">
-                  <td className="py-3 px-4 border-b font-mono">{c.code}</td>
-                  <td className="py-3 px-4 border-b">
-                    {formatDateTime(c.createdAt?.toDate())}
-                  </td>
-                  <td className="py-3 px-4 border-b">
-                    <span className={`px-2 py-1 rounded-full text-sm ${
-                      c.used
-                        ? 'bg-green-500/10 text-green-600'
-                        : 'bg-yellow-500/10 text-yellow-600'
-                    }`}>
-                      {c.used ? "Yes" : "No"}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4 border-b">
-                    {c.usedBy ? (
-                      <div>
-                        <div className="font-medium">{c.userName || 'No Name'}</div>
-                        <div className="text-sm text-muted-foreground">{c.userEmail || 'No Email'}</div>
-                        <div className="text-xs text-muted-foreground/80">ID: {c.usedBy}</div>
-                      </div>
-                    ) : (
-                      "-"
-                    )}
-                  </td>
-                  <td className="py-3 px-4 border-b">
-                    {formatDateTime(c.usedAt?.toDate()) || "-"}
-                  </td>
-                  <td className="py-3 px-4 border-b">
-                    {c.organizationId ? (
-                      <div>
-                        <div className="font-medium">
-                          {organizations.find(org => org.organization.id === c.organizationId)?.organization.name || 'Unknown Organization'}
-                        </div>
-                        <div className="text-xs text-muted-foreground/80 font-mono">ID: {c.organizationId}</div>
-                      </div>
-                    ) : (
-                      "-"
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
     </div>
   );
 };

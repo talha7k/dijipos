@@ -13,19 +13,19 @@ const nextConfig = (phase: string) => {
     images: {
       remotePatterns: [
         {
-          protocol: 'https',
-          hostname: 'firebasestorage.googleapis.com',
+          protocol: "https",
+          hostname: "firebasestorage.googleapis.com",
         },
       ],
     },
     async headers() {
       return [
         {
-          source: '/login',
+          source: "/login",
           headers: [
             {
-              key: 'Cross-Origin-Opener-Policy',
-              value: 'same-origin-allow-popups',
+              key: "Cross-Origin-Opener-Policy",
+              value: "same-origin-allow-popups",
             },
           ],
         },
