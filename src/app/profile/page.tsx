@@ -46,14 +46,8 @@ function ProfileContent() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-            <Button variant="outline" className="w-full justify-start">
-              Change Password
-            </Button>
-            <Button variant="outline" className="w-full justify-start">
-              Two-Factor Authentication
-            </Button>
-            <Button variant="destructive" className="w-full justify-start col-span-2">
+          <div className="grid grid-cols-1 gap-4 pt-4 border-t">
+            <Button variant="destructive" className="w-full justify-start">
               Delete Account
             </Button>
           </div>
