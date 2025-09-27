@@ -38,6 +38,13 @@ import {
   Clock,
   FileText,
   Home,
+  FileDown,
+  FileUp,
+  CircleDollarSign,
+  AlertCircle,
+  CheckCircle2,
+  XCircle,
+  Timer,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -67,6 +74,8 @@ function DashboardContent() {
     companyAddress,
     companyVatNumber,
     vatRate,
+    salesInvoicesByStatus,
+    purchaseInvoicesByStatus,
   } = data;
 
   const isManagerOrAdmin =
@@ -295,6 +304,88 @@ function DashboardContent() {
             <CardContent>
               <div className="text-2xl font-bold">{totalServices}</div>
               <p className="text-xs text-muted-foreground">Total services</p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Invoice Summary Section (Manager/Admin Only) */}
+      {isManagerOrAdmin && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Sales Invoices by Status */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileDown className="h-5 w-5" />
+                Sales Invoices
+              </CardTitle>
+              <CardDescription>Breakdown by status</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4">
+                {Object.entries(salesInvoicesByStatus).map(([status, count]) => {
+                  const statusConfig = {
+                    draft: { icon: FileText, color: 'text-gray-500', bgColor: 'bg-gray-100', label: 'Draft' },
+                    sent: { icon: FileDown, color: 'text-blue-500', bgColor: 'bg-blue-100', label: 'Sent' },
+                    paid: { icon: CheckCircle2, color: 'text-green-500', bgColor: 'bg-green-100', label: 'Paid' },
+                    overdue: { icon: AlertCircle, color: 'text-red-500', bgColor: 'bg-red-100', label: 'Overdue' },
+                    cancelled: { icon: XCircle, color: 'text-orange-500', bgColor: 'bg-orange-100', label: 'Cancelled' },
+                  };
+                  const config = statusConfig[status as keyof typeof statusConfig] || { icon: FileText, color: 'text-gray-500', bgColor: 'bg-gray-100', label: status };
+                  const Icon = config.icon;
+                  
+                  return (
+                    <div key={status} className="flex items-center justify-between p-3 rounded-lg border">
+                      <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-full ${config.bgColor}`}>
+                          <Icon className={`h-4 w-4 ${config.color}`} />
+                        </div>
+                        <span className="font-medium">{config.label}</span>
+                      </div>
+                      <Badge variant="outline">{count}</Badge>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Purchase Invoices by Status */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileUp className="h-5 w-5" />
+                Purchase Invoices
+              </CardTitle>
+              <CardDescription>Breakdown by status</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4">
+                {Object.entries(purchaseInvoicesByStatus).map(([status, count]) => {
+                  const statusConfig = {
+                    draft: { icon: FileText, color: 'text-gray-500', bgColor: 'bg-gray-100', label: 'Draft' },
+                    sent: { icon: FileUp, color: 'text-blue-500', bgColor: 'bg-blue-100', label: 'Sent' },
+                    received: { icon: Timer, color: 'text-yellow-500', bgColor: 'bg-yellow-100', label: 'Received' },
+                    partially_paid: { icon: CircleDollarSign, color: 'text-orange-500', bgColor: 'bg-orange-100', label: 'Partially Paid' },
+                    paid: { icon: CheckCircle2, color: 'text-green-500', bgColor: 'bg-green-100', label: 'Paid' },
+                    cancelled: { icon: XCircle, color: 'text-red-500', bgColor: 'bg-red-100', label: 'Cancelled' },
+                  };
+                  const config = statusConfig[status as keyof typeof statusConfig] || { icon: FileText, color: 'text-gray-500', bgColor: 'bg-gray-100', label: status };
+                  const Icon = config.icon;
+                  
+                  return (
+                    <div key={status} className="flex items-center justify-between p-3 rounded-lg border">
+                      <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-full ${config.bgColor}`}>
+                          <Icon className={`h-4 w-4 ${config.color}`} />
+                        </div>
+                        <span className="font-medium">{config.label}</span>
+                      </div>
+                      <Badge variant="outline">{count}</Badge>
+                    </div>
+                  );
+                })}
+              </div>
             </CardContent>
           </Card>
         </div>
