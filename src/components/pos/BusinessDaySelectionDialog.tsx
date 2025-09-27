@@ -76,23 +76,11 @@ export function BusinessDaySelectionDialog({
         >
           {/* Fixed Header Section */}
           <div className="flex-shrink-0">
-            <div className="flex items-center justify-between pb-4 border-b">
-              <div className="flex-1">
-                <DialogHeader className="space-y-1">
-                  <DialogTitle>{title}</DialogTitle>
-                  <DialogDescription>{description}</DialogDescription>
-                </DialogHeader>
-              </div>
-
-              <div className="flex items-center gap-4">
-                {/* Actions */}
-                <div className="flex gap-2 mr-10">
-                  <Button onClick={handleSave} disabled={!selectedDate}>
-                    <Check className="w-4 h-4 mr-2" />
-                    Save Date
-                  </Button>
-                </div>
-              </div>
+            <div className="pb-4 border-b">
+              <DialogHeader className="space-y-1">
+                <DialogTitle>{title}</DialogTitle>
+                <DialogDescription>{description}</DialogDescription>
+              </DialogHeader>
             </div>
           </div>
 
@@ -125,37 +113,51 @@ export function BusinessDaySelectionDialog({
                 </div>
 
                 {/* Quick date buttons */}
-                <div className="flex gap-2 flex-wrap justify-center">
+                <div className="flex flex-col gap-2 w-full">
                   <Button
                     variant="outline"
-                    size="sm"
                     onClick={() => setSelectedDate(new Date())}
+                    className="w-full"
                   >
                     Today
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      const yesterday = new Date();
-                      yesterday.setDate(yesterday.getDate() - 1);
-                      setSelectedDate(yesterday);
-                    }}
-                  >
-                    Yesterday
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      const tomorrow = new Date();
-                      tomorrow.setDate(tomorrow.getDate() + 1);
-                      setSelectedDate(tomorrow);
-                    }}
-                  >
-                    Tomorrow
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const yesterday = new Date();
+                        yesterday.setDate(yesterday.getDate() - 1);
+                        setSelectedDate(yesterday);
+                      }}
+                      className="flex-1"
+                    >
+                      Yesterday
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const tomorrow = new Date();
+                        tomorrow.setDate(tomorrow.getDate() + 1);
+                        setSelectedDate(tomorrow);
+                      }}
+                      className="flex-1"
+                    >
+                      Tomorrow
+                    </Button>
+                  </div>
                 </div>
+
+                {/* Save Date Button - Full width */}
+                <Button 
+                  onClick={handleSave} 
+                  disabled={!selectedDate}
+                  className="w-full"
+                >
+                  <Check className="w-4 h-4 mr-2" />
+                  Save Date
+                </Button>
               </div>
             </div>
           </div>

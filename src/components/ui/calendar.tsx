@@ -110,7 +110,7 @@ function Calendar({
         range_middle: cn("rounded-none", defaultClassNames.range_middle),
         range_end: cn("rounded-r-md bg-accent", defaultClassNames.range_end),
         today: cn(
-          "bg-accent text-accent-foreground rounded-md data-[selected=true]:rounded-none",
+          "relative data-[selected=true]:bg-transparent data-[selected=true]:text-inherit",
           defaultClassNames.today
         ),
         outside: cn(
@@ -203,7 +203,12 @@ function CalendarDayButton({
         className
       )}
       {...props}
-    />
+    >
+      {props.children}
+      {modifiers.today && (
+        <div className="absolute top-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-primary rounded-full" />
+      )}
+    </Button>
   )
 }
 
