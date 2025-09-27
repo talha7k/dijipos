@@ -19,11 +19,13 @@ import { SidebarProps, NavigationItem } from "./sidebar-types";
 import {
   BarChart3,
   Building2,
+  FileMinus,
   FileText,
   Home,
   PieChart,
   Receipt,
   Settings,
+  ShoppingCart,
   Users,
   Wallet,
 } from "lucide-react";
@@ -44,7 +46,7 @@ const navigationItems: NavigationItem[] = [
   {
     title: "Point of Sale",
     href: "/pos",
-    icon: Receipt,
+    icon: ShoppingCart,
   },
   {
     title: "Sales",
@@ -84,7 +86,7 @@ const navigationItems: NavigationItem[] = [
   },
   {
     title: "Purchases",
-    icon: Receipt,
+    icon: FileMinus,
     children: [
       {
         title: "Invoices",

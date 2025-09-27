@@ -44,6 +44,19 @@ export const Component = () => {
           50% { opacity: 0.5; transform: scale(1.5); }
         }
 
+        @keyframes wiggle {
+          0%, 100% { transform: translateX(0) rotate(0deg); }
+          10% { transform: translateX(-2px) rotate(-1deg); }
+          20% { transform: translateX(2px) rotate(1deg); }
+          30% { transform: translateX(-2px) rotate(-1deg); }
+          40% { transform: translateX(2px) rotate(1deg); }
+          50% { transform: translateX(-1px) rotate(-0.5deg); }
+          60% { transform: translateX(1px) rotate(0.5deg); }
+          70% { transform: translateX(-1px) rotate(-0.5deg); }
+          80% { transform: translateX(1px) rotate(0.5deg); }
+          90% { transform: translateX(-0.5px) rotate(-0.25deg); }
+        }
+
         .nested-square {
           animation: magic calc(2s / var(--speed, 1)) ease infinite alternate;
           animation-delay: var(--delay);
@@ -402,6 +415,10 @@ export const Component = () => {
           alt="Dijitize.com Logo"
           width={84}
           height={84}
+          style={{
+            animation: "wiggle 8s infinite",
+            animationDelay: "0.1s",
+          }}
         />
         <div
           style={{

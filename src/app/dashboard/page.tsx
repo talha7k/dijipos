@@ -300,6 +300,57 @@ function DashboardContent() {
         </div>
       )}
 
+      {/* Quick Actions - Full Width */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Quick Actions</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            <Link href="/pos">
+              <Button className="w-full justify-start" variant="outline">
+                <ShoppingCart className="h-4 w-4 mr-2" />
+                Point of Sale
+              </Button>
+            </Link>
+            <Link href="/customers">
+              <Button className="w-full justify-start" variant="outline">
+                <Users className="h-4 w-4 mr-2" />
+                Customer Management
+              </Button>
+            </Link>
+            <Link href="/products-services">
+              <Button className="w-full justify-start" variant="outline">
+                <Package className="h-4 w-4 mr-2" />
+                Products & Services
+              </Button>
+            </Link>
+            {isManagerOrAdmin && (
+              <>
+                <Link href="/invoices">
+                  <Button className="w-full justify-start" variant="outline">
+                    <CreditCard className="h-4 w-4 mr-2" />
+                    Invoices
+                  </Button>
+                </Link>
+                <Link href="/quotes">
+                  <Button className="w-full justify-start" variant="outline">
+                    <FileText className="h-4 w-4 mr-2" />
+                    Quotes
+                  </Button>
+                </Link>
+                <Link href="/reports">
+                  <Button className="w-full justify-start" variant="outline">
+                    <TrendingUp className="h-4 w-4 mr-2" />
+                    Reports
+                  </Button>
+                </Link>
+              </>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Main Content Tabs */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top Selling Items */}
@@ -425,55 +476,7 @@ function DashboardContent() {
           </Card>
         )}
 
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Common tasks and navigation</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3 grid-cols-2 grid space-x-2">
-            <Link href="/pos">
-              <Button className="w-full justify-start" variant="outline">
-                <ShoppingCart className="h-4 w-4 mr-2" />
-                Point of Sale
-              </Button>
-            </Link>
-            <Link href="/customers">
-              <Button className="w-full justify-start" variant="outline">
-                <Users className="h-4 w-4 mr-2" />
-                Customer Management
-              </Button>
-            </Link>
-            <Link href="/products-services">
-              <Button className="w-full justify-start" variant="outline">
-                <Package className="h-4 w-4 mr-2" />
-                Products & Services
-              </Button>
-            </Link>
-            {isManagerOrAdmin && (
-              <>
-                <Link href="/invoices">
-                  <Button className="w-full justify-start" variant="outline">
-                    <CreditCard className="h-4 w-4 mr-2" />
-                    Invoices
-                  </Button>
-                </Link>
-                <Link href="/quotes">
-                  <Button className="w-full justify-start" variant="outline">
-                    <FileText className="h-4 w-4 mr-2" />
-                    Quotes
-                  </Button>
-                </Link>
-                <Link href="/reports">
-                  <Button className="w-full justify-start" variant="outline">
-                    <TrendingUp className="h-4 w-4 mr-2" />
-                    Reports
-                  </Button>
-                </Link>
-              </>
-            )}
-          </CardContent>
-        </Card>
+        
 
         {/* Store Settings Preview */}
         <Card>

@@ -14,11 +14,13 @@ import { selectedOrganizationIdAtom, organizationUserRoleAtom } from "@/atoms";
 import {
   BarChart3,
   Building2,
+  FileMinus,
   FileText,
   Home,
   PieChart,
   Receipt,
   Settings,
+  ShoppingCart,
   Users,
   Wallet,
 } from "lucide-react";
@@ -33,7 +35,7 @@ const getNavigationItems = (role: string): NavigationItem[] => {
     {
       title: "Point of Sales",
       href: "/pos",
-      icon: Receipt,
+      icon: ShoppingCart,
     },
   ];
 
@@ -79,7 +81,7 @@ const getNavigationItems = (role: string): NavigationItem[] => {
   const purchaseItems: NavigationItem[] = [
     {
       title: "Purchases",
-      icon: Receipt,
+      icon: FileMinus,
       children: [
         {
           title: "Invoices",
