@@ -217,25 +217,8 @@ function DashboardContent() {
           </CardContent>
         </Card>
 
-        {/* Tables Status */}
-        <Card className="border-l-4 border-l-purple-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Tables</CardTitle>
-            <LayoutGrid className="h-4 w-4 text-purple-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalTables}</div>
-            <p className="text-xs text-muted-foreground">
-              {availableTables} available • {occupiedTables} occupied
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Financial Cards (Manager/Admin Only) */}
-      {isManagerOrAdmin && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Today's Sales */}
+        {/* Today's Sales (Manager/Admin Only) */}
+        {isManagerOrAdmin && (
           <Card className="border-l-4 border-l-emerald-500">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -264,132 +247,10 @@ function DashboardContent() {
               </p>
             </CardContent>
           </Card>
+        )}
+      </div>
 
-          {/* VAT Amount */}
-          <Card className="border-l-4 border-l-orange-500">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                VAT Collected
-              </CardTitle>
-              <Percent className="h-4 w-4 text-orange-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                SAR {vatAmountToday.toFixed(2)}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {vatRate ? `@ ${vatRate}%` : "VAT rate not set"}
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* Products & Services */}
-          <Card className="border-l-4 border-l-indigo-500">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Products</CardTitle>
-              <Package className="h-4 w-4 text-indigo-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{totalProducts}</div>
-              <p className="text-xs text-muted-foreground">Total products</p>
-            </CardContent>
-          </Card>
-
-          {/* Services */}
-          <Card className="border-l-4 border-l-pink-500">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Services</CardTitle>
-              <Star className="h-4 w-4 text-pink-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{totalServices}</div>
-              <p className="text-xs text-muted-foreground">Total services</p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* Invoice Summary Section (Manager/Admin Only) */}
-      {isManagerOrAdmin && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Sales Invoices by Status */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileDown className="h-5 w-5" />
-                Sales Invoices
-              </CardTitle>
-              <CardDescription>Breakdown by status</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                {Object.entries(salesInvoicesByStatus).map(([status, count]) => {
-                  const statusConfig = {
-                    draft: { icon: FileText, color: 'text-gray-500', bgColor: 'bg-gray-100', label: 'Draft' },
-                    sent: { icon: FileDown, color: 'text-blue-500', bgColor: 'bg-blue-100', label: 'Sent' },
-                    paid: { icon: CheckCircle2, color: 'text-green-500', bgColor: 'bg-green-100', label: 'Paid' },
-                    overdue: { icon: AlertCircle, color: 'text-red-500', bgColor: 'bg-red-100', label: 'Overdue' },
-                    cancelled: { icon: XCircle, color: 'text-orange-500', bgColor: 'bg-orange-100', label: 'Cancelled' },
-                  };
-                  const config = statusConfig[status as keyof typeof statusConfig] || { icon: FileText, color: 'text-gray-500', bgColor: 'bg-gray-100', label: status };
-                  const Icon = config.icon;
-                  
-                  return (
-                    <div key={status} className="flex items-center justify-between p-3 rounded-lg border">
-                      <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-full ${config.bgColor}`}>
-                          <Icon className={`h-4 w-4 ${config.color}`} />
-                        </div>
-                        <span className="font-medium">{config.label}</span>
-                      </div>
-                      <Badge variant="outline">{count}</Badge>
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Purchase Invoices by Status */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileUp className="h-5 w-5" />
-                Purchase Invoices
-              </CardTitle>
-              <CardDescription>Breakdown by status</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                {Object.entries(purchaseInvoicesByStatus).map(([status, count]) => {
-                  const statusConfig = {
-                    draft: { icon: FileText, color: 'text-gray-500', bgColor: 'bg-gray-100', label: 'Draft' },
-                    sent: { icon: FileUp, color: 'text-blue-500', bgColor: 'bg-blue-100', label: 'Sent' },
-                    received: { icon: Timer, color: 'text-yellow-500', bgColor: 'bg-yellow-100', label: 'Received' },
-                    partially_paid: { icon: CircleDollarSign, color: 'text-orange-500', bgColor: 'bg-orange-100', label: 'Partially Paid' },
-                    paid: { icon: CheckCircle2, color: 'text-green-500', bgColor: 'bg-green-100', label: 'Paid' },
-                    cancelled: { icon: XCircle, color: 'text-red-500', bgColor: 'bg-red-100', label: 'Cancelled' },
-                  };
-                  const config = statusConfig[status as keyof typeof statusConfig] || { icon: FileText, color: 'text-gray-500', bgColor: 'bg-gray-100', label: status };
-                  const Icon = config.icon;
-                  
-                  return (
-                    <div key={status} className="flex items-center justify-between p-3 rounded-lg border">
-                      <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-full ${config.bgColor}`}>
-                          <Icon className={`h-4 w-4 ${config.color}`} />
-                        </div>
-                        <span className="font-medium">{config.label}</span>
-                      </div>
-                      <Badge variant="outline">{count}</Badge>
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      
 
       {/* Quick Actions - Full Width */}
       <Card>
@@ -448,7 +309,7 @@ function DashboardContent() {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>Top Selling Items</CardTitle>
+              <CardTitle>POS Top Sellers</CardTitle>
               <Tabs
                 value={dateFilter}
                 onValueChange={(value) =>
@@ -517,7 +378,7 @@ function DashboardContent() {
         {isManagerOrAdmin && (
           <Card>
             <CardHeader>
-              <CardTitle>Sales by Order Type</CardTitle>
+              <CardTitle>POS Sales</CardTitle>
               <CardDescription>
                 Revenue breakdown by order type for {dateFilter}
               </CardDescription>
@@ -567,7 +428,166 @@ function DashboardContent() {
           </Card>
         )}
 
-        
+        {/* Invoice Summary Section (Manager/Admin Only) */}
+        {isManagerOrAdmin && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Sales Invoices by Status */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileDown className="h-5 w-5" />
+                  Sales Invoices
+                </CardTitle>
+                <CardDescription>Breakdown by status</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4">
+                  {Object.entries(salesInvoicesByStatus).map(
+                    ([status, count]) => {
+                      const statusConfig = {
+                        draft: {
+                          icon: FileText,
+                          color: "text-gray-500",
+                          bgColor: "bg-gray-100",
+                          label: "Draft",
+                        },
+                        sent: {
+                          icon: FileDown,
+                          color: "text-blue-500",
+                          bgColor: "bg-blue-100",
+                          label: "Sent",
+                        },
+                        paid: {
+                          icon: CheckCircle2,
+                          color: "text-green-500",
+                          bgColor: "bg-green-100",
+                          label: "Paid",
+                        },
+                        overdue: {
+                          icon: AlertCircle,
+                          color: "text-red-500",
+                          bgColor: "bg-red-100",
+                          label: "Overdue",
+                        },
+                        cancelled: {
+                          icon: XCircle,
+                          color: "text-orange-500",
+                          bgColor: "bg-orange-100",
+                          label: "Cancelled",
+                        },
+                      };
+                      const config = statusConfig[
+                        status as keyof typeof statusConfig
+                      ] || {
+                        icon: FileText,
+                        color: "text-gray-500",
+                        bgColor: "bg-gray-100",
+                        label: status,
+                      };
+                      const Icon = config.icon;
+
+                      return (
+                        <div
+                          key={status}
+                          className="flex items-center justify-between p-3 rounded-lg border"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className={`p-2 rounded-full ${config.bgColor}`}>
+                              <Icon className={`h-4 w-4 ${config.color}`} />
+                            </div>
+                            <span className="font-medium">{config.label}</span>
+                          </div>
+                          <Badge variant="outline">{count}</Badge>
+                        </div>
+                      );
+                    },
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Purchase Invoices by Status */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileUp className="h-5 w-5" />
+                  Purchase Invoices
+                </CardTitle>
+                <CardDescription>Breakdown by status</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4">
+                  {Object.entries(purchaseInvoicesByStatus).map(
+                    ([status, count]) => {
+                      const statusConfig = {
+                        draft: {
+                          icon: FileText,
+                          color: "text-gray-500",
+                          bgColor: "bg-gray-100",
+                          label: "Draft",
+                        },
+                        sent: {
+                          icon: FileUp,
+                          color: "text-blue-500",
+                          bgColor: "bg-blue-100",
+                          label: "Sent",
+                        },
+                        received: {
+                          icon: Timer,
+                          color: "text-yellow-500",
+                          bgColor: "bg-yellow-100",
+                          label: "Received",
+                        },
+                        partially_paid: {
+                          icon: CircleDollarSign,
+                          color: "text-orange-500",
+                          bgColor: "bg-orange-100",
+                          label: "Partially Paid",
+                        },
+                        paid: {
+                          icon: CheckCircle2,
+                          color: "text-green-500",
+                          bgColor: "bg-green-100",
+                          label: "Paid",
+                        },
+                        cancelled: {
+                          icon: XCircle,
+                          color: "text-red-500",
+                          bgColor: "bg-red-100",
+                          label: "Cancelled",
+                        },
+                      };
+                      const config = statusConfig[
+                        status as keyof typeof statusConfig
+                      ] || {
+                        icon: FileText,
+                        color: "text-gray-500",
+                        bgColor: "bg-gray-100",
+                        label: status,
+                      };
+                      const Icon = config.icon;
+
+                      return (
+                        <div
+                          key={status}
+                          className="flex items-center justify-between p-3 rounded-lg border"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className={`p-2 rounded-full ${config.bgColor}`}>
+                              <Icon className={`h-4 w-4 ${config.color}`} />
+                            </div>
+                            <span className="font-medium">{config.label}</span>
+                          </div>
+                          <Badge variant="outline">{count}</Badge>
+                        </div>
+                      );
+                    },
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Store Settings Preview */}
         <Card>

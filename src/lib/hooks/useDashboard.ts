@@ -57,6 +57,10 @@ interface DashboardData {
   salesByOrderTypeToday: Record<string, number>;
   salesByOrderTypeYesterday: Record<string, number>;
   
+  // Invoice status breakdowns (for managers/admins)
+  salesInvoicesByStatus: Record<string, number>;
+  purchaseInvoicesByStatus: Record<string, number>;
+  
   // User info
   userName: string | null;
   userRole: UserRole | null;
@@ -83,7 +87,7 @@ export function useDashboard(): DashboardHook {
   const { tables, loading: tablesLoading } = useTables();
   const { products, loading: productsLoading } = useProducts();
   const { services, loading: servicesLoading } = useServices();
-  const { salesInvoices, loading: invoicesLoading } = useInvoices();
+  const { salesInvoices, purchaseInvoices, loading: invoicesLoading } = useInvoices();
   const { quotes, loading: quotesLoading } = useQuotes();
   const { storeSettings, loading: settingsLoading } = useStoreSettings();
   const { selectedOrganization } = useOrganization();
@@ -175,6 +179,24 @@ export function useDashboard(): DashboardHook {
     const salesByOrderTypeToday = getSalesByOrderType(completedOrdersToday);
     const salesByOrderTypeYesterday = getSalesByOrderType(completedOrdersYesterday);
 
+    // Invoice status breakdowns
+    const getSalesInvoicesByStatus = (invoices: typeof salesInvoices) => {
+      return invoices.reduce((acc, invoice) => {
+        acc[invoice.status] = (acc[invoice.status] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+    };
+
+    const getPurchaseInvoicesByStatus = (invoices: typeof purchaseInvoices) => {
+      return invoices.reduce((acc, invoice) => {
+        acc[invoice.status] = (acc[invoice.status] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+    };
+
+    const salesInvoicesByStatus = getSalesInvoicesByStatus(salesInvoices);
+    const purchaseInvoicesByStatus = getPurchaseInvoicesByStatus(purchaseInvoices);
+
     // User info
     const userName = user?.displayName || user?.email || null;
 
@@ -204,6 +226,8 @@ export function useDashboard(): DashboardHook {
       topSellingItemsYesterday,
       salesByOrderTypeToday,
       salesByOrderTypeYesterday,
+      salesInvoicesByStatus,
+      purchaseInvoicesByStatus,
       userName,
       userRole,
       companyName,
