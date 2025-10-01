@@ -14,6 +14,7 @@ export const shortPosReportThermal = `<html>
         <tr><td style="border: none; padding: 2px; text-align: left;">Subtotal</td><td style="border: none; padding: 2px; text-align: left; text-align: right;">{{totalSubtotal}}</td></tr>
         <tr><td style="border: none; padding: 2px; text-align: left;">Total VAT</td><td style="border: none; padding: 2px; text-align: left; text-align: right;">{{totalTax}}</td></tr>
         <tr><td style="border: none; padding: 2px; text-align: left; font-weight: bold;">Total Sales</td><td style="border: none; padding: 2px; text-align: left; text-align: right; font-weight: bold;">{{totalSales}}</td></tr>
+        <tr><td style="border: none; padding: 2px; text-align: left;">Total Commission</td><td style="border: none; padding: 2px; text-align: left; text-align: right;">{{totalCommission}}</td></tr>
       </tbody>
     </table>
 

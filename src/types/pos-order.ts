@@ -67,6 +67,7 @@ export interface OrderType {
   id: string;
   name: string;
   description?: string;
+  commission?: number;
   organizationId: string;
   createdAt: Date;
   updatedAt: Date;

@@ -25,7 +25,7 @@ export function OrderTypesTab({ orderTypes: propOrderTypes }: OrderTypesTabProps
   const { storeSettings, createNewOrderType, deleteExistingOrderType, loading } = useStoreSettings();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteOrderTypeId, setDeleteOrderTypeId] = useState<string | null>(null);
-  const [newOrderType, setNewOrderType] = useState({ name: '', description: '' });
+  const [newOrderType, setNewOrderType] = useState({ name: '', description: '', commission: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleAddOrderType = async () => {
@@ -36,10 +36,11 @@ export function OrderTypesTab({ orderTypes: propOrderTypes }: OrderTypesTabProps
       await createNewOrderType({
         name: newOrderType.name,
         description: newOrderType.description,
+        commission: newOrderType.commission ? parseFloat(newOrderType.commission) : undefined,
         organizationId,
       });
 
-      setNewOrderType({ name: '', description: '' });
+      setNewOrderType({ name: '', description: '', commission: '' });
       setDialogOpen(false);
       toast.success('Order type added successfully');
     } catch (error) {
@@ -119,6 +120,15 @@ export function OrderTypesTab({ orderTypes: propOrderTypes }: OrderTypesTabProps
                     onChange={(e) => setNewOrderType({ ...newOrderType, description: e.target.value })}
                   />
                 </div>
+                <div>
+                  <Label htmlFor="order-commission">Commission (optional)</Label>
+                  <Input
+                    id="order-commission"
+                    placeholder="e.g., 2.5"
+                    value={newOrderType.commission}
+                    onChange={(e) => setNewOrderType({ ...newOrderType, commission: e.target.value })}
+                  />
+                </div>
                 <Button onClick={handleAddOrderType} className="w-full" disabled={isSubmitting}>
                   {isSubmitting ? 'Adding...' : 'Add Order Type'}
                 </Button>
@@ -180,6 +190,9 @@ export function OrderTypesTab({ orderTypes: propOrderTypes }: OrderTypesTabProps
                       <h3 className="font-semibold text-lg truncate">{type.name}</h3>
                       {type.description && (
                         <p className="text-sm text-muted-foreground">{type.description}</p>
+                      )}
+                      {type.commission && (
+                        <p className="text-sm text-muted-foreground">Commission: {type.commission}%</p>
                       )}
                     </div>
                   </div>

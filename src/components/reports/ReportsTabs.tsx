@@ -10,11 +10,13 @@ import { PosReportTab } from "./PosReportTab";
 import { useMemo, useState, useEffect } from "react";
 import { useOrders } from "@/lib/hooks/useOrders";
 import { OrderStatus } from "@/types";
+import { useStoreSettings } from "@/lib/hooks/useStoreSettings";
 
 export function ReportsTabs() {
   const { salesInvoices } = useInvoices();
   const { quotes } = useQuotes();
   const { orders, getPaymentsForOrder } = useOrders();
+  const { storeSettings } = useStoreSettings();
 
   const [posReportDateRange, setPosReportDateRange] = useState<{ from: Date; to: Date }>({
     from: new Date(),
@@ -102,6 +104,16 @@ export function ReportsTabs() {
       0,
     );
 
+    const totalCommission = filteredOrders.reduce((sum, order) => {
+      const orderType = storeSettings?.orderTypes.find(
+        (ot) => ot.name === order.orderType,
+      );
+      if (orderType && orderType.commission) {
+        return sum + order.total * (orderType.commission / 100);
+      }
+      return sum;
+    }, 0);
+
     const salesByPaymentType = Object.values(paymentsByOrder)
       .flat()
       .reduce(
@@ -166,8 +178,9 @@ export function ReportsTabs() {
       averageOrderValue:
         filteredOrders.length > 0 ? totalSales / filteredOrders.length : 0,
       ordersByStatus,
+      totalCommission,
     };
-  }, [filteredOrders, paymentsByOrder, allOrdersForDate]);
+  }, [filteredOrders, paymentsByOrder, allOrdersForDate, storeSettings]);
 
   return (
     <Tabs defaultValue="pos">

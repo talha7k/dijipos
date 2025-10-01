@@ -9,4 +9,5 @@ export interface PosReportData {
   totalSubtotal: number;
   totalTax: number;
   ordersByStatus: Record<string, number>;
+  totalCommission?: number;
 }

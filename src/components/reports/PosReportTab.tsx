@@ -94,6 +94,7 @@ export function PosReportTab({
                 salesByOrderType: Object.fromEntries(
                   Object.entries(data.salesByOrderType).map(([key, value]) => [key, formatCurrency(value)])
                 ),
+                totalCommission: formatCurrency(data.totalCommission || 0),
               }}
              title={`POS Sales Report - ${format(dateRange.from, "PPP")} to ${format(dateRange.to, "PPP")}`}
              description="Configure and print your POS sales report"
@@ -153,6 +154,10 @@ export function PosReportTab({
                    <TableRow>
                      <TableCell className="font-bold">Total Sales</TableCell>
                      <TableCell className="text-right font-bold">{formatCurrency(data.totalSales)}</TableCell>
+                   </TableRow>
+                   <TableRow>
+                     <TableCell>Total Commission</TableCell>
+                     <TableCell className="text-right">{formatCurrency(data.totalCommission)}</TableCell>
                    </TableRow>
                  </TableBody>
                </Table>

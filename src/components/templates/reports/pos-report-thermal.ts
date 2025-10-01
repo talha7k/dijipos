@@ -69,6 +69,7 @@ export const posReportThermal = `<html>
         <tr><td style="border: 1px solid #ddd; padding: 2px; text-align: left;">Subtotal (before VAT)</td><td style="border: 1px solid #ddd; padding: 2px; text-align: left; text-align: right;">{{totalSubtotal}}</td></tr>
         <tr><td style="border: 1px solid #ddd; padding: 2px; text-align: left;">Total VAT Collected</td><td style="border: 1px solid #ddd; padding: 2px; text-align: left; text-align: right;">{{totalTax}}</td></tr>
         <tr><td style="border: 1px solid #ddd; padding: 2px; text-align: left; font-weight: bold;">Total Sales</td><td style="border: 1px solid #ddd; padding: 2px; text-align: left; text-align: right; font-weight: bold;">{{totalSales}}</td></tr>
+        <tr><td style="border: 1px solid #ddd; padding: 2px; text-align: left;">Total Commission</td><td style="border: 1px solid #ddd; padding: 2px; text-align: left; text-align: right;">{{totalCommission}}</td></tr>
       </tbody>
     </table>
 </body>
