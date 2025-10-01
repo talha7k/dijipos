@@ -3,7 +3,7 @@
 import { Badge } from '@/components/ui/badge';
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Invoice, Customer, Supplier, Payment } from '@/types';
+import { Invoice, Customer, Supplier, Payment, Organization, InvoiceTemplate, DocumentPrintSettings } from '@/types';
 import { Receipt } from 'lucide-react';
 
 import { InvoiceActions } from './InvoiceActions';
@@ -19,13 +19,15 @@ interface InvoiceListProps {
   suppliers: Supplier[];
   payments: { [invoiceId: string]: Payment[] };
   onInvoiceClick: (invoice: Invoice) => void;
-  onPrint: (invoice: Invoice) => void;
   onViewDetails: (invoice: Invoice) => void;
   onStatusChange: (invoiceId: string, status: Invoice['status']) => void;
   onEdit?: (invoice: Invoice) => void;
   onDuplicate?: (invoice: Invoice) => void;
   onSend?: (invoice: Invoice) => void;
   onDownloadPDF?: (invoice: Invoice) => void;
+  organization: Organization | null;
+  invoiceTemplates: InvoiceTemplate[];
+  settings?: DocumentPrintSettings | null;
 }
 
 export function InvoiceList({
@@ -34,13 +36,15 @@ export function InvoiceList({
   suppliers,
   payments,
   onInvoiceClick,
-  onPrint,
   onViewDetails,
   onStatusChange,
   onEdit,
   onDuplicate,
   onSend,
-  onDownloadPDF
+  onDownloadPDF,
+  organization,
+  invoiceTemplates,
+  settings,
 }: InvoiceListProps) {
   return (
     <div className="overflow-x-auto">
@@ -92,13 +96,17 @@ export function InvoiceList({
                    <InvoiceActions
                      invoice={invoice}
                      payments={payments[invoice.id] || []}
-                     onPrint={onPrint}
                      onViewDetails={onViewDetails}
                      onStatusChange={onStatusChange}
                      onEdit={onEdit}
                      onDuplicate={onDuplicate}
                      onSend={onSend}
                      onDownloadPDF={onDownloadPDF}
+                     organization={organization}
+                     invoiceTemplates={invoiceTemplates}
+                     customers={customers}
+                     suppliers={suppliers}
+                     settings={settings}
                    />
                 </div>
               </TableCell>

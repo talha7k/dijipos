@@ -33,7 +33,6 @@ export default function InvoicesPage() {
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
-  const [showPrint, setShowPrint] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
 
   // Use custom hooks for data fetching
@@ -95,11 +94,6 @@ export default function InvoicesPage() {
   const handleInvoiceClick = (invoice: Invoice) => {
     setSelectedInvoice(invoice);
     setShowDetails(true);
-  };
-
-  const handlePrint = (invoice: Invoice) => {
-    setSelectedInvoice(invoice);
-    setShowPrint(true);
   };
 
   const getFilteredInvoices = () => {
@@ -169,7 +163,6 @@ export default function InvoicesPage() {
         onInvoiceClick={handleInvoiceClick}
         onViewDetails={handleInvoiceClick}
         onStatusChange={handleStatusChange}
-        onPrint={handlePrint}
         onEdit={(invoice) => {
           // Handle edit - could open edit form
           console.log("Edit invoice:", invoice.id);
@@ -186,6 +179,9 @@ export default function InvoicesPage() {
           // Handle PDF download
           console.log("Download PDF for invoice:", invoice.id);
         }}
+        organization={selectedOrganization}
+        invoiceTemplates={invoiceTemplates}
+        settings={printerSettings?.invoices}
       />
 
       {/* Create Invoice Dialog */}
@@ -217,14 +213,28 @@ export default function InvoicesPage() {
           </DialogHeader>
           {selectedInvoice && (
             <div className="flex justify-end mb-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handlePrint(selectedInvoice)}
+              <InvoicePrintDialog
+                invoice={selectedInvoice}
+                organization={selectedOrganization}
+                invoiceTemplates={invoiceTemplates}
+                customer={
+                  selectedInvoice.type === "sales" && selectedInvoice.clientName
+                    ? customers.find((c) => c.name === selectedInvoice.clientName)
+                    : undefined
+                }
+                supplier={
+                  selectedInvoice.type === "purchase" &&
+                  selectedInvoice.supplierId
+                    ? suppliers.find((s) => s.id === selectedInvoice.supplierId)
+                    : undefined
+                }
+                settings={printerSettings?.invoices}
               >
-                <Printer className="w-4 h-4 mr-2" />
-                Print
-              </Button>
+                <Button variant="outline" size="sm">
+                  <Printer className="w-4 h-4 mr-2" />
+                  Print
+                </Button>
+              </InvoicePrintDialog>
             </div>
           )}
           {selectedInvoice && (
@@ -248,26 +258,6 @@ export default function InvoicesPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Print Dialog */}
-      {selectedInvoice && (
-        <InvoicePrintDialog
-          invoice={selectedInvoice}
-          organization={selectedOrganization}
-          invoiceTemplates={invoiceTemplates}
-          customer={
-            selectedInvoice.type === "sales" && selectedInvoice.clientName
-              ? customers.find((c) => c.name === selectedInvoice.clientName)
-              : undefined
-          }
-          supplier={
-            selectedInvoice.type === "purchase" && selectedInvoice.supplierId
-              ? suppliers.find((s) => s.id === selectedInvoice.supplierId)
-              : undefined
-          }
-        >
-          <div>Print Preview</div>
-        </InvoicePrintDialog>
-      )}
     </div>
   );
 }

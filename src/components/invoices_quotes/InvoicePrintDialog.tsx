@@ -109,7 +109,7 @@ interface InvoicePrintDialogProps {
 export function InvoicePrintDialog({
   invoice,
   organization,
-  invoiceTemplates,
+  invoiceTemplates = [],
   customer,
   supplier,
   children,
@@ -141,9 +141,9 @@ export function InvoicePrintDialog({
       const defaultTemplateId = settings?.defaultTemplateId;
       const isValidDefault =
         defaultTemplateId &&
-        invoiceTemplates.some((t) => t.id === defaultTemplateId);
+        invoiceTemplates?.some((t) => t.id === defaultTemplateId);
       setSelectedTemplate(
-        isValidDefault ? defaultTemplateId : invoiceTemplates[0]?.id || "",
+        isValidDefault ? defaultTemplateId : invoiceTemplates?.[0]?.id || "",
       );
 
       // 2. Set paper size
@@ -170,13 +170,13 @@ export function InvoicePrintDialog({
   // Effect to render the preview when settings change
   useEffect(() => {
     if (open && selectedTemplate) {
-      const template = invoiceTemplates.find((t) => t.id === selectedTemplate);
+      const template = invoiceTemplates?.find((t) => t.id === selectedTemplate);
       if (template) {
         setDirection(template.type?.includes("arabic") ? "rtl" : "ltr");
         renderPreview(template);
       }
     }
-  }, [open, selectedTemplate, invoice, organization, customer, supplier]);
+  }, [open, selectedTemplate, invoice, organization, customer, supplier, invoiceTemplates]);
 
   const renderPreview = async (template: InvoiceTemplate) => {
     const content = await renderInvoice(
@@ -233,7 +233,7 @@ export function InvoicePrintDialog({
               onChange={(e) => setSelectedTemplate(e.target.value)}
               className="w-full p-2 border rounded"
             >
-              {invoiceTemplates.map((t) => (
+              {invoiceTemplates?.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.name}
                 </option>

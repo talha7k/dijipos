@@ -2,39 +2,43 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Invoice, Payment, InvoiceStatus } from '@/types';
+import { Invoice, Payment, InvoiceStatus, Organization, InvoiceTemplate, Customer, Supplier, DocumentPrintSettings } from '@/types';
 import { Printer, Eye, MoreHorizontal } from 'lucide-react';
 import { InvoiceActionsDialog } from './InvoiceActionsDialog';
+import { InvoicePrintDialog } from './InvoicePrintDialog';
 
 interface InvoiceActionsProps {
   invoice: Invoice;
   payments: Payment[];
-  onPrint: (invoice: Invoice) => void;
   onViewDetails: (invoice: Invoice) => void;
   onStatusChange: (invoiceId: string, status: Invoice['status']) => void;
   onEdit?: (invoice: Invoice) => void;
   onDuplicate?: (invoice: Invoice) => void;
   onSend?: (invoice: Invoice) => void;
   onDownloadPDF?: (invoice: Invoice) => void;
+  organization: Organization | null;
+  invoiceTemplates: InvoiceTemplate[];
+  customers: Customer[];
+  suppliers: Supplier[];
+  settings?: DocumentPrintSettings | null;
 }
 
 export function InvoiceActions({
   invoice,
   payments,
-  onPrint,
   onViewDetails,
   onStatusChange,
   onEdit,
   onDuplicate,
   onSend,
-  onDownloadPDF
+  onDownloadPDF,
+  organization,
+  invoiceTemplates,
+  customers,
+  suppliers,
+  settings,
 }: InvoiceActionsProps) {
   const [showActionsDialog, setShowActionsDialog] = useState(false);
-
-  const handlePrintPreview = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onPrint(invoice);
-  };
 
   const handleViewDetails = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -51,6 +55,9 @@ export function InvoiceActions({
     setShowActionsDialog(true);
   };
 
+  const customer = invoice.type === 'sales' ? customers.find(c => c.id === (invoice as any).customerId) : undefined;
+  const supplier = invoice.type === 'purchase' ? suppliers.find(s => s.id === (invoice as any).supplierId) : undefined;
+
   return (
     <>
       <div className="flex items-center gap-2">
@@ -64,14 +71,23 @@ export function InvoiceActions({
           Actions
         </Button>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handlePrintPreview}
-          title="Print Preview"
+        <InvoicePrintDialog
+          invoice={invoice}
+          organization={organization}
+          invoiceTemplates={invoiceTemplates}
+          customer={customer}
+          supplier={supplier}
+          settings={settings}
         >
-          <Printer className="h-4 w-4" />
-        </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => e.stopPropagation()}
+            title="Print Preview"
+          >
+            <Printer className="h-4 w-4" />
+          </Button>
+        </InvoicePrintDialog>
 
         <Button
           variant="ghost"
@@ -119,13 +135,17 @@ export function InvoiceActions({
         open={showActionsDialog}
         onOpenChange={setShowActionsDialog}
         onViewDetails={() => onViewDetails(invoice)}
-        onPrint={() => onPrint(invoice)}
         onEdit={() => onEdit?.(invoice)}
         onDuplicate={() => onDuplicate?.(invoice)}
         onSend={() => onSend?.(invoice)}
         onMarkAsPaid={() => onStatusChange(invoice.id, InvoiceStatus.PAID)}
         onMarkAsSent={() => onStatusChange(invoice.id, InvoiceStatus.SENT)}
         onDownloadPDF={() => onDownloadPDF?.(invoice)}
+        organization={organization}
+        invoiceTemplates={invoiceTemplates}
+        customers={customers}
+        suppliers={suppliers}
+        settings={settings}
       />
     </>
   );
