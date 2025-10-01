@@ -90,7 +90,15 @@ export function InvoiceList({
                   {invoice.status}
                 </Badge>
               </TableCell>
-              <TableCell>{invoice.dueDate && new Date(invoice.dueDate as any).toLocaleDateString()}</TableCell>
+              <TableCell>
+                {(() => {
+                  if (!invoice.dueDate) return 'N/A';
+                  const date = typeof invoice.dueDate === 'string' ? new Date(invoice.dueDate) : invoice.dueDate;
+                  return date instanceof Date && !isNaN(date.getTime()) 
+                    ? date.toLocaleDateString() 
+                    : 'N/A';
+                })()}
+              </TableCell>
               <TableCell onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center gap-2">
                    <InvoiceActions

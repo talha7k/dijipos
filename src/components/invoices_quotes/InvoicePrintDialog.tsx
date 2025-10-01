@@ -27,7 +27,7 @@ async function renderInvoice(
   const data: InvoiceTemplateData = {
     invoiceId: invoice.id,
     invoiceDate: new Date(invoice.createdAt).toLocaleDateString(),
-    dueDate: new Date(invoice.dueDate).toLocaleDateString(),
+    dueDate: invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : "",
     status: invoice.status,
     companyName: organization?.name || "",
     companyNameAr: organization?.nameAr || "",
@@ -50,7 +50,7 @@ async function renderInvoice(
     supplierVat: supplier?.vatNumber || "",
     supplierLogo: supplier?.logoUrl || "",
     subtotal: (invoice.subtotal || 0).toFixed(2),
-    taxRate: "0",
+    taxRate: invoice.taxRate?.toString() || "0",
     taxAmount: (invoice.taxAmount || 0).toFixed(2),
     total: (invoice.total || 0).toFixed(2),
     notes: invoice.notes || "",
@@ -63,6 +63,15 @@ async function renderInvoice(
     })),
     includeQR: true,
     qrCodeUrl: qrCodeBase64,
+    // Add missing template variables
+    headingFont: "Arial, sans-serif",
+    bodyFont: "Arial, sans-serif",
+    marginTop: 10,
+    marginBottom: 10,
+    paddingTop: 15,
+    paddingBottom: 15,
+    paddingLeft: 15,
+    paddingRight: 15,
   };
   const templateContent =
     templateObj.content ||

@@ -15,6 +15,8 @@ import {
   STATIC_QUOTE_TEMPLATE_IDS,
   STATIC_RECEIPT_TEMPLATE_IDS,
 } from "@/types";
+import { defaultInvoiceEnglish } from "@/components/templates/invoice/default-invoice-english";
+import { defaultInvoiceArabic } from "@/components/templates/invoice/default-invoice-arabic";
 interface SeparatedTemplatesState {
   // Static templates (always available, not in Firestore)
   staticReceiptTemplates: ReceiptTemplate[];
@@ -141,7 +143,7 @@ export function useSeparatedTemplates(): SeparatedTemplatesState {
         name: "English Invoice",
         description: "English invoice template",
         type: "english" as InvoiceTemplateType,
-        content: "",
+        content: defaultInvoiceEnglish,
         isDefault: false,
         fields: [],
         style: {
@@ -163,7 +165,7 @@ export function useSeparatedTemplates(): SeparatedTemplatesState {
         name: "Arabic Invoice",
         description: "Arabic invoice template",
         type: "arabic" as InvoiceTemplateType,
-        content: "",
+        content: defaultInvoiceArabic,
         isDefault: false,
         fields: [],
         style: {

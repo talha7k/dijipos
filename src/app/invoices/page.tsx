@@ -56,7 +56,7 @@ export default function InvoicesPage() {
     const allInvoices = [...salesInvoices, ...purchaseInvoices];
     return allInvoices.map(invoice => ({
       ...invoice,
-      dueDate: typeof invoice.dueDate === 'string' ? new Date(invoice.dueDate) : (invoice.dueDate?.toDate ? invoice.dueDate.toDate() : invoice.dueDate),
+      dueDate: invoice.dueDate || undefined,
     }));
   }, [salesInvoices, purchaseInvoices]);
 
