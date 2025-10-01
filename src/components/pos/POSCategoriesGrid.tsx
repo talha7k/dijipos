@@ -1,19 +1,17 @@
 import { Category } from '@/types';
-import { Product, Service } from '@/types';
+import { Item } from '@/types';
 import { CategoryCard } from '@/components/products_services/CategoryCard';
 
 interface POSCategoriesGridProps {
   categories: Category[];
-  products: Product[];
-  services: Service[];
+  items: Item[];
   categoryPath: string[];
   onCategoryClick: (categoryId: string) => void;
 }
 
 export function POSCategoriesGrid({
   categories,
-  products,
-  services,
+  items,
   categoryPath,
   onCategoryClick
 }: POSCategoriesGridProps) {
@@ -35,9 +33,7 @@ export function POSCategoriesGrid({
 
   // Get items count for a category
   const getItemsCount = (categoryId: string) => {
-    const productCount = products.filter(p => p.categoryId === categoryId).length;
-    const serviceCount = services.filter(s => s.categoryId === categoryId).length;
-    return productCount + serviceCount;
+    return items.filter(item => item.categoryId === categoryId).length;
   };
 
   // Get subcategories count for a category

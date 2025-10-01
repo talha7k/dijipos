@@ -1,7 +1,6 @@
 import { db } from '@/lib/firebase/config';
 import { collection, doc, writeBatch } from 'firebase/firestore';
-import { Product, Service, Quote, Customer, Supplier, InvoiceItem as Item, Payment, PurchaseInvoice, Invoice, Category, Order, OrderPayment, CartItem, OrderType, PaymentType, Table, TableStatus, OrderStatus, PaymentStatus, CategoryType, ItemType, InvoiceType, QuoteStatus, InvoiceStatus, ProductTransactionType } from '@/types';
-import { InvoiceTemplateType } from '@/types/enums';
+import { Product, Service, Quote, Customer, Supplier, InvoiceItem as Item, Payment, Invoice, Category, Order, OrderPayment, CartItem, OrderType, PaymentType, Table, TableStatus, OrderStatus, PaymentStatus, CategoryType, ItemType, InvoiceType, QuoteStatus, InvoiceStatus, ProductTransactionType } from '@/types';
  
 // --- HELPER FUNCTIONS ---
 
@@ -15,7 +14,6 @@ const generateId = (prefix: string) => `${prefix}-${++idCounter}-${Date.now() % 
 
 const productAdjectives = ['Organic', 'Premium', 'Hand-Crafted', 'Ergonomic', 'Heavy-Duty', 'Artisanal', 'Imported'];
 const productNouns = ['Coffee Beans', 'Olive Oil', 'Office Chair', 'Keyboard', 'Steel Pipes', 'Fabric', 'Software License'];
-const productUnits = ['kg', 'liter', 'piece', 'box', 'meter', 'license', 'pallet'];
 const serviceAdjectives = ['Strategic', 'Technical', 'Creative', 'Financial', 'Legal', 'Operational'];
 const serviceNouns = ['Consulting', 'Support', 'Design', 'Auditing', 'Development', 'Analysis'];
 const firstNames = ['Aisha', 'Fatima', 'Omar', 'Yusuf', 'Layla', 'Zayn', 'Noor', 'Amir'];
@@ -425,14 +423,12 @@ const generateInvoices = (count: number, customers: Omit<Customer, 'organization
 
         const isSales = Math.random() > 0.5; // 50% of invoices are sales
         if (isSales) {
-            const customer = getRandomElement(customers);
             const invoice: Omit<Invoice, 'organizationId'> = {
                 ...baseInvoice,
                 type: InvoiceType.SALES,
             };
             allInvoices.push(invoice);
         } else {
-            const supplier = getRandomElement(suppliers);
             const invoice: Omit<Invoice, 'organizationId'> = {
                 ...baseInvoice,
                 type: InvoiceType.PURCHASE,

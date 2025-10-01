@@ -8,8 +8,7 @@ import { POSOrderGrid } from "@/components/pos/PosViews/POSOrdersView";
 import { POSPaymentGrid } from "@/components/pos/PosViews/POSPaymentView";
 import {
   Category,
-  Product,
-  Service,
+  Item,
   Table,
   Customer,
   Order,
@@ -26,8 +25,7 @@ export type POSViewType =
 
 interface POSViewsManagerProps {
   currentView: POSViewType;
-  products: Product[];
-  services: Service[];
+  items: Item[];
   categories: Category[];
   tables: Table[];
   customers: Customer[];
@@ -39,7 +37,7 @@ interface POSViewsManagerProps {
   onCategoryClick: (categoryId: string) => void;
   onNavigateToRoot: () => void;
   onNavigateToPath: (path: string[]) => void;
-  onItemClick: (item: Product | Service, type: "product" | "service") => void;
+  onItemClick: (item: Item) => void;
   onTableSelect: (table: Table) => void;
   onCustomerSelect: (customer: Customer) => void;
   onOrderSelect: (order: Order) => void;
@@ -52,8 +50,7 @@ interface POSViewsManagerProps {
 
 export function POSViewsManager({
   currentView,
-  products,
-  services,
+  items,
   categories,
   tables,
   customers,
@@ -95,20 +92,17 @@ export function POSViewsManager({
                     <h3 className="text-xl font-semibold mb-6">Categories</h3>
                     <POSCategoriesGrid
                       categories={categories}
-                      products={products}
-                      services={services}
+                      items={items}
                       categoryPath={categoryPath}
                       onCategoryClick={onCategoryClick}
                     />
                   </div>
 
                   {/* Uncategorized Items Section at Root Level */}
-                  {(products.filter((p) => !p.categoryId).length > 0 ||
-                    services.filter((s) => !s.categoryId).length > 0) && (
+                  {items.filter((item) => !item.categoryId).length > 0 && (
                     <POSItemsGrid
                       categories={categories}
-                      products={products}
-                      services={services}
+                      items={items}
                       categoryPath={["uncategorized"]}
                       onCategoryClick={onCategoryClick}
                       onItemClick={onItemClick}
@@ -118,8 +112,7 @@ export function POSViewsManager({
               ) : (
                 <POSItemsGrid
                   categories={categories}
-                  products={products}
-                  services={services}
+                  items={items}
                   categoryPath={categoryPath}
                   onCategoryClick={onCategoryClick}
                   onItemClick={onItemClick}

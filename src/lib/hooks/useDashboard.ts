@@ -2,8 +2,7 @@ import { useMemo, useState } from 'react';
 import { useOrders } from './useOrders';
 import { useCustomers } from './useCustomers';
 import { useTables } from './useTables';
-import { useProducts } from './useProducts';
-import { useServices } from './useServices';
+import { useItems } from './useItems';
 import { useInvoices } from './useInvoices';
 import { useStoreSettings } from './useStoreSettings';
 import { useOrganization } from './useOrganization';
@@ -84,8 +83,7 @@ export function useDashboard(): DashboardHook {
   const { orders, loading: ordersLoading } = useOrders();
   const { customers, loading: customersLoading } = useCustomers();
   const { tables, loading: tablesLoading } = useTables();
-  const { products, loading: productsLoading } = useProducts();
-  const { services, loading: servicesLoading } = useServices();
+  const { items, loading: itemsLoading } = useItems();
   const { salesInvoices, purchaseInvoices, loading: invoicesLoading } = useInvoices();
   const { storeSettings, loading: settingsLoading } = useStoreSettings();
   const { selectedOrganization } = useOrganization();
@@ -93,8 +91,8 @@ export function useDashboard(): DashboardHook {
   
   const [dateFilter, setDateFilter] = useState<'today' | 'yesterday'>('today');
 
-  const loading = ordersLoading || customersLoading || tablesLoading || 
-                  productsLoading || servicesLoading || invoicesLoading || 
+  const loading = ordersLoading || customersLoading || tablesLoading ||
+                  itemsLoading || invoicesLoading ||
                   settingsLoading;
 
   const userRole = useAtomValue(organizationUserRoleAtom)?.role || null;
@@ -134,8 +132,8 @@ export function useDashboard(): DashboardHook {
     const occupiedTables = tables.filter(table => table.status === 'occupied').length;
 
     // Product/Service statistics
-    const totalProducts = products.length;
-    const totalServices = services.length;
+    const totalProducts = items.filter(item => item.itemType === 'product').length;
+    const totalServices = items.filter(item => item.itemType === 'service').length;
 
     // Financial calculations
     const completedOrdersToday = ordersToday.filter(order => order.status === OrderStatus.COMPLETED);
@@ -237,8 +235,7 @@ export function useDashboard(): DashboardHook {
     orders,
     customers,
     tables,
-    products,
-    services,
+    items,
     salesInvoices,
     storeSettings,
     selectedOrganization,

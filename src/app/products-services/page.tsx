@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useProducts } from '@/lib/hooks/useProducts';
-import { useServices } from '@/lib/hooks/useServices';
+import { useItems } from '@/lib/hooks/useItems';
+import { useCategories } from '@/lib/hooks/useCategories';
 import { useOrganization } from '@/lib/hooks/useOrganization';
 import { Item, CategoryType, ProductTransactionType, ItemType } from '@/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -26,8 +26,8 @@ import { ExportImportProducts } from '@/components/ExportImportProducts';
 export default function ProductsServicesPage() {
   const { selectedOrganization } = useOrganization();
   const organizationId = selectedOrganization?.id;
-  const { products, categories, loading: productsLoading, createProduct, updateProduct, deleteProduct, createCategory, deleteCategory } = useProducts();
-  const { services, loading: servicesLoading, createNewService, updateExistingService, deleteExistingService } = useServices();
+  const { items, loading: itemsLoading, createItem, updateItem, deleteItem } = useItems();
+  const { categories, loading: categoriesLoading, createCategory, deleteCategory } = useCategories();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTransactionType, setSelectedTransactionType] = useState<ProductTransactionType | null>(null);
@@ -40,61 +40,40 @@ export default function ProductsServicesPage() {
   const [deleteCategoryName, setDeleteCategoryName] = useState<string>('');
   const [deleteCategoryItemCount, setDeleteCategoryItemCount] = useState<number>(0);
 
-  const loading = productsLoading || servicesLoading;
+  const loading = itemsLoading || categoriesLoading;
 
-  // Combine products and services into a unified items array for export/import
-  const items: Item[] = [...products, ...services];
-
-  const handleAddProduct = async (product: Omit<Item, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => {
+  const handleAddItem = async (item: Omit<Item, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => {
     try {
-      await createProduct(product);
+      await createItem(item);
       setProductDialogOpen(false);
+      setServiceDialogOpen(false);
     } catch (error) {
-      console.error('Error creating product:', error);
-      toast.error('Failed to create product');
+      console.error('Error creating item:', error);
+      toast.error('Failed to create item');
     }
   };
 
-  const handleUpdateProduct = async (productId: string, product: Partial<Omit<Item, 'id' | 'createdAt'>>) => {
+  const handleUpdateItem = async (itemId: string, item: Partial<Omit<Item, 'id' | 'createdAt'>>) => {
     try {
-      await updateProduct(productId, product);
+      await updateItem(itemId, item);
       setProductToEdit(null);
-      setProductDialogOpen(false);
-    } catch (error) {
-      console.error('Error updating product:', error);
-      toast.error('Failed to update product');
-    }
-  };
-
-  const handleEditProduct = (product: Item) => {
-    setProductToEdit(product);
-    setProductDialogOpen(true);
-  };
-
-  const handleAddService = async (service: Omit<Item, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => {
-    try {
-      await createNewService(service);
-      setServiceDialogOpen(false);
-    } catch (error) {
-      console.error('Error creating service:', error);
-      toast.error('Failed to create service');
-    }
-  };
-
-  const handleUpdateService = async (serviceId: string, service: Partial<Omit<Item, 'id' | 'createdAt'>>) => {
-    try {
-      await updateExistingService(serviceId, service);
       setServiceToEdit(null);
+      setProductDialogOpen(false);
       setServiceDialogOpen(false);
     } catch (error) {
-      console.error('Error updating service:', error);
-      toast.error('Failed to update service');
+      console.error('Error updating item:', error);
+      toast.error('Failed to update item');
     }
   };
 
-  const handleEditService = (service: Item) => {
-    setServiceToEdit(service);
-    setServiceDialogOpen(true);
+  const handleEditItem = (item: Item) => {
+    if (item.itemType === ItemType.PRODUCT) {
+      setProductToEdit(item);
+      setProductDialogOpen(true);
+    } else {
+      setServiceToEdit(item);
+      setServiceDialogOpen(true);
+    }
   };
 
   const handleAddCategory = async (category: {
@@ -117,13 +96,11 @@ export default function ProductsServicesPage() {
 
   const handleDeleteCategory = (categoryId: string) => {
     const category = categories.find(c => c.id === categoryId);
-    const itemCount = products.filter((p: Item) => p.categoryId === categoryId).length;
-    const serviceCount = services.filter((s: Item) => s.categoryId === categoryId).length;
-    const totalCount = itemCount + serviceCount;
+    const itemCount = items.filter((item: Item) => item.categoryId === categoryId).length;
 
     setDeleteCategoryId(categoryId);
     setDeleteCategoryName(category?.name || '');
-    setDeleteCategoryItemCount(totalCount);
+    setDeleteCategoryItemCount(itemCount);
   };
 
   const confirmDeleteCategory = async () => {
@@ -141,21 +118,12 @@ export default function ProductsServicesPage() {
     }
   };
 
-  const handleDeleteProduct = async (productId: string) => {
+  const handleDeleteItem = async (itemId: string) => {
     try {
-      await deleteProduct(productId);
+      await deleteItem(itemId);
     } catch (error) {
-      console.error('Error deleting product:', error);
-      toast.error('Failed to delete product');
-    }
-  };
-
-  const handleDeleteService = async (serviceId: string) => {
-    try {
-      await deleteExistingService(serviceId);
-    } catch (error) {
-      console.error('Error deleting service:', error);
-      toast.error('Failed to delete service');
+      console.error('Error deleting item:', error);
+      toast.error('Failed to delete item');
     }
   };
 
@@ -232,14 +200,14 @@ export default function ProductsServicesPage() {
                     >
                       All Products
                       <Badge variant="secondary" className="ml-auto">
-                        {products.length}
+                        {items.filter(item => item.itemType === ItemType.PRODUCT).length}
                       </Badge>
                     </Button>
-                    
+
                     <CategoryTree
                       categories={categories}
-                      products={products}
-                      services={services}
+                      products={items.filter(item => item.itemType === ItemType.PRODUCT)}
+                      services={items.filter(item => item.itemType === ItemType.SERVICE)}
                       selectedCategory={selectedCategory}
                       onCategorySelect={setSelectedCategory}
                       onCategoryDelete={handleDeleteCategory}
@@ -262,8 +230,8 @@ export default function ProductsServicesPage() {
                     <AddProductDialog
                       open={productDialogOpen}
                       onOpenChange={setProductDialogOpen}
-                      onAddProduct={handleAddProduct}
-                      onUpdateProduct={handleUpdateProduct}
+                      onAddProduct={handleAddItem}
+                      onUpdateProduct={handleUpdateItem}
                       productToEdit={productToEdit}
                       categories={categories}
                       selectedCategory={selectedCategory}
@@ -293,13 +261,13 @@ export default function ProductsServicesPage() {
                 </CardHeader>
                 <CardContent>
                   <ProductList
-                    products={products}
+                    products={items.filter(item => item.itemType === ItemType.PRODUCT)}
                     categories={categories}
                     selectedCategory={selectedCategory}
                     searchTerm={searchTerm}
                     selectedTransactionType={selectedTransactionType}
-                    onEditProduct={handleEditProduct}
-                    onDeleteProduct={handleDeleteProduct}
+                    onEditProduct={handleEditItem}
+                    onDeleteProduct={handleDeleteItem}
                   />
                 </CardContent>
               </Card>
@@ -346,14 +314,14 @@ export default function ProductsServicesPage() {
                     >
                       All Services
                       <Badge variant="secondary" className="ml-auto">
-                        {services.length}
+                        {items.filter(item => item.itemType === ItemType.SERVICE).length}
                       </Badge>
                     </Button>
-                    
+
                     <CategoryTree
                       categories={categories}
-                      products={products}
-                      services={services}
+                      products={items.filter(item => item.itemType === ItemType.PRODUCT)}
+                      services={items.filter(item => item.itemType === ItemType.SERVICE)}
                       selectedCategory={selectedCategory}
                       onCategorySelect={setSelectedCategory}
                       onCategoryDelete={handleDeleteCategory}
@@ -376,8 +344,8 @@ export default function ProductsServicesPage() {
                     <AddServiceDialog
                       open={serviceDialogOpen}
                       onOpenChange={setServiceDialogOpen}
-                      onAddService={handleAddService}
-                      onUpdateService={handleUpdateService}
+                      onAddService={handleAddItem}
+                      onUpdateService={handleUpdateItem}
                       serviceToEdit={serviceToEdit}
                       categories={categories}
                       selectedCategory={selectedCategory}
@@ -407,13 +375,13 @@ export default function ProductsServicesPage() {
                 </CardHeader>
                 <CardContent>
                   <ServiceList
-                    services={services}
+                    services={items.filter(item => item.itemType === ItemType.SERVICE)}
                     categories={categories}
                     selectedCategory={selectedCategory}
                     searchTerm={searchTerm}
                     selectedTransactionType={selectedTransactionType}
-                    onEditService={handleEditService}
-                    onDeleteService={handleDeleteService}
+                    onEditService={handleEditItem}
+                    onDeleteService={handleDeleteItem}
                   />
                 </CardContent>
               </Card>
@@ -430,26 +398,13 @@ export default function ProductsServicesPage() {
               return await createCategory(data);
             }}
             onCreateItem={async (data) => {
-              // Create item based on its type
-              if (data.itemType === ItemType.PRODUCT) {
-                return await createProduct(data);
-              } else {
-                return await createNewService(data);
-              }
+              return await createItem(data);
             }}
             onDeleteCategory={async (categoryId) => {
               await deleteCategory(categoryId);
             }}
             onDeleteItem={async (itemId) => {
-              // Find the item to determine its type
-              const item = items.find(i => i.id === itemId);
-              if (item) {
-                if (item.itemType === ItemType.PRODUCT) {
-                  await deleteProduct(itemId);
-                } else {
-                  await deleteExistingService(itemId);
-                }
-              }
+              await deleteItem(itemId);
             }}
           />
         </TabsContent>

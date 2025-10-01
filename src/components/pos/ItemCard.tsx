@@ -1,5 +1,5 @@
 import { Package, Wrench } from "lucide-react";
-import { Product, Service } from "@/types";
+import { Item } from "@/types";
 import { useCurrency } from "@/lib/hooks/useCurrency";
 import {
   cn,
@@ -9,15 +9,14 @@ import {
 } from "@/lib/utils";
 
 interface ItemCardProps {
-  item: Product | Service;
-  onClick: (item: Product | Service, type: "product" | "service") => void;
+  item: Item;
+  onClick: (item: Item) => void;
   className?: string;
 }
 
 export function ItemCard({ item, onClick, className = "" }: ItemCardProps) {
   const { formatCurrency } = useCurrency();
-  const isProduct = "price" in item;
-  const price = isProduct ? item.price : (item as Service).price;
+  const price = item.price;
 
   // Use character-based length detection instead of word count
   const isLongName = isTextTooLong(item.name, getDisplayLength("short"));
@@ -27,7 +26,7 @@ export function ItemCard({ item, onClick, className = "" }: ItemCardProps) {
   );
 
   const handleClick = () => {
-    onClick(item, isProduct ? "product" : "service");
+    onClick(item);
   };
 
   return (
@@ -38,7 +37,7 @@ export function ItemCard({ item, onClick, className = "" }: ItemCardProps) {
     >
       <div className="pt-4">
         <div className="flex items-center justify-center gap-2 mb-3">
-          {isProduct ? (
+          {item.itemType === "product" ? (
             <Package className="h-5 w-5 text-primary" />
           ) : (
             <Wrench className="h-5 w-5 text-primary" />

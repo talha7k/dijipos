@@ -6,19 +6,18 @@ import { format } from "date-fns";
 import { selectedOrganizationAtom } from "@/atoms";
 import {
   CartItem,
+  Item,
   ItemType,
   Order,
   OrderStatus,
   PaymentStatus,
-  Product,
-  Service,
   Table,
   Customer,
   OrderType,
   OrderPayment,
 } from "@/types";
-import { useProducts } from "@/lib/hooks/useProducts";
-import { useServices } from "@/lib/hooks/useServices";
+import { useItems } from "@/lib/hooks/useItems";
+import { useCategories } from "@/lib/hooks/useCategories";
 import { useTables } from "@/lib/hooks/useTables";
 import { useCustomers } from "@/lib/hooks/useCustomers";
 import { useOrders } from "@/lib/hooks/useOrders";
@@ -80,8 +79,8 @@ export default function SimplifiedPOSPage() {
   const organizationId = selectedOrganization?.id;
 
   // Data hooks
-  const { products, categories, loading: productsLoading } = useProducts();
-  const { services, loading: servicesLoading } = useServices();
+  const { items, loading: itemsLoading } = useItems();
+  const { categories, loading: categoriesLoading } = useCategories();
   const { tables, loading: tablesLoading } = useTables();
   const { customers, loading: customersLoading } = useCustomers();
   const {
@@ -205,22 +204,18 @@ export default function SimplifiedPOSPage() {
 
   // Handler functions
   const handleAddToCart = useCallback(
-    (item: Product | Service, type: "product" | "service") => {
+    (item: Item) => {
       if (!item) return;
 
       const currentCartItems = cartItems || [];
       const existingItem = currentCartItems.find(
         (cartItem: CartItem) =>
-          cartItem.id === item.id &&
-          cartItem.type ===
-            (type === "product" ? ItemType.PRODUCT : ItemType.SERVICE),
+          cartItem.itemId === item.id,
       );
 
       if (existingItem) {
         const updatedCart = currentCartItems.map((cartItem) =>
-          cartItem.id === item.id &&
-          cartItem.type ===
-            (type === "product" ? ItemType.PRODUCT : ItemType.SERVICE)
+          cartItem.itemId === item.id
             ? {
                 ...cartItem,
                 quantity: (cartItem.quantity || 1) + 1,
@@ -232,7 +227,7 @@ export default function SimplifiedPOSPage() {
       } else {
         const newItem: CartItem = {
           id: item.id,
-          type: type === "product" ? ItemType.PRODUCT : ItemType.SERVICE,
+          type: item.itemType === "product" ? ItemType.PRODUCT : ItemType.SERVICE,
           itemId: item.id,
           name: item.name,
           unitPrice: item.price,
@@ -862,8 +857,8 @@ export default function SimplifiedPOSPage() {
 
   // Loading state - exclude ordersLoading when viewing orders to prevent stuck loading
   const loading =
-    productsLoading ||
-    servicesLoading ||
+    itemsLoading ||
+    categoriesLoading ||
     tablesLoading ||
     customersLoading ||
     (currentView !== "orders" ? ordersLoading : false) ||
@@ -928,8 +923,7 @@ export default function SimplifiedPOSPage() {
             currentView={
               currentView as import("./components/POSViewsManager").POSViewType
             }
-            products={products}
-            services={services}
+            items={items}
             categories={categories}
             tables={tables}
             customers={customers}

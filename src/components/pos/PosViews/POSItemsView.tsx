@@ -2,21 +2,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 import { ItemCard } from '../ItemCard';
 import { SubcategoryCard } from '../SubcategoryCard';
-import { Category, Product, Service } from '@/types';
+import { Category, Item } from '@/types';
 
 interface POSItemsGridProps {
   categories: Category[];
-  products: Product[];
-  services: Service[];
+  items: Item[];
   categoryPath: string[];
   onCategoryClick: (categoryId: string) => void;
-  onItemClick: (item: Product | Service, type: 'product' | 'service') => void;
+  onItemClick: (item: Item) => void;
 }
 
 export function POSItemsGrid({
   categories,
-  products,
-  services,
+  items,
   categoryPath,
   onCategoryClick,
   onItemClick
@@ -36,9 +34,7 @@ export function POSItemsGrid({
 
   // Get items count for a category
   const getItemsCount = (categoryId: string) => {
-    const productCount = products.filter(p => p.categoryId === categoryId).length;
-    const serviceCount = services.filter(s => s.categoryId === categoryId).length;
-    return productCount + serviceCount;
+    return items.filter(item => item.categoryId === categoryId).length;
   };
 
   // Get subcategories count for a category
@@ -88,16 +84,13 @@ export function POSItemsGrid({
    // Get items for current category
    const filteredItems = (isViewingUncategorized ? [
      // Show uncategorized items
-     ...products.filter((p: Product) => !p.categoryId),
-     ...services.filter((s: Service) => !s.categoryId)
+     ...items.filter((item: Item) => !item.categoryId)
    ] : currentCategoryId ? [
      // Show items in specific category
-     ...products.filter((p: Product) => p.categoryId === currentCategoryId),
-     ...services.filter((s: Service) => s.categoryId === currentCategoryId)
+     ...items.filter((item: Item) => item.categoryId === currentCategoryId)
    ] : [
      // At root level, show items that don't have a category assigned
-     ...products.filter((p: Product) => !p.categoryId),
-     ...services.filter((s: Service) => !s.categoryId)
+     ...items.filter((item: Item) => !item.categoryId)
    ]).sort((a, b) => a.name.localeCompare(b.name));
 
   return (

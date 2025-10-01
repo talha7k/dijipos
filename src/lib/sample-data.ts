@@ -521,8 +521,8 @@ export const getServiceOptions = (services: Omit<Item, "organizationId">[]) => {
 // Helper functions for mixed product/service arrays
 export const getProductOptionsFromMixed = (
   items: (
-    | (Omit<Item, "organizationId"> & { type: "product" })
-    | (Omit<Item, "organizationId"> & { type: "service" })
+    | (Omit<Item, "organizationId"> & { type: ItemType.PRODUCT })
+    | (Omit<Item, "organizationId"> & { type: ItemType.SERVICE })
   )[],
 ) => {
   return items
@@ -536,8 +536,8 @@ export const getProductOptionsFromMixed = (
 
 export const getServiceOptionsFromMixed = (
   items: (
-    | (Omit<Item, "organizationId"> & { type: "product" })
-    | (Omit<Item, "organizationId"> & { type: "service" })
+    | (Omit<Item, "organizationId"> & { type: ItemType.PRODUCT })
+    | (Omit<Item, "organizationId"> & { type: ItemType.SERVICE })
   )[],
 ) => {
   return items
