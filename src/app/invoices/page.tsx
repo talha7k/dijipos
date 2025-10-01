@@ -10,7 +10,8 @@ import InvoiceForm from "@/components/invoices_quotes/InvoiceForm";
 import { InvoiceDetails } from "@/components/invoices_quotes/InvoiceDetails";
 import { InvoicePrintDialog } from "@/components/invoices_quotes/InvoicePrintDialog";
 import { Button } from "@/components/ui/button";
-import { Plus, Printer, Receipt } from "lucide-react";
+import { Plus, Printer, Receipt, Edit, Mail } from "lucide-react";
+import { EmailInvoiceDialog } from "@/components/invoices_quotes/EmailInvoiceDialog";
 import { useSeparatedTemplates } from "@/lib/hooks/useSeparatedTemplates";
 import { useStoreSettings } from "@/lib/hooks/useStoreSettings";
 import { Loader } from "@/components/ui/loader";
@@ -34,6 +35,8 @@ export default function InvoicesPage() {
   const [showForm, setShowForm] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
+  const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
+  const [showEmailDialog, setShowEmailDialog] = useState(false);
 
   // Use custom hooks for data fetching
   const {
@@ -184,21 +187,33 @@ export default function InvoicesPage() {
         settings={printerSettings?.invoices}
       />
 
-      {/* Create Invoice Dialog */}
-      <Dialog open={showForm} onOpenChange={setShowForm}>
+      {/* Create/Edit Invoice Dialog */}
+      <Dialog open={showForm} onOpenChange={(open) => {
+        setShowForm(open);
+        if (!open) {
+          setEditingInvoice(null);
+        }
+      }}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Create New Invoice</DialogTitle>
+            <DialogTitle>{editingInvoice ? "Edit Invoice" : "Create New Invoice"}</DialogTitle>
           </DialogHeader>
           <InvoiceForm
+            invoice={editingInvoice}
             onSubmit={async (invoiceData) => {
               try {
-                await createSalesInvoice(invoiceData);
-                toast.success("Invoice created successfully");
+                if (editingInvoice) {
+                  await updateExistingInvoice(editingInvoice.id, invoiceData);
+                  toast.success("Invoice updated successfully");
+                } else {
+                  await createSalesInvoice(invoiceData as any);
+                  toast.success("Invoice created successfully");
+                }
                 setShowForm(false);
+                setEditingInvoice(null);
               } catch (error) {
-                console.error("Error creating invoice:", error);
-                toast.error("Failed to create invoice");
+                console.error("Error saving invoice:", error);
+                toast.error(`Failed to ${editingInvoice ? "update" : "create"} invoice`);
               }
             }}
           />
@@ -212,7 +227,27 @@ export default function InvoicesPage() {
             <DialogTitle>Invoice Details</DialogTitle>
           </DialogHeader>
           {selectedInvoice && (
-            <div className="flex justify-end mb-4">
+            <div className="flex justify-end gap-2 mb-4">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  setEditingInvoice(selectedInvoice);
+                  setShowForm(true);
+                }}
+                disabled={selectedInvoice.status === 'paid'}
+              >
+                <Edit className="w-4 h-4 mr-2" />
+                Edit
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setShowEmailDialog(true)}
+              >
+                <Mail className="w-4 h-4 mr-2" />
+                Email
+              </Button>
               <InvoicePrintDialog
                 invoice={selectedInvoice}
                 organization={selectedOrganization}
@@ -257,6 +292,25 @@ export default function InvoicesPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Email Invoice Dialog */}
+      <EmailInvoiceDialog
+        invoice={selectedInvoice}
+        customer={
+          selectedInvoice?.type === "sales" && selectedInvoice.clientName
+            ? customers.find((c) => c.name === selectedInvoice.clientName)
+            : undefined
+        }
+        supplier={
+          selectedInvoice?.type === "purchase" &&
+          selectedInvoice.supplierId
+            ? suppliers.find((s) => s.id === selectedInvoice.supplierId)
+            : undefined
+        }
+        organization={selectedOrganization}
+        open={showEmailDialog}
+        onOpenChange={setShowEmailDialog}
+      />
 
     </div>
   );

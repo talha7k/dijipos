@@ -20,38 +20,45 @@ import {
 } from '@/lib/sample-data';
 
 interface InvoiceFormProps {
+  invoice?: Invoice | null;
   onSubmit: (invoice: Omit<Invoice, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => void;
   defaultType?: 'sales' | 'purchase';
 }
 
-export default function InvoiceForm({ onSubmit, defaultType = 'sales' }: InvoiceFormProps) {
-  const [invoiceType, setInvoiceType] = useState<'sales' | 'purchase'>(defaultType);
+export default function InvoiceForm({ invoice, onSubmit, defaultType = 'sales' }: InvoiceFormProps) {
+  const [invoiceType, setInvoiceType] = useState<'sales' | 'purchase'>(invoice?.type || defaultType);
 
   // Client fields (for sales invoices)
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>('');
-  const [clientName, setClientName] = useState('');
-  const [clientEmail, setClientEmail] = useState('');
-  const [clientAddress, setClientAddress] = useState('');
+  const [clientName, setClientName] = useState(invoice?.type === 'sales' ? invoice.clientName : '');
+  const [clientEmail, setClientEmail] = useState(invoice?.type === 'sales' ? invoice.clientEmail : '');
+  const [clientAddress, setClientAddress] = useState(invoice?.type === 'sales' ? invoice.clientAddress || '' : '');
   const [clientVAT, setClientVAT] = useState<string>('');
 
   // Supplier fields (for purchase invoices)
   const [selectedSupplierId, setSelectedSupplierId] = useState<string>('');
-  const [supplierName, setSupplierName] = useState('');
-  const [supplierEmail, setSupplierEmail] = useState('');
-  const [supplierAddress, setSupplierAddress] = useState('');
-  const [supplierVAT, setSupplierVAT] = useState<string>('');
+  const [supplierName, setSupplierName] = useState(invoice?.type === 'purchase' ? invoice.supplierName : '');
+  const [supplierEmail, setSupplierEmail] = useState(invoice?.type === 'purchase' ? invoice.supplierEmail : '');
+  const [supplierAddress, setSupplierAddress] = useState(invoice?.type === 'purchase' ? invoice.supplierAddress || '' : '');
+  const [supplierVAT, setSupplierVAT] = useState<string>(invoice?.type === 'purchase' ? invoice.supplierVAT || '' : '');
 
   // Purchase invoice specific fields
-  const [invoiceNumber, setInvoiceNumber] = useState('');
+  const [invoiceNumber, setInvoiceNumber] = useState(invoice?.type === 'purchase' ? invoice.invoiceNumber || '' : '');
   const [invoiceDate, setInvoiceDate] = useState(() => {
+    if (invoice?.type === 'purchase' && invoice.invoiceDate) {
+      return new Date(invoice.invoiceDate).toISOString().split('T')[0];
+    }
     const date = new Date();
     return date.toISOString().split('T')[0];
   });
 
-  const [items, setItems] = useState<Item[]>([]);
-  const [taxRate, setTaxRate] = useState(0);
-  const [notes, setNotes] = useState('');
+  const [items, setItems] = useState<Item[]>(invoice?.items || []);
+  const [taxRate, setTaxRate] = useState(invoice?.taxRate || 0);
+  const [notes, setNotes] = useState(invoice?.notes || '');
   const [dueDate, setDueDate] = useState(() => {
+    if (invoice?.dueDate) {
+      return new Date(invoice.dueDate).toISOString().split('T')[0];
+    }
     const date = new Date();
     date.setDate(date.getDate() + 30); // Default to 30 days from now
     return date.toISOString().split('T')[0];
@@ -275,7 +282,7 @@ export default function InvoiceForm({ onSubmit, defaultType = 'sales' }: Invoice
         />
       </div>
 
-      <Button type="submit">Create Invoice</Button>
+      <Button type="submit">{invoice ? "Update Invoice" : "Create Invoice"}</Button>
     </form>
   );
 }
