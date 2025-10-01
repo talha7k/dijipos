@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useProducts } from '@/lib/hooks/useProducts';
 import { useServices } from '@/lib/hooks/useServices';
 import { useOrganization } from '@/lib/hooks/useOrganization';
-import { Product, Service, CategoryType, ProductTransactionType } from '@/types';
+import { Item, CategoryType, ProductTransactionType, ItemType } from '@/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -34,15 +34,18 @@ export default function ProductsServicesPage() {
   const [productDialogOpen, setProductDialogOpen] = useState(false);
   const [serviceDialogOpen, setServiceDialogOpen] = useState(false);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
-  const [productToEdit, setProductToEdit] = useState<Product | null>(null);
-  const [serviceToEdit, setServiceToEdit] = useState<Service | null>(null);
+  const [productToEdit, setProductToEdit] = useState<Item | null>(null);
+  const [serviceToEdit, setServiceToEdit] = useState<Item | null>(null);
   const [deleteCategoryId, setDeleteCategoryId] = useState<string | null>(null);
   const [deleteCategoryName, setDeleteCategoryName] = useState<string>('');
   const [deleteCategoryItemCount, setDeleteCategoryItemCount] = useState<number>(0);
 
   const loading = productsLoading || servicesLoading;
 
-  const handleAddProduct = async (product: Omit<Product, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => {
+  // Combine products and services into a unified items array for export/import
+  const items: Item[] = [...products, ...services];
+
+  const handleAddProduct = async (product: Omit<Item, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => {
     try {
       await createProduct(product);
       setProductDialogOpen(false);
@@ -52,7 +55,7 @@ export default function ProductsServicesPage() {
     }
   };
 
-  const handleUpdateProduct = async (productId: string, product: Partial<Omit<Product, 'id' | 'createdAt'>>) => {
+  const handleUpdateProduct = async (productId: string, product: Partial<Omit<Item, 'id' | 'createdAt'>>) => {
     try {
       await updateProduct(productId, product);
       setProductToEdit(null);
@@ -63,12 +66,12 @@ export default function ProductsServicesPage() {
     }
   };
 
-  const handleEditProduct = (product: Product) => {
+  const handleEditProduct = (product: Item) => {
     setProductToEdit(product);
     setProductDialogOpen(true);
   };
 
-  const handleAddService = async (service: Omit<Service, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => {
+  const handleAddService = async (service: Omit<Item, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => {
     try {
       await createNewService(service);
       setServiceDialogOpen(false);
@@ -78,7 +81,7 @@ export default function ProductsServicesPage() {
     }
   };
 
-  const handleUpdateService = async (serviceId: string, service: Partial<Omit<Service, 'id' | 'createdAt'>>) => {
+  const handleUpdateService = async (serviceId: string, service: Partial<Omit<Item, 'id' | 'createdAt'>>) => {
     try {
       await updateExistingService(serviceId, service);
       setServiceToEdit(null);
@@ -89,7 +92,7 @@ export default function ProductsServicesPage() {
     }
   };
 
-  const handleEditService = (service: Service) => {
+  const handleEditService = (service: Item) => {
     setServiceToEdit(service);
     setServiceDialogOpen(true);
   };
@@ -114,8 +117,8 @@ export default function ProductsServicesPage() {
 
   const handleDeleteCategory = (categoryId: string) => {
     const category = categories.find(c => c.id === categoryId);
-    const itemCount = products.filter((p: Product) => p.categoryId === categoryId).length;
-    const serviceCount = services.filter((s: Service) => s.categoryId === categoryId).length;
+    const itemCount = products.filter((p: Item) => p.categoryId === categoryId).length;
+    const serviceCount = services.filter((s: Item) => s.categoryId === categoryId).length;
     const totalCount = itemCount + serviceCount;
 
     setDeleteCategoryId(categoryId);
@@ -422,18 +425,31 @@ export default function ProductsServicesPage() {
           <ExportImportProducts
             organizationId={organizationId || undefined}
             categories={categories}
-            products={products}
+            items={items}
             onCreateCategory={async (data) => {
               return await createCategory(data);
             }}
-            onCreateProduct={async (data) => {
-              return await createProduct(data);
+            onCreateItem={async (data) => {
+              // Create item based on its type
+              if (data.itemType === ItemType.PRODUCT) {
+                return await createProduct(data);
+              } else {
+                return await createNewService(data);
+              }
             }}
             onDeleteCategory={async (categoryId) => {
               await deleteCategory(categoryId);
             }}
-            onDeleteProduct={async (productId) => {
-              await deleteProduct(productId);
+            onDeleteItem={async (itemId) => {
+              // Find the item to determine its type
+              const item = items.find(i => i.id === itemId);
+              if (item) {
+                if (item.itemType === ItemType.PRODUCT) {
+                  await deleteProduct(itemId);
+                } else {
+                  await deleteExistingService(itemId);
+                }
+              }
             }}
           />
         </TabsContent>

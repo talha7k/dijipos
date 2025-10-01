@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Item } from '@/types';
+import { Item, InvoiceItem } from '@/types';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
@@ -90,14 +90,14 @@ function EditableTableCell({ value, type = 'text', step, min, onSave, className 
 }
 
 interface EditableTableRowProps {
-  item: Item;
+  item: Item | InvoiceItem;
   index: number;
-  onUpdate: (index: number, field: keyof Item, value: string | number) => void;
+  onUpdate: (index: number, field: keyof Item | keyof InvoiceItem, value: string | number) => void;
   onRemove: (index: number) => void;
 }
 
 function EditableTableRow({ item, index, onUpdate, onRemove }: EditableTableRowProps) {
-  const handleUpdate = (field: keyof Item, value: string | number) => {
+  const handleUpdate = (field: keyof Item | keyof InvoiceItem, value: string | number) => {
     onUpdate(index, field, value);
   };
 
@@ -114,14 +114,14 @@ function EditableTableRow({ item, index, onUpdate, onRemove }: EditableTableRowP
         className="text-muted-foreground"
       />
       <EditableTableCell
-        value={item.quantity}
+        value={'quantity' in item ? item.quantity : 0}
         type="number"
         min="1"
         onSave={(value) => handleUpdate('quantity', value)}
         className="text-center"
       />
       <EditableTableCell
-        value={item.unitPrice}
+        value={'unitPrice' in item ? item.unitPrice : 0}
         type="number"
         step="0.01"
         min="0"
@@ -129,10 +129,10 @@ function EditableTableRow({ item, index, onUpdate, onRemove }: EditableTableRowP
         className="text-right"
       />
       <TableCell className="text-right font-medium">
-        ${item.total.toFixed(2)}
+        ${'total' in item ? item.total.toFixed(2) : '0.00'}
       </TableCell>
       <EditableTableCell
-        value={truncateTextByType(item.notes, 'medium')}
+        value={truncateTextByType('notes' in item ? item.notes : '', 'medium')}
         onSave={(value) => handleUpdate('notes', value)}
         className="text-muted-foreground"
       />
@@ -152,7 +152,7 @@ function EditableTableRow({ item, index, onUpdate, onRemove }: EditableTableRowP
 }
 
 interface ReadOnlyTableRowProps {
-  item: Item;
+  item: Item | InvoiceItem;
   index: number;
   onRemove?: (index: number) => void;
   showDelete?: boolean;
@@ -163,10 +163,10 @@ function ReadOnlyTableRow({ item, index, onRemove, showDelete = false }: ReadOnl
     <TableRow>
       <TableCell className="font-medium" title={item.name}>{truncateTextByType(item.name, 'medium')}</TableCell>
       <TableCell className="text-muted-foreground" title={item.description}>{truncateTextByType(item.description, 'medium')}</TableCell>
-      <TableCell className="text-center">{item.quantity}</TableCell>
-      <TableCell className="text-right">${item.unitPrice.toFixed(2)}</TableCell>
-      <TableCell className="text-right font-medium">${item.total.toFixed(2)}</TableCell>
-      <TableCell className="text-muted-foreground" title={item.notes}>{truncateTextByType(item.notes, 'medium')}</TableCell>
+      <TableCell className="text-center">{'quantity' in item ? item.quantity : 0}</TableCell>
+      <TableCell className="text-right">${'unitPrice' in item ? item.unitPrice.toFixed(2) : '0.00'}</TableCell>
+      <TableCell className="text-right font-medium">${'total' in item ? item.total.toFixed(2) : '0.00'}</TableCell>
+      <TableCell className="text-muted-foreground" title={'notes' in item ? item.notes : ''}>{truncateTextByType('notes' in item ? item.notes : '', 'medium')}</TableCell>
       {showDelete && (
         <TableCell className="text-center">
           <Button
@@ -185,9 +185,9 @@ function ReadOnlyTableRow({ item, index, onRemove, showDelete = false }: ReadOnl
 }
 
 interface ItemListProps {
-  items: Item[];
+  items: Item[] | InvoiceItem[];
   mode: 'editable' | 'readonly';
-  onUpdate?: (index: number, field: keyof Item, value: string | number) => void;
+  onUpdate?: (index: number, field: keyof Item | keyof InvoiceItem, value: string | number) => void;
   onRemove?: (index: number) => void;
 }
 

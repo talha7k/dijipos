@@ -14,8 +14,7 @@ export interface Table {
 export interface CartItem {
   id: string;
   type: ItemType;
-  productId?: string;
-  serviceId?: string;
+  itemId: string;
   name: string;
   description?: string;
   quantity: number;

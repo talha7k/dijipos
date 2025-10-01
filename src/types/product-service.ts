@@ -20,6 +20,7 @@ export interface ProductVariation {
 }
 
 export interface Item {
+  //Use this for Product and Service. One type for both.
   id: string;
   name: string;
   description?: string;
@@ -35,8 +36,7 @@ export interface Item {
 export interface InvoiceItem {
   id: string;
   itemType: ItemType; // Type: product or service
-  productId?: string;
-  serviceId?: string;
+  itemId: string; // Reference to unified Item collection
   name: string;
   description?: string;
   quantity: number;

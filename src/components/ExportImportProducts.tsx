@@ -13,26 +13,26 @@ import {
   ImportResult
 } from '@/lib/export-import-utils';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { Category, Product } from '@/types';
+import { Category, Item } from '@/types';
 
 interface ExportImportProductsProps {
   organizationId?: string;
   categories?: Category[];
-  products?: Product[];
+  items?: Item[];
   onCreateCategory?: (data: Omit<Category, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => Promise<string>;
-  onCreateProduct?: (data: Omit<Product, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => Promise<string>;
+  onCreateItem?: (data: Omit<Item, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => Promise<string>;
   onDeleteCategory?: (categoryId: string) => Promise<void>;
-  onDeleteProduct?: (productId: string) => Promise<void>;
+  onDeleteItem?: (itemId: string) => Promise<void>;
 }
 
 export function ExportImportProducts({
   organizationId,
   categories = [],
-  products = [],
+  items = [],
   onCreateCategory,
-  onCreateProduct,
+  onCreateItem,
   onDeleteCategory,
-  onDeleteProduct
+  onDeleteItem
 }: ExportImportProductsProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -46,7 +46,7 @@ export function ExportImportProducts({
   // Export function
   const handleExport = () => {
     if (!organizationId) return;
-    exportProductsAndCategories(organizationId, categories, products);
+    exportProductsAndCategories(organizationId, categories, items);
   };
 
   // Download sample data
@@ -56,7 +56,7 @@ export function ExportImportProducts({
 
   // Import from file
   const handleImport = async () => {
-    if (!selectedFile || !organizationId || !onCreateCategory || !onCreateProduct) return;
+    if (!selectedFile || !organizationId || !onCreateCategory || !onCreateItem) return;
 
     setIsImporting(true);
     try {
@@ -65,11 +65,11 @@ export function ExportImportProducts({
         organizationId,
         importData,
         onCreateCategory || (() => Promise.resolve('')),
-        onCreateProduct || (() => Promise.resolve('')),
+        onCreateItem || (() => Promise.resolve('')),
         onDeleteCategory || (() => Promise.resolve()),
-        onDeleteProduct || (() => Promise.resolve()),
+        onDeleteItem || (() => Promise.resolve()),
         categories,
-        products,
+        items,
         { overwriteExisting: overwriteExistingData, skipDuplicates: !overwriteDuplicates, overwriteDuplicates }
       );
       setLastImportResult(result);
@@ -77,7 +77,7 @@ export function ExportImportProducts({
       setLastImportResult({
         success: false,
         message: `Import failed: ${error}`,
-        imported: { categories: 0, products: 0 },
+        imported: { categories: 0, items: 0 },
         errors: [error as string]
       });
     } finally {
@@ -110,10 +110,10 @@ export function ExportImportProducts({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="w-5 h-5" />
-            Products & Categories Data Management
+            Products, Services & Categories Data Management
           </CardTitle>
           <CardDescription>
-            Export your products and categories data to JSON format, or import from a JSON file.
+            Export your products, services and categories data to JSON format, or import from a JSON file.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -254,8 +254,8 @@ export function ExportImportProducts({
                 <div className="text-sm text-muted-foreground">Categories Imported</div>
               </div>
               <div className="text-center p-3 bg-muted rounded">
-                <div className="text-2xl font-bold">{lastImportResult.imported.products}</div>
-                <div className="text-sm text-muted-foreground">Products Imported</div>
+                <div className="text-2xl font-bold">{lastImportResult.imported.items}</div>
+                <div className="text-sm text-muted-foreground">Items Imported</div>
               </div>
             </div>
 

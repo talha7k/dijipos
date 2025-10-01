@@ -1,21 +1,25 @@
 // Export/Import utilities for products and categories data
 // Supports JSON format with sample download and upload functionality
 
-import { Category, Product } from '@/types';
-import { sampleCategories, sampleProducts } from './sample-data';
+import { Category, Item } from "@/types";
+import {
+  sampleCategories,
+  sampleProducts,
+  sampleServices,
+} from "./sample-data";
 
 export interface ExportData {
   exportedAt: string;
   organizationId: string;
   categories: Category[];
-  products: Product[];
+  items: Item[];
 }
 
 export interface ImportData {
   exportedAt: string;
   organizationId: string;
-  categories: Omit<Category, 'organizationId'>[];
-  products: Omit<Product, 'organizationId'>[];
+  categories: Omit<Category, "organizationId">[];
+  items: Omit<Item, "organizationId">[];
 }
 
 export interface ImportOptions {
@@ -29,7 +33,7 @@ export interface ImportResult {
   message: string;
   imported: {
     categories: number;
-    products: number;
+    items: number;
   };
   errors: string[];
 }
@@ -40,24 +44,24 @@ export interface ImportResult {
 export function downloadSampleData(): void {
   const sampleData: ExportData = {
     exportedAt: new Date().toISOString(),
-    organizationId: 'sample',
-    categories: sampleCategories.map(cat => ({
+    organizationId: "sample",
+    categories: sampleCategories.map((cat) => ({
       ...cat,
-      organizationId: 'sample'
+      organizationId: "sample",
     })),
-    products: sampleProducts.map(prod => ({
-      ...prod,
-      organizationId: 'sample'
-    }))
+    items: [...sampleProducts, ...sampleServices].map((item) => ({
+      ...item,
+      organizationId: "sample",
+    })),
   };
 
   const jsonString = JSON.stringify(sampleData, null, 2);
-  const blob = new Blob([jsonString], { type: 'application/json' });
+  const blob = new Blob([jsonString], { type: "application/json" });
   const url = URL.createObjectURL(blob);
 
-  const link = document.createElement('a');
+  const link = document.createElement("a");
   link.href = url;
-  link.download = `sample-products-categories-${new Date().toISOString().split('T')[0]}.json`;
+  link.download = `sample-products-categories-${new Date().toISOString().split("T")[0]}.json`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -70,22 +74,22 @@ export function downloadSampleData(): void {
 export function exportProductsAndCategories(
   organizationId: string,
   categories: Category[],
-  products: Product[]
+  items: Item[],
 ): void {
   const exportData: ExportData = {
     exportedAt: new Date().toISOString(),
     organizationId,
     categories,
-    products
+    items,
   };
 
   const jsonString = JSON.stringify(exportData, null, 2);
-  const blob = new Blob([jsonString], { type: 'application/json' });
+  const blob = new Blob([jsonString], { type: "application/json" });
   const url = URL.createObjectURL(blob);
 
-  const link = document.createElement('a');
+  const link = document.createElement("a");
   link.href = url;
-  link.download = `products-categories-${organizationId}-${new Date().toISOString().split('T')[0]}.json`;
+  link.download = `products-categories-${organizationId}-${new Date().toISOString().split("T")[0]}.json`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -96,40 +100,45 @@ export function exportProductsAndCategories(
  * Validates imported data structure
  */
 export function validateImportData(data: unknown): data is ImportData {
-  if (!data || typeof data !== 'object') {
+  if (!data || typeof data !== "object") {
     return false;
   }
 
   const obj = data as Record<string, unknown>;
 
-  if (!obj.exportedAt || typeof obj.exportedAt !== 'string') {
+  if (!obj.exportedAt || typeof obj.exportedAt !== "string") {
     return false;
   }
 
-  if (!obj.organizationId || typeof obj.organizationId !== 'string') {
+  if (!obj.organizationId || typeof obj.organizationId !== "string") {
     return false;
   }
 
-  if (!Array.isArray(obj.categories) || !Array.isArray(obj.products)) {
+  if (
+    !Array.isArray(obj.categories) ||
+    !Array.isArray(obj.items)
+  ) {
     return false;
   }
 
   // Validate categories structure
   for (const cat of obj.categories) {
-    if (!cat || typeof cat !== 'object') return false;
+    if (!cat || typeof cat !== "object") return false;
     const category = cat as Record<string, unknown>;
-    if (!category.id || typeof category.id !== 'string') return false;
-    if (!category.name || typeof category.name !== 'string') return false;
-    if (!category.type || typeof category.type !== 'string') return false;
+    if (!category.id || typeof category.id !== "string") return false;
+    if (!category.name || typeof category.name !== "string") return false;
+    if (!category.type || typeof category.type !== "string") return false;
   }
 
-  // Validate products structure
-  for (const prod of obj.products) {
-    if (!prod || typeof prod !== 'object') return false;
-    const product = prod as Record<string, unknown>;
-    if (!product.id || typeof product.id !== 'string') return false;
-    if (!product.name || typeof product.name !== 'string') return false;
-    if (typeof product.price !== 'number') return false;
+  // Validate items structure
+  for (const item of obj.items) {
+    if (!item || typeof item !== "object") return false;
+    const itemData = item as Record<string, unknown>;
+    if (!itemData.id || typeof itemData.id !== "string") return false;
+    if (!itemData.name || typeof itemData.name !== "string") return false;
+    if (typeof itemData.price !== "number") return false;
+    if (!itemData.itemType || typeof itemData.itemType !== "string") return false;
+    if (!itemData.transactionType || typeof itemData.transactionType !== "string") return false;
   }
 
   return true;
@@ -147,18 +156,24 @@ export async function parseImportFile(file: File): Promise<ImportData> {
         const data = JSON.parse(e.target?.result as string);
 
         if (!validateImportData(data)) {
-          reject(new Error('Invalid file format. Please ensure the file contains valid products and categories data.'));
+          reject(
+            new Error(
+              "Invalid file format. Please ensure the file contains valid products and categories data.",
+            ),
+          );
           return;
         }
 
         resolve(data);
       } catch (error) {
-        reject(new Error('Failed to parse JSON file. Please check the file format.'));
+        reject(
+          new Error("Failed to parse JSON file. Please check the file format."),
+        );
       }
     };
 
     reader.onerror = () => {
-      reject(new Error('Failed to read file.'));
+      reject(new Error("Failed to read file."));
     };
 
     reader.readAsText(file);
@@ -172,44 +187,62 @@ export async function parseImportFile(file: File): Promise<ImportData> {
 export async function importProductsAndCategories(
   organizationId: string,
   importData: ImportData,
-  createCategory: (data: Omit<Category, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => Promise<string>,
-  createProduct: (data: Omit<Product, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => Promise<string>,
+  createCategory: (
+    data: Omit<Category, "id" | "organizationId" | "createdAt" | "updatedAt">,
+  ) => Promise<string>,
+  createItem: (
+    data: Omit<Item, "id" | "organizationId" | "createdAt" | "updatedAt">,
+  ) => Promise<string>,
   deleteCategory: (categoryId: string) => Promise<void>,
-  deleteProduct: (productId: string) => Promise<void>,
+  deleteItem: (itemId: string) => Promise<void>,
   existingCategories: Category[],
-  existingProducts: Product[],
-  options: ImportOptions = { overwriteExisting: false, skipDuplicates: true, overwriteDuplicates: false }
+  existingItems: Item[],
+  options: ImportOptions = {
+    overwriteExisting: false,
+    skipDuplicates: true,
+    overwriteDuplicates: false,
+  },
 ): Promise<ImportResult> {
   const errors: string[] = [];
   let categoriesImported = 0;
-  let productsImported = 0;
+  let itemsImported = 0;
 
   try {
-    // If overwriteExisting is true, delete all existing categories and products first
+    // If overwriteExisting is true, delete all existing categories and items first
     if (options.overwriteExisting && existingCategories.length > 0) {
-      console.log('Overwriting existing data - deleting all categories and products');
+      console.log(
+        "Overwriting existing data - deleting all categories and items",
+      );
 
-      // Delete all existing products first (to avoid foreign key issues)
-      const productDeletePromises = existingProducts.map(async (product) => {
+      // Delete all existing items first (to avoid foreign key issues)
+      const itemDeletePromises = existingItems.map(async (item) => {
         try {
-          await deleteProduct(product.id);
+          await deleteItem(item.id);
         } catch (error) {
-          errors.push(`Failed to delete existing product "${product.name}": ${error}`);
+          errors.push(
+            `Failed to delete existing item "${item.name}": ${error}`,
+          );
         }
       });
 
       // Delete all existing categories
-      const categoryDeletePromises = existingCategories.map(async (category) => {
-        try {
-          await deleteCategory(category.id);
-        } catch (error) {
-          errors.push(`Failed to delete existing category "${category.name}": ${error}`);
-        }
-      });
+      const categoryDeletePromises = existingCategories.map(
+        async (category) => {
+          try {
+            await deleteCategory(category.id);
+          } catch (error) {
+            errors.push(
+              `Failed to delete existing category "${category.name}": ${error}`,
+            );
+          }
+        },
+      );
 
       // Wait for all deletions to complete
-      await Promise.all([...productDeletePromises, ...categoryDeletePromises]);
-      console.log(`Deleted ${existingProducts.length} products and ${existingCategories.length} categories`);
+      await Promise.all([...itemDeletePromises, ...categoryDeletePromises]);
+      console.log(
+        `Deleted ${existingItems.length} items and ${existingCategories.length} categories`,
+      );
     }
 
     // Create mapping between old category IDs and new category IDs
@@ -223,7 +256,7 @@ export async function importProductsAndCategories(
           name: category.name,
           description: category.description,
           parentId: category.parentId,
-          type: category.type
+          type: category.type,
         });
         // Store mapping from old ID to new ID
         categoryIdMapping.set(category.id, newCategoryId);
@@ -235,53 +268,57 @@ export async function importProductsAndCategories(
     });
 
     const categoryResults = await Promise.all(categoryPromises);
-    categoriesImported = categoryResults.filter(result => result.success).length;
+    categoriesImported = categoryResults.filter(
+      (result) => result.success,
+    ).length;
 
-    // Import products with updated category IDs
-    // Process products in parallel for better performance
-    const productPromises = importData.products.map(async (product) => {
+    // Import items with updated category IDs
+    // Process items in parallel for better performance
+    const itemPromises = importData.items.map(async (item) => {
       try {
         // Map old category ID to new category ID
-        const newCategoryId = product.categoryId ? categoryIdMapping.get(product.categoryId) : undefined;
+        const newCategoryId = item.categoryId
+          ? categoryIdMapping.get(item.categoryId)
+          : undefined;
 
-        // For now, just create the product - duplicate checking would require additional API calls
-        // This is a simplified implementation
-        const newProductId = await createProduct({
-          name: product.name,
-          description: product.description,
-          price: product.price,
+        // Create the item with all required fields
+        const newItemId = await createItem({
+          name: item.name,
+          description: item.description,
+          price: item.price,
           categoryId: newCategoryId, // Use the new category ID
-          variations: product.variations
+          variations: item.variations,
+          itemType: item.itemType,
+          transactionType: item.transactionType,
         });
-        return { success: true, product };
+        return { success: true, item };
       } catch (error) {
-        errors.push(`Failed to import product "${product.name}": ${error}`);
-        return { success: false, product };
+        errors.push(`Failed to import item "${item.name}": ${error}`);
+        return { success: false, item };
       }
     });
 
-    const productResults = await Promise.all(productPromises);
-    productsImported = productResults.filter(result => result.success).length;
+    const itemResults = await Promise.all(itemPromises);
+    itemsImported = itemResults.filter((result) => result.success).length;
 
     return {
       success: true,
-      message: `Successfully imported ${categoriesImported} categories and ${productsImported} products.`,
+      message: `Successfully imported ${categoriesImported} categories and ${itemsImported} items.`,
       imported: {
         categories: categoriesImported,
-        products: productsImported
+        items: itemsImported,
       },
-      errors
+      errors,
     };
-
   } catch (error) {
     return {
       success: false,
       message: `Import failed: ${error}`,
       imported: {
         categories: categoriesImported,
-        products: productsImported
+        items: itemsImported,
       },
-      errors
+      errors,
     };
   }
 }

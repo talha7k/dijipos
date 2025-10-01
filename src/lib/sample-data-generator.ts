@@ -306,7 +306,7 @@ const generateItems = (products: Omit<Product, 'organizationId'>[], services: Om
             items.push({
                 id: generateId('item'),
                 itemType: ItemType.PRODUCT,
-                productId: product.id,
+                itemId: product.id,
                 name: product.name,
                 description: 'Product item',
                 quantity,
@@ -319,7 +319,7 @@ const generateItems = (products: Omit<Product, 'organizationId'>[], services: Om
             items.push({
                 id: generateId('item'),
                 itemType: ItemType.SERVICE,
-                serviceId: service.id,
+                itemId: service.id,
                 name: service.name,
                 description: 'Professional services rendered.',
                 quantity,

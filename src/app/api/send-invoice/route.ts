@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
-import { Invoice, ItemType, InvoiceStatus } from '@/types';
+import { Invoice, ItemType, InvoiceStatus, InvoiceType } from '@/types';
 
 // SMTP configuration from environment variables
 const smtpConfig = {
@@ -73,13 +73,14 @@ export async function POST(request: NextRequest) {
     const mockInvoice: Invoice = {
       id: invoiceId,
       organizationId,
-      type: 'sales',
+      type: InvoiceType.SALES,
       clientName: 'Test Client',
       clientEmail: recipientEmail,
       items: [
         {
           id: '1',
-          type: ItemType.PRODUCT,
+          itemType: ItemType.PRODUCT,
+          itemId: '1',
           name: 'Test Product',
           quantity: 1,
           unitPrice: 100,
