@@ -187,6 +187,24 @@ export function InvoicePrintDialog({
     }
   }, [open, selectedTemplate, invoice, organization, customer, supplier, invoiceTemplates]);
 
+  // Effect to handle keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (open && (event.ctrlKey || event.metaKey) && event.key === 'p') {
+        event.preventDefault();
+        handlePrint();
+      }
+    };
+
+    if (open) {
+      document.addEventListener('keydown', handleKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [open, selectedTemplate, renderedHtml, pageSize, margins, paddings, invoiceTemplates, invoice]);
+
   const renderPreview = async (template: InvoiceTemplate) => {
     const content = await renderInvoice(
       template,
@@ -201,8 +219,116 @@ export function InvoicePrintDialog({
   const handlePrint = async () => {
     setIsGenerating(true);
     try {
-      // Print logic would go here
-      toast.info("Printing logic not implemented in this example.");
+      console.log("Print button clicked", { selectedTemplate, hasRenderedHtml: !!renderedHtml });
+      
+      if (!selectedTemplate || !renderedHtml) {
+        toast.error("No template selected or preview not ready");
+        return;
+      }
+
+      // Get the selected template to determine direction
+      const template = invoiceTemplates?.find((t) => t.id === selectedTemplate);
+      const direction = template?.type?.includes("arabic") ? "rtl" : "ltr";
+
+      // Create the print HTML with proper styling
+      const printHtml = `
+        <!DOCTYPE html>
+        <html dir="${direction}">
+        <head>
+          <meta charset="utf-8">
+          <title>Invoice ${invoice.id}</title>
+          <style>
+            @media print {
+              @page {
+                size: ${pageSize === "210mm" ? "A4" : pageSize === "80mm" ? "80mm 297mm" : "58mm 297mm"};
+                margin: ${margins.top}mm ${margins.right}mm ${margins.bottom}mm ${margins.left}mm;
+              }
+              body {
+                margin: 0;
+                padding: 0;
+                font-family: Arial, sans-serif;
+              }
+              .print-container {
+                width: 100%;
+                padding: ${paddings.top}mm ${paddings.right}mm ${paddings.bottom}mm ${paddings.left}mm;
+                box-sizing: border-box;
+              }
+              .no-print {
+                display: none !important;
+              }
+            }
+            @media screen {
+              body {
+                margin: 20px;
+                font-family: Arial, sans-serif;
+                background: #f5f5f5;
+              }
+              .print-container {
+                max-width: ${pageSize};
+                margin: 0 auto;
+                background: white;
+                padding: ${paddings.top}mm ${paddings.right}mm ${paddings.bottom}mm ${paddings.left}mm;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                box-sizing: border-box;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="print-container">
+            ${renderedHtml}
+          </div>
+          <script>
+            // Auto-trigger print dialog when page loads
+            window.onload = function() {
+              setTimeout(() => {
+                window.print();
+                // Optional: close window after printing (user can cancel)
+                setTimeout(() => {
+                  window.close();
+                }, 1000);
+              }, 500);
+            };
+          </script>
+        </body>
+        </html>
+      `;
+
+      // Create a new window for printing
+      const printWindow = window.open('', '_blank', 'width=800,height=600');
+      if (!printWindow) {
+        // Fallback: try to print current content using iframe
+        const printFrame = document.createElement('iframe');
+        printFrame.style.position = 'absolute';
+        printFrame.style.left = '-9999px';
+        printFrame.style.top = '-9999px';
+        document.body.appendChild(printFrame);
+        
+        const frameDoc = printFrame.contentDocument || printFrame.contentWindow?.document;
+        if (frameDoc) {
+          frameDoc.write(printHtml);
+          frameDoc.close();
+          printFrame.contentWindow?.print();
+          
+          // Clean up
+          setTimeout(() => {
+            document.body.removeChild(printFrame);
+          }, 1000);
+        } else {
+          toast.error("Please allow popups to print invoices");
+        }
+        return;
+      }
+
+      // Write the HTML to the new window
+      printWindow.document.write(printHtml);
+      printWindow.document.close();
+
+      console.log("Print window opened successfully");
+      toast.success("Print dialog opened");
+    } catch (error) {
+      console.error("Error printing invoice:", error);
+      toast.error("Failed to print invoice");
     } finally {
       setIsGenerating(false);
     }
