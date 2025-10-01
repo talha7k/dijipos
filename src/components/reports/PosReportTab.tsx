@@ -157,7 +157,7 @@ export function PosReportTab({
                    </TableRow>
                    <TableRow>
                      <TableCell>Total Commission</TableCell>
-                     <TableCell className="text-right">{formatCurrency(data.totalCommission)}</TableCell>
+                     <TableCell className="text-right">{formatCurrency(data.totalCommission || 0)}</TableCell>
                    </TableRow>
                  </TableBody>
                </Table>
