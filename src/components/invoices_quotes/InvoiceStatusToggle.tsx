@@ -17,8 +17,14 @@ export function InvoiceStatusToggle({
   const getNextStatus = (currentStatus: Invoice['status']): Invoice['status'] | null => {
     switch (currentStatus) {
       case InvoiceStatus.DRAFT:
+        return InvoiceStatus.QUOTE;
+      case InvoiceStatus.QUOTE:
         return InvoiceStatus.SENT;
       case InvoiceStatus.SENT:
+        return InvoiceStatus.WAITING_PAYMENT;
+      case InvoiceStatus.WAITING_PAYMENT:
+        return InvoiceStatus.PARTIALLY_PAID;
+      case InvoiceStatus.PARTIALLY_PAID:
         return InvoiceStatus.PAID;
       case InvoiceStatus.OVERDUE:
         return InvoiceStatus.PAID;
@@ -29,13 +35,15 @@ export function InvoiceStatusToggle({
 
   const getStatusLabel = (status: Invoice['status']) => {
     const labels: Record<Invoice['status'], { current: string; next: string }> = {
-      draft: { current: 'Draft', next: 'Send' },
-      sent: { current: 'Sent', next: 'Mark Paid' },
+      draft: { current: 'Draft', next: 'Create Quote' },
+      quote: { current: 'Quote', next: 'Send' },
+      sent: { current: 'Sent', next: 'Mark Waiting Payment' },
+      waiting_payment: { current: 'Waiting Payment', next: 'Mark Partially Paid' },
+      partially_paid: { current: 'Partially Paid', next: 'Mark Paid' },
       paid: { current: 'Paid', next: '' },
       overdue: { current: 'Overdue', next: 'Mark Paid' },
       cancelled: { current: 'Cancelled', next: '' },
       received: { current: 'Received', next: 'Mark Paid' },
-      partially_paid: { current: 'Partially Paid', next: 'Mark Paid' },
     };
     return labels[status];
   };

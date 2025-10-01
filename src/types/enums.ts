@@ -53,7 +53,10 @@ export enum QuoteStatus {
 
 export enum InvoiceStatus {
   DRAFT = "draft",
+  QUOTE = "quote",
   SENT = "sent",
+  WAITING_PAYMENT = "waiting_payment",
+  PARTIALLY_PAID = "partially_paid",
   PAID = "paid",
   OVERDUE = "overdue",
   CANCELLED = "cancelled",
@@ -79,6 +82,11 @@ export enum ItemType {
 }
 
 export enum InvoiceType {
+  SALES = "sales",
+  PURCHASE = "purchase",
+}
+
+export enum ProductTransactionType {
   SALES = "sales",
   PURCHASE = "purchase",
 }
@@ -186,7 +194,10 @@ export const QUOTE_STATUS_COLORS = {
 
 export const INVOICE_STATUS_COLORS = {
   [InvoiceStatus.DRAFT]: "gray",
+  [InvoiceStatus.QUOTE]: "purple",
   [InvoiceStatus.SENT]: "blue",
+  [InvoiceStatus.WAITING_PAYMENT]: "yellow",
+  [InvoiceStatus.PARTIALLY_PAID]: "orange",
   [InvoiceStatus.PAID]: "green",
   [InvoiceStatus.OVERDUE]: "red",
   [InvoiceStatus.CANCELLED]: "orange",
@@ -252,7 +263,10 @@ export const QUOTE_STATUS_BUTTON_VARIANTS = {
 
 export const INVOICE_STATUS_BUTTON_VARIANTS = {
   [InvoiceStatus.DRAFT]: "secondary",
+  [InvoiceStatus.QUOTE]: "purple",
   [InvoiceStatus.SENT]: "primary",
+  [InvoiceStatus.WAITING_PAYMENT]: "warning",
+  [InvoiceStatus.PARTIALLY_PAID]: "orange",
   [InvoiceStatus.PAID]: "success",
   [InvoiceStatus.OVERDUE]: "danger",
   [InvoiceStatus.CANCELLED]: "warning",

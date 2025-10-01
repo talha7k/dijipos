@@ -1,14 +1,5 @@
-// Enums used by product and service types
-// Enums defined locally to avoid import issues
-enum CategoryType {
-  PRODUCT = 'product',
-  SERVICE = 'service'
-}
-
-enum ItemType {
-  PRODUCT = 'product',
-  SERVICE = 'service'
-}
+// Import enums from the main enums file
+import { ProductTransactionType, CategoryType, ItemType } from './enums';
 
 export interface Category {
   id: string;
@@ -35,6 +26,7 @@ export interface Product {
   price: number;
   categoryId?: string; // Reference to Category ID
   variations?: ProductVariation[]; // Optional variations
+  transactionType: ProductTransactionType; // Transaction type: sales or purchase
   organizationId: string;
   createdAt: Date;
   updatedAt: Date;
@@ -46,6 +38,7 @@ export interface Service {
   description?: string;
   price: number; // total price
   categoryId?: string; // Reference to Category ID
+  transactionType: ProductTransactionType; // Transaction type: sales or purchase
   organizationId: string;
   createdAt: Date;
   updatedAt: Date;

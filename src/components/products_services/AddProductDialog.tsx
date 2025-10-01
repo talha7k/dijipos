@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus } from 'lucide-react';
-import { Product, Category, CategoryType } from '@/types';
+import { Product, Category, CategoryType, ProductTransactionType } from '@/types';
 import { useAtomValue } from 'jotai';
 import { vatSettingsAtom } from '@/atoms/posAtoms';
 import { getVATIndicationText } from '@/lib/vat-calculator';
@@ -36,6 +36,7 @@ export function AddProductDialog({
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
   const [categoryId, setCategoryId] = useState<string>('');
+  const [transactionType, setTransactionType] = useState<ProductTransactionType>(ProductTransactionType.SALES);
   const vatSettings = useAtomValue(vatSettingsAtom);
 
   const isEditMode = productToEdit !== null;

@@ -34,7 +34,7 @@ export interface Payment {
 export interface SalesInvoice {
   id: string;
   organizationId: string;
-  type: 'sales';
+  type: InvoiceType.SALES;
   quoteId?: string;
   clientName: string;
   clientEmail: string;
@@ -55,7 +55,7 @@ export interface SalesInvoice {
 export interface PurchaseInvoice {
   id: string;
   organizationId: string;
-  type: 'purchase';
+  type: InvoiceType.PURCHASE;
   supplierId: string;
   supplierName: string;
   supplierEmail: string;
