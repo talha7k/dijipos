@@ -5,7 +5,6 @@ import { Download } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { format } from "date-fns";
 import { useInvoices } from "@/lib/hooks/useInvoices";
-import { useQuotes } from "@/lib/hooks/useQuotes";
 import { PosReportTab } from "./PosReportTab";
 import { useMemo, useState, useEffect } from "react";
 import { useOrders } from "@/lib/hooks/useOrders";
@@ -14,7 +13,6 @@ import { useStoreSettings } from "@/lib/hooks/useStoreSettings";
 
 export function ReportsTabs() {
   const { salesInvoices } = useInvoices();
-  const { quotes } = useQuotes();
   const { orders, getPaymentsForOrder } = useOrders();
   const { storeSettings } = useStoreSettings();
 
@@ -287,14 +285,16 @@ export function ReportsTabs() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {quotes.map((quote) => (
-                  <TableRow key={quote.id}>
-                    <TableCell>{quote.id}</TableCell>
-                    <TableCell>{quote.clientName}</TableCell>
-                    <TableCell>{format(quote.createdAt, "PPP")}</TableCell>
-                    <TableCell>{quote.total.toFixed(2)}</TableCell>
-                  </TableRow>
-                ))}
+                {salesInvoices
+                  .filter(invoice => invoice.status === 'quote')
+                  .map((quote) => (
+                    <TableRow key={quote.id}>
+                      <TableCell>{quote.id.slice(-8)}</TableCell>
+                      <TableCell>{quote.clientName}</TableCell>
+                      <TableCell>{format(quote.createdAt, "PPP")}</TableCell>
+                      <TableCell>{quote.total.toFixed(2)}</TableCell>
+                    </TableRow>
+                  ))}
               </TableBody>
             </Table>
           </CardContent>

@@ -285,12 +285,7 @@ function DashboardContent() {
                     Invoices
                   </Button>
                 </Link>
-                <Link href="/quotes">
-                  <Button className="w-full justify-start" variant="outline">
-                    <FileText className="h-4 w-4 mr-2" />
-                    Quotes
-                  </Button>
-                </Link>
+
                 <Link href="/reports">
                   <Button className="w-full justify-start" variant="outline">
                     <TrendingUp className="h-4 w-4 mr-2" />

@@ -139,7 +139,7 @@ export async function createSalesInvoice(data: Omit<SalesInvoice, 'id' | 'create
     const now = Timestamp.now();
 
     // Helper function to recursively remove undefined values
-    const removeUndefined = (obj: any): any => {
+    const removeUndefined = (obj: unknown): unknown => {
       if (Array.isArray(obj)) {
         return obj.map(removeUndefined);
       }
@@ -149,12 +149,12 @@ export async function createSalesInvoice(data: Omit<SalesInvoice, 'id' | 'create
             acc[key] = removeUndefined(value);
           }
           return acc;
-        }, {} as any);
+          }, {} as Record<string, unknown>);
       }
       return obj;
     };
 
-    const filteredData = removeUndefined(data);
+    const filteredData = removeUndefined(data) as Record<string, unknown>;
 
     const docRef = await addDoc(invoicesRef, {
       ...filteredData,

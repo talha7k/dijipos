@@ -5,7 +5,6 @@ import { useTables } from './useTables';
 import { useProducts } from './useProducts';
 import { useServices } from './useServices';
 import { useInvoices } from './useInvoices';
-import { useQuotes } from './useQuotes';
 import { useStoreSettings } from './useStoreSettings';
 import { useOrganization } from './useOrganization';
 import { useAuth } from './useAuth';
@@ -88,7 +87,6 @@ export function useDashboard(): DashboardHook {
   const { products, loading: productsLoading } = useProducts();
   const { services, loading: servicesLoading } = useServices();
   const { salesInvoices, purchaseInvoices, loading: invoicesLoading } = useInvoices();
-  const { quotes, loading: quotesLoading } = useQuotes();
   const { storeSettings, loading: settingsLoading } = useStoreSettings();
   const { selectedOrganization } = useOrganization();
   const { user } = useAuth();
@@ -97,7 +95,7 @@ export function useDashboard(): DashboardHook {
 
   const loading = ordersLoading || customersLoading || tablesLoading || 
                   productsLoading || servicesLoading || invoicesLoading || 
-                  quotesLoading || settingsLoading;
+                  settingsLoading;
 
   const userRole = useAtomValue(organizationUserRoleAtom)?.role || null;
 
@@ -242,7 +240,6 @@ export function useDashboard(): DashboardHook {
     products,
     services,
     salesInvoices,
-    quotes,
     storeSettings,
     selectedOrganization,
     user,

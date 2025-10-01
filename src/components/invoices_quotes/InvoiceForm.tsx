@@ -10,7 +10,7 @@ import ItemList from '@/components/pos/ItemList';
 import ClientInfo from '@/components/invoices_quotes/ClientInfo';
 import SupplierInfo from '@/components/invoices_quotes/SupplierInfo';
 import FormSummary from '@/components/invoices_quotes/FormSummary';
-import { Invoice, Item, ItemType, InvoiceType, InvoiceItem } from '@/types';
+import { Invoice, Item as ItemTypeType, ItemType, InvoiceType, InvoiceItem } from '@/types';
 import { InvoiceTemplateType } from '@/types/enums';
 import {
   sampleProductsServices,
@@ -94,7 +94,7 @@ export default function InvoiceForm({ invoice, onSubmit, defaultType = 'sales' }
     }
   };
 
-  const updateItem = (index: number, field: keyof InvoiceItem, value: string | number) => {
+  const updateItem = (index: number, field: keyof ItemTypeType | keyof InvoiceItem, value: string | number) => {
     const newItems = [...items];
     newItems[index] = { ...newItems[index], [field]: value };
     if (field === 'quantity' || field === 'unitPrice') {

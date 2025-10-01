@@ -196,7 +196,7 @@ const generateOrderItems = (products: Omit<Product, 'organizationId'>[], service
             items.push({
                 id: generateId('ord-item'),
                 type: ItemType.PRODUCT,
-                productId: product.id,
+                itemId: product.id,
                 name: product.name,
                 description: product.description || '',
                 quantity,
@@ -209,7 +209,7 @@ const generateOrderItems = (products: Omit<Product, 'organizationId'>[], service
             items.push({
                 id: generateId('ord-item'),
                 type: ItemType.SERVICE,
-                serviceId: service.id,
+                itemId: service.id,
                 name: service.name,
                 description: service.description || '',
                 quantity,

@@ -7,7 +7,6 @@ import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
 import { PrinterSettings } from '@/types';
 import { useReceiptTemplatesData } from '@/lib/hooks/useReceiptTemplatesData';
 import { useInvoicesTemplatesData } from '@/lib/hooks/useInvoicesTemplatesData';
-import { useQuotesTemplatesData } from '@/lib/hooks/useQuotesTemplatesData';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EditableSetting } from '@/components/ui/editable-setting';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -30,7 +29,7 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
 
   const { receiptTemplates, loading: templatesLoading } = useReceiptTemplatesData(organizationId || undefined);
   const { templates: invoiceTemplates } = useInvoicesTemplatesData(organizationId || undefined);
-  const { templates: quoteTemplates } = useQuotesTemplatesData(organizationId || undefined);
+  const quoteTemplates = invoiceTemplates; // Use invoice templates for quotes since they're the same now
   const { storeSettings, loading: storeSettingsLoading, refreshStoreSettings } = useStoreSettings();
 
   // Use store settings printer settings, fallback to prop
@@ -280,10 +279,10 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
                      label="Default Quote Template"
                      value={printerSettings?.quotes?.defaultTemplateId || ''}
                      type="select"
-                     options={quoteTemplates.map(t => ({
-                       value: t.id,
-                       label: t.name
-                     }))}
+options={quoteTemplates.map((t) => ({
+                        value: t.id,
+                        label: t.name
+                      }))}
                      onSave={(value) => handleUpdateSettings('quotes.defaultTemplateId', value)}
                      placeholder="Select template"
                      disabled={storeSettingsLoading}

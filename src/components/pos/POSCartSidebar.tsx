@@ -137,6 +137,7 @@ export function POSCartSidebar({
       items: cartItems.map((item) => ({
         id: `${item.type}-${item.id}`,
         type: item.type === "product" ? ItemType.PRODUCT : ItemType.SERVICE,
+        itemId: item.id,
         ...(item.type === "product" &&
           item.id !== undefined && { productId: item.id }),
         ...(item.type === "service" &&

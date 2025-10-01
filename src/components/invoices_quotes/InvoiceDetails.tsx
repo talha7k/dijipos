@@ -3,11 +3,11 @@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Invoice, Payment, Organization, Customer, Supplier } from '@/types';
+import { Invoice, Payment, Organization, Customer, Supplier, PurchaseInvoice } from '@/types';
 import { formatCurrency, formatDate } from '@/lib/utils';
 
 // Type guard to check if invoice is a PurchaseInvoice
-function isPurchaseInvoice(invoice: Invoice): invoice is Invoice & { type: 'purchase' } {
+function isPurchaseInvoice(invoice: Invoice): invoice is PurchaseInvoice {
   return invoice.type === 'purchase';
 }
 

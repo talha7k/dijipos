@@ -450,7 +450,7 @@ export const sampleOrders: Omit<Order, "organizationId">[] = [
       {
         id: "oi3",
         type: ItemType.PRODUCT,
-        productId: "p7",
+        itemId: "p7",
         name: "Chicken Burger",
         quantity: 1,
         unitPrice: 13.99,
@@ -459,7 +459,7 @@ export const sampleOrders: Omit<Order, "organizationId">[] = [
       {
         id: "oi4",
         type: ItemType.PRODUCT,
-        productId: "p6",
+        itemId: "p6",
         name: "French Fries",
         quantity: 1,
         unitPrice: 6.99,
@@ -468,7 +468,7 @@ export const sampleOrders: Omit<Order, "organizationId">[] = [
       {
         id: "oi5",
         type: ItemType.PRODUCT,
-        productId: "p8",
+        itemId: "p8",
         name: "Ice Cream Sundae",
         quantity: 1,
         unitPrice: 7.5,

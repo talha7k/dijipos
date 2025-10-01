@@ -3,13 +3,13 @@
 import { Badge } from '@/components/ui/badge';
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Invoice, Customer, Supplier, Payment, Organization, InvoiceTemplate, DocumentPrintSettings } from '@/types';
+import { Invoice, Customer, Supplier, Payment, Organization, InvoiceTemplate, DocumentPrintSettings, PurchaseInvoice } from '@/types';
 import { Receipt } from 'lucide-react';
 
 import { InvoiceActions } from './InvoiceActions';
 
 // Type guard to check if invoice is a PurchaseInvoice
-function isPurchaseInvoice(invoice: Invoice): invoice is Invoice & { type: 'purchase' } {
+function isPurchaseInvoice(invoice: Invoice): invoice is PurchaseInvoice {
   return invoice.type === 'purchase';
 }
 

@@ -233,6 +233,7 @@ export default function SimplifiedPOSPage() {
         const newItem: CartItem = {
           id: item.id,
           type: type === "product" ? ItemType.PRODUCT : ItemType.SERVICE,
+          itemId: item.id,
           name: item.name,
           unitPrice: item.price,
           quantity: 1,
@@ -307,8 +308,9 @@ export default function SimplifiedPOSPage() {
 
     // Load order items directly into cart
     const newCartItems = pendingOrderToReopen.items.map((item: CartItem) => ({
-      id: item.productId || item.serviceId || item.id,
+      id: item.id,
       type: item.type === "product" ? ItemType.PRODUCT : ItemType.SERVICE,
+      itemId: item.itemId,
       name: item.name,
       unitPrice: item.unitPrice,
       quantity: item.quantity,
@@ -964,6 +966,7 @@ export default function SimplifiedPOSPage() {
               id: item.id,
               type:
                 item.type === "product" ? ItemType.PRODUCT : ItemType.SERVICE,
+              itemId: item.id,
               name: item.name,
               quantity: item.quantity,
               unitPrice: item.price,

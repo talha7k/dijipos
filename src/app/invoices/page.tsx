@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useAtom } from "jotai";
 import { selectedOrganizationAtom } from "@/atoms";
 import { useMemo } from "react";
-import { Invoice, Payment } from "@/types";
+import { Invoice, Payment, SalesInvoice } from "@/types";
 import { InvoiceList } from "@/components/invoices_quotes/InvoiceList";
 import InvoiceForm from "@/components/invoices_quotes/InvoiceForm";
 import { InvoiceDetails } from "@/components/invoices_quotes/InvoiceDetails";
@@ -206,7 +206,7 @@ export default function InvoicesPage() {
                   await updateExistingInvoice(editingInvoice.id, invoiceData);
                   toast.success("Invoice updated successfully");
                 } else {
-                  await createSalesInvoice(invoiceData as any);
+                  await createSalesInvoice(invoiceData as Omit<SalesInvoice, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>);
                   toast.success("Invoice created successfully");
                 }
                 setShowForm(false);

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Invoice, Payment, InvoiceStatus, Organization, InvoiceTemplate, Customer, Supplier, DocumentPrintSettings } from '@/types';
+import { Invoice, Payment, InvoiceStatus, Organization, InvoiceTemplate, Customer, Supplier, DocumentPrintSettings, SalesInvoice } from '@/types';
 import { Printer, Eye, MoreHorizontal } from 'lucide-react';
 import { InvoiceActionsDialog } from './InvoiceActionsDialog';
 import { InvoicePrintDialog } from './InvoicePrintDialog';
@@ -55,8 +55,8 @@ export function InvoiceActions({
     setShowActionsDialog(true);
   };
 
-  const customer = invoice.type === 'sales' ? customers.find(c => c.id === (invoice as any).customerId) : undefined;
-  const supplier = invoice.type === 'purchase' ? suppliers.find(s => s.id === (invoice as any).supplierId) : undefined;
+  const customer = invoice.type === 'sales' ? customers.find(c => c.id === (invoice as SalesInvoice).clientName) : undefined;
+  const supplier = invoice.type === 'purchase' ? suppliers.find(s => s.id === invoice.supplierId) : undefined;
 
   return (
     <>
@@ -141,11 +141,6 @@ export function InvoiceActions({
         onMarkAsPaid={() => onStatusChange(invoice.id, InvoiceStatus.PAID)}
         onMarkAsSent={() => onStatusChange(invoice.id, InvoiceStatus.SENT)}
         onDownloadPDF={() => onDownloadPDF?.(invoice)}
-        organization={organization}
-        invoiceTemplates={invoiceTemplates}
-        customers={customers}
-        suppliers={suppliers}
-        settings={settings}
       />
     </>
   );
