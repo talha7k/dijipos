@@ -25,6 +25,7 @@ import { useInvoices } from "@/lib/hooks/useInvoices";
 import { useCustomers } from "@/lib/hooks/useCustomers";
 import { useSuppliers } from "@/lib/hooks/useSuppliers";
 import { useRealtimeCollection } from "@/lib/hooks/useRealtimeCollection";
+import { toast } from "sonner";
 
 export default function InvoicesPage() {
   const [selectedOrganization] = useAtom(selectedOrganizationAtom);
@@ -41,8 +42,8 @@ export default function InvoicesPage() {
     purchaseInvoices,
     loading: invoicesLoading,
     updateExistingInvoice,
+    createSalesInvoice,
   } = useInvoices();
-  const invoices = [...salesInvoices, ...purchaseInvoices];
   const { customers, loading: customersLoading } = useCustomers();
   const { suppliers, loading: suppliersLoading } = useSuppliers();
   const { data: payments, loading: paymentsLoading } =
@@ -51,6 +52,15 @@ export default function InvoicesPage() {
     useSeparatedTemplates();
   const { storeSettings } = useStoreSettings();
   const printerSettings = storeSettings?.printerSettings;
+
+  const invoices = useMemo(() => {
+    const allInvoices = [...salesInvoices, ...purchaseInvoices];
+    return allInvoices.map(invoice => ({
+      ...invoice,
+      dueDate: typeof invoice.dueDate === 'string' ? new Date(invoice.dueDate) : (invoice.dueDate?.toDate ? invoice.dueDate.toDate() : invoice.dueDate),
+    }));
+  }, [salesInvoices, purchaseInvoices]);
+
   const loading =
     invoicesLoading ||
     customersLoading ||
@@ -185,10 +195,15 @@ export default function InvoicesPage() {
             <DialogTitle>Create New Invoice</DialogTitle>
           </DialogHeader>
           <InvoiceForm
-            onSubmit={(invoiceData) => {
-              // Handle invoice creation here
-              console.log("Creating invoice:", invoiceData);
-              setShowForm(false);
+            onSubmit={async (invoiceData) => {
+              try {
+                await createSalesInvoice(invoiceData);
+                toast.success("Invoice created successfully");
+                setShowForm(false);
+              } catch (error) {
+                console.error("Error creating invoice:", error);
+                toast.error("Failed to create invoice");
+              }
             }}
           />
         </DialogContent>

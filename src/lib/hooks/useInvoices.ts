@@ -35,22 +35,30 @@ interface InvoicesActions {
 /**
  * Hook that provides sales/purchase invoices for the selected organization
  */
+import { useMemo } from 'react';
+import { where } from 'firebase/firestore';
+
+// ... (rest of the imports)
+
 export function useInvoices(): InvoicesState & InvoicesActions {
   const { selectedOrganization } = useOrganization();
 
   const organizationId = selectedOrganization?.id || null;
 
+  const salesConstraints = useMemo(() => [where('type', '==', 'sales')], []);
+  const purchaseConstraints = useMemo(() => [where('type', '==', 'purchase')], []);
+
   const {
     data: salesInvoices,
     loading: salesLoading,
     error: salesError
-  } = useRealtimeCollection<SalesInvoice>('salesInvoices', organizationId);
+  } = useRealtimeCollection<SalesInvoice>('invoices', organizationId, salesConstraints);
 
   const {
     data: purchaseInvoices,
     loading: purchaseLoading,
     error: purchaseError
-  } = useRealtimeCollection<PurchaseInvoice>('purchaseInvoices', organizationId);
+  } = useRealtimeCollection<PurchaseInvoice>('invoices', organizationId, purchaseConstraints);
 
   const loading = salesLoading || purchaseLoading;
   const error = salesError || purchaseError;

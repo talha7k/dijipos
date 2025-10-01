@@ -25,11 +25,24 @@ export function formatCurrency(
 }
 
 export function formatDate(
-  date: Date | string | number | null | undefined,
+  date: Date | string | number | null | undefined | { seconds: number; nanoseconds: number },
 ): string {
   if (!date) return "";
 
-  const dateObj = date instanceof Date ? date : new Date(date);
+  let dateObj: Date;
+
+  if (date instanceof Date) {
+    dateObj = date;
+  } else if (typeof date === 'object' && date !== null && 'seconds' in date && 'nanoseconds' in date) {
+    dateObj = new Date(date.seconds * 1000);
+  } else {
+    dateObj = new Date(date as string | number);
+  }
+
+  if (isNaN(dateObj.getTime())) {
+    return "Invalid Date";
+  }
+
   return new Intl.DateTimeFormat("en-US", {
     year: "numeric",
     month: "short",

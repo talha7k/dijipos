@@ -86,7 +86,7 @@ export function InvoiceList({
                   {invoice.status}
                 </Badge>
               </TableCell>
-              <TableCell>{invoice.dueDate?.toLocaleDateString()}</TableCell>
+              <TableCell>{invoice.dueDate && new Date(invoice.dueDate as any).toLocaleDateString()}</TableCell>
               <TableCell onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center gap-2">
                    <InvoiceActions

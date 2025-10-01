@@ -138,10 +138,23 @@ export async function createSalesInvoice(data: Omit<SalesInvoice, 'id' | 'create
   try {
     const now = Timestamp.now();
 
-    // Filter out undefined values to prevent Firestore errors
-    const filteredData = Object.fromEntries(
-      Object.entries(data).filter(([_, value]) => value !== undefined)
-    );
+    // Helper function to recursively remove undefined values
+    const removeUndefined = (obj: any): any => {
+      if (Array.isArray(obj)) {
+        return obj.map(removeUndefined);
+      }
+      if (obj !== null && typeof obj === 'object') {
+        return Object.entries(obj).reduce((acc, [key, value]) => {
+          if (value !== undefined) {
+            acc[key] = removeUndefined(value);
+          }
+          return acc;
+        }, {} as any);
+      }
+      return obj;
+    };
+
+    const filteredData = removeUndefined(data);
 
     const docRef = await addDoc(invoicesRef, {
       ...filteredData,
