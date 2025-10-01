@@ -4,12 +4,13 @@ import { useState } from 'react';
 import { useProducts } from '@/lib/hooks/useProducts';
 import { useServices } from '@/lib/hooks/useServices';
 import { useOrganization } from '@/lib/hooks/useOrganization';
-import { Product, Service, CategoryType } from '@/types';
+import { Product, Service, CategoryType, ProductTransactionType } from '@/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Package, Wrench, Search, Database, BarChart3 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -29,6 +30,7 @@ export default function ProductsServicesPage() {
   const { services, loading: servicesLoading, createNewService, updateExistingService, deleteExistingService } = useServices();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedTransactionType, setSelectedTransactionType] = useState<ProductTransactionType | null>(null);
   const [productDialogOpen, setProductDialogOpen] = useState(false);
   const [serviceDialogOpen, setServiceDialogOpen] = useState(false);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
@@ -273,6 +275,18 @@ export default function ProductsServicesPage() {
                       className="pl-10"
                     />
                   </div>
+                  <div>
+                    <Select value={selectedTransactionType || ''} onValueChange={(value) => setSelectedTransactionType(value ? value as ProductTransactionType : null)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Filter by transaction type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">All Types</SelectItem>
+                        <SelectItem value={ProductTransactionType.SALES}>Sales</SelectItem>
+                        <SelectItem value={ProductTransactionType.PURCHASE}>Purchase</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <ProductList
@@ -280,6 +294,7 @@ export default function ProductsServicesPage() {
                     categories={categories}
                     selectedCategory={selectedCategory}
                     searchTerm={searchTerm}
+                    selectedTransactionType={selectedTransactionType}
                     onEditProduct={handleEditProduct}
                     onDeleteProduct={handleDeleteProduct}
                   />
@@ -374,6 +389,18 @@ export default function ProductsServicesPage() {
                       className="pl-10"
                     />
                   </div>
+                  <div>
+                    <Select value={selectedTransactionType || ''} onValueChange={(value) => setSelectedTransactionType(value ? value as ProductTransactionType : null)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Filter by transaction type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">All Types</SelectItem>
+                        <SelectItem value={ProductTransactionType.SALES}>Sales</SelectItem>
+                        <SelectItem value={ProductTransactionType.PURCHASE}>Purchase</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <ServiceList
@@ -381,6 +408,7 @@ export default function ProductsServicesPage() {
                     categories={categories}
                     selectedCategory={selectedCategory}
                     searchTerm={searchTerm}
+                    selectedTransactionType={selectedTransactionType}
                     onEditService={handleEditService}
                     onDeleteService={handleDeleteService}
                   />

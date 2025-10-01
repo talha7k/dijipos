@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus } from 'lucide-react';
-import { Service, Category, CategoryType } from '@/types';
+import { Service, Category, CategoryType, ProductTransactionType, ItemType } from '@/types';
 import { useAtomValue } from 'jotai';
 import { vatSettingsAtom } from '@/atoms/posAtoms';
 import { getVATIndicationText } from '@/lib/vat-calculator';
@@ -36,6 +36,7 @@ export function AddServiceDialog({
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
   const [categoryId, setCategoryId] = useState<string>('');
+  const [transactionType, setTransactionType] = useState<ProductTransactionType>(ProductTransactionType.SALES);
   const vatSettings = useAtomValue(vatSettingsAtom);
 
   const isEditMode = serviceToEdit !== null;
@@ -46,12 +47,14 @@ export function AddServiceDialog({
       setDescription(serviceToEdit.description || '');
       setPrice(serviceToEdit.price.toString());
       setCategoryId(serviceToEdit.categoryId || '');
+      setTransactionType(serviceToEdit.transactionType);
     } else {
       // Reset form for adding new service
       setName('');
       setDescription('');
       setPrice('');
       setCategoryId(selectedCategory || '');
+      setTransactionType(ProductTransactionType.SALES);
     }
   }, [serviceToEdit, isEditMode, selectedCategory]);
 
@@ -62,7 +65,9 @@ export function AddServiceDialog({
       name,
       description,
       price: parseFloat(price),
-      categoryId: categoryId || undefined
+      categoryId: categoryId || undefined,
+      itemType: ItemType.SERVICE as const,
+      transactionType
     };
 
     if (isEditMode) {
@@ -142,6 +147,18 @@ export function AddServiceDialog({
                 Enter price including VAT. Base price will be calculated automatically.
               </p>
             )}
+          </div>
+          <div>
+            <Label htmlFor="transactionType">Transaction Type</Label>
+            <Select value={transactionType} onValueChange={(value) => setTransactionType(value as ProductTransactionType)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select transaction type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ProductTransactionType.SALES}>Sales</SelectItem>
+                <SelectItem value={ProductTransactionType.PURCHASE}>Purchase</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div>
             <Label htmlFor="serviceCategory">Category</Label>

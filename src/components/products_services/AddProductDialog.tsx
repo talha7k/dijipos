@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus } from 'lucide-react';
-import { Product, Category, CategoryType, ProductTransactionType } from '@/types';
+import { Product, Category, CategoryType, ProductTransactionType, ItemType } from '@/types';
 import { useAtomValue } from 'jotai';
 import { vatSettingsAtom } from '@/atoms/posAtoms';
 import { getVATIndicationText } from '@/lib/vat-calculator';
@@ -47,12 +47,14 @@ export function AddProductDialog({
       setDescription(productToEdit.description || '');
       setPrice(productToEdit.price.toString());
       setCategoryId(productToEdit.categoryId || '');
+      setTransactionType(productToEdit.transactionType);
     } else {
       // Reset form for adding new product
       setName('');
       setDescription('');
       setPrice('');
       setCategoryId(selectedCategory || '');
+      setTransactionType(ProductTransactionType.SALES);
     }
   }, [productToEdit, isEditMode, selectedCategory]);
 
@@ -63,7 +65,9 @@ export function AddProductDialog({
       name,
       description,
       price: parseFloat(price),
-      categoryId: categoryId || undefined
+      categoryId: categoryId || undefined,
+      itemType: ItemType.PRODUCT as const,
+      transactionType
     };
 
     if (isEditMode) {
@@ -143,6 +147,18 @@ export function AddProductDialog({
                 Enter price including VAT. Base price will be calculated automatically.
               </p>
             )}
+          </div>
+          <div>
+            <Label htmlFor="transactionType">Transaction Type</Label>
+            <Select value={transactionType} onValueChange={(value) => setTransactionType(value as ProductTransactionType)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select transaction type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ProductTransactionType.SALES}>Sales</SelectItem>
+                <SelectItem value={ProductTransactionType.PURCHASE}>Purchase</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div>
             <Label htmlFor="productCategory">Category</Label>

@@ -1,6 +1,6 @@
 import { db } from '@/lib/firebase/config';
 import { collection, doc, writeBatch } from 'firebase/firestore';
-import { Product, Service, Quote, Customer, Supplier, Item, Payment, PurchaseInvoice, Invoice, Category, Order, OrderPayment, CartItem, OrderType, PaymentType, Table, TableStatus, OrderStatus, PaymentStatus, CategoryType, ItemType, InvoiceType, QuoteStatus, InvoiceStatus } from '@/types';
+import { Product, Service, Quote, Customer, Supplier, InvoiceItem as Item, Payment, PurchaseInvoice, Invoice, Category, Order, OrderPayment, CartItem, OrderType, PaymentType, Table, TableStatus, OrderStatus, PaymentStatus, CategoryType, ItemType, InvoiceType, QuoteStatus, InvoiceStatus, ProductTransactionType } from '@/types';
 import { InvoiceTemplateType } from '@/types/enums';
  
 // --- HELPER FUNCTIONS ---
@@ -90,6 +90,8 @@ const generateProductsAndServices = (productCount: number, serviceCount: number,
       description: 'High-quality item.',
       price: getRandomFloat(10, 500, 2),
       categoryId: randomCategory.id,
+      itemType: ItemType.PRODUCT,
+      transactionType: getRandomElement([ProductTransactionType.SALES, ProductTransactionType.PURCHASE]),
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -101,6 +103,8 @@ const generateProductsAndServices = (productCount: number, serviceCount: number,
       name: `${getRandomElement(serviceAdjectives)} ${getRandomElement(serviceNouns)}`,
       description: 'Professional service offering.',
       price: getRandomFloat(50, 400, 2), // Per hour
+      itemType: ItemType.SERVICE,
+      transactionType: getRandomElement([ProductTransactionType.SALES, ProductTransactionType.PURCHASE]),
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -301,7 +305,7 @@ const generateItems = (products: Omit<Product, 'organizationId'>[], services: Om
             const quantity = getRandomInt(1, 10);
             items.push({
                 id: generateId('item'),
-                type: ItemType.PRODUCT,
+                itemType: ItemType.PRODUCT,
                 productId: product.id,
                 name: product.name,
                 description: 'Product item',
@@ -314,7 +318,7 @@ const generateItems = (products: Omit<Product, 'organizationId'>[], services: Om
             const quantity = getRandomInt(2, 20); // Hours
             items.push({
                 id: generateId('item'),
-                type: ItemType.SERVICE,
+                itemType: ItemType.SERVICE,
                 serviceId: service.id,
                 name: service.name,
                 description: 'Professional services rendered.',

@@ -1,6 +1,6 @@
 'use client';
 
-import { Service, Category } from '@/types';
+import { Service, Category, ProductTransactionType } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCurrency } from '@/lib/hooks/useCurrency';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +12,7 @@ interface ServiceListProps {
   categories: Category[];
   selectedCategory: string | null;
   searchTerm: string;
+  selectedTransactionType: ProductTransactionType | null;
   onEditService: (service: Service) => void;
   onDeleteService: (serviceId: string) => void;
 }
@@ -21,6 +22,7 @@ export function ServiceList({
   categories,
   selectedCategory,
   searchTerm,
+  selectedTransactionType,
   onEditService,
   onDeleteService
 }: ServiceListProps) {
@@ -45,7 +47,9 @@ export function ServiceList({
     
     const matchesCategory = !selectedCategory || service.categoryId === selectedCategory;
     
-    return matchesSearch && matchesCategory;
+    const matchesTransactionType = !selectedTransactionType || service.transactionType === selectedTransactionType;
+    
+    return matchesSearch && matchesCategory && matchesTransactionType;
   });
 
   return (

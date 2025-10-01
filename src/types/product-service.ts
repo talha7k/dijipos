@@ -1,5 +1,5 @@
 // Import enums from the main enums file
-import { ProductTransactionType, CategoryType, ItemType } from './enums';
+import { ProductTransactionType, CategoryType, ItemType } from "./enums";
 
 export interface Category {
   id: string;
@@ -19,34 +19,22 @@ export interface ProductVariation {
   description?: string;
 }
 
-export interface Product {
+export interface Item {
   id: string;
   name: string;
   description?: string;
   price: number;
   categoryId?: string; // Reference to Category ID
   variations?: ProductVariation[]; // Optional variations
+  itemType: ItemType;
   transactionType: ProductTransactionType; // Transaction type: sales or purchase
   organizationId: string;
   createdAt: Date;
   updatedAt: Date;
 }
-
-export interface Service {
+export interface InvoiceItem {
   id: string;
-  name: string;
-  description?: string;
-  price: number; // total price
-  categoryId?: string; // Reference to Category ID
-  transactionType: ProductTransactionType; // Transaction type: sales or purchase
-  organizationId: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface Item {
-  id: string;
-  type: ItemType;
+  itemType: ItemType; // Type: product or service
   productId?: string;
   serviceId?: string;
   name: string;

@@ -50,16 +50,6 @@ const getNavigationItems = (role: string): NavigationItem[] => {
           icon: Receipt,
         },
         {
-          title: "Invoices",
-          href: "/invoices",
-          icon: Receipt,
-        },
-        {
-          title: "Quotes",
-          href: "/quotes",
-          icon: FileText,
-        },
-        {
           title: "Payments",
           href: "/payments",
           icon: Wallet,
@@ -80,17 +70,17 @@ const getNavigationItems = (role: string): NavigationItem[] => {
 
   const purchaseItems: NavigationItem[] = [
     {
-      title: "Purchases",
+      title: "Invoices",
       icon: FileMinus,
       children: [
         {
           title: "Invoices",
-          href: "/purchase-invoices",
+          href: "/invoices",
           icon: Receipt,
         },
         {
           title: "Products & Services",
-          href: "/purchase-products-services",
+          href: "/products-services",
           icon: BarChart3,
         },
         {

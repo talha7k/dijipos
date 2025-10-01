@@ -1,6 +1,6 @@
 'use client';
 
-import { Product, Category } from '@/types';
+import { Product, Category, ProductTransactionType } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCurrency } from '@/lib/hooks/useCurrency';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +12,7 @@ interface ProductListProps {
   categories: Category[];
   selectedCategory: string | null;
   searchTerm: string;
+  selectedTransactionType: ProductTransactionType | null;
   onEditProduct: (product: Product) => void;
   onDeleteProduct: (productId: string) => void;
 }
@@ -21,6 +22,7 @@ export function ProductList({
   categories,
   selectedCategory,
   searchTerm,
+  selectedTransactionType,
   onEditProduct,
   onDeleteProduct
 }: ProductListProps) {
@@ -45,7 +47,9 @@ export function ProductList({
     
     const matchesCategory = !selectedCategory || product.categoryId === selectedCategory;
     
-    return matchesSearch && matchesCategory;
+    const matchesTransactionType = !selectedTransactionType || product.transactionType === selectedTransactionType;
+    
+    return matchesSearch && matchesCategory && matchesTransactionType;
   });
 
   return (

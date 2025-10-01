@@ -78,5 +78,5 @@ export interface PurchaseInvoice {
 
 export type Invoice = SalesInvoice | PurchaseInvoice;
 
-// Import Item from product-service types
-import { Item } from './product-service';
+// Import InvoiceItem from product-service types
+import { InvoiceItem as Item } from './product-service';
