@@ -213,35 +213,35 @@ export default function InvoicesPage() {
         </Button>
       </div>
 
-      {/* Transaction Type Filter */}
-      <div className="mb-6">
-        <div className="flex items-center gap-4">
-          <span className="text-sm font-medium">Transaction Type:</span>
-          <div className="flex gap-2">
-            <Button
-              variant={transactionTypeFilter === "sales" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setTransactionTypeFilter("sales")}
-            >
-              Sales Invoices
-            </Button>
-            <Button
-              variant={transactionTypeFilter === "purchase" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setTransactionTypeFilter("purchase")}
-            >
-              Purchase Invoices
-            </Button>
-            <Button
-              variant={transactionTypeFilter === "all" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setTransactionTypeFilter("all")}
-            >
-              All Types
-            </Button>
-          </div>
-        </div>
-      </div>
+       {/* Transaction Type Filter */}
+       <div className="mb-6">
+         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+           <span className="text-sm font-medium">Transaction Type:</span>
+           <div className="flex gap-2 flex-wrap">
+             <Button
+               variant={transactionTypeFilter === "sales" ? "default" : "outline"}
+               size="sm"
+               onClick={() => setTransactionTypeFilter("sales")}
+             >
+               Sales Invoices
+             </Button>
+             <Button
+               variant={transactionTypeFilter === "purchase" ? "default" : "outline"}
+               size="sm"
+               onClick={() => setTransactionTypeFilter("purchase")}
+             >
+               Purchase Invoices
+             </Button>
+             <Button
+               variant={transactionTypeFilter === "all" ? "default" : "outline"}
+               size="sm"
+               onClick={() => setTransactionTypeFilter("all")}
+             >
+               All Types
+             </Button>
+           </div>
+         </div>
+       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
         <TabsList>
