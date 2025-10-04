@@ -120,81 +120,82 @@ export function AddProductDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      {!isEditMode && (
-        <DialogTrigger asChild>
-          <Button size="sm">
-            <Plus className="h-4 w-4 mr-2" />
-            Add
-          </Button>
-        </DialogTrigger>
-      )}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{isEditMode ? 'Edit Product' : 'Add New Product'}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="productName">Name</Label>
-            <Input
-              id="productName"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <Label htmlFor="productDescription">Description</Label>
-            <Textarea
-              id="productDescription"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
-          <div>
-            <Label htmlFor="productPrice">
-              Price
-              {vatSettings?.isEnabled && vatSettings?.isVatInclusive && (
-                <span className="text-sm text-muted-foreground ml-2">
-                  {getVATIndicationText(true)}
-                </span>
-              )}
-            </Label>
-            <Input
-              id="productPrice"
-              type="number"
-              step="0.01"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              required
-            />
-            {vatSettings?.isEnabled && vatSettings?.isVatInclusive && (
-              <p className="text-xs text-muted-foreground mt-1">
-                Enter price including VAT. Base price will be calculated automatically.
-              </p>
-            )}
-          </div>
-          <div>
-            <Label htmlFor="transactionType">Transaction Type</Label>
-            <Select value={transactionType} onValueChange={(value) => setTransactionType(value as ProductTransactionType)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select transaction type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={ProductTransactionType.SALES}>Sales</SelectItem>
-                <SelectItem value={ProductTransactionType.PURCHASE}>Purchase</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label htmlFor="productCategory">Category</Label>
-            <Select value={categoryId} onValueChange={setCategoryId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a category" />
-              </SelectTrigger>
-              <SelectContent>
-                {renderCategoryOptions()}
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Left Column */}
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="productName">Name</Label>
+                <Input
+                  id="productName"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="productDescription">Description</Label>
+                <Textarea
+                  id="productDescription"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="productPrice">
+                  Price
+                  {vatSettings?.isEnabled && vatSettings?.isVatInclusive && (
+                    <span className="text-sm text-muted-foreground ml-2">
+                      {getVATIndicationText(true)}
+                    </span>
+                  )}
+                </Label>
+                <Input
+                  id="productPrice"
+                  type="number"
+                  step="0.01"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  required
+                />
+                {vatSettings?.isEnabled && vatSettings?.isVatInclusive && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Enter price including VAT. Base price will be calculated automatically.
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Right Column */}
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="transactionType">Transaction Type</Label>
+                <Select value={transactionType} onValueChange={(value) => setTransactionType(value as ProductTransactionType)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select transaction type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={ProductTransactionType.SALES}>Sales</SelectItem>
+                    <SelectItem value={ProductTransactionType.PURCHASE}>Purchase</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="productCategory">Category</Label>
+                <Select value={categoryId} onValueChange={setCategoryId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {renderCategoryOptions()}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </div>
           
           {/* Variations Section */}
