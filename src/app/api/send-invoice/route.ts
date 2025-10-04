@@ -12,6 +12,11 @@ interface SMTPErr {
   responseCode?: number;
 }
 
+// Firestore Timestamp interface
+interface FirestoreTimestamp {
+  toDate(): Date;
+}
+
 // Invoice data interface for admin SDK
 interface InvoiceData {
   id: string;
@@ -28,6 +33,31 @@ interface InvoiceData {
   [key: string]: unknown;
 }
 
+// Helper function to safely convert date fields
+function convertDateField(field: unknown): Date | undefined {
+  if (!field) return undefined;
+
+  // If it's already a Date object
+  if (field instanceof Date) return field;
+
+  // If it's a Firestore Timestamp (has toDate method)
+  if (typeof field === 'object' && field !== null && 'toDate' in field) {
+    try {
+      return (field as FirestoreTimestamp).toDate();
+    } catch {
+      // If toDate fails, continue to other checks
+    }
+  }
+
+  // If it's a string or number, try to parse it
+  if (typeof field === 'string' || typeof field === 'number') {
+    const date = new Date(field);
+    return isNaN(date.getTime()) ? undefined : date;
+  }
+
+  return undefined;
+}
+
 // Get invoice using Admin SDK
 async function getInvoice(invoiceId: string): Promise<InvoiceData | null> {
   try {
@@ -42,11 +72,11 @@ async function getInvoice(invoiceId: string): Promise<InvoiceData | null> {
     return {
       id: docSnap.id,
       ...data,
-      createdAt: data?.createdAt?.toDate() || new Date(),
-      updatedAt: data?.updatedAt?.toDate() || new Date(),
-      invoiceDate: data?.invoiceDate?.toDate(),
-      dueDate: data?.dueDate?.toDate(),
-      validUntil: data?.validUntil?.toDate(),
+      createdAt: convertDateField(data?.createdAt) || new Date(),
+      updatedAt: convertDateField(data?.updatedAt) || new Date(),
+      invoiceDate: convertDateField(data?.invoiceDate),
+      dueDate: convertDateField(data?.dueDate),
+      validUntil: convertDateField(data?.validUntil),
     } as InvoiceData;
   } catch (error) {
     console.error('Error fetching invoice with admin SDK:', error);
