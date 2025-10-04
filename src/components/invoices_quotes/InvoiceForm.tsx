@@ -235,58 +235,38 @@ export default function InvoiceForm({
 
         {invoiceType === InvoiceType.SALES ? (
           <>
-            <ClientInfo
-              selectedCustomerId={selectedCustomerId}
-              clientName={clientName}
-              clientEmail={clientEmail}
-              clientAddress={clientAddress}
-              clientVAT={clientVAT}
-              showVAT={true}
-              customers={customers}
-              onCustomerSelect={setSelectedCustomerId}
-              onClientNameChange={setClientName}
-              onClientEmailChange={setClientEmail}
-              onClientAddressChange={setClientAddress}
-              onClientVATChange={setClientVAT}
-            />
-            <div className="flex justify-between items-center">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setShowAddCustomerDialog(true)}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Customer
-              </Button>
-            </div>
+             <ClientInfo
+               selectedCustomerId={selectedCustomerId}
+               clientName={clientName}
+               clientEmail={clientEmail}
+               clientAddress={clientAddress}
+               clientVAT={clientVAT}
+               showVAT={true}
+               customers={customers}
+               onCustomerSelect={setSelectedCustomerId}
+               onClientNameChange={setClientName}
+               onClientEmailChange={setClientEmail}
+               onClientAddressChange={setClientAddress}
+               onClientVATChange={setClientVAT}
+               onAddCustomer={() => setShowAddCustomerDialog(true)}
+             />
           </>
         ) : (
           <>
-            <SupplierInfo
-              selectedSupplierId={selectedSupplierId}
-              supplierName={supplierName}
-              supplierEmail={supplierEmail}
-              supplierAddress={supplierAddress}
-              supplierVAT={supplierVAT}
-              showVAT={true}
-              onSupplierSelect={setSelectedSupplierId}
-              onSupplierNameChange={setSupplierName}
-              onSupplierEmailChange={setSupplierEmail}
-              onSupplierAddressChange={setSupplierAddress}
-              onSupplierVATChange={setSupplierVAT}
-            />
-            <div className="flex justify-between items-center">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setShowAddSupplierDialog(true)}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Supplier
-              </Button>
-            </div>
+             <SupplierInfo
+               selectedSupplierId={selectedSupplierId}
+               supplierName={supplierName}
+               supplierEmail={supplierEmail}
+               supplierAddress={supplierAddress}
+               supplierVAT={supplierVAT}
+               showVAT={true}
+               onSupplierSelect={setSelectedSupplierId}
+               onSupplierNameChange={setSupplierName}
+               onSupplierEmailChange={setSupplierEmail}
+               onSupplierAddressChange={setSupplierAddress}
+               onSupplierVATChange={setSupplierVAT}
+               onAddSupplier={() => setShowAddSupplierDialog(true)}
+             />
 
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -316,68 +296,68 @@ export default function InvoiceForm({
             <Label>Items</Label>
           </div>
 
-          {/* Add item from catalog */}
-          <div className="mb-4 space-y-2">
-            <div className="flex justify-between items-center">
+            {/* Add item from catalog */}
+            <div className="mb-4 space-y-2">
               <Label className="text-sm text-muted-foreground">
                 Add from catalog:
               </Label>
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowAddProductDialog(true)}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Product
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowAddServiceDialog(true)}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Service
-                </Button>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="flex gap-2">
+                  <Combobox
+                    options={items
+                      .filter((item) =>
+                        item.itemType === ItemType.PRODUCT &&
+                        item.transactionType === (invoiceType === 'sales' ? ProductTransactionType.SALES : ProductTransactionType.PURCHASE)
+                      )
+                      .map((item) => ({ value: item.id, label: item.name }))}
+                    value=""
+                    onValueChange={(value) => {
+                      addItemFromCatalog(value);
+                    }}
+                    placeholder="Select product..."
+                    searchPlaceholder="Search products..."
+                    emptyMessage={`No ${invoiceType === 'sales' ? 'sale' : 'purchase'} products found.`}
+                    buttonWidth="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setShowAddProductDialog(true)}
+                    className="shrink-0"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="flex gap-2">
+                  <Combobox
+                    options={items
+                      .filter((item) =>
+                        item.itemType === ItemType.SERVICE &&
+                        item.transactionType === (invoiceType === 'sales' ? ProductTransactionType.SALES : ProductTransactionType.PURCHASE)
+                      )
+                      .map((item) => ({ value: item.id, label: item.name }))}
+                    value=""
+                    onValueChange={(value) => {
+                      addItemFromCatalog(value);
+                    }}
+                    placeholder="Select service..."
+                    searchPlaceholder="Search services..."
+                    emptyMessage={`No ${invoiceType === 'sales' ? 'sale' : 'purchase'} services found.`}
+                    buttonWidth="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setShowAddServiceDialog(true)}
+                    className="shrink-0"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <Combobox
-                options={items
-                  .filter((item) => 
-                    item.itemType === ItemType.PRODUCT && 
-                    item.transactionType === (invoiceType === 'sales' ? ProductTransactionType.SALES : ProductTransactionType.PURCHASE)
-                  )
-                  .map((item) => ({ value: item.id, label: item.name }))}
-                value=""
-                onValueChange={(value) => {
-                  addItemFromCatalog(value);
-                }}
-                placeholder="Select product..."
-                searchPlaceholder="Search products..."
-                emptyMessage={`No ${invoiceType === 'sales' ? 'sale' : 'purchase'} products found. Click 'Add Product' to create one.`}
-                buttonWidth="w-full"
-              />
-              <Combobox
-                options={items
-                  .filter((item) => 
-                    item.itemType === ItemType.SERVICE && 
-                    item.transactionType === (invoiceType === 'sales' ? ProductTransactionType.SALES : ProductTransactionType.PURCHASE)
-                  )
-                  .map((item) => ({ value: item.id, label: item.name }))}
-                value=""
-                onValueChange={(value) => {
-                  addItemFromCatalog(value);
-                }}
-                placeholder="Select service..."
-                searchPlaceholder="Search services..."
-                emptyMessage={`No ${invoiceType === 'sales' ? 'sale' : 'purchase'} services found. Click 'Add Service' to create one.`}
-                buttonWidth="w-full"
-              />
-            </div>
-          </div>
 
           <ItemList
             items={invoiceItems}

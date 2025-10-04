@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Combobox } from '@/components/ui/combobox';
+import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -13,6 +14,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Customer } from '@/types';
+import { Plus } from 'lucide-react';
 
 interface EditableTableCellProps {
   value: string;
@@ -94,6 +96,7 @@ interface ClientInfoProps {
   onClientEmailChange: (email: string) => void;
   onClientAddressChange: (address: string) => void;
   onClientVATChange?: (vat: string) => void;
+  onAddCustomer?: () => void;
 }
 
 export default function ClientInfo({
@@ -109,6 +112,7 @@ export default function ClientInfo({
   onClientEmailChange,
   onClientAddressChange,
   onClientVATChange,
+  onAddCustomer,
 }: ClientInfoProps) {
   const handleCustomerSelect = (customerId: string) => {
     onCustomerSelect(customerId);
@@ -124,15 +128,28 @@ export default function ClientInfo({
     <>
       <div>
         <Label>Select Customer</Label>
-        <Combobox
-          options={customers.map(customer => ({ value: customer.id, label: customer.name }))}
-          value={selectedCustomerId}
-          onValueChange={handleCustomerSelect}
-          placeholder="Choose a customer..."
-          searchPlaceholder="Search customers..."
-          emptyMessage="No customers found. Click 'Add Customer' to create one."
-          buttonWidth="w-full"
-        />
+        <div className="flex gap-2">
+          <Combobox
+            options={customers.map(customer => ({ value: customer.id, label: customer.name }))}
+            value={selectedCustomerId}
+            onValueChange={handleCustomerSelect}
+            placeholder="Choose a customer..."
+            searchPlaceholder="Search customers..."
+            emptyMessage="No customers found."
+            buttonWidth="flex-1"
+          />
+          {onAddCustomer && (
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              onClick={onAddCustomer}
+              className="shrink-0"
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
       </div>
 
       {selectedCustomerId && (

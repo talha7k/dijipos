@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Combobox } from '@/components/ui/combobox';
+import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -14,6 +15,7 @@ import {
 } from '@/components/ui/table';
 import { Supplier } from '@/types';
 import { useSuppliers } from '@/lib/hooks/useSuppliers';
+import { Plus } from 'lucide-react';
 
 interface EditableTableCellProps {
   value: string;
@@ -107,6 +109,7 @@ interface SupplierInfoProps {
   onSupplierEmailChange: (email: string) => void;
   onSupplierAddressChange: (address: string) => void;
   onSupplierVATChange?: (vat: string) => void;
+  onAddSupplier?: () => void;
 }
 
 export default function SupplierInfo({
@@ -121,6 +124,7 @@ export default function SupplierInfo({
   onSupplierEmailChange,
   onSupplierAddressChange,
   onSupplierVATChange,
+  onAddSupplier,
 }: SupplierInfoProps) {
   const { suppliers } = useSuppliers();
 
@@ -138,15 +142,28 @@ export default function SupplierInfo({
     <>
       <div>
         <Label>Select Supplier</Label>
-        <Combobox
-          options={getSupplierOptions(suppliers)}
-          value={selectedSupplierId}
-          onValueChange={handleSupplierSelect}
-          placeholder="Choose a supplier..."
-          searchPlaceholder="Search suppliers..."
-          emptyMessage="No suppliers found."
-          buttonWidth="w-full"
-        />
+        <div className="flex gap-2">
+          <Combobox
+            options={getSupplierOptions(suppliers)}
+            value={selectedSupplierId}
+            onValueChange={handleSupplierSelect}
+            placeholder="Choose a supplier..."
+            searchPlaceholder="Search suppliers..."
+            emptyMessage="No suppliers found."
+            buttonWidth="flex-1"
+          />
+          {onAddSupplier && (
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              onClick={onAddSupplier}
+              className="shrink-0"
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
       </div>
 
       {selectedSupplierId && (
