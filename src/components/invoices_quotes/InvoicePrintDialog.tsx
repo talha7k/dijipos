@@ -1,6 +1,7 @@
-import React, { useState, useEffect, ReactNode } from "react";
+import React, { useState, useEffect, ReactNode, useMemo } from "react";
 import { renderTemplate } from "@/lib/template-renderer";
 import { SalesInvoice, PurchaseInvoice } from "@/types/invoice-quote";
+import { InvoiceType } from "@/types";
 import { Organization } from "@/types/organization-user";
 import { InvoiceTemplate, InvoiceTemplateData } from "@/types/template";
 import { Customer, Supplier } from "@/types/customer-supplier";
@@ -160,6 +161,18 @@ export function InvoicePrintDialog({
     left: 15,
   });
 
+  // Filter templates based on invoice type
+  const filteredTemplates = useMemo(() => {
+    return invoiceTemplates?.filter((template) => {
+      if (invoice.type === InvoiceType.SALES) {
+        return template.id.includes('sales-invoice') || template.id.includes('custom');
+      } else if (invoice.type === InvoiceType.PURCHASE) {
+        return template.id.includes('purchase-invoice') || template.id.includes('custom');
+      }
+      return true; // Show all for other cases
+    }) || [];
+  }, [invoiceTemplates, invoice.type]);
+
   // Effect to initialize all settings when the dialog opens
   useEffect(() => {
     if (open) {
@@ -167,9 +180,9 @@ export function InvoicePrintDialog({
       const defaultTemplateId = settings?.defaultTemplateId;
       const isValidDefault =
         defaultTemplateId &&
-        invoiceTemplates?.some((t) => t.id === defaultTemplateId);
+        filteredTemplates?.some((t) => t.id === defaultTemplateId);
       setSelectedTemplate(
-        isValidDefault ? defaultTemplateId : invoiceTemplates?.[0]?.id || "",
+        isValidDefault ? defaultTemplateId : filteredTemplates?.[0]?.id || "",
       );
 
       // 2. Set paper size
@@ -191,18 +204,18 @@ export function InvoicePrintDialog({
     } else {
       setRenderedHtml(""); // Clear preview on close
     }
-  }, [open, settings, invoiceTemplates]);
+  }, [open, settings, filteredTemplates]);
 
   // Effect to render the preview when settings change
   useEffect(() => {
     if (open && selectedTemplate) {
-      const template = invoiceTemplates?.find((t) => t.id === selectedTemplate);
+      const template = filteredTemplates?.find((t) => t.id === selectedTemplate);
       if (template) {
         setDirection(template.type?.includes("arabic") ? "rtl" : "ltr");
         renderPreview(template);
       }
     }
-  }, [open, selectedTemplate, invoice, organization, customer, supplier, invoiceTemplates]);
+  }, [open, selectedTemplate, invoice, organization, customer, supplier, filteredTemplates]);
 
   // Effect to handle keyboard shortcuts
   useEffect(() => {
@@ -220,7 +233,7 @@ export function InvoicePrintDialog({
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [open, selectedTemplate, renderedHtml, pageSize, margins, paddings, invoiceTemplates, invoice]);
+  }, [open, selectedTemplate, renderedHtml, pageSize, margins, paddings, filteredTemplates, invoice]);
 
   const renderPreview = async (template: InvoiceTemplate) => {
     const content = await renderInvoice(
@@ -244,7 +257,7 @@ export function InvoicePrintDialog({
       }
 
       // Get the selected template to determine direction
-      const template = invoiceTemplates?.find((t) => t.id === selectedTemplate);
+      const template = filteredTemplates?.find((t) => t.id === selectedTemplate);
       const direction = template?.type?.includes("arabic") ? "rtl" : "ltr";
 
       // Create the print HTML with proper styling
@@ -404,7 +417,7 @@ export function InvoicePrintDialog({
               onChange={(e) => setSelectedTemplate(e.target.value)}
               className="w-full p-2 border rounded"
             >
-              {invoiceTemplates?.map((t) => (
+              {filteredTemplates?.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.name}
                 </option>
