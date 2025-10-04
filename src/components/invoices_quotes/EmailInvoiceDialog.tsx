@@ -6,12 +6,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Invoice, PurchaseInvoice, Customer, Supplier, Organization } from '@/types';
+import { SalesInvoice, PurchaseInvoice, Customer, Supplier, Organization } from '@/types';
 import { Mail, Send, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface EmailInvoiceDialogProps {
-  invoice: Invoice | null;
+  invoice: SalesInvoice | PurchaseInvoice | null;
   customer?: Customer;
   supplier?: Supplier;
   organization: Organization | null;

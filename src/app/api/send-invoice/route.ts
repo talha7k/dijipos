@@ -201,8 +201,6 @@ async function renderInvoiceWithTemplate(
     dueDate: convertDateField(invoice.dueDate)?.toLocaleDateString() || "",
     status: invoice.status || "",
     invoiceType: invoice.type === 'sales' ? InvoiceType.SALES : invoice.type === 'purchase' ? InvoiceType.PURCHASE : InvoiceType.SALES,
-    isSalesInvoice: invoice.type === 'sales',
-    isPurchaseInvoice: invoice.type === 'purchase',
     companyName: organization?.name || "",
     companyNameAr: organization?.nameAr || "",
     companyAddress: organization?.address || "",

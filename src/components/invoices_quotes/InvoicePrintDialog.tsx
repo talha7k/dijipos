@@ -1,6 +1,6 @@
 import React, { useState, useEffect, ReactNode } from "react";
 import { renderTemplate } from "@/lib/template-renderer";
-import { Invoice } from "@/types/invoice-quote";
+import { SalesInvoice, PurchaseInvoice } from "@/types/invoice-quote";
 import { Organization } from "@/types/organization-user";
 import { InvoiceTemplate, InvoiceTemplateData } from "@/types/template";
 import { Customer, Supplier } from "@/types/customer-supplier";
@@ -16,7 +16,7 @@ import { defaultInvoiceArabic } from "@/components/templates/invoice/default-inv
 
 async function renderInvoice(
   templateObj: InvoiceTemplate,
-  invoice: Invoice,
+  invoice: SalesInvoice | PurchaseInvoice,
   organization: Organization | null,
   customer?: Customer,
   supplier?: Supplier,
@@ -30,8 +30,6 @@ async function renderInvoice(
     dueDate: invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : "",
     status: invoice.status,
     invoiceType: invoice.type,
-    isSalesInvoice: invoice.type === 'sales',
-    isPurchaseInvoice: invoice.type === 'purchase',
     companyName: organization?.name || "",
     companyNameAr: organization?.nameAr || "",
     companyAddress: organization?.address || "",
@@ -121,7 +119,7 @@ const SettingsInputGroup = ({ label, values, onChange }: { label: string; values
 );
 
 interface InvoicePrintDialogProps {
-  invoice: Invoice;
+  invoice: SalesInvoice | PurchaseInvoice;
   organization: Organization | null;
   invoiceTemplates: InvoiceTemplate[];
   customer?: Customer;
@@ -129,7 +127,7 @@ interface InvoicePrintDialogProps {
   children: React.ReactNode;
   settings?: DocumentPrintSettings | null; // Use the new settings type
   previewMode?: boolean;
-  onEmail?: (invoice: Invoice, templateId: string) => void;
+  onEmail?: (invoice: SalesInvoice | PurchaseInvoice, templateId: string) => void;
 }
 
 export function InvoicePrintDialog({

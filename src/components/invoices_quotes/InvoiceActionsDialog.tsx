@@ -3,7 +3,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Invoice, Payment, SalesInvoice } from '@/types';
+import { SalesInvoice, PurchaseInvoice, Payment } from '@/types';
 import {
   Eye,
   Printer,
@@ -18,12 +18,12 @@ import {
 } from 'lucide-react';
 
 // Type guard to check if invoice is a SalesInvoice
-function isSalesInvoice(invoice: Invoice): invoice is SalesInvoice {
+function isSalesInvoice(invoice: SalesInvoice | PurchaseInvoice): invoice is SalesInvoice {
   return invoice.type === 'sales';
 }
 
 interface InvoiceActionsDialogProps {
-  invoice: Invoice | null;
+  invoice: SalesInvoice | PurchaseInvoice | null;
   payments: Payment[];
   open: boolean;
   onOpenChange: (open: boolean) => void;

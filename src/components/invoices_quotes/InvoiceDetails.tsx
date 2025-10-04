@@ -3,21 +3,21 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Invoice, Payment, Organization, Customer, Supplier, PurchaseInvoice } from '@/types';
+import { SalesInvoice, PurchaseInvoice, Payment, Organization, Customer, Supplier } from '@/types';
 import { formatCurrency, formatDate } from '@/lib/utils';
 
 // Type guard to check if invoice is a PurchaseInvoice
-function isPurchaseInvoice(invoice: Invoice): invoice is PurchaseInvoice {
+function isPurchaseInvoice(invoice: SalesInvoice | PurchaseInvoice): invoice is PurchaseInvoice {
   return invoice.type === 'purchase';
 }
 
 interface InvoiceDetailsProps {
-  invoice: Invoice;
+  invoice: SalesInvoice | PurchaseInvoice;
   organization: Organization | null;
   customer?: Customer;
   supplier?: Supplier;
   payments?: Payment[];
-  onStatusChange?: (invoiceId: string, status: Invoice['status']) => void;
+  onStatusChange?: (invoiceId: string, status: (SalesInvoice | PurchaseInvoice)['status']) => void;
 }
 
 export function InvoiceDetails({
@@ -40,7 +40,7 @@ export function InvoiceDetails({
           <div className="mt-2">
             <Select
               value={invoice.status}
-              onValueChange={(value: Invoice['status']) => onStatusChange?.(invoice.id, value)}
+              onValueChange={(value: (SalesInvoice | PurchaseInvoice)['status']) => onStatusChange?.(invoice.id, value)}
             >
               <SelectTrigger className="w-32">
                 <SelectValue />

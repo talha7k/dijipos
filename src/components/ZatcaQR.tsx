@@ -2,11 +2,11 @@
 
 import { useEffect, useRef } from 'react';
 import QRCode from 'qrcode';
-import { Invoice, Organization } from '@/types';
+import { SalesInvoice, PurchaseInvoice, Organization } from '@/types';
 import { createInvoiceQRData, generateZatcaQRCode } from '@/lib/zatca-qr';
 
 interface ZatcaQRProps {
-  invoice: Invoice;
+  invoice: SalesInvoice | PurchaseInvoice;
   organization: Organization;
 }
 

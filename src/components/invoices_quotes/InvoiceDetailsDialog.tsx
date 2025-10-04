@@ -6,19 +6,19 @@ import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Invoice, Payment, Organization, Customer, Supplier, PaymentType } from '@/types';
+import { SalesInvoice, PurchaseInvoice, Payment, Organization, Customer, Supplier, PaymentType } from '@/types';
 import { CreditCard, Printer, Eye, Plus } from 'lucide-react';
 import { AddInvoicePaymentDialog } from './AddInvoicePaymentDialog';
 
 // Type guard to check if invoice is a PurchaseInvoice
-function isPurchaseInvoice(invoice: Invoice): invoice is Invoice & { type: 'purchase' } {
+function isPurchaseInvoice(invoice: SalesInvoice | PurchaseInvoice): invoice is PurchaseInvoice {
   return invoice.type === 'purchase';
 }
 
 
 
 interface InvoiceDetailsDialogProps {
-  invoice: Invoice | null;
+  invoice: SalesInvoice | PurchaseInvoice | null;
   customers: Customer[];
   suppliers: Supplier[];
   payments: { [invoiceId: string]: Payment[] };
@@ -130,7 +130,7 @@ export function InvoiceDetailsDialog({
                 <div className="space-y-1 text-sm">
                   {isPurchaseInvoice(invoice) ? (
                     (() => {
-                      const supplier = suppliers.find(s => s.id === (invoice as Invoice & { supplierId?: string }).supplierId);
+                      const supplier = suppliers.find(s => s.id === (invoice as PurchaseInvoice).supplierId);
                       return supplier ? (
                         <>
                           <div className="flex justify-between">
@@ -159,7 +159,7 @@ export function InvoiceDetailsDialog({
                     })()
                   ) : (
                     (() => {
-                      const customer = customers.find(c => c.id === (invoice as Invoice & { customerId?: string }).customerId);
+                      const customer = customers.find(c => c.name === (invoice as SalesInvoice).clientName);
                       return customer ? (
                         <>
                           <div className="flex justify-between">

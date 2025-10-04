@@ -3,30 +3,30 @@
 import { Badge } from '@/components/ui/badge';
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Invoice, Customer, Supplier, Payment, Organization, InvoiceTemplate, DocumentPrintSettings, PurchaseInvoice } from '@/types';
+import { SalesInvoice, PurchaseInvoice, Customer, Supplier, Payment, Organization, InvoiceTemplate, DocumentPrintSettings } from '@/types';
 import { Receipt } from 'lucide-react';
 
 import { InvoiceActions } from './InvoiceActions';
 
 // Type guard to check if invoice is a PurchaseInvoice
-function isPurchaseInvoice(invoice: Invoice): invoice is PurchaseInvoice {
+function isPurchaseInvoice(invoice: SalesInvoice | PurchaseInvoice): invoice is PurchaseInvoice {
   return invoice.type === 'purchase';
 }
 
 interface InvoiceListProps {
-   invoices: Invoice[];
+   invoices: (SalesInvoice | PurchaseInvoice)[];
    customers: Customer[];
    suppliers: Supplier[];
    payments: { [invoiceId: string]: Payment[] };
-   onInvoiceClick: (invoice: Invoice) => void;
-   onViewDetails: (invoice: Invoice) => void;
-   onStatusChange: (invoiceId: string, status: Invoice['status']) => void;
-   onEdit?: (invoice: Invoice) => void;
-   onDuplicate?: (invoice: Invoice) => void;
-   onSend?: (invoice: Invoice) => void;
-   onEmail?: (invoice: Invoice, templateId: string) => void;
-   onDownloadPDF?: (invoice: Invoice) => void;
-   onDelete?: (invoice: Invoice) => void;
+   onInvoiceClick: (invoice: SalesInvoice | PurchaseInvoice) => void;
+   onViewDetails: (invoice: SalesInvoice | PurchaseInvoice) => void;
+   onStatusChange: (invoiceId: string, status: (SalesInvoice | PurchaseInvoice)['status']) => void;
+   onEdit?: (invoice: SalesInvoice | PurchaseInvoice) => void;
+   onDuplicate?: (invoice: SalesInvoice | PurchaseInvoice) => void;
+   onSend?: (invoice: SalesInvoice | PurchaseInvoice) => void;
+   onEmail?: (invoice: SalesInvoice | PurchaseInvoice, templateId: string) => void;
+   onDownloadPDF?: (invoice: SalesInvoice | PurchaseInvoice) => void;
+   onDelete?: (invoice: SalesInvoice | PurchaseInvoice) => void;
    organization: Organization | null;
    invoiceTemplates: InvoiceTemplate[];
    settings?: DocumentPrintSettings | null;
@@ -73,12 +73,12 @@ export function InvoiceList({
               <TableCell>
                 {isPurchaseInvoice(invoice) ? (
                   (() => {
-                    const supplier = suppliers.find(s => s.id === (invoice as Invoice & { supplierId?: string }).supplierId);
+                    const supplier = suppliers.find(s => s.id === (invoice as PurchaseInvoice).supplierId);
                     return supplier ? supplier.name : 'Supplier not found';
                   })()
                 ) : (
                   (() => {
-                    const customer = customers.find(c => c.id === (invoice as Invoice & { customerId?: string }).customerId);
+                    const customer = customers.find(c => c.name === (invoice as SalesInvoice).clientName);
                     return customer ? customer.name : 'Customer not found';
                   })()
                 )}

@@ -3,20 +3,20 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Invoice, InvoiceStatus } from '@/types';
+import { SalesInvoice, PurchaseInvoice, InvoiceStatus } from '@/types';
 import { Receipt, MoreHorizontal } from 'lucide-react';
 
 // Type guard to check if invoice is a PurchaseInvoice
-function isPurchaseInvoice(invoice: Invoice): invoice is Invoice & { type: 'purchase' } {
+function isPurchaseInvoice(invoice: SalesInvoice | PurchaseInvoice): invoice is PurchaseInvoice {
   return invoice.type === 'purchase';
 }
 
 interface InvoiceTableProps {
-  invoices: Invoice[];
-  onInvoiceClick: (invoice: Invoice) => void;
-  onPrintPreview: (invoice: Invoice) => void;
-  onActionsClick: (invoice: Invoice) => void;
-  onStatusChange: (invoiceId: string, status: Invoice['status']) => void;
+  invoices: (SalesInvoice | PurchaseInvoice)[];
+  onInvoiceClick: (invoice: SalesInvoice | PurchaseInvoice) => void;
+  onPrintPreview: (invoice: SalesInvoice | PurchaseInvoice) => void;
+  onActionsClick: (invoice: SalesInvoice | PurchaseInvoice) => void;
+  onStatusChange: (invoiceId: string, status: (SalesInvoice | PurchaseInvoice)['status']) => void;
   updatingStatus: string | null;
 }
 
@@ -51,9 +51,9 @@ export function InvoiceTable({
           >
             <TableCell>
               {isPurchaseInvoice(invoice) ? (
-                (invoice as Invoice & { supplierName?: string }).supplierName || 'Supplier'
+                (invoice as PurchaseInvoice).supplierName || 'Supplier'
               ) : (
-                (invoice as Invoice & { customerName?: string }).customerName || 'Customer'
+                (invoice as SalesInvoice).clientName || 'Customer'
               )}
             </TableCell>
             <TableCell>${invoice.total.toFixed(2)}</TableCell>

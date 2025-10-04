@@ -1,11 +1,11 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Invoice, InvoiceStatus } from '@/types';
+import { SalesInvoice, PurchaseInvoice, InvoiceStatus } from '@/types';
 
 interface InvoiceStatusToggleProps {
-  invoice: Invoice;
-  onStatusChange: (invoiceId: string, status: Invoice['status']) => void;
+  invoice: SalesInvoice | PurchaseInvoice;
+  onStatusChange: (invoiceId: string, status: (SalesInvoice | PurchaseInvoice)['status']) => void;
   updatingStatus: string | null;
 }
 
@@ -14,7 +14,7 @@ export function InvoiceStatusToggle({
   onStatusChange, 
   updatingStatus 
 }: InvoiceStatusToggleProps) {
-  const getNextStatus = (currentStatus: Invoice['status']): Invoice['status'] | null => {
+  const getNextStatus = (currentStatus: (SalesInvoice | PurchaseInvoice)['status']): (SalesInvoice | PurchaseInvoice)['status'] | null => {
     switch (currentStatus) {
       case InvoiceStatus.DRAFT:
         return InvoiceStatus.QUOTE;
@@ -33,8 +33,8 @@ export function InvoiceStatusToggle({
     }
   };
 
-  const getStatusLabel = (status: Invoice['status']) => {
-    const labels: Record<Invoice['status'], { current: string; next: string }> = {
+  const getStatusLabel = (status: (SalesInvoice | PurchaseInvoice)['status']) => {
+    const labels: Record<(SalesInvoice | PurchaseInvoice)['status'], { current: string; next: string }> = {
       draft: { current: 'Draft', next: 'Create Quote' },
       quote: { current: 'Quote', next: 'Send' },
       sent: { current: 'Sent', next: 'Mark Waiting Payment' },
