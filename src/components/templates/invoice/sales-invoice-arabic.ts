@@ -8,29 +8,33 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
       --heading-font: {{headingFont}};
       --body-font: {{bodyFont}};
     }
-   .invoice-template { font-family: var(--body-font), 'Amiri', serif; margin: 0; padding: 0; background: white; color: #000000; }
+   .invoice-template { font-family: var(--body-font), 'Tahoma', 'Arial Unicode MS', 'sans-serif'; margin: 0; padding: 0; background: white; color: #000000; }
    .invoice-template .container { max-width: 100%; margin: 0; padding: 0; }
-    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; }
-    .qr-section { margin-bottom: 20px; }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; }
+    .qr-section { margin-bottom: 15px; }
     .logo-section { position: relative; width: 192px; height: 80px; margin-left: auto; }
-    .invoice-title { font-size: 2rem; font-weight: bold; color: #1f2937; font-family: var(--heading-font), 'Amiri', serif; }
+    .invoice-title { font-size: 1.5rem; font-weight: bold; color: #1f2937; font-family: var(--heading-font), 'Tahoma', 'Arial Unicode MS', 'sans-serif'; }
     .invoice-number { color: #6b7280; }
     .company-info { text-align: left; }
-    .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 40px; }
-    .bill-to, .supplier { margin-bottom: 20px; }
-    .customer-logo, .supplier-logo { position: relative; width: 128px; height: 64px; margin-bottom: 10px; }
-    .dates-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    .table { width: 100%; margin-bottom: 40px; border-collapse: collapse; border: 1px solid #d1d5db; }
-    .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 12px; text-align: right; font-family: var(--heading-font), 'Amiri', serif; }
-    .table td { border: 1px solid #d1d5db; padding: 12px; text-align: right; }
-    .totals { display: flex; justify-content: flex-start; margin-bottom: 40px; }
+    .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
+    .bill-to, .supplier { margin-bottom: 15px; }
+    .customer-logo, .supplier-logo { position: relative; width: 128px; height: 64px; margin-bottom: 8px; }
+    .dates-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .table { width: 100%; margin-bottom: 30px; border-collapse: collapse; border: 1px solid #d1d5db; }
+    .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 8px; text-align: right; font-family: var(--heading-font), 'Tahoma', 'Arial Unicode MS', 'sans-serif'; }
+    .table td { border: 1px solid #d1d5db; padding: 8px; text-align: right; }
+    .totals-stamp-container { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; }
+    .totals { flex: 1; }
     .totals div { width: 256px; }
-    .total-line { display: flex; justify-content: space-between; padding: 8px 0; }
-    .total-bold { font-weight: bold; font-size: 1.125rem; border-top: 1px solid #d1d5db; padding-top: 8px; }
-    .notes { margin-bottom: 40px; text-align: right; }
-    .stamp { display: flex; justify-content: flex-start; margin-top: 40px; }
+    .total-line { display: flex; justify-content: space-between; padding: 6px 0; }
+    .total-bold { font-weight: bold; font-size: 1.125rem; border-top: 1px solid #d1d5db; padding-top: 6px; }
+    .stamp { flex: 0 0 auto; margin-right: 30px; }
     .stamp div { text-align: center; }
-    .stamp img { width: 128px; height: 128px; object-fit: contain; }
+    .stamp img { width: 96px; height: 96px; object-fit: contain; }
+    .notes { margin-bottom: 30px; text-align: right; }
+    .bilingual { display: flex; justify-content: space-between; align-items: center; }
+    .english { flex: 1; text-align: left; }
+    .arabic { flex: 1; text-align: right; direction: rtl; }
   </style>
 </head>
 <body>
@@ -56,21 +60,21 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
           <img src="{{companyLogo}}" alt="شعار الشركة" style="width: 100%; height: 100%; object-fit: contain;" />
         </div>
         {{/companyLogo}}
-        <h2 style="font-size: 1.25rem; font-weight: 600;">{{companyNameAr}}</h2>
-        {{#companyName}}
-        <p style="font-size: 1.125rem;">{{companyName}}</p>
-        {{/companyName}}
-        <p>{{companyAddress}}</p>
-        <p>{{companyEmail}}</p>
-        <p>{{companyPhone}}</p>
-        {{#companyVat}}<p>الرقم الضريبي: {{companyVat}}</p>{{/companyVat}}
+         <h2 style="font-size: 1.125rem; font-weight: 600;">{{companyNameAr}}</h2>
+         {{#companyName}}
+         <p style="font-size: 1.125rem;">{{companyName}}</p>
+         {{/companyName}}
+         <p>Address (العنوان): {{companyAddress}}</p>
+         <p>Email (البريد الإلكتروني): {{companyEmail}}</p>
+         <p>Tel (الهاتف): {{companyPhone}}</p>
+         {{#companyVat}}<p>VAT Number (الرقم الضريبي): {{companyVat}}</p>{{/companyVat}}
       </div>
     </div>
 
     <!-- Invoice Details -->
     <div class="details-grid">
       <div>
-        <h3 style="font-weight: 600; margin-bottom: 8px;">:إلى</h3>
+         <h3 style="font-weight: 600; margin-bottom: 8px;">Bill To (إلى):</h3>
         {{#customerLogo}}
         <div class="customer-logo">
           <img src="{{customerLogo}}" alt="شعار العميل" style="width: 100%; height: 100%; object-fit: contain;" />
@@ -82,22 +86,24 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
         {{/customerNameAr}}
         <p>{{clientAddress}}</p>
         <p>{{clientEmail}}</p>
-        {{#clientVat}}<p>الرقم الضريبي: {{clientVat}}</p>{{/clientVat}}
+         {{#clientVat}}<p>VAT Number (الرقم الضريبي): {{clientVat}}</p>{{/clientVat}}
       </div>
       <div>
         <div class="dates-grid">
           <div>
-            <p style="color: #6b7280;">:تاريخ الفاتورة</p>
-            <p style="font-weight: 500;">{{invoiceDate}}</p>
-          </div>
-          <div>
-            <p style="color: #6b7280;">:تاريخ الاستحقاق</p>
-            <p style="font-weight: 500;">{{dueDate}}</p>
-          </div>
-          <div>
-            <p style="color: #6b7280;">:الحالة</p>
-            <p style="font-weight: 500; text-transform: capitalize;">{{status}}</p>
-          </div>
+             <p style="color: #6b7280;">Invoice Date (تاريخ الفاتورة):</p>
+             <p style="font-weight: 500;">{{invoiceDate}}</p>
+           </div>
+           {{#dueDate}}
+           <div>
+             <p style="color: #6b7280;">Due Date (تاريخ الاستحقاق):</p>
+             <p style="font-weight: 500;">{{dueDate}}</p>
+           </div>
+           {{/dueDate}}
+           <div>
+             <p style="color: #6b7280;">Status (الحالة):</p>
+             <p style="font-weight: 500; text-transform: capitalize;">{{status}}</p>
+           </div>
         </div>
       </div>
     </div>
@@ -105,12 +111,12 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
     <!-- Items Table -->
     <table class="table">
       <thead>
-        <tr>
-          <th>الوصف</th>
-          <th>الكمية</th>
-          <th>سعر الوحدة</th>
-          <th>المجموع</th>
-        </tr>
+         <tr>
+           <th>Description (الوصف)</th>
+           <th>Quantity (الكمية)</th>
+           <th>Unit Price (سعر الوحدة)</th>
+           <th>Total (المجموع)</th>
+         </tr>
       </thead>
       <tbody>
         {{#each items}}
@@ -129,41 +135,43 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
       </tbody>
     </table>
 
-    <!-- Totals -->
-    <div class="totals">
-      <div>
-        <div class="total-line">
-          <span>:المجموع الفرعي</span>
-          <span>{{subtotal}} ريال</span>
-        </div>
-        <div class="total-line">
-          <span>:الضريبة ({{taxRate}}%)</span>
-          <span>{{taxAmount}} ريال</span>
-        </div>
-        <div class="total-line total-bold">
-          <span>:المجموع الكلي</span>
-          <span>{{total}} ريال</span>
+    <!-- Totals and Stamp -->
+    <div class="totals-stamp-container">
+      <div class="totals">
+        <div>
+           <div class="total-line">
+             <span>Subtotal (المجموع الفرعي):</span>
+             <span>{{subtotal}} ريال</span>
+           </div>
+           <div class="total-line">
+             <span>Tax (الضريبة) ({{taxRate}}%):</span>
+             <span>{{taxAmount}} ريال</span>
+           </div>
+           <div class="total-line total-bold">
+             <span>TOTAL (المجموع الكلي):</span>
+             <span>{{total}} ريال</span>
+           </div>
         </div>
       </div>
+
+      <!-- Company Stamp -->
+      {{#companyStamp}}
+      <div class="stamp">
+        <div>
+          <img src="{{companyStamp}}" alt="ختم الشركة" />
+          <p style="font-size: 0.75rem; color: #6b7280; margin-top: 6px;">ختم الشركة</p>
+        </div>
+      </div>
+      {{/companyStamp}}
     </div>
 
     <!-- Notes -->
     {{#notes}}
     <div class="notes">
-      <h3 style="font-weight: 600; margin-bottom: 8px;">:ملاحظات</h3>
+       <h3 style="font-weight: 600; margin-bottom: 6px;">Notes (ملاحظات):</h3>
       <p style="color: #6b7280;">{{notes}}</p>
     </div>
     {{/notes}}
-
-    <!-- Company Stamp -->
-    {{#companyStamp}}
-    <div class="stamp">
-      <div>
-        <img src="{{companyStamp}}" alt="ختم الشركة" />
-        <p style="font-size: 0.875rem; color: #6b7280; margin-top: 8px;">ختم الشركة</p>
-      </div>
-    </div>
-    {{/companyStamp}}
     </div>
   </div>
 </body>
