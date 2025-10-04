@@ -78,6 +78,9 @@ export default function SimplifiedPOSPage() {
   const [selectedOrganization] = useAtom(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
 
+  // Mobile sidebar state
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
   // Data hooks
   const { items, loading: itemsLoading } = useItems();
   const { categories, loading: categoriesLoading } = useCategories();
@@ -887,7 +890,10 @@ export default function SimplifiedPOSPage() {
   }));
 
   return (
-    <POSLayout>
+    <POSLayout
+      mobileSidebarOpen={mobileSidebarOpen}
+      onMobileSidebarToggle={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+    >
       {isProcessing && (
         <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="flex items-center gap-2 text-lg">
@@ -952,7 +958,7 @@ export default function SimplifiedPOSPage() {
         </POSMainContent>
       </POSLeftColumn>
 
-      <POSRightColumn>
+      <POSRightColumn mobileOpen={mobileSidebarOpen}>
         <POSCartSidebar
           cartItems={cartForComponents}
           cartTotal={cartTotal}

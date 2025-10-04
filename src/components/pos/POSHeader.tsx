@@ -165,9 +165,9 @@ export function POSHeader({
             </DatePicker>
           </div>
         </div>
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-4 overflow-x-auto">
           {/* Table Selection */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 flex-shrink-0">
             <Button
               variant={selectedTable ? "default" : "outline"}
               size="sm"
@@ -183,7 +183,7 @@ export function POSHeader({
           </div>
 
           {/* Customer Selection */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 flex-shrink-0">
             <Button
               variant={selectedCustomer ? "default" : "outline"}
               size="sm"
@@ -199,7 +199,7 @@ export function POSHeader({
           </div>
 
           {/* Order Type Selection */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 flex-shrink-0">
             <OrderTypeSelectionDialog
               orderTypes={orderTypes}
               selectedOrderType={selectedOrderType}
@@ -220,7 +220,7 @@ export function POSHeader({
           </div>
 
           {/* Orders Button */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 flex-shrink-0">
             <Button
               variant="outline"
               size="sm"
