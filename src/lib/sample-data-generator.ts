@@ -45,6 +45,7 @@ const generateCategories = (): Omit<Category, 'organizationId'>[] => {
       name: mainCat.name,
       description: `${mainCat.name} category`,
       type: mainCat.type,
+      transactionType: ProductTransactionType.SALES,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -56,6 +57,7 @@ const generateCategories = (): Omit<Category, 'organizationId'>[] => {
         name: subName,
         description: `${subName} subcategory under ${mainCat.name}`,
         type: mainCat.type,
+        transactionType: ProductTransactionType.SALES,
         parentId: mainCategoryId,
         createdAt: new Date(),
         updatedAt: new Date(),

@@ -25,6 +25,7 @@ interface AddCategoryDialogProps {
   }) => void;
   categories: Category[];
   defaultType?: CategoryType;
+  defaultTransactionType?: ProductTransactionType;
   selectedParentId?: string | null;
 }
 
@@ -34,13 +35,19 @@ export function AddCategoryDialog({
   onAddCategory,
   categories,
   defaultType = CategoryType.PRODUCT,
+  defaultTransactionType = ProductTransactionType.SALES,
   selectedParentId: propSelectedParentId
 }: AddCategoryDialogProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [type, setType] = useState<CategoryType>(defaultType);
-  const [transactionType, setTransactionType] = useState<ProductTransactionType>(ProductTransactionType.SALES);
+  const [transactionType, setTransactionType] = useState<ProductTransactionType>(defaultTransactionType);
   const [selectedParentId, setSelectedParentId] = useState<string | null>(propSelectedParentId || null);
+
+  useEffect(() => {
+    setType(defaultType);
+    setTransactionType(defaultTransactionType);
+  }, [defaultType, defaultTransactionType]);
 
   // Update selectedParentId when prop changes
   useEffect(() => {
@@ -64,7 +71,7 @@ export function AddCategoryDialog({
     setName('');
     setDescription('');
     setType(defaultType);
-    setTransactionType(ProductTransactionType.SALES);
+    setTransactionType(defaultTransactionType);
     setSelectedParentId(null);
     onOpenChange(false);
   };

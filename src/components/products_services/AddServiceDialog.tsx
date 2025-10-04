@@ -21,6 +21,7 @@ interface AddServiceDialogProps {
   serviceToEdit: Service | null;
   categories: Category[];
   selectedCategory?: string | null;
+  defaultTransactionType?: ProductTransactionType;
 }
 
 export function AddServiceDialog({
@@ -30,13 +31,14 @@ export function AddServiceDialog({
   onUpdateService,
   serviceToEdit,
   categories,
-  selectedCategory
+  selectedCategory,
+  defaultTransactionType = ProductTransactionType.SALES
 }: AddServiceDialogProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
   const [categoryId, setCategoryId] = useState<string>('');
-  const [transactionType, setTransactionType] = useState<ProductTransactionType>(ProductTransactionType.SALES);
+  const [transactionType, setTransactionType] = useState<ProductTransactionType>(defaultTransactionType);
   const vatSettings = useAtomValue(vatSettingsAtom);
 
   const isEditMode = serviceToEdit !== null;
@@ -54,9 +56,9 @@ export function AddServiceDialog({
       setDescription('');
       setPrice('');
       setCategoryId(selectedCategory || '');
-      setTransactionType(ProductTransactionType.SALES);
+      setTransactionType(defaultTransactionType);
     }
-  }, [serviceToEdit, isEditMode, selectedCategory]);
+  }, [serviceToEdit, isEditMode, selectedCategory, defaultTransactionType]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
