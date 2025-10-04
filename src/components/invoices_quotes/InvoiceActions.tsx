@@ -11,6 +11,7 @@ interface InvoiceActionsProps {
    invoice: Invoice;
    payments: Payment[];
     onViewDetails: (invoice: Invoice) => void;
+    onStatusChange?: (invoiceId: string, status: Invoice['status']) => void;
     onEdit?: (invoice: Invoice) => void;
    onDuplicate?: (invoice: Invoice) => void;
    onSend?: (invoice: Invoice) => void;
@@ -28,6 +29,7 @@ export function InvoiceActions({
     invoice,
     payments,
     onViewDetails,
+    onStatusChange,
     onEdit,
    onDuplicate,
    onSend,
@@ -39,7 +41,7 @@ export function InvoiceActions({
    customers,
    suppliers,
    settings,
- }: InvoiceActionsProps) {
+  }: InvoiceActionsProps) {
   const [showActionsDialog, setShowActionsDialog] = useState(false);
 
   const handleViewDetails = (e: React.MouseEvent) => {

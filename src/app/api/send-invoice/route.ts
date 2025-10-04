@@ -4,8 +4,10 @@ import puppeteer from 'puppeteer';
 import { Invoice, Payment } from '@/types';
 import { adminDb } from '@/lib/firebase/server-config';
 import { renderTemplate } from '@/lib/template-renderer';
-import { InvoiceTemplate, InvoiceTemplateData } from '@/types/template';
+import { InvoiceTemplateData } from '@/types/template';
 import { createInvoiceQRData, generateZatcaQRCode } from '@/lib/zatca-qr';
+import { defaultInvoiceEnglish } from '@/components/templates/invoice/default-invoice-english';
+import { defaultInvoiceArabic } from '@/components/templates/invoice/default-invoice-arabic';
 
 // SMTP Error interface
 interface SMTPErr {
@@ -144,56 +146,23 @@ const createTransporter = () => {
   return nodemailer.createTransport(smtpConfig);
 };
 
-// Simple in-memory cache for templates (5 minute TTL)
-const templateCache = new Map<string, { template: InvoiceTemplate; timestamp: number }>();
-const TEMPLATE_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-
-// Get template from Firestore with caching
-async function getTemplate(templateId: string, organizationId: string): Promise<InvoiceTemplate | null> {
-  const cacheKey = `${organizationId}:${templateId}`;
-  const now = Date.now();
-
-  // Check cache first
-  const cached = templateCache.get(cacheKey);
-  if (cached && (now - cached.timestamp) < TEMPLATE_CACHE_TTL) {
-    return cached.template;
-  }
-
-  try {
-    const docRef = adminDb.collection('organizations').doc(organizationId).collection('templates').doc(templateId);
-    const docSnap = await docRef.get();
-
-    if (!docSnap.exists) {
-      return null;
-    }
-
-    const template = {
-      id: docSnap.id,
-      ...docSnap.data(),
-    } as InvoiceTemplate;
-
-    // Cache the template
-    templateCache.set(cacheKey, { template, timestamp: now });
-
-    // Clean up old cache entries periodically (simple cleanup)
-    if (templateCache.size > 50) { // Arbitrary limit
-      for (const [key, value] of templateCache.entries()) {
-        if ((now - value.timestamp) > TEMPLATE_CACHE_TTL) {
-          templateCache.delete(key);
-        }
-      }
-    }
-
-    return template;
-  } catch (error) {
-    console.error('Error fetching template:', error);
-    throw error;
+// Get local template by ID
+function getLocalTemplate(templateId: string): string | null {
+  switch (templateId) {
+    case 'default-invoice-english':
+      return defaultInvoiceEnglish;
+    case 'default-invoice-arabic':
+      return defaultInvoiceArabic;
+    default:
+      // Default fallback to English template
+      console.warn(`Unknown template ID: ${templateId}, using default English template`);
+      return defaultInvoiceEnglish;
   }
 }
 
 // Render invoice with template
 async function renderInvoiceWithTemplate(
-  template: InvoiceTemplate,
+  templateContent: string,
   invoice: InvoiceData,
   organization: { name?: string; nameAr?: string; address?: string; email?: string; phone?: string; vatNumber?: string; logoUrl?: string; stampUrl?: string }
 ): Promise<string> {
@@ -250,7 +219,7 @@ async function renderInvoiceWithTemplate(
     paddingRight: 15,
   };
 
-  return renderTemplate(template.content, data);
+  return renderTemplate(templateContent, data);
 }
 
 // Generate PDF from HTML using Puppeteer
@@ -462,9 +431,9 @@ export async function POST(request: NextRequest) {
     if (templateId) {
       try {
         // Use specified template
-        const template = await getTemplate(templateId, organizationId);
-        if (!template) {
-          console.error(`Template not found: ${templateId} for organization: ${organizationId}`);
+        const templateContent = getLocalTemplate(templateId);
+        if (!templateContent) {
+          console.error(`Template not found: ${templateId}`);
           return NextResponse.json(
             { error: 'Invoice template not found. Please select a different template or contact support.' },
             { status: 404 }
@@ -472,7 +441,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Validate template has content
-        if (!template.content || template.content.trim().length === 0) {
+        if (!templateContent || templateContent.trim().length === 0) {
           console.error(`Template has no content: ${templateId}`);
           return NextResponse.json(
             { error: 'Invoice template is empty. Please select a different template or contact support.' },
@@ -482,7 +451,7 @@ export async function POST(request: NextRequest) {
 
         let htmlContent;
         try {
-          htmlContent = await renderInvoiceWithTemplate(template, invoice, organization);
+          htmlContent = await renderInvoiceWithTemplate(templateContent, invoice, organization);
         } catch (renderError) {
           console.error('Error rendering invoice template:', renderError);
           return NextResponse.json(
