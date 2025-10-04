@@ -14,18 +14,6 @@ export const Component = () => {
   useEffect(() => {
     setMounted(true);
 
-    // Check if device is mobile
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-
-    return () => {
-      window.removeEventListener('resize', checkMobile);
-    };
-
     // Inject animation styles
     const styleId = "nested-squares-styles";
     if (!document.getElementById(styleId)) {
@@ -131,6 +119,20 @@ export const Component = () => {
       if (style && document.head.contains(style)) {
         document.head.removeChild(style);
       }
+    };
+  }, []);
+
+  // Separate useEffect for mobile detection
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
+    return () => {
+      window.removeEventListener('resize', checkMobile);
     };
   }, []);
 
