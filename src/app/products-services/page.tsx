@@ -1,58 +1,94 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useItems } from '@/lib/hooks/useItems';
-import { useCategories } from '@/lib/hooks/useCategories';
-import { useOrganization } from '@/lib/hooks/useOrganization';
-import { Item, CategoryType, ProductTransactionType, ItemType } from '@/types';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Package, Wrench, Search, Database, BarChart3 } from 'lucide-react';
-import { toast } from 'sonner';
-import { AddProductDialog } from '@/components/products_services/AddProductDialog';
-import { AddServiceDialog } from '@/components/products_services/AddServiceDialog';
-import { AddCategoryDialog } from '@/components/products_services/AddCategoryDialog';
-import { ProductList } from '@/components/products_services/ProductList';
-import { ServiceList } from '@/components/products_services/ServiceList';
-import { CategoryTree } from '@/components/products_services/CategoryTree';
-import { Loader } from '@/components/ui/loader';
-import { ExportImportProducts } from '@/components/ExportImportProducts';
+import { useState } from "react";
+import { useItems } from "@/lib/hooks/useItems";
+import { useCategories } from "@/lib/hooks/useCategories";
+import { useOrganization } from "@/lib/hooks/useOrganization";
+import { Item, CategoryType, ProductTransactionType, ItemType } from "@/types";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Package, Wrench, Search, Database, BarChart3 } from "lucide-react";
+import { toast } from "sonner";
+import { AddProductDialog } from "@/components/products_services/AddProductDialog";
+import { AddServiceDialog } from "@/components/products_services/AddServiceDialog";
+import { AddCategoryDialog } from "@/components/products_services/AddCategoryDialog";
+import { ProductList } from "@/components/products_services/ProductList";
+import { ServiceList } from "@/components/products_services/ServiceList";
+import { CategoryTree } from "@/components/products_services/CategoryTree";
+import { Loader } from "@/components/ui/loader";
+import { ExportImportProducts } from "@/components/ExportImportProducts";
 
 export default function ProductsServicesPage() {
   const { selectedOrganization } = useOrganization();
   const organizationId = selectedOrganization?.id;
-  const { items, loading: itemsLoading, createItem, createItemBulk, updateItem, deleteItem, refreshItems } = useItems();
-  const { categories, loading: categoriesLoading, createCategory, createCategoryBulk, deleteCategory, refreshCategories } = useCategories();
+  const {
+    items,
+    loading: itemsLoading,
+    createItem,
+    createItemBulk,
+    updateItem,
+    deleteItem,
+    refreshItems,
+  } = useItems();
+  const {
+    categories,
+    loading: categoriesLoading,
+    createCategory,
+    createCategoryBulk,
+    deleteCategory,
+    refreshCategories,
+  } = useCategories();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [productDialogOpen, setProductDialogOpen] = useState(false);
   const [serviceDialogOpen, setServiceDialogOpen] = useState(false);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [productToEdit, setProductToEdit] = useState<Item | null>(null);
   const [serviceToEdit, setServiceToEdit] = useState<Item | null>(null);
   const [deleteCategoryId, setDeleteCategoryId] = useState<string | null>(null);
-  const [deleteCategoryName, setDeleteCategoryName] = useState<string>('');
-  const [deleteCategoryItemCount, setDeleteCategoryItemCount] = useState<number>(0);
+  const [deleteCategoryName, setDeleteCategoryName] = useState<string>("");
+  const [deleteCategoryItemCount, setDeleteCategoryItemCount] =
+    useState<number>(0);
 
   const loading = itemsLoading || categoriesLoading;
 
-  const handleAddItem = async (item: Omit<Item, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => {
+  const handleAddItem = async (
+    item: Omit<Item, "id" | "organizationId" | "createdAt" | "updatedAt">,
+  ) => {
     try {
       await createItem(item);
       setProductDialogOpen(false);
       setServiceDialogOpen(false);
     } catch (error) {
-      console.error('Error creating item:', error);
-      toast.error('Failed to create item');
+      console.error("Error creating item:", error);
+      toast.error("Failed to create item");
     }
   };
 
-  const handleUpdateItem = async (itemId: string, item: Partial<Omit<Item, 'id' | 'createdAt'>>) => {
+  const handleUpdateItem = async (
+    itemId: string,
+    item: Partial<Omit<Item, "id" | "createdAt">>,
+  ) => {
     try {
       await updateItem(itemId, item);
       setProductToEdit(null);
@@ -60,8 +96,8 @@ export default function ProductsServicesPage() {
       setProductDialogOpen(false);
       setServiceDialogOpen(false);
     } catch (error) {
-      console.error('Error updating item:', error);
-      toast.error('Failed to update item');
+      console.error("Error updating item:", error);
+      toast.error("Failed to update item");
     }
   };
 
@@ -78,7 +114,7 @@ export default function ProductsServicesPage() {
   const handleAddCategory = async (category: {
     name: string;
     description: string;
-    type: 'product' | 'service';
+    type: "product" | "service";
     parentId: string | null;
     transactionType: ProductTransactionType;
   }) => {
@@ -89,17 +125,19 @@ export default function ProductsServicesPage() {
         parentId: category.parentId || undefined,
       });
     } catch (error) {
-      console.error('Error creating category:', error);
-      toast.error('Failed to create category');
+      console.error("Error creating category:", error);
+      toast.error("Failed to create category");
     }
   };
 
   const handleDeleteCategory = (categoryId: string) => {
-    const category = categories.find(c => c.id === categoryId);
-    const itemCount = items.filter((item: Item) => item.categoryId === categoryId).length;
+    const category = categories.find((c) => c.id === categoryId);
+    const itemCount = items.filter(
+      (item: Item) => item.categoryId === categoryId,
+    ).length;
 
     setDeleteCategoryId(categoryId);
-    setDeleteCategoryName(category?.name || '');
+    setDeleteCategoryName(category?.name || "");
     setDeleteCategoryItemCount(itemCount);
   };
 
@@ -109,11 +147,11 @@ export default function ProductsServicesPage() {
     try {
       await deleteCategory(deleteCategoryId);
     } catch (error) {
-      console.error('Error deleting category:', error);
-      toast.error('Failed to delete category');
+      console.error("Error deleting category:", error);
+      toast.error("Failed to delete category");
     } finally {
       setDeleteCategoryId(null);
-      setDeleteCategoryName('');
+      setDeleteCategoryName("");
       setDeleteCategoryItemCount(0);
     }
   };
@@ -122,8 +160,8 @@ export default function ProductsServicesPage() {
     try {
       await deleteItem(itemId);
     } catch (error) {
-      console.error('Error deleting item:', error);
-      toast.error('Failed to delete item');
+      console.error("Error deleting item:", error);
+      toast.error("Failed to delete item");
     }
   };
 
@@ -131,7 +169,9 @@ export default function ProductsServicesPage() {
     return (
       <div className="flex flex-col items-center justify-center h-screen space-y-4">
         <Loader size="lg" />
-        <p className="text-muted-foreground">Loading products and services...</p>
+        <p className="text-muted-foreground">
+          Loading products and services...
+        </p>
       </div>
     );
   }
@@ -145,15 +185,15 @@ export default function ProductsServicesPage() {
         </h1>
       </div>
 
-      <Tabs 
-        defaultValue="sales-products" 
+      <Tabs
+        defaultValue="sales-products"
         className="w-full"
         onValueChange={() => {
           setSelectedCategory(null);
-          setSearchTerm('');
+          setSearchTerm("");
         }}
       >
-        <TabsList>
+        <TabsList className="py-8">
           <TabsTrigger value="sales-products">
             <Package className="w-4 h-4 mr-2" />
             Sales Products
@@ -177,20 +217,27 @@ export default function ProductsServicesPage() {
         </TabsList>
 
         <TabsContent value="sales-products" className="space-y-4">
+          <div className="flex items-center gap-2 mb-4">
+            <Package className="h-6 w-6" />
+            <h2 className="text-2xl font-bold">Sales Products</h2>
+          </div>
           <div className="flex flex-col md:flex-row gap-6">
             <div className="w-full md:w-1/3">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between pb-2">
-                     <div className="flex items-center gap-2">
-                       <Package className="h-5 w-5" />
-                       Categories
-                     </div>
+                    <div className="flex items-center gap-2">
+                      <Package className="h-5 w-5" />
+                      Categories
+                    </div>
                     <AddCategoryDialog
                       open={categoryDialogOpen}
                       onOpenChange={setCategoryDialogOpen}
                       onAddCategory={handleAddCategory}
-                      categories={categories.filter(c => c.transactionType === ProductTransactionType.SALES)}
+                      categories={categories.filter(
+                        (c) =>
+                          c.transactionType === ProductTransactionType.SALES,
+                      )}
                       defaultType={CategoryType.PRODUCT}
                       defaultTransactionType={ProductTransactionType.SALES}
                       selectedParentId={selectedCategory}
@@ -199,8 +246,14 @@ export default function ProductsServicesPage() {
                 </CardHeader>
                 <CardContent>
                   <CategoryTree
-                    categories={categories.filter(c => c.type === CategoryType.PRODUCT && c.transactionType === ProductTransactionType.SALES)}
-                    products={items.filter(item => item.itemType === ItemType.PRODUCT)}
+                    categories={categories.filter(
+                      (c) =>
+                        c.type === CategoryType.PRODUCT &&
+                        c.transactionType === ProductTransactionType.SALES,
+                    )}
+                    products={items.filter(
+                      (item) => item.itemType === ItemType.PRODUCT,
+                    )}
                     services={[]}
                     selectedCategory={selectedCategory}
                     onCategorySelect={setSelectedCategory}
@@ -213,18 +266,18 @@ export default function ProductsServicesPage() {
             <div className="w-full md:w-2/3">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center justify-between pb-2">
-                    <div className="flex items-center gap-2">
-                      <Package className="h-5 w-5" />
-                      Sales Products
-                    </div>
+                  <CardTitle className="flex justify-end pb-2">
                     <AddProductDialog
                       open={productDialogOpen}
                       onOpenChange={setProductDialogOpen}
                       onAddProduct={handleAddItem}
                       onUpdateProduct={handleUpdateItem}
                       productToEdit={productToEdit}
-                      categories={categories.filter(c => c.type === CategoryType.PRODUCT && c.transactionType === ProductTransactionType.SALES)}
+                      categories={categories.filter(
+                        (c) =>
+                          c.type === CategoryType.PRODUCT &&
+                          c.transactionType === ProductTransactionType.SALES,
+                      )}
                       selectedCategory={selectedCategory}
                       defaultTransactionType={ProductTransactionType.SALES}
                     />
@@ -232,7 +285,11 @@ export default function ProductsServicesPage() {
                 </CardHeader>
                 <CardContent>
                   <ProductList
-                    products={items.filter(item => item.itemType === ItemType.PRODUCT && item.transactionType === ProductTransactionType.SALES)}
+                    products={items.filter(
+                      (item) =>
+                        item.itemType === ItemType.PRODUCT &&
+                        item.transactionType === ProductTransactionType.SALES,
+                    )}
                     categories={categories}
                     selectedCategory={selectedCategory}
                     searchTerm={searchTerm}
@@ -247,20 +304,27 @@ export default function ProductsServicesPage() {
         </TabsContent>
 
         <TabsContent value="sales-services" className="space-y-4">
+          <div className="flex items-center gap-2 mb-4">
+            <Wrench className="h-6 w-6" />
+            <h2 className="text-2xl font-bold">Sales Services</h2>
+          </div>
           <div className="flex flex-col md:flex-row gap-6">
             <div className="w-full md:w-1/3">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between pb-2">
-                     <div className="flex items-center gap-2">
-                       <Wrench className="h-5 w-5" />
-                       Categories
-                     </div>
+                    <div className="flex items-center gap-2">
+                      <Wrench className="h-5 w-5" />
+                      Categories
+                    </div>
                     <AddCategoryDialog
                       open={categoryDialogOpen}
                       onOpenChange={setCategoryDialogOpen}
                       onAddCategory={handleAddCategory}
-                      categories={categories.filter(c => c.transactionType === ProductTransactionType.SALES)}
+                      categories={categories.filter(
+                        (c) =>
+                          c.transactionType === ProductTransactionType.SALES,
+                      )}
                       defaultType={CategoryType.SERVICE}
                       defaultTransactionType={ProductTransactionType.SALES}
                       selectedParentId={selectedCategory}
@@ -269,9 +333,15 @@ export default function ProductsServicesPage() {
                 </CardHeader>
                 <CardContent>
                   <CategoryTree
-                    categories={categories.filter(c => c.type === CategoryType.SERVICE && c.transactionType === ProductTransactionType.SALES)}
+                    categories={categories.filter(
+                      (c) =>
+                        c.type === CategoryType.SERVICE &&
+                        c.transactionType === ProductTransactionType.SALES,
+                    )}
                     products={[]}
-                    services={items.filter(item => item.itemType === ItemType.SERVICE)}
+                    services={items.filter(
+                      (item) => item.itemType === ItemType.SERVICE,
+                    )}
                     selectedCategory={selectedCategory}
                     onCategorySelect={setSelectedCategory}
                     onCategoryDelete={handleDeleteCategory}
@@ -283,18 +353,18 @@ export default function ProductsServicesPage() {
             <div className="w-full md:w-2/3">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center justify-between pb-2">
-                    <div className="flex items-center gap-2">
-                      <Wrench className="h-5 w-5" />
-                      Sales Services
-                    </div>
+                  <CardTitle className="flex justify-end pb-2">
                     <AddServiceDialog
                       open={serviceDialogOpen}
                       onOpenChange={setServiceDialogOpen}
                       onAddService={handleAddItem}
                       onUpdateService={handleUpdateItem}
                       serviceToEdit={serviceToEdit}
-                      categories={categories.filter(c => c.type === CategoryType.SERVICE && c.transactionType === ProductTransactionType.SALES)}
+                      categories={categories.filter(
+                        (c) =>
+                          c.type === CategoryType.SERVICE &&
+                          c.transactionType === ProductTransactionType.SALES,
+                      )}
                       selectedCategory={selectedCategory}
                       defaultTransactionType={ProductTransactionType.SALES}
                     />
@@ -302,7 +372,11 @@ export default function ProductsServicesPage() {
                 </CardHeader>
                 <CardContent>
                   <ServiceList
-                    services={items.filter(item => item.itemType === ItemType.SERVICE && item.transactionType === ProductTransactionType.SALES)}
+                    services={items.filter(
+                      (item) =>
+                        item.itemType === ItemType.SERVICE &&
+                        item.transactionType === ProductTransactionType.SALES,
+                    )}
                     categories={categories}
                     selectedCategory={selectedCategory}
                     searchTerm={searchTerm}
@@ -317,20 +391,27 @@ export default function ProductsServicesPage() {
         </TabsContent>
 
         <TabsContent value="purchase-products" className="space-y-4">
+          <div className="flex items-center gap-2 mb-4">
+            <Package className="h-6 w-6" />
+            <h2 className="text-2xl font-bold">Purchase Products</h2>
+          </div>
           <div className="flex flex-col md:flex-row gap-6">
             <div className="w-full md:w-1/3">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between pb-2">
-                     <div className="flex items-center gap-2">
-                       <Package className="h-5 w-5" />
-                       Categories
-                     </div>
+                    <div className="flex items-center gap-2">
+                      <Package className="h-5 w-5" />
+                      Categories
+                    </div>
                     <AddCategoryDialog
                       open={categoryDialogOpen}
                       onOpenChange={setCategoryDialogOpen}
                       onAddCategory={handleAddCategory}
-                      categories={categories.filter(c => c.transactionType === ProductTransactionType.PURCHASE)}
+                      categories={categories.filter(
+                        (c) =>
+                          c.transactionType === ProductTransactionType.PURCHASE,
+                      )}
                       defaultType={CategoryType.PRODUCT}
                       defaultTransactionType={ProductTransactionType.PURCHASE}
                       selectedParentId={selectedCategory}
@@ -339,8 +420,14 @@ export default function ProductsServicesPage() {
                 </CardHeader>
                 <CardContent>
                   <CategoryTree
-                    categories={categories.filter(c => c.type === CategoryType.PRODUCT && c.transactionType === ProductTransactionType.PURCHASE)}
-                    products={items.filter(item => item.itemType === ItemType.PRODUCT)}
+                    categories={categories.filter(
+                      (c) =>
+                        c.type === CategoryType.PRODUCT &&
+                        c.transactionType === ProductTransactionType.PURCHASE,
+                    )}
+                    products={items.filter(
+                      (item) => item.itemType === ItemType.PRODUCT,
+                    )}
                     services={[]}
                     selectedCategory={selectedCategory}
                     onCategorySelect={setSelectedCategory}
@@ -353,18 +440,18 @@ export default function ProductsServicesPage() {
             <div className="w-full md:w-2/3">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center justify-between pb-2">
-                    <div className="flex items-center gap-2">
-                      <Package className="h-5 w-5" />
-                      Purchase Products
-                    </div>
+                  <CardTitle className="flex justify-end pb-2">
                     <AddProductDialog
                       open={productDialogOpen}
                       onOpenChange={setProductDialogOpen}
                       onAddProduct={handleAddItem}
                       onUpdateProduct={handleUpdateItem}
                       productToEdit={productToEdit}
-                      categories={categories.filter(c => c.type === CategoryType.PRODUCT && c.transactionType === ProductTransactionType.PURCHASE)}
+                      categories={categories.filter(
+                        (c) =>
+                          c.type === CategoryType.PRODUCT &&
+                          c.transactionType === ProductTransactionType.PURCHASE,
+                      )}
                       selectedCategory={selectedCategory}
                       defaultTransactionType={ProductTransactionType.PURCHASE}
                     />
@@ -372,7 +459,12 @@ export default function ProductsServicesPage() {
                 </CardHeader>
                 <CardContent>
                   <ProductList
-                    products={items.filter(item => item.itemType === ItemType.PRODUCT && item.transactionType === ProductTransactionType.PURCHASE)}
+                    products={items.filter(
+                      (item) =>
+                        item.itemType === ItemType.PRODUCT &&
+                        item.transactionType ===
+                          ProductTransactionType.PURCHASE,
+                    )}
                     categories={categories}
                     selectedCategory={selectedCategory}
                     searchTerm={searchTerm}
@@ -387,20 +479,27 @@ export default function ProductsServicesPage() {
         </TabsContent>
 
         <TabsContent value="purchase-services" className="space-y-4">
+          <div className="flex items-center gap-2 mb-4">
+            <Wrench className="h-6 w-6" />
+            <h2 className="text-2xl font-bold">Purchase Services</h2>
+          </div>
           <div className="flex flex-col md:flex-row gap-6">
             <div className="w-full md:w-1/3">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between pb-2">
-                     <div className="flex items-center gap-2">
-                       <Wrench className="h-5 w-5" />
-                       Categories
-                     </div>
+                    <div className="flex items-center gap-2">
+                      <Wrench className="h-5 w-5" />
+                      Categories
+                    </div>
                     <AddCategoryDialog
                       open={categoryDialogOpen}
                       onOpenChange={setCategoryDialogOpen}
                       onAddCategory={handleAddCategory}
-                      categories={categories.filter(c => c.transactionType === ProductTransactionType.PURCHASE)}
+                      categories={categories.filter(
+                        (c) =>
+                          c.transactionType === ProductTransactionType.PURCHASE,
+                      )}
                       defaultType={CategoryType.SERVICE}
                       defaultTransactionType={ProductTransactionType.PURCHASE}
                       selectedParentId={selectedCategory}
@@ -409,9 +508,15 @@ export default function ProductsServicesPage() {
                 </CardHeader>
                 <CardContent>
                   <CategoryTree
-                    categories={categories.filter(c => c.type === CategoryType.SERVICE && c.transactionType === ProductTransactionType.PURCHASE)}
+                    categories={categories.filter(
+                      (c) =>
+                        c.type === CategoryType.SERVICE &&
+                        c.transactionType === ProductTransactionType.PURCHASE,
+                    )}
                     products={[]}
-                    services={items.filter(item => item.itemType === ItemType.SERVICE)}
+                    services={items.filter(
+                      (item) => item.itemType === ItemType.SERVICE,
+                    )}
                     selectedCategory={selectedCategory}
                     onCategorySelect={setSelectedCategory}
                     onCategoryDelete={handleDeleteCategory}
@@ -423,18 +528,18 @@ export default function ProductsServicesPage() {
             <div className="w-full md:w-2/3">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center justify-between pb-2">
-                    <div className="flex items-center gap-2">
-                      <Wrench className="h-5 w-5" />
-                      Purchase Services
-                    </div>
+                  <CardTitle className="flex justify-end pb-2">
                     <AddServiceDialog
                       open={serviceDialogOpen}
                       onOpenChange={setServiceDialogOpen}
                       onAddService={handleAddItem}
                       onUpdateService={handleUpdateItem}
                       serviceToEdit={serviceToEdit}
-                      categories={categories.filter(c => c.type === CategoryType.SERVICE && c.transactionType === ProductTransactionType.PURCHASE)}
+                      categories={categories.filter(
+                        (c) =>
+                          c.type === CategoryType.SERVICE &&
+                          c.transactionType === ProductTransactionType.PURCHASE,
+                      )}
                       selectedCategory={selectedCategory}
                       defaultTransactionType={ProductTransactionType.PURCHASE}
                     />
@@ -442,7 +547,12 @@ export default function ProductsServicesPage() {
                 </CardHeader>
                 <CardContent>
                   <ServiceList
-                    services={items.filter(item => item.itemType === ItemType.SERVICE && item.transactionType === ProductTransactionType.PURCHASE)}
+                    services={items.filter(
+                      (item) =>
+                        item.itemType === ItemType.SERVICE &&
+                        item.transactionType ===
+                          ProductTransactionType.PURCHASE,
+                    )}
                     categories={categories}
                     selectedCategory={selectedCategory}
                     searchTerm={searchTerm}
@@ -477,18 +587,28 @@ export default function ProductsServicesPage() {
         </TabsContent>
       </Tabs>
 
-      <AlertDialog open={!!deleteCategoryId} onOpenChange={(open) => !open && setDeleteCategoryId(null)}>
+      <AlertDialog
+        open={!!deleteCategoryId}
+        onOpenChange={(open) => !open && setDeleteCategoryId(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete the category &ldquo;{deleteCategoryName}&rdquo;?
-              {deleteCategoryItemCount > 0 && ` This will also remove ${deleteCategoryItemCount} item${deleteCategoryItemCount > 1 ? 's' : ''} in this category.`}
+              Are you sure you want to delete the category &ldquo;
+              {deleteCategoryName}&rdquo;?
+              {deleteCategoryItemCount > 0 &&
+                ` This will also remove ${deleteCategoryItemCount} item${deleteCategoryItemCount > 1 ? "s" : ""} in this category.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setDeleteCategoryId(null)}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDeleteCategory} className="bg-destructive text-destructive-foreground">
+            <AlertDialogCancel onClick={() => setDeleteCategoryId(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteCategory}
+              className="bg-destructive text-destructive-foreground"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

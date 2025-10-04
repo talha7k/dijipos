@@ -59,19 +59,19 @@ export function ProductList({
 
   return (
     <div>
-      <CardHeader>
-        <CardTitle>
-          {selectedCategory
-            ? `${categories.find((c) => c.id === selectedCategory)?.name || "Selected"} Category`
-            : "All Products"}
-          <Badge variant="outline" className="ml-2">
-            {filteredProducts.length}
-          </Badge>
-        </CardTitle>
-      </CardHeader>
+      {selectedCategory && (
+        <div className="mb-4 p-3 bg-muted/50 rounded-md">
+          <h3 className="text-lg font-medium">
+            {categories.find((c) => c.id === selectedCategory)?.name || "Selected"} Category
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            Showing products in this category
+          </p>
+        </div>
+      )}
       <div className="mt-3">
         {filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
             {filteredProducts.map((product) => (
               <Card key={product.id} className="overflow-hidden py-2 pt-4">
                 <CardHeader className="pb-0">
@@ -109,12 +109,8 @@ export function ProductList({
                             key={variation.id}
                             className="flex justify-between items-center text-xs"
                           >
-                            <span className="text-muted-foreground">
-                              {variation.name}
-                            </span>
-                            <span className="font-medium">
-                              {formatCurrency(variation.price)}
-                            </span>
+                            <span className="text-muted-foreground">{variation.name}</span>
+                            <span className="font-medium">{formatCurrency(variation.price)}</span>
                           </div>
                         ))}
                         {product.variations.length > 3 && (

@@ -53,85 +53,82 @@ export function ServiceList({
   });
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>
-          {selectedCategory 
-            ? `${categories.find(c => c.id === selectedCategory)?.name || 'Selected'} Services` 
-            : 'All Services'
-          }
-          <Badge variant="outline" className="ml-2">
-            {filteredServices.length}
-          </Badge>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {filteredServices.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filteredServices.map((service) => (
-              <Card key={service.id} className="overflow-hidden">
-                <CardHeader className="pb-2">
-                  <div className="flex justify-between items-start">
-                    <CardTitle className="text-lg">{service.name}</CardTitle>
-                    <Badge variant="outline">{formatCurrency(service.price)}</Badge>
-                  </div>
-                  {service.categoryId && (
-                    <Badge variant="secondary" className="w-fit">
-                      {getCategoryPath(service.categoryId)}
-                    </Badge>
-                  )}
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                    {service.description || 'No description available.'}
-                  </p>
-                  
-                  {/* Variations Section */}
-                  {service.variations && service.variations.length > 0 && (
-                    <div className="mb-4 p-3 bg-muted/50 rounded-md">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Layers className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">Variations ({service.variations.length})</span>
-                      </div>
-                      <div className="space-y-1">
-                        {service.variations.slice(0, 3).map((variation) => (
-                          <div key={variation.id} className="flex justify-between items-center text-xs">
-                            <span className="text-muted-foreground">{variation.name}</span>
-                            <span className="font-medium">{formatCurrency(variation.price)}</span>
-                          </div>
-                        ))}
-                        {service.variations.length > 3 && (
-                          <div className="text-xs text-muted-foreground italic">
-                            +{service.variations.length - 3} more variations
-                          </div>
-                        )}
-                      </div>
+    <div>
+      {selectedCategory && (
+        <div className="mb-4 p-3 bg-muted/50 rounded-md">
+          <h3 className="text-lg font-medium">
+            {categories.find((c) => c.id === selectedCategory)?.name || "Selected"} Category
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            Showing services in this category
+          </p>
+        </div>
+      )}
+      {filteredServices.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {filteredServices.map((service) => (
+            <Card key={service.id} className="overflow-hidden">
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-start">
+                  <CardTitle className="text-lg">{service.name}</CardTitle>
+                  <Badge variant="outline">{formatCurrency(service.price)}</Badge>
+                </div>
+                {service.categoryId && (
+                  <Badge variant="secondary" className="w-fit">
+                    {getCategoryPath(service.categoryId)}
+                  </Badge>
+                )}
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                  {service.description || 'No description available.'}
+                </p>
+                
+                {/* Variations Section */}
+                {service.variations && service.variations.length > 0 && (
+                  <div className="mb-4 p-3 bg-muted/50 rounded-md">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Layers className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm font-medium">Variations ({service.variations.length})</span>
                     </div>
-                  )}
-                  
-                  <div className="flex justify-end">
-                    <ActionButtons
-                      onEdit={() => onEditService(service)}
-                      onDelete={() => onDeleteService(service.id)}
-                      showEdit={true}
-                    />
+                    <div className="space-y-1">
+                      {service.variations.slice(0, 3).map((variation) => (
+                        <div key={variation.id} className="flex justify-between items-center text-xs">
+                          <span className="text-muted-foreground">{variation.name}</span>
+                          <span className="font-medium">{formatCurrency(variation.price)}</span>
+                        </div>
+                      ))}
+                      {service.variations.length > 3 && (
+                        <div className="text-xs text-muted-foreground italic">
+                          +{service.variations.length - 3} more variations
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12 text-muted-foreground">
-            <Wrench className="h-12 w-12 mx-auto mb-4" />
-            <p>
-              {searchTerm || selectedCategory
-                ? 'No services found matching your criteria.'
-                : 'No services found. Click Add Service to get started.'
-              }
-            </p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+                )}
+                
+                <div className="flex justify-end">
+                  <ActionButtons
+                    onEdit={() => onEditService(service)}
+                    onDelete={() => onDeleteService(service.id)}
+                    showEdit={true}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-12 text-muted-foreground">
+          <Wrench className="h-12 w-12 mx-auto mb-4" />
+          <p>
+            {searchTerm || selectedCategory
+              ? 'No services found matching your criteria.'
+              : 'No services found. Click Add Service to get started.'
+            }
+          </p>
+        </div>
+      )}
+    </div>
   );
 }
