@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Image from "next/image";
 import { Supplier } from "@/types";
 import { useSuppliers } from "@/lib/hooks/useSuppliers";
@@ -28,6 +28,7 @@ import { toast } from "sonner";
 import { ActionButtons } from "@/components/ui/action-buttons";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "@/lib/firebase/config";
+import { TableFilter } from "@/components/shared/TableFilter";
 
 export default function SuppliersPage() {
   const { suppliers, loading, createSupplier, updateSupplier, deleteSupplier } =
@@ -36,6 +37,28 @@ export default function SuppliersPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [filters, setFilters] = useState({});
+
+  const columns = [
+    { accessorKey: 'name', header: 'Name', filterType: 'text' as const },
+    { accessorKey: 'email', header: 'Email', filterType: 'text' as const },
+    { accessorKey: 'phone', header: 'Phone', filterType: 'text' as const },
+    { accessorKey: 'vatNumber', header: 'VAT Number', filterType: 'text' as const },
+    { accessorKey: 'contactPerson', header: 'Contact Person', filterType: 'text' as const },
+  ];
+
+  const filteredSuppliers = useMemo(() => {
+    return (suppliers || []).filter(supplier => {
+      return Object.entries(filters).every(([key, value]) => {
+        if (!value) return true;
+        const supplierValue = supplier[key as keyof Supplier];
+        if (typeof supplierValue === 'string' && typeof value === 'string') {
+          return supplierValue.toLowerCase().includes(value.toLowerCase());
+        }
+        return false;
+      });
+    });
+  }, [suppliers, filters]);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -153,20 +176,21 @@ export default function SuppliersPage() {
         </Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Supplier Management</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <p className="text-muted-foreground text-center py-8">
-              Loading suppliers...
-            </p>
-          ) : suppliers.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">
-              No suppliers found. Add your first supplier to get started.
-            </p>
-          ) : (
+       <Card>
+         <CardHeader>
+           <CardTitle>Supplier Management</CardTitle>
+         </CardHeader>
+         <CardContent>
+           <TableFilter columns={columns} onFilterChange={setFilters} />
+           {loading ? (
+             <p className="text-muted-foreground text-center py-8">
+               Loading suppliers...
+             </p>
+           ) : filteredSuppliers.length === 0 ? (
+             <p className="text-muted-foreground text-center py-8">
+               {suppliers.length === 0 ? "No suppliers found. Add your first supplier to get started." : "No suppliers match your filters."}
+             </p>
+           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
@@ -178,8 +202,8 @@ export default function SuppliersPage() {
                   <TableHead className="w-24">Actions</TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody>
-                {suppliers.map((supplier) => (
+             <TableBody>
+                 {filteredSuppliers.map((supplier) => (
                   <TableRow key={supplier.id}>
                     <TableCell className="font-medium">
                       {supplier.name}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { usePayments } from '@/lib/hooks/usePayments';
 import { useInvoices } from '@/lib/hooks/useInvoices';
 
@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Wallet } from 'lucide-react';
 import { Loader } from '@/components/ui/loader';
+import { TableFilter } from '@/components/shared/TableFilter';
 
 function PaymentsContent() {
   const { payments, loading: paymentsLoading, createPayment } = usePayments();
@@ -24,6 +25,38 @@ function PaymentsContent() {
   const [amount, setAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
   const [notes, setNotes] = useState('');
+  const [filters, setFilters] = useState({});
+
+  const columns = [
+    { accessorKey: 'invoiceName', header: 'Invoice', filterType: 'text' as const },
+    { accessorKey: 'paymentMethod', header: 'Payment Method', filterType: 'text' as const },
+    { accessorKey: 'amount', header: 'Amount', filterType: 'text' as const },
+    { accessorKey: 'paymentDate', header: 'Date', filterType: 'date' as const },
+  ];
+
+  const filteredPayments = useMemo(() => {
+    return (payments || []).filter(payment => {
+      const invoice = invoices.find(inv => inv.id === payment.invoiceId);
+      const invoiceName = invoice ? (invoice.type === 'sales' ? invoice.clientName : invoice.supplierName || 'Unknown') : 'Unknown';
+
+      return Object.entries(filters).every(([key, value]) => {
+        if (!value) return true;
+
+        switch (key) {
+          case 'invoiceName':
+            return invoiceName.toLowerCase().includes((value as string).toLowerCase());
+          case 'paymentMethod':
+            return payment.paymentMethod.toLowerCase().includes((value as string).toLowerCase());
+          case 'amount':
+            return payment.amount.toString().includes(value as string);
+          case 'paymentDate':
+            return payment.paymentDate?.toLocaleDateString().toLowerCase().includes((value as string).toLowerCase()) || false;
+          default:
+            return true;
+        }
+      });
+    });
+  }, [payments, invoices, filters]);
 
   const loading = paymentsLoading || invoicesLoading;
 
@@ -124,12 +157,13 @@ function PaymentsContent() {
         </Dialog>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>All Payments</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
+       <Card>
+         <CardHeader>
+           <CardTitle>All Payments</CardTitle>
+         </CardHeader>
+         <CardContent>
+           <TableFilter columns={columns} onFilterChange={setFilters} />
+           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Invoice</TableHead>
@@ -139,29 +173,29 @@ function PaymentsContent() {
                 <TableHead>Notes</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
-              {payments.map((payment) => {
-                const invoice = invoices.find(inv => inv.id === payment.invoiceId);
-                return (
-                  <TableRow key={payment.id}>
-                     <TableCell>{invoice ? (invoice.type === 'sales' ? invoice.clientName : invoice.supplierName || 'Unknown') : 'Unknown'}</TableCell>
-                    <TableCell>${payment.amount.toFixed(2)}</TableCell>
-                    <TableCell>{payment.paymentMethod}</TableCell>
-                    <TableCell>{payment.paymentDate?.toLocaleDateString()}</TableCell>
-                    <TableCell>{payment.notes}</TableCell>
-                  </TableRow>
-                );
-              })}
-              {payments.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
-                    <div className="flex flex-col items-center gap-2">
-                      <Wallet className="h-8 w-8" />
-                      <p>No payments found. Click Add Payment to get started.</p>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )}
+             <TableBody>
+               {filteredPayments.map((payment) => {
+                 const invoice = invoices.find(inv => inv.id === payment.invoiceId);
+                 return (
+                   <TableRow key={payment.id}>
+                      <TableCell>{invoice ? (invoice.type === 'sales' ? invoice.clientName : invoice.supplierName || 'Unknown') : 'Unknown'}</TableCell>
+                     <TableCell>${payment.amount.toFixed(2)}</TableCell>
+                     <TableCell>{payment.paymentMethod}</TableCell>
+                     <TableCell>{payment.paymentDate?.toLocaleDateString()}</TableCell>
+                     <TableCell>{payment.notes}</TableCell>
+                   </TableRow>
+                 );
+               })}
+               {filteredPayments.length === 0 && (
+                 <TableRow>
+                   <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
+                     <div className="flex flex-col items-center gap-2">
+                       <Wallet className="h-8 w-8" />
+                       <p>{payments.length === 0 ? "No payments found. Click Add Payment to get started." : "No payments match your filters."}</p>
+                     </div>
+                   </TableCell>
+                 </TableRow>
+               )}
             </TableBody>
           </Table>
         </CardContent>

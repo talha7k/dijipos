@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Customer } from "@/types";
 import { useCustomers } from "@/lib/hooks/useCustomers";
 
@@ -30,6 +30,7 @@ import { Plus, Trash2, Edit, Users } from "lucide-react";
 import { toast } from "sonner";
 import { AddCustomerDialog } from "@/components/pos/AddCustomerDialog";
 import { Loader } from "@/components/ui/loader";
+import { TableFilter } from "@/components/shared/TableFilter";
 
 export default function CustomersPage() {
   const {
@@ -39,6 +40,27 @@ export default function CustomersPage() {
   } = useCustomers();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  const [filters, setFilters] = useState({});
+
+  const columns = [
+    { accessorKey: 'name', header: 'Name', filterType: 'text' as const },
+    { accessorKey: 'email', header: 'Email', filterType: 'text' as const },
+    { accessorKey: 'phone', header: 'Phone', filterType: 'text' as const },
+    { accessorKey: 'vatNumber', header: 'VAT Number', filterType: 'text' as const },
+  ];
+
+  const filteredCustomers = useMemo(() => {
+    return (customers || []).filter(customer => {
+      return Object.entries(filters).every(([key, value]) => {
+        if (!value) return true;
+        const customerValue = customer[key as keyof Customer];
+        if (typeof customerValue === 'string' && typeof value === 'string') {
+          return customerValue.toLowerCase().includes(value.toLowerCase());
+        }
+        return false;
+      });
+    });
+  }, [customers, filters]);
 
   const handleAddCustomer = () => {
     setEditingCustomer(null);
@@ -84,29 +106,30 @@ export default function CustomersPage() {
         </Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Customer Management</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {customers.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">
-              No customers found. Add your first customer to get started.
-            </p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Phone</TableHead>
-                  <TableHead>Address</TableHead>
-                  <TableHead>VAT Number</TableHead>
-                  <TableHead className="w-24">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {customers.map((customer: Customer) => (
+       <Card>
+         <CardHeader>
+           <CardTitle>Customer Management</CardTitle>
+         </CardHeader>
+         <CardContent>
+           <TableFilter columns={columns} onFilterChange={setFilters} />
+            {filteredCustomers.length === 0 ? (
+             <p className="text-muted-foreground text-center py-8">
+               {customers.length === 0 ? "No customers found. Add your first customer to get started." : "No customers match your filters."}
+             </p>
+            ) : (
+             <Table>
+               <TableHeader>
+                 <TableRow>
+                   <TableHead>Name</TableHead>
+                   <TableHead>Email</TableHead>
+                   <TableHead>Phone</TableHead>
+                   <TableHead>Address</TableHead>
+                   <TableHead>VAT Number</TableHead>
+                   <TableHead className="w-24">Actions</TableHead>
+                 </TableRow>
+               </TableHeader>
+               <TableBody>
+                 {filteredCustomers.map((customer: Customer) => (
                   <TableRow key={customer.id}>
                     <TableCell className="font-medium">
                       {customer.name}

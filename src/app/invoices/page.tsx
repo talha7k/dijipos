@@ -29,6 +29,7 @@ import { useCustomers } from "@/lib/hooks/useCustomers";
 import { useSuppliers } from "@/lib/hooks/useSuppliers";
 import { useRealtimeCollection } from "@/lib/hooks/useRealtimeCollection";
 import { toast } from "sonner";
+import { TableFilter } from "@/components/shared/TableFilter";
 
 export default function InvoicesPage() {
   const [selectedOrganization] = useAtom(selectedOrganizationAtom);
@@ -41,6 +42,14 @@ export default function InvoicesPage() {
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
   const [showEmailDialog, setShowEmailDialog] = useState(false);
   const [invoiceToDelete, setInvoiceToDelete] = useState<Invoice | null>(null);
+  const [filters, setFilters] = useState({});
+
+  const columns = [
+    { accessorKey: 'clientName', header: 'Client Name', filterType: 'text' as const },
+    { accessorKey: 'invoiceNumber', header: 'Invoice Number', filterType: 'text' as const },
+    { accessorKey: 'total', header: 'Amount', filterType: 'text' as const },
+    { accessorKey: 'createdAt', header: 'Date', filterType: 'date' as const },
+  ];
 
   // Use custom hooks for data fetching
   const {
@@ -113,21 +122,50 @@ export default function InvoicesPage() {
   };
 
   const getFilteredInvoices = () => {
-    const filteredInvoices = getInvoicesByTransactionType();
-    
+    let filteredInvoices = getInvoicesByTransactionType();
+
     // Then filter by status tab
     switch (activeTab) {
       case "draft":
-        return filteredInvoices.filter((inv) => inv.status === "draft");
+        filteredInvoices = filteredInvoices.filter((inv) => inv.status === "draft");
+        break;
       case "sent":
-        return filteredInvoices.filter((inv) => inv.status === "sent");
+        filteredInvoices = filteredInvoices.filter((inv) => inv.status === "sent");
+        break;
       case "paid":
-        return filteredInvoices.filter((inv) => inv.status === "paid");
+        filteredInvoices = filteredInvoices.filter((inv) => inv.status === "paid");
+        break;
       case "overdue":
-        return filteredInvoices.filter((inv) => inv.status === "overdue");
-      default:
-        return filteredInvoices;
+        filteredInvoices = filteredInvoices.filter((inv) => inv.status === "overdue");
+        break;
     }
+
+    // Apply additional filters
+    return filteredInvoices.filter(invoice => {
+      const clientName = invoice.type === 'sales'
+        ? (invoice as SalesInvoice).clientName
+        : (invoice as PurchaseInvoice).supplierName;
+
+      return Object.entries(filters).every(([key, value]) => {
+        if (!value) return true;
+
+        switch (key) {
+          case 'clientName':
+            return clientName.toLowerCase().includes((value as string).toLowerCase());
+          case 'invoiceNumber':
+            const invoiceNum = invoice.type === 'purchase'
+              ? (invoice as PurchaseInvoice).invoiceNumber || invoice.id.slice(-8)
+              : invoice.id.slice(-8);
+            return invoiceNum.toLowerCase().includes((value as string).toLowerCase());
+          case 'total':
+            return invoice.total.toString().includes(value as string);
+          case 'createdAt':
+            return invoice.createdAt?.toLocaleDateString().toLowerCase().includes((value as string).toLowerCase()) || false;
+          default:
+            return true;
+        }
+      });
+    });
   };
 
   const getInvoicesByTransactionTypeAndStatus = (status?: string) => {
@@ -221,9 +259,11 @@ export default function InvoicesPage() {
             Overdue ({getInvoicesByTransactionTypeAndStatus("overdue").length})
           </TabsTrigger>
         </TabsList>
-      </Tabs>
+       </Tabs>
 
-      <InvoiceList
+       <TableFilter columns={columns} onFilterChange={setFilters} />
+
+       <InvoiceList
         invoices={getFilteredInvoices()}
         customers={customers}
         suppliers={suppliers}
