@@ -165,7 +165,7 @@ export function POSHeader({
             </DatePicker>
           </div>
         </div>
-        <div className="flex items-center space-x-4 overflow-x-auto">
+        <div className="flex items-center space-x-4 overflow-x-auto scrollbar-hide ml-4">
           {/* Table Selection */}
           <div className="flex items-center space-x-2 flex-shrink-0">
             <Button

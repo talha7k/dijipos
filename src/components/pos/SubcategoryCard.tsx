@@ -1,4 +1,4 @@
-import { FolderOpen } from 'lucide-react';
+import { FolderOpen, Package, Wrench } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Category } from '@/types';
 
@@ -27,10 +27,15 @@ export function SubcategoryCard({
           <FolderOpen className="h-5 w-5 text-blue-600 dark:text-blue-400" />
         </div>
         <div
-          className="px-3 mb-3 text-lg text-center font-bold text-foreground leading-tight"
+          className="px-3 mb-3 text-lg text-center font-bold text-foreground leading-tight flex items-center justify-center gap-2"
           title={subcategory.name}
         >
-          {subcategory.name}
+          {subcategory.type === 'product' ? (
+            <Package className="h-6 w-6 flex-shrink-0 text-blue-600 dark:text-blue-400" />
+          ) : (
+            <Wrench className="h-6 w-6 flex-shrink-0 text-blue-600 dark:text-blue-400" />
+          )}
+          <span className="break-words">{subcategory.name}</span>
         </div>
       </div>
       <div className="flex-1 flex flex-col">

@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Package, Wrench } from 'lucide-react';
 import { Category } from '@/types';
 
 interface CategoryCardProps {
@@ -25,11 +26,16 @@ export function CategoryCard({
       onClick={() => onClick(category.id)}
     >
       <div className="pt-4">
-        <div 
-          className="px-3 mb-3 text-lg text-center font-bold text-foreground leading-tight" 
+        <div
+          className="px-3 mb-3 text-lg text-center font-bold text-foreground leading-tight flex items-center justify-center gap-2"
           title={category.name}
         >
-          {category.name}
+          {category.type === 'product' ? (
+            <Package className="h-6 w-6 flex-shrink-0 text-primary" />
+          ) : (
+            <Wrench className="h-6 w-6 flex-shrink-0 text-primary" />
+          )}
+          <span className="break-words">{category.name}</span>
         </div>
       </div>
       <div className="flex-1 flex flex-col">

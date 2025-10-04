@@ -142,6 +142,15 @@
     margin: 0.125rem 0;
 }
 
+/* Hide scrollbar utility */
+.scrollbar-hide {
+    -ms-overflow-style: none;  /* Internet Explorer 10+ */
+    scrollbar-width: none;  /* Firefox */
+}
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Safari and Chrome */
+}
+
 /* Print styles */
 @media print {
     /* Hide all UI elements when printing */

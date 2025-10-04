@@ -38,9 +38,9 @@ export function ItemCard({ item, onClick, className = "" }: ItemCardProps) {
       <div className="pt-4">
         <div className="flex items-center justify-center gap-2 mb-3">
           {item.itemType === "product" ? (
-            <Package className="h-5 w-5 text-primary" />
+            <Package className="h-6 w-6 flex-shrink-0 text-primary" />
           ) : (
-            <Wrench className="h-5 w-5 text-primary" />
+            <Wrench className="h-6 w-6 flex-shrink-0 text-primary" />
           )}
         </div>
         <div
