@@ -30,6 +30,7 @@ interface InvoiceListProps {
    organization: Organization | null;
    invoiceTemplates: InvoiceTemplate[];
    settings?: DocumentPrintSettings | null;
+   transactionType?: "sales" | "purchase" | "all";
  }
 
 export function InvoiceList({
@@ -49,13 +50,16 @@ export function InvoiceList({
    organization,
    invoiceTemplates,
    settings,
+   transactionType = "all",
  }: InvoiceListProps) {
   return (
     <div className="overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Client</TableHead>
+            <TableHead>
+              {transactionType === "purchase" ? "Supplier" : transactionType === "sales" ? "Client" : "Client/Supplier"}
+            </TableHead>
             <TableHead>Invoice #</TableHead>
             <TableHead>Total</TableHead>
             <TableHead>Status</TableHead>

@@ -46,7 +46,11 @@ export default function InvoicesPage() {
    const [filters, setFilters] = useState({});
 
   const columns = [
-    { accessorKey: 'clientName', header: 'Client Name', filterType: 'text' as const },
+    {
+      accessorKey: 'clientName',
+      header: transactionTypeFilter === "purchase" ? "Supplier" : transactionTypeFilter === "sales" ? "Client" : "Client/Supplier",
+      filterType: 'text' as const
+    },
     { accessorKey: 'invoiceNumber', header: 'Invoice Number', filterType: 'text' as const },
     { accessorKey: 'total', header: 'Amount', filterType: 'text' as const },
     { accessorKey: 'createdAt', header: 'Date', filterType: 'date' as const },
@@ -293,41 +297,42 @@ export default function InvoicesPage() {
        <TableFilter columns={columns} onFilterChange={setFilters} />
 
        <InvoiceList
-        invoices={getFilteredInvoices()}
-        customers={customers}
-        suppliers={suppliers}
-        payments={groupedPayments}
-        onInvoiceClick={handleInvoiceClick}
-        onViewDetails={handleInvoiceClick}
-        onStatusChange={handleStatusChange}
-        onEdit={(invoice) => {
-          // Handle edit - could open edit form
-          console.log("Edit invoice:", invoice.id);
-        }}
-        onDuplicate={(invoice) => {
-          // Handle duplicate - could create copy
-          console.log("Duplicate invoice:", invoice.id);
-        }}
-         onSend={(invoice) => {
-           setSelectedInvoice(invoice);
-           setShowEmailDialog(true);
+         invoices={getFilteredInvoices()}
+         customers={customers}
+         suppliers={suppliers}
+         payments={groupedPayments}
+         onInvoiceClick={handleInvoiceClick}
+         onViewDetails={handleInvoiceClick}
+         onStatusChange={handleStatusChange}
+         onEdit={(invoice) => {
+           // Handle edit - could open edit form
+           console.log("Edit invoice:", invoice.id);
          }}
-         onEmail={(invoice, templateId) => {
-           setSelectedInvoice(invoice);
-           setSelectedTemplateId(templateId);
-           setShowEmailDialog(true);
+         onDuplicate={(invoice) => {
+           // Handle duplicate - could create copy
+           console.log("Duplicate invoice:", invoice.id);
          }}
-         onDownloadPDF={(invoice) => {
-           // Handle PDF download
-           console.log("Download PDF for invoice:", invoice.id);
+          onSend={(invoice) => {
+            setSelectedInvoice(invoice);
+            setShowEmailDialog(true);
+          }}
+          onEmail={(invoice, templateId) => {
+            setSelectedInvoice(invoice);
+            setSelectedTemplateId(templateId);
+            setShowEmailDialog(true);
+          }}
+          onDownloadPDF={(invoice) => {
+            // Handle PDF download
+            console.log("Download PDF for invoice:", invoice.id);
+          }}
+         onDelete={(invoice) => {
+           setInvoiceToDelete(invoice);
          }}
-        onDelete={(invoice) => {
-          setInvoiceToDelete(invoice);
-        }}
-        organization={selectedOrganization}
-        invoiceTemplates={invoiceTemplates}
-        settings={printerSettings?.invoices}
-      />
+         organization={selectedOrganization}
+         invoiceTemplates={invoiceTemplates}
+         settings={printerSettings?.invoices}
+         transactionType={transactionTypeFilter}
+       />
 
       {/* Create/Edit Invoice Dialog */}
       <Dialog open={showForm} onOpenChange={(open) => {
