@@ -172,8 +172,8 @@ async function renderInvoiceWithTemplate(
 
   const data: InvoiceTemplateData = {
     invoiceId: invoice.id,
-    invoiceDate: new Date(invoice.createdAt).toLocaleDateString(),
-    dueDate: invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : "",
+    invoiceDate: convertDateField(invoice.createdAt)?.toLocaleDateString() || "",
+    dueDate: convertDateField(invoice.dueDate)?.toLocaleDateString() || "",
     status: invoice.status || "",
     companyName: organization?.name || "",
     companyNameAr: organization?.nameAr || "",
@@ -318,8 +318,8 @@ INVOICE #${invoice.id.slice(-8)}
 =====================================
 Type: ${invoice.type.toUpperCase()}
 Status: ${invoice.status}
-Date: ${new Date(invoice.createdAt).toLocaleDateString()}
-Due Date: ${invoice.dueDate instanceof Date ? invoice.dueDate.toLocaleDateString() : new Date(invoice.dueDate).toLocaleDateString()}
+Date: ${convertDateField(invoice.createdAt)?.toLocaleDateString() || 'N/A'}
+Due Date: ${convertDateField(invoice.dueDate)?.toLocaleDateString() || 'N/A'}
 
 CLIENT INFORMATION:
 ${invoice.type === 'sales' ? `Client: ${invoice.clientName}` : `Supplier: ${invoice.supplierId || 'N/A'}`}
@@ -342,7 +342,7 @@ TOTAL: $${invoice.total.toFixed(2)}
 PAYMENTS:
 -------------------------------------
 ${'payments' in invoice && invoice.payments.length > 0
-  ? invoice.payments.map((p: Payment) => `${p.paymentMethod}: $${p.amount.toFixed(2)} (${new Date(p.paymentDate).toLocaleDateString()})`).join('\n')
+  ? invoice.payments.map((p: Payment) => `${p.paymentMethod}: $${p.amount.toFixed(2)} (${convertDateField(p.paymentDate)?.toLocaleDateString() || 'N/A'})`).join('\n')
   : 'No payments recorded'
 }
 
