@@ -28,6 +28,20 @@ export interface ImportOptions {
   overwriteDuplicates: boolean;
 }
 
+export interface ImportProgress {
+  currentStep: string;
+  categoriesProcessed: number;
+  totalCategories: number;
+  itemsProcessed: number;
+  totalItems: number;
+  currentCategory?: string;
+  currentItem?: string;
+}
+
+export interface ImportProgressCallback {
+  (progress: ImportProgress): void;
+}
+
 export interface ImportResult {
   success: boolean;
   message: string;
@@ -203,14 +217,30 @@ export async function importProductsAndCategories(
     skipDuplicates: true,
     overwriteDuplicates: false,
   },
+  progressCallback?: ImportProgressCallback,
 ): Promise<ImportResult> {
   const errors: string[] = [];
   let categoriesImported = 0;
   let itemsImported = 0;
 
+  const reportProgress = (step: string, extra: Partial<ImportProgress> = {}) => {
+    if (progressCallback) {
+      progressCallback({
+        currentStep: step,
+        categoriesProcessed: categoriesImported,
+        totalCategories: importData.categories.length,
+        itemsProcessed: itemsImported,
+        totalItems: importData.items.length,
+        ...extra,
+      });
+    }
+  };
+
   try {
     // If overwriteExisting is true, delete all existing categories and items first
     if (options.overwriteExisting && existingCategories.length > 0) {
+      reportProgress("Clearing existing data...");
+      
       console.log(
         "Overwriting existing data - deleting all categories and items",
       );
@@ -250,8 +280,16 @@ export async function importProductsAndCategories(
     const categoryIdMapping = new Map<string, string>();
 
     // Import categories first (products reference them)
-    // Process categories in parallel for better performance
-    const categoryPromises = importData.categories.map(async (category) => {
+    reportProgress("Importing categories...");
+    
+    // Process categories sequentially for better progress tracking
+    for (let i = 0; i < importData.categories.length; i++) {
+      const category = importData.categories[i];
+      
+      reportProgress("Importing categories...", {
+        currentCategory: category.name,
+      });
+
       try {
         const newCategoryId = await createCategory({
           name: category.name,
@@ -262,21 +300,23 @@ export async function importProductsAndCategories(
         });
         // Store mapping from old ID to new ID
         categoryIdMapping.set(category.id, newCategoryId);
-        return { success: true, category };
+        categoriesImported++;
       } catch (error) {
         errors.push(`Failed to import category "${category.name}": ${error}`);
-        return { success: false, category };
       }
-    });
-
-    const categoryResults = await Promise.all(categoryPromises);
-    categoriesImported = categoryResults.filter(
-      (result) => result.success,
-    ).length;
+    }
 
     // Import items with updated category IDs
-    // Process items in parallel for better performance
-    const itemPromises = importData.items.map(async (item) => {
+    reportProgress("Importing items...");
+    
+    // Process items sequentially for better progress tracking
+    for (let i = 0; i < importData.items.length; i++) {
+      const item = importData.items[i];
+      
+      reportProgress("Importing items...", {
+        currentItem: item.name,
+      });
+
       try {
         // Map old category ID to new category ID
         const newCategoryId = item.categoryId
@@ -293,15 +333,13 @@ export async function importProductsAndCategories(
           itemType: item.itemType,
           transactionType: item.transactionType,
         });
-        return { success: true, item };
+        itemsImported++;
       } catch (error) {
         errors.push(`Failed to import item "${item.name}": ${error}`);
-        return { success: false, item };
       }
-    });
+    }
 
-    const itemResults = await Promise.all(itemPromises);
-    itemsImported = itemResults.filter((result) => result.success).length;
+    reportProgress("Finalizing import...");
 
     return {
       success: true,

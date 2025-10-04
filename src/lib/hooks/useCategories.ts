@@ -17,6 +17,7 @@ export interface CategoriesState {
 
 export interface CategoriesActions {
   createCategory: (categoryData: Omit<Category, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => Promise<string>;
+  createCategoryBulk: (categoryData: Omit<Category, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => Promise<string>;
   updateCategory: (categoryId: string, updates: Partial<Omit<Category, 'id' | 'createdAt'>>) => Promise<void>;
   deleteCategory: (categoryId: string) => Promise<void>;
   getCategoryById: (categoryId: string) => Promise<Category | null>;
@@ -81,6 +82,29 @@ export function useCategories(): CategoriesState & CategoriesActions {
     }
   }, [organizationId, loadCategories]);
 
+  const createCategoryBulk = useCallback(async (categoryData: Omit<Category, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>): Promise<string> => {
+    if (!organizationId) {
+      throw new Error('No organization selected');
+    }
+
+    try {
+      const fullCategoryData = {
+        ...categoryData,
+        organizationId,
+      };
+
+      const categoryId = await firestoreCreateCategory(fullCategoryData);
+
+      // Don't refresh categories list for bulk operations
+      // The caller should handle refresh after all bulk operations are complete
+
+      return categoryId;
+    } catch (error) {
+      console.error('Error creating category (bulk):', error);
+      throw error;
+    }
+  }, [organizationId]);
+
   const updateCategory = useCallback(async (categoryId: string, updates: Partial<Omit<Category, 'id' | 'createdAt'>>): Promise<void> => {
     try {
       await firestoreUpdateCategory(categoryId, updates);
@@ -129,6 +153,7 @@ export function useCategories(): CategoriesState & CategoriesActions {
     loading,
     error,
     createCategory,
+    createCategoryBulk,
     updateCategory,
     deleteCategory,
     getCategoryById,

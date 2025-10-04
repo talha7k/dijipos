@@ -26,8 +26,8 @@ import { ExportImportProducts } from '@/components/ExportImportProducts';
 export default function ProductsServicesPage() {
   const { selectedOrganization } = useOrganization();
   const organizationId = selectedOrganization?.id;
-  const { items, loading: itemsLoading, createItem, updateItem, deleteItem } = useItems();
-  const { categories, loading: categoriesLoading, createCategory, deleteCategory } = useCategories();
+  const { items, loading: itemsLoading, createItem, createItemBulk, updateItem, deleteItem, refreshItems } = useItems();
+  const { categories, loading: categoriesLoading, createCategory, createCategoryBulk, deleteCategory, refreshCategories } = useCategories();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [productDialogOpen, setProductDialogOpen] = useState(false);
@@ -462,16 +462,23 @@ export default function ProductsServicesPage() {
             categories={categories}
             items={items}
             onCreateCategory={async (data) => {
-              return await createCategory(data);
+              return await createCategoryBulk(data);
             }}
             onCreateItem={async (data) => {
-              return await createItem(data);
+              return await createItemBulk(data);
             }}
             onDeleteCategory={async (categoryId) => {
               await deleteCategory(categoryId);
             }}
             onDeleteItem={async (itemId) => {
               await deleteItem(itemId);
+            }}
+            onImportComplete={async () => {
+              // Refresh both categories and items after import is complete
+              await Promise.all([
+                refreshCategories(),
+                refreshItems()
+              ]);
             }}
           />
         </TabsContent>

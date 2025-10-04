@@ -19,6 +19,7 @@ export interface ItemsState {
 
 export interface ItemsActions {
   createItem: (itemData: Omit<Item, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => Promise<string>;
+  createItemBulk: (itemData: Omit<Item, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => Promise<string>;
   updateItem: (itemId: string, updates: Partial<Omit<Item, 'id' | 'createdAt'>>) => Promise<void>;
   deleteItem: (itemId: string) => Promise<void>;
   getItemById: (itemId: string) => Promise<Item | null>;
@@ -83,6 +84,29 @@ export function useItems(): ItemsState & ItemsActions {
     }
   }, [organizationId, loadItems]);
 
+  const createItemBulk = useCallback(async (itemData: Omit<Item, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>): Promise<string> => {
+    if (!organizationId) {
+      throw new Error('No organization selected');
+    }
+
+    try {
+      const fullItemData = {
+        ...itemData,
+        organizationId,
+      };
+
+      const itemId = await firestoreCreateItem(fullItemData);
+
+      // Don't refresh items list for bulk operations
+      // The caller should handle refresh after all bulk operations are complete
+
+      return itemId;
+    } catch (error) {
+      console.error('Error creating item (bulk):', error);
+      throw error;
+    }
+  }, [organizationId]);
+
   const updateItem = useCallback(async (itemId: string, updates: Partial<Omit<Item, 'id' | 'createdAt'>>): Promise<void> => {
     try {
       await firestoreUpdateItem(itemId, updates);
@@ -131,6 +155,7 @@ export function useItems(): ItemsState & ItemsActions {
     loading,
     error,
     createItem,
+    createItemBulk,
     updateItem,
     deleteItem,
     getItemById,
@@ -173,13 +198,14 @@ export function useItemsByType(itemType: ItemType): ItemsState & ItemsActions {
   }, [loadItems]);
 
   // Reuse the same actions as the main hook
-  const { createItem, updateItem, deleteItem, getItemById, refreshItems } = useItems();
+  const { createItem, createItemBulk, updateItem, deleteItem, getItemById, refreshItems } = useItems();
 
   return {
     items,
     loading,
     error,
     createItem,
+    createItemBulk,
     updateItem,
     deleteItem,
     getItemById,
@@ -222,13 +248,14 @@ export function useItemsByTransactionType(transactionType: ProductTransactionTyp
   }, [loadItems]);
 
   // Reuse the same actions as the main hook
-  const { createItem, updateItem, deleteItem, getItemById, refreshItems } = useItems();
+  const { createItem, createItemBulk, updateItem, deleteItem, getItemById, refreshItems } = useItems();
 
   return {
     items,
     loading,
     error,
     createItem,
+    createItemBulk,
     updateItem,
     deleteItem,
     getItemById,

@@ -4,13 +4,15 @@ import React, { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Progress } from '@/components/ui/progress';
 import { Download, Upload, FileText, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import {
   downloadSampleData,
   exportProductsAndCategories,
   parseImportFile,
   importProductsAndCategories,
-  ImportResult
+  ImportResult,
+  ImportProgress
 } from '@/lib/export-import-utils';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { Category, Item } from '@/types';
@@ -23,6 +25,7 @@ interface ExportImportProductsProps {
   onCreateItem?: (data: Omit<Item, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => Promise<string>;
   onDeleteCategory?: (categoryId: string) => Promise<void>;
   onDeleteItem?: (itemId: string) => Promise<void>;
+  onImportComplete?: () => Promise<void>;
 }
 
 export function ExportImportProducts({
@@ -32,7 +35,8 @@ export function ExportImportProducts({
   onCreateCategory,
   onCreateItem,
   onDeleteCategory,
-  onDeleteItem
+  onDeleteItem,
+  onImportComplete
 }: ExportImportProductsProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -42,6 +46,7 @@ export function ExportImportProducts({
   const { user } = useAuth();
   const [isImporting, setIsImporting] = useState(false);
   const [lastImportResult, setLastImportResult] = useState<ImportResult | null>(null);
+  const [importProgress, setImportProgress] = useState<ImportProgress | null>(null);
 
   // Export function
   const handleExport = () => {
@@ -59,6 +64,9 @@ export function ExportImportProducts({
     if (!selectedFile || !organizationId || !onCreateCategory || !onCreateItem) return;
 
     setIsImporting(true);
+    setImportProgress(null);
+    setLastImportResult(null);
+    
     try {
       const importData = await parseImportFile(selectedFile);
       const result = await importProductsAndCategories(
@@ -70,9 +78,15 @@ export function ExportImportProducts({
         onDeleteItem || (() => Promise.resolve()),
         categories,
         items,
-        { overwriteExisting: overwriteExistingData, skipDuplicates: !overwriteDuplicates, overwriteDuplicates }
+        { overwriteExisting: overwriteExistingData, skipDuplicates: !overwriteDuplicates, overwriteDuplicates },
+        (progress) => setImportProgress(progress)
       );
       setLastImportResult(result);
+      
+      // Call onImportComplete if provided
+      if (onImportComplete) {
+        await onImportComplete();
+      }
     } catch (error) {
       setLastImportResult({
         success: false,
@@ -82,6 +96,7 @@ export function ExportImportProducts({
       });
     } finally {
       setIsImporting(false);
+      setImportProgress(null);
     }
   };
 
@@ -209,16 +224,64 @@ export function ExportImportProducts({
                    </label>
                  </div>
 
-                <Button
-                  onClick={handleImport}
-                  disabled={!canImport || isImporting}
-                  className="flex items-center gap-2"
-                >
-                  <Upload className="w-4 h-4" />
-                  {isImporting ? 'Importing...' : 'Import Data'}
-                </Button>
-              </div>
-            )}
+                 <Button
+                   onClick={handleImport}
+                   disabled={!canImport || isImporting}
+                   className="flex items-center gap-2"
+                 >
+                   <Upload className="w-4 h-4" />
+                   {isImporting ? 'Importing...' : 'Import Data'}
+                 </Button>
+               </div>
+             )}
+
+             {/* Import Progress */}
+             {importProgress && (
+               <Card>
+                 <CardHeader>
+                   <CardTitle className="text-lg">Import Progress</CardTitle>
+                 </CardHeader>
+                 <CardContent className="space-y-4">
+                   <div className="space-y-2">
+                     <div className="flex justify-between text-sm">
+                       <span>{importProgress.currentStep}</span>
+                       <span>
+                         {importProgress.categoriesProcessed + importProgress.itemsProcessed} / {importProgress.totalCategories + importProgress.totalItems}
+                       </span>
+                     </div>
+                     <Progress 
+                       value={((importProgress.categoriesProcessed + importProgress.itemsProcessed) / (importProgress.totalCategories + importProgress.totalItems)) * 100} 
+                       className="w-full" 
+                     />
+                   </div>
+
+                   <div className="grid grid-cols-2 gap-4 text-sm">
+                     <div>
+                       <div className="font-medium">Categories</div>
+                       <div className="text-muted-foreground">
+                         {importProgress.categoriesProcessed} / {importProgress.totalCategories}
+                       </div>
+                       {importProgress.currentCategory && (
+                         <div className="text-xs text-muted-foreground truncate">
+                           Current: {importProgress.currentCategory}
+                         </div>
+                       )}
+                     </div>
+                     <div>
+                       <div className="font-medium">Items</div>
+                       <div className="text-muted-foreground">
+                         {importProgress.itemsProcessed} / {importProgress.totalItems}
+                       </div>
+                       {importProgress.currentItem && (
+                         <div className="text-xs text-muted-foreground truncate">
+                           Current: {importProgress.currentItem}
+                         </div>
+                       )}
+                     </div>
+                   </div>
+                 </CardContent>
+               </Card>
+             )}
 
             {!organizationId && (
               <p className="text-sm text-muted-foreground">
