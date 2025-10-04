@@ -258,43 +258,43 @@ function DashboardContent() {
           <CardTitle>Quick Actions</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            <Link href="/pos">
-              <Button className="w-full justify-start" variant="outline">
-                <ShoppingCart className="h-4 w-4 mr-2" />
-                Point of Sale
-              </Button>
-            </Link>
-            <Link href="/customers">
-              <Button className="w-full justify-start" variant="outline">
-                <Users className="h-4 w-4 mr-2" />
-                Customer Management
-              </Button>
-            </Link>
-            <Link href="/products-services">
-              <Button className="w-full justify-start" variant="outline">
-                <Package className="h-4 w-4 mr-2" />
-                Products & Services
-              </Button>
-            </Link>
-            {isManagerOrAdmin && (
-              <>
-                <Link href="/invoices">
-                  <Button className="w-full justify-start" variant="outline">
-                    <CreditCard className="h-4 w-4 mr-2" />
-                    Invoices
-                  </Button>
-                </Link>
+           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+             <Link href="/pos">
+               <Button className="w-full justify-start whitespace-normal" variant="outline">
+                 <ShoppingCart className="h-4 w-4 mr-2" />
+                 POS
+               </Button>
+             </Link>
+             <Link href="/customers">
+               <Button className="w-full justify-start whitespace-normal" variant="outline">
+                 <Users className="h-4 w-4 mr-2" />
+                 Customers
+               </Button>
+             </Link>
+             <Link href="/products-services">
+               <Button className="w-full justify-start whitespace-normal" variant="outline">
+                 <Package className="h-4 w-4 mr-2" />
+                 Products
+               </Button>
+             </Link>
+             {isManagerOrAdmin && (
+               <>
+                 <Link href="/invoices">
+                   <Button className="w-full justify-start whitespace-normal" variant="outline">
+                     <CreditCard className="h-4 w-4 mr-2" />
+                     Invoices
+                   </Button>
+                 </Link>
 
-                <Link href="/reports">
-                  <Button className="w-full justify-start" variant="outline">
-                    <TrendingUp className="h-4 w-4 mr-2" />
-                    Reports
-                  </Button>
-                </Link>
-              </>
-            )}
-          </div>
+                 <Link href="/reports">
+                   <Button className="w-full justify-start whitespace-normal" variant="outline">
+                     <TrendingUp className="h-4 w-4 mr-2" />
+                     Reports
+                   </Button>
+                 </Link>
+               </>
+             )}
+           </div>
         </CardContent>
       </Card>
 
