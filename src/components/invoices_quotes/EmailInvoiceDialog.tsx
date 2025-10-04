@@ -86,6 +86,11 @@ export function EmailInvoiceDialog({
 
       if (!response.ok) {
         const error = await response.json();
+        
+        if (error.code === 'SMTP_NOT_CONFIGURED') {
+          throw new Error('Email service is not configured. Please contact your administrator to set up SMTP settings.');
+        }
+        
         throw new Error(error.message || 'Failed to send email');
       }
 
