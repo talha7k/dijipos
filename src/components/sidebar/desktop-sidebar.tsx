@@ -68,12 +68,15 @@ const getNavigationItems = (role: string): NavigationItem[] => {
           href: "/products-services",
           icon: BarChart3,
         },
-        {
-          title: "Invoices",
-          href: "/invoices",
-          icon: FileMinus,
-        },
       ],
+    },
+  ];
+
+  const invoicesItems: NavigationItem[] = [
+    {
+      title: "Invoices",
+      href: "/invoices",
+      icon: FileMinus,
     },
   ];
 
@@ -124,13 +127,13 @@ const getNavigationItems = (role: string): NavigationItem[] => {
 
   switch (role) {
     case "admin":
-      return [...baseItems, ...salesItems, ...inventoryItems, ...contactsItems, ...adminItems];
+      return [...baseItems, ...salesItems, ...inventoryItems, ...invoicesItems, ...contactsItems, ...adminItems];
     case "manager":
-      return [...baseItems, ...salesItems, ...inventoryItems, ...contactsItems, ...managerItems];
+      return [...baseItems, ...salesItems, ...inventoryItems, ...invoicesItems, ...contactsItems, ...managerItems];
     case "cashier":
-      return [...baseItems, ...salesItems, ...inventoryItems, ...contactsItems];
+      return [...baseItems, ...salesItems, ...inventoryItems, ...invoicesItems, ...contactsItems];
     case "waiter":
-      return [...baseItems, ...salesItems, ...inventoryItems, ...contactsItems];
+      return [...baseItems, ...salesItems, ...inventoryItems, ...invoicesItems, ...contactsItems];
     default:
       return baseItems;
   }

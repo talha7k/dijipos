@@ -73,12 +73,12 @@ const navigationItems: NavigationItem[] = [
         href: "/products-services",
         icon: BarChart3,
       },
-      {
-        title: "Invoices",
-        href: "/invoices",
-        icon: FileMinus,
-      },
     ],
+  },
+  {
+    title: "Invoices",
+    href: "/invoices",
+    icon: FileMinus,
   },
   {
     title: "Contacts",
