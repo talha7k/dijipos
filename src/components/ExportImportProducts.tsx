@@ -25,7 +25,6 @@ interface ExportImportProductsProps {
   onCreateItem?: (data: Omit<Item, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => Promise<string>;
   onDeleteCategory?: (categoryId: string) => Promise<void>;
   onDeleteItem?: (itemId: string) => Promise<void>;
-  onImportComplete?: () => Promise<void>;
 }
 
 export function ExportImportProducts({
@@ -35,8 +34,7 @@ export function ExportImportProducts({
   onCreateCategory,
   onCreateItem,
   onDeleteCategory,
-  onDeleteItem,
-  onImportComplete
+  onDeleteItem
 }: ExportImportProductsProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -82,11 +80,6 @@ export function ExportImportProducts({
         (progress) => setImportProgress(progress)
       );
       setLastImportResult(result);
-      
-      // Call onImportComplete if provided
-      if (onImportComplete) {
-        await onImportComplete();
-      }
     } catch (error) {
       setLastImportResult({
         success: false,
@@ -96,7 +89,8 @@ export function ExportImportProducts({
       });
     } finally {
       setIsImporting(false);
-      setImportProgress(null);
+      // Keep progress visible so user can see the final state
+      // Progress will be cleared when user starts a new import or clears file
     }
   };
 
@@ -104,6 +98,8 @@ export function ExportImportProducts({
     const file = event.target.files?.[0];
     if (file) {
       setSelectedFile(file);
+      setImportProgress(null);
+      setLastImportResult(null);
     }
   };
 
@@ -111,6 +107,8 @@ export function ExportImportProducts({
 
   const clearFileSelection = () => {
     setSelectedFile(null);
+    setImportProgress(null);
+    setLastImportResult(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }

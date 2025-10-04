@@ -97,8 +97,15 @@ export function useItems(): ItemsState & ItemsActions {
 
       const itemId = await firestoreCreateItem(fullItemData);
 
-      // Don't refresh items list for bulk operations
-      // The caller should handle refresh after all bulk operations are complete
+      // Immediately update local state with the new item
+      const newItem: Item = {
+        ...fullItemData,
+        id: itemId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      setItems(prevItems => [...prevItems, newItem]);
 
       return itemId;
     } catch (error) {

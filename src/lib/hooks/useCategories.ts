@@ -95,8 +95,15 @@ export function useCategories(): CategoriesState & CategoriesActions {
 
       const categoryId = await firestoreCreateCategory(fullCategoryData);
 
-      // Don't refresh categories list for bulk operations
-      // The caller should handle refresh after all bulk operations are complete
+      // Immediately update local state with the new category
+      const newCategory: Category = {
+        ...fullCategoryData,
+        id: categoryId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      setCategories(prevCategories => [...prevCategories, newCategory]);
 
       return categoryId;
     } catch (error) {

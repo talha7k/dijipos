@@ -473,13 +473,6 @@ export default function ProductsServicesPage() {
             onDeleteItem={async (itemId) => {
               await deleteItem(itemId);
             }}
-            onImportComplete={async () => {
-              // Refresh both categories and items after import is complete
-              await Promise.all([
-                refreshCategories(),
-                refreshItems()
-              ]);
-            }}
           />
         </TabsContent>
       </Tabs>
