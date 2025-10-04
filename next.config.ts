@@ -10,9 +10,6 @@ const nextConfig = (phase: string) => {
     reactStrictMode: true,
     poweredByHeader: false,
     typedRoutes: true,
-    experimental: {
-      useLightningcss: false,  // Fallback to standard PostCSS if this is the culprit
-    },
     images: {
       remotePatterns: [
         {
