@@ -112,7 +112,7 @@ export default function InvoiceForm({
   const [taxRate, setTaxRate] = useState(invoice?.taxRate || 0);
   const [notes, setNotes] = useState(invoice?.notes || "");
   const [dueDate, setDueDate] = useState(() => {
-    if (invoice?.dueDate) {
+    if (invoice?.dueDate && !isNaN(new Date(invoice.dueDate).getTime())) {
       return new Date(invoice.dueDate).toISOString().split("T")[0];
     }
     const date = new Date();
