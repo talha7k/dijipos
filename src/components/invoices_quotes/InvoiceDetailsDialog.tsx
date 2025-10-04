@@ -113,14 +113,14 @@ export function InvoiceDetailsDialog({
                       {invoice.status}
                     </Badge>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Invoice Date:</span>
-                    <span>{invoice.createdAt.toLocaleDateString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Due Date:</span>
-                    <span>{invoice.dueDate?.toLocaleDateString()}</span>
-                  </div>
+                   <div className="flex justify-between">
+                     <span className="text-gray-600">Invoice Date:</span>
+                     <span>{new Date(invoice.createdAt).toLocaleDateString()}</span>
+                   </div>
+                   <div className="flex justify-between">
+                     <span className="text-gray-600">Due Date:</span>
+                     <span>{invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : 'N/A'}</span>
+                   </div>
                 </div>
               </div>
               <div>
@@ -286,7 +286,7 @@ export function InvoiceDetailsDialog({
                                    )}
                                  </div>
                                </TableCell>
-                               <TableCell>{payment.paymentDate.toLocaleDateString()}</TableCell>
+                                <TableCell>{new Date(payment.paymentDate).toLocaleDateString()}</TableCell>
                                <TableCell>{payment.reference || '-'}</TableCell>
                                <TableCell className="text-right font-medium">${payment.amount.toFixed(2)}</TableCell>
                              </TableRow>
