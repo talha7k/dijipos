@@ -77,14 +77,15 @@ export function useRealtimeCollection<T extends { id: string }>(
               const data = doc.data();
 
               // Convert Firestore Timestamps to Date objects for all date fields
-              const convertedData: any = { ...data };
+              const convertedData = { ...data };
 
               // Convert known date fields
               const dateFields = ['createdAt', 'updatedAt', 'paymentDate', 'dueDate', 'invoiceDate', 'validUntil', 'expiresAt'];
 
               dateFields.forEach(field => {
                 if (data[field] && typeof data[field].toDate === 'function') {
-                  convertedData[field] = data[field].toDate();
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  (convertedData as any)[field] = data[field].toDate();
                 }
               });
 
