@@ -86,12 +86,24 @@ export function EmailInvoiceDialog({
 
       if (!response.ok) {
         const error = await response.json();
-        
+
+        // Handle specific SMTP error codes with user-friendly messages
         if (error.code === 'SMTP_NOT_CONFIGURED') {
           throw new Error('Email service is not configured. Please contact your administrator to set up SMTP settings.');
+        } else if (error.code === 'SMTP_AUTH_FAILED') {
+          throw new Error('Email authentication failed. Please check SMTP username and password configuration.');
+        } else if (error.code === 'SMTP_CONNECTION_FAILED') {
+          throw new Error('Cannot connect to email server. Please check SMTP host and port settings.');
+        } else if (error.code === 'SMTP_TIMEOUT') {
+          throw new Error('Email server connection timed out. Please check your network connection.');
+        } else if (error.code === 'SMTP_RECIPIENT_REJECTED') {
+          throw new Error('Email was rejected by the server. Please verify the recipient email address.');
+        } else if (error.code === 'SMTP_ERROR') {
+          throw new Error(error.error || 'Email sending failed due to server configuration issue.');
         }
-        
-        throw new Error(error.message || 'Failed to send email');
+
+        // Fallback to generic error message
+        throw new Error(error.error || error.message || 'Failed to send email');
       }
 
       toast.success('Invoice sent successfully');

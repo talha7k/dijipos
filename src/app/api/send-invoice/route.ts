@@ -3,6 +3,15 @@ import nodemailer from 'nodemailer';
 import { Invoice, ItemType, InvoiceStatus, InvoiceType, Payment } from '@/types';
 import { getInvoice } from '@/lib/firebase/firestore/invoices';
 
+// SMTP Error interface
+interface SMTPErr {
+  message?: string;
+  code?: string;
+  command?: string;
+  response?: string;
+  responseCode?: number;
+}
+
 // SMTP configuration from environment variables
 const smtpConfig = {
   host: process.env.SMTP_HOST,
@@ -14,12 +23,32 @@ const smtpConfig = {
   },
 };
 
-// Create transporter
-const createTransporter = () => {
-  if (!smtpConfig.host || !smtpConfig.auth.user || !smtpConfig.auth.pass) {
-    throw new Error('SMTP configuration is missing. Please set SMTP_HOST, SMTP_USER, and SMTP_PASS in your environment variables.');
+// Validate SMTP configuration
+const validateSMTPConfig = () => {
+  const missing = [];
+  if (!smtpConfig.host) missing.push('SMTP_HOST');
+  if (!smtpConfig.auth.user) missing.push('SMTP_USER');
+  if (!smtpConfig.auth.pass) missing.push('SMTP_PASS');
+
+  if (missing.length > 0) {
+    const errorMsg = `SMTP configuration is incomplete. Missing environment variables: ${missing.join(', ')}. Please set these in your .env.local file.`;
+    console.error('SMTP Configuration Error:', errorMsg);
+    throw new Error(errorMsg);
   }
 
+  // Validate port
+  if (isNaN(smtpConfig.port) || smtpConfig.port < 1 || smtpConfig.port > 65535) {
+    const errorMsg = `Invalid SMTP_PORT: ${process.env.SMTP_PORT}. Must be a valid port number between 1-65535.`;
+    console.error('SMTP Configuration Error:', errorMsg);
+    throw new Error(errorMsg);
+  }
+
+  console.log('SMTP Configuration validated successfully');
+};
+
+// Create transporter
+const createTransporter = () => {
+  validateSMTPConfig();
   return nodemailer.createTransport(smtpConfig);
 };
 
@@ -104,11 +133,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if SMTP is configured
-    if (!smtpConfig.host || !smtpConfig.auth.user || !smtpConfig.auth.pass) {
+    // Validate SMTP configuration
+    try {
+      validateSMTPConfig();
+    } catch (configError) {
+      console.error('SMTP Configuration validation failed:', configError);
       return NextResponse.json(
-        { 
-          error: 'Email service is not configured. Please contact your administrator to set up SMTP settings.',
+        {
+          error: configError instanceof Error ? configError.message : 'SMTP configuration error',
           code: 'SMTP_NOT_CONFIGURED'
         },
         { status: 503 }
@@ -153,7 +185,53 @@ export async function POST(request: NextRequest) {
       ],
     };
 
-    await transporter.sendMail(mailOptions);
+    // Send email with detailed error handling
+    try {
+      await transporter.sendMail(mailOptions);
+      console.log(`Email sent successfully to ${recipientEmail} for invoice ${invoiceId}`);
+    } catch (smtpError: unknown) {
+      const error = smtpError as SMTPErr;
+      console.error('SMTP Error sending email:', {
+        error: error?.message,
+        code: error?.code,
+        command: error?.command,
+        response: error?.response,
+        responseCode: error?.responseCode,
+      });
+
+      // Provide specific error messages based on SMTP error codes
+      let errorMessage = 'Failed to send email due to SMTP error.';
+      let errorCode = 'SMTP_ERROR';
+
+      if (error?.code === 'EAUTH') {
+        errorMessage = 'SMTP authentication failed. Please check your SMTP username and password.';
+        errorCode = 'SMTP_AUTH_FAILED';
+      } else if (error?.code === 'ECONNREFUSED') {
+        errorMessage = 'Cannot connect to SMTP server. Please check your SMTP host and port settings.';
+        errorCode = 'SMTP_CONNECTION_FAILED';
+      } else if (error?.code === 'ETIMEDOUT') {
+        errorMessage = 'SMTP connection timed out. Please check your network connection and SMTP server.';
+        errorCode = 'SMTP_TIMEOUT';
+      } else if (error?.responseCode === 550) {
+        errorMessage = 'Email rejected by SMTP server. The recipient email address may be invalid.';
+        errorCode = 'SMTP_RECIPIENT_REJECTED';
+      } else if (error?.message) {
+        errorMessage = `SMTP Error: ${error.message}`;
+      }
+
+      return NextResponse.json(
+        {
+          error: errorMessage,
+          code: errorCode,
+          details: process.env.NODE_ENV === 'development' ? {
+            smtpCode: error?.code,
+            smtpResponse: error?.response,
+            smtpResponseCode: error?.responseCode,
+          } : undefined
+        },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json(
       { message: 'Email sent successfully' },
