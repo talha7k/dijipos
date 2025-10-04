@@ -2,22 +2,22 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Invoice, Payment, Organization, InvoiceTemplate, Customer, Supplier, DocumentPrintSettings, SalesInvoice } from '@/types';
+import { Payment, Organization, InvoiceTemplate, Customer, Supplier, DocumentPrintSettings, SalesInvoice, PurchaseInvoice, InvoiceType } from '@/types';
 import { Printer, Eye, MoreHorizontal, Trash2, Mail, Edit } from 'lucide-react';
 import { InvoiceActionsDialog } from './InvoiceActionsDialog';
 import { InvoicePrintDialog } from './InvoicePrintDialog';
 
 interface InvoiceActionsProps {
-   invoice: Invoice;
+   invoice: SalesInvoice | PurchaseInvoice;
    payments: Payment[];
-    onViewDetails: (invoice: Invoice) => void;
-    onStatusChange?: (invoiceId: string, status: Invoice['status']) => void;
-    onEdit?: (invoice: Invoice) => void;
-   onDuplicate?: (invoice: Invoice) => void;
-   onSend?: (invoice: Invoice) => void;
-   onEmail?: (invoice: Invoice, templateId: string) => void;
-   onDownloadPDF?: (invoice: Invoice) => void;
-   onDelete?: (invoice: Invoice) => void;
+    onViewDetails: (invoice: SalesInvoice | PurchaseInvoice) => void;
+    onStatusChange?: (invoiceId: string, status: (SalesInvoice | PurchaseInvoice)['status']) => void;
+    onEdit?: (invoice: SalesInvoice | PurchaseInvoice) => void;
+   onDuplicate?: (invoice: SalesInvoice | PurchaseInvoice) => void;
+   onSend?: (invoice: SalesInvoice | PurchaseInvoice) => void;
+   onEmail?: (invoice: SalesInvoice | PurchaseInvoice, templateId: string) => void;
+   onDownloadPDF?: (invoice: SalesInvoice | PurchaseInvoice) => void;
+   onDelete?: (invoice: SalesInvoice | PurchaseInvoice) => void;
    organization: Organization | null;
    invoiceTemplates: InvoiceTemplate[];
    customers: Customer[];
@@ -61,8 +61,8 @@ export function InvoiceActions({
     onDelete?.(invoice);
   };
 
-  const customer = invoice.type === 'sales' ? customers.find(c => c.id === (invoice as SalesInvoice).clientName) : undefined;
-  const supplier = invoice.type === 'purchase' ? suppliers.find(s => s.id === invoice.supplierId) : undefined;
+  const customer = invoice.type === InvoiceType.SALES ? customers.find(c => c.name === (invoice as SalesInvoice).clientName) : undefined;
+  const supplier = invoice.type === 'purchase' ? suppliers.find(s => s.id === (invoice as PurchaseInvoice).supplierId) : undefined;
 
   return (
     <>

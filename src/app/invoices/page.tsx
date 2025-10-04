@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useAtom } from "jotai";
 import { selectedOrganizationAtom } from "@/atoms";
 import { useMemo } from "react";
-import { Invoice, Payment, SalesInvoice, PurchaseInvoice } from "@/types";
+import { Payment, SalesInvoice, PurchaseInvoice, InvoiceType } from "@/types";
 import { InvoiceList } from "@/components/invoices_quotes/InvoiceList";
 import InvoiceForm from "@/components/invoices_quotes/InvoiceForm";
 import { InvoiceDetailsDialog } from "@/components/invoices_quotes/InvoiceDetailsDialog";
@@ -34,15 +34,15 @@ import { TableFilter } from "@/components/shared/TableFilter";
 export default function InvoicesPage() {
   const [selectedOrganization] = useAtom(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
-  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [selectedInvoice, setSelectedInvoice] = useState<SalesInvoice | PurchaseInvoice | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
   const [transactionTypeFilter, setTransactionTypeFilter] = useState<"sales" | "purchase" | "all">("sales");
-  const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
+  const [editingInvoice, setEditingInvoice] = useState<SalesInvoice | PurchaseInvoice | null>(null);
    const [showEmailDialog, setShowEmailDialog] = useState(false);
    const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
-   const [invoiceToDelete, setInvoiceToDelete] = useState<Invoice | null>(null);
+   const [invoiceToDelete, setInvoiceToDelete] = useState<SalesInvoice | PurchaseInvoice | null>(null);
    const [filters, setFilters] = useState({});
 
   const columns = [
@@ -102,7 +102,7 @@ export default function InvoicesPage() {
 
   const handleStatusChange = async (
     invoiceId: string,
-    newStatus: Invoice["status"],
+    newStatus: (SalesInvoice | PurchaseInvoice)["status"],
   ) => {
     try {
       await updateExistingInvoice(invoiceId, { status: newStatus });
@@ -138,7 +138,7 @@ export default function InvoicesPage() {
     }
   };
 
-  const handleInvoiceClick = (invoice: Invoice) => {
+  const handleInvoiceClick = (invoice: SalesInvoice | PurchaseInvoice) => {
     setSelectedInvoice(invoice);
     setShowDetails(true);
   };
@@ -209,7 +209,7 @@ export default function InvoicesPage() {
     return groupedPayments[invoiceId] || [];
   };
 
-  const handleDeleteInvoice = async (invoice: Invoice) => {
+  const handleDeleteInvoice = async (invoice: SalesInvoice | PurchaseInvoice) => {
     try {
       await deleteExistingInvoice(invoice.id);
       toast.success("Invoice deleted successfully");
@@ -385,14 +385,14 @@ export default function InvoicesPage() {
       <EmailInvoiceDialog
         invoice={selectedInvoice}
         customer={
-          selectedInvoice?.type === "sales" && selectedInvoice.clientName
-            ? customers.find((c) => c.name === selectedInvoice.clientName)
+          selectedInvoice?.type === InvoiceType.SALES && (selectedInvoice as SalesInvoice).clientName
+            ? customers.find((c) => c.name === (selectedInvoice as SalesInvoice).clientName)
             : undefined
         }
         supplier={
           selectedInvoice?.type === "purchase" &&
-          selectedInvoice.supplierId
-            ? suppliers.find((s) => s.id === selectedInvoice.supplierId)
+          (selectedInvoice as PurchaseInvoice).supplierId
+            ? suppliers.find((s) => s.id === (selectedInvoice as PurchaseInvoice).supplierId)
             : undefined
         }
         organization={selectedOrganization}

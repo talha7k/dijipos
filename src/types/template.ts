@@ -6,6 +6,7 @@ import {
   TemplateFieldType,
   PrinterFormat,
   FontSize,
+  InvoiceType
 } from "./enums";
 import { PosReportData } from "./reports";
 
@@ -155,6 +156,7 @@ export interface InvoiceTemplateData {
   invoiceDate: string;
   dueDate: string;
   status: string;
+  invoiceType: InvoiceType; // no need for additional fields to check sale or purchase
   companyName: string;
   companyNameAr: string;
   companyAddress: string;

@@ -41,6 +41,10 @@ export enum PaymentStatus {
   PAID = "paid",
   PARTIAL = "partial",
 }
+export enum InvoiceType {
+  SALES = "sales",
+  PURCHASE = "purchase",
+}
 
 export enum QuoteStatus {
   DRAFT = "draft",
@@ -81,10 +85,7 @@ export enum ItemType {
   SERVICE = "service",
 }
 
-export enum InvoiceType {
-  SALES = "sales",
-  PURCHASE = "purchase",
-}
+
 
 export enum ProductTransactionType {
   SALES = "sales",

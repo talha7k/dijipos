@@ -10,8 +10,8 @@ import { DialogWithActions } from "@/components/ui/DialogWithActions";
 import { Button } from "@/components/ui/button";
 import { Printer, Mail } from "lucide-react";
 import { toast } from "sonner";
-const defaultInvoiceEnglish = `<!DOCTYPE html><html><body><h1>Invoice {{invoiceId}}</h1></body></html>`;
-const defaultInvoiceArabic = `<!DOCTYPE html><html dir="rtl"><body><h1>فاتورة {{invoiceId}}</h1></body></html>`;
+import { defaultInvoiceEnglish } from "@/components/templates/invoice/default-invoice-english";
+import { defaultInvoiceArabic } from "@/components/templates/invoice/default-invoice-arabic";
 // --- END: Mock Dependencies ---
 
 async function renderInvoice(
@@ -29,6 +29,9 @@ async function renderInvoice(
     invoiceDate: new Date(invoice.createdAt).toLocaleDateString(),
     dueDate: invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : "",
     status: invoice.status,
+    invoiceType: invoice.type,
+    isSalesInvoice: invoice.type === 'sales',
+    isPurchaseInvoice: invoice.type === 'purchase',
     companyName: organization?.name || "",
     companyNameAr: organization?.nameAr || "",
     companyAddress: organization?.address || "",
@@ -86,7 +89,11 @@ async function renderInvoice(
       : defaultInvoiceEnglish;
   }
 
-  return renderTemplate(templateContent, data);
+  console.log('Template content preview:', templateContent.substring(0, 200));
+  console.log('Template data:', data);
+  const result = renderTemplate(templateContent, data);
+  console.log('Rendered result preview:', result.substring(0, 200));
+  return result;
 }
 
 // Helper component for settings inputs

@@ -18,7 +18,8 @@ import ClientInfo from "@/components/invoices_quotes/ClientInfo";
 import SupplierInfo from "@/components/invoices_quotes/SupplierInfo";
 import FormSummary from "@/components/invoices_quotes/FormSummary";
 import {
-  Invoice,
+  SalesInvoice,
+  PurchaseInvoice,
   Item as ItemTypeType,
   Item,
   ItemType,
@@ -31,6 +32,8 @@ import { useCustomers } from "@/lib/hooks/useCustomers";
 import { useSuppliers } from "@/lib/hooks/useSuppliers";
 import { useItems } from "@/lib/hooks/useItems";
 import { useCategories } from "@/lib/hooks/useCategories";
+import { useStoreSettings } from "@/lib/hooks/useStoreSettings";
+import { calculateVATExclusive, calculateVATInclusive } from "@/lib/vat-calculator";
 import { AddProductDialog } from "@/components/products_services/AddProductDialog";
 import { AddServiceDialog } from "@/components/products_services/AddServiceDialog";
 import { AddCustomerDialog } from "@/components/pos/AddCustomerDialog";
@@ -38,9 +41,9 @@ import { AddSupplierDialog } from "@/components/pos/AddSupplierDialog";
 import { Plus } from "lucide-react";
 
 interface InvoiceFormProps {
-  invoice?: Invoice | null;
+  invoice?: SalesInvoice | PurchaseInvoice | null;
   onSubmit: (
-    invoice: Omit<Invoice, "id" | "organizationId" | "createdAt" | "updatedAt">,
+    invoice: Omit<SalesInvoice | PurchaseInvoice, "id" | "organizationId" | "createdAt" | "updatedAt">,
   ) => void;
   defaultType?: "sales" | "purchase";
 }
@@ -51,7 +54,7 @@ export default function InvoiceForm({
   defaultType = "sales",
 }: InvoiceFormProps) {
   const [invoiceType, setInvoiceType] = useState<"sales" | "purchase">(
-    invoice?.type || defaultType,
+    (invoice?.type === InvoiceType.SALES ? "sales" : invoice?.type) || defaultType,
   );
 
   // Real data hooks
@@ -59,6 +62,7 @@ export default function InvoiceForm({
   const { suppliers } = useSuppliers();
   const { items, createItem } = useItems();
   const { categories } = useCategories();
+  const { storeSettings } = useStoreSettings();
 
   // Dialog states
   const [showAddProductDialog, setShowAddProductDialog] = useState(false);
@@ -69,38 +73,38 @@ export default function InvoiceForm({
   // Client fields (for sales invoices)
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>("");
   const [clientName, setClientName] = useState(
-    invoice?.type === "sales" ? invoice.clientName : "",
+    invoice?.type === InvoiceType.SALES ? (invoice as SalesInvoice).clientName : "",
   );
   const [clientEmail, setClientEmail] = useState(
-    invoice?.type === "sales" ? invoice.clientEmail : "",
+    invoice?.type === InvoiceType.SALES ? (invoice as SalesInvoice).clientEmail : "",
   );
   const [clientAddress, setClientAddress] = useState(
-    invoice?.type === "sales" ? invoice.clientAddress || "" : "",
+    invoice?.type === InvoiceType.SALES ? (invoice as SalesInvoice).clientAddress || "" : "",
   );
   const [clientVAT, setClientVAT] = useState<string>("");
 
   // Supplier fields (for purchase invoices)
   const [selectedSupplierId, setSelectedSupplierId] = useState<string>("");
   const [supplierName, setSupplierName] = useState(
-    invoice?.type === "purchase" ? invoice.supplierName : "",
+    invoice?.type === InvoiceType.PURCHASE ? (invoice as PurchaseInvoice).supplierName : "",
   );
   const [supplierEmail, setSupplierEmail] = useState(
-    invoice?.type === "purchase" ? invoice.supplierEmail : "",
+    invoice?.type === InvoiceType.PURCHASE ? (invoice as PurchaseInvoice).supplierEmail : "",
   );
   const [supplierAddress, setSupplierAddress] = useState(
-    invoice?.type === "purchase" ? invoice.supplierAddress || "" : "",
+    invoice?.type === InvoiceType.PURCHASE ? (invoice as PurchaseInvoice).supplierAddress || "" : "",
   );
   const [supplierVAT, setSupplierVAT] = useState<string>(
-    invoice?.type === "purchase" ? invoice.supplierVAT || "" : "",
+    invoice?.type === InvoiceType.PURCHASE ? (invoice as PurchaseInvoice).supplierVAT || "" : "",
   );
 
   // Purchase invoice specific fields
   const [invoiceNumber, setInvoiceNumber] = useState(
-    invoice?.type === "purchase" ? invoice.invoiceNumber || "" : "",
+    invoice?.type === InvoiceType.PURCHASE ? (invoice as PurchaseInvoice).invoiceNumber || "" : "",
   );
   const [invoiceDate, setInvoiceDate] = useState(() => {
-    if (invoice?.type === "purchase" && invoice.invoiceDate && !isNaN(new Date(invoice.invoiceDate).getTime())) {
-      return new Date(invoice.invoiceDate).toISOString().split("T")[0];
+    if (invoice?.type === "purchase" && (invoice as PurchaseInvoice).invoiceDate && !isNaN(new Date((invoice as PurchaseInvoice).invoiceDate).getTime())) {
+      return new Date((invoice as PurchaseInvoice).invoiceDate).toISOString().split("T")[0];
     }
     const date = new Date();
     return date.toISOString().split("T")[0];
@@ -109,7 +113,7 @@ export default function InvoiceForm({
   const [invoiceItems, setInvoiceItems] = useState<InvoiceItem[]>(
     invoice?.items || [],
   );
-  const [taxRate, setTaxRate] = useState(invoice?.taxRate || 0);
+  const [taxRate, setTaxRate] = useState(invoice?.taxRate || storeSettings?.vatSettings?.rate || 15);
   const [notes, setNotes] = useState(invoice?.notes || "");
   const [dueDate, setDueDate] = useState(() => {
     if (invoice?.dueDate && !isNaN(new Date(invoice.dueDate).getTime())) {
@@ -170,8 +174,18 @@ export default function InvoiceForm({
   };
 
   const subtotal = invoiceItems.reduce((sum, item) => sum + item.total, 0);
-  const taxAmount = subtotal * (taxRate / 100);
-  const total = subtotal + taxAmount;
+  const isVatInclusive = storeSettings?.vatSettings?.isVatInclusive ?? false;
+  const isVatEnabled = storeSettings?.vatSettings?.isEnabled ?? true;
+
+  // Calculate VAT based on settings
+  const vatCalculation = isVatEnabled
+    ? (isVatInclusive
+        ? calculateVATInclusive(subtotal, taxRate)
+        : calculateVATExclusive(subtotal, taxRate))
+    : { subtotal, vatAmount: 0, total: subtotal };
+
+  const taxAmount = vatCalculation.vatAmount;
+  const total = vatCalculation.total;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -189,14 +203,15 @@ export default function InvoiceForm({
       includeQR: false,
     };
 
-    if (invoiceType === InvoiceType.SALES) {
+    if (invoiceType === "sales") {
       onSubmit({
         ...baseInvoice,
         clientName,
         clientEmail,
         clientAddress,
         clientVAT,
-      } as Omit<Invoice, "id" | "organizationId" | "createdAt" | "updatedAt">);
+        payments: [],
+      } as Omit<SalesInvoice, "id" | "organizationId" | "createdAt" | "updatedAt">);
     } else {
       onSubmit({
         ...baseInvoice,
@@ -207,7 +222,7 @@ export default function InvoiceForm({
         supplierVAT,
         invoiceNumber,
         invoiceDate: new Date(invoiceDate),
-      } as Omit<Invoice, "id" | "organizationId" | "createdAt" | "updatedAt">);
+      } as Omit<PurchaseInvoice, "id" | "organizationId" | "createdAt" | "updatedAt">);
     }
   };
 
@@ -381,9 +396,11 @@ export default function InvoiceForm({
           total={total}
           dueDate={dueDate}
           showDueDate={true}
-          onTaxRateChange={setTaxRate}
+          onTaxRateChange={isVatEnabled ? setTaxRate : undefined}
           onDueDateChange={setDueDate}
           mode="invoice"
+          isVatEnabled={isVatEnabled}
+          isVatInclusive={isVatInclusive}
         />
 
         <div>

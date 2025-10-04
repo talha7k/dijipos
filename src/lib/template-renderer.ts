@@ -23,7 +23,8 @@ export function renderTemplate(template: string, data: TemplateData): string {
 
   // 1. Handle simple variables like {{ name }} or {{ total }}
   // The \s* handles any accidental whitespace like {{ name }}
-  result = result.replace(/{{\s*(\w+)\s*}}/g, (match, key) => {
+  // Updated regex to handle variable names with dots, underscores, and alphanumeric characters
+  result = result.replace(/{{\s*([a-zA-Z_][a-zA-Z0-9_.]*)\s*}}/g, (match, key) => {
     if (Object.prototype.hasOwnProperty.call(data, key)) {
       const value = data[key as keyof TemplateData];
       return String(value ?? ""); // Use the value or an empty string if null/undefined
@@ -33,7 +34,7 @@ export function renderTemplate(template: string, data: TemplateData): string {
 
   // 2. Handle conditional blocks like {{#if variable}}...{{/if}}
   result = result.replace(
-    /{{#if (\w+)}}([\s\S]*?){{\/if}}/g,
+    /{{#if ([a-zA-Z_][a-zA-Z0-9_.]*)}}([\s\S]*?){{\/if}}/g,
     (match, variable, content) => {
       const value = (data as any)[variable];
       // Show content if the value is truthy (e.g., not null, not false, not empty string)
@@ -47,7 +48,7 @@ export function renderTemplate(template: string, data: TemplateData): string {
 
   // 2b. Handle conditional blocks like {{#variable}}...{{/variable}}
   result = result.replace(
-    /{{#(\w+)}}([\s\S]*?){{\/\1}}/g,
+    /{{#([a-zA-Z_][a-zA-Z0-9_.]*)}}([\s\S]*?){{\/\1}}/g,
     (match, variable, content) => {
       const value = data[variable as keyof TemplateData];
       // Show content if the value is truthy (e.g., not null, not false, not empty string)
@@ -99,14 +100,14 @@ export function renderTemplate(template: string, data: TemplateData): string {
 
   // 5. Handle general loops: {{#each variable}}...{{/each}}
   result = result.replace(
-    /{{#each (\w+)}}([\s\S]*?){{\/each}}/g,
+    /{{#each ([a-zA-Z_][a-zA-Z0-9_.]*)}}([\s\S]*?){{\/each}}/g,
     (match, variable, content) => {
       const value = (data as any)[variable];
       if (!value || typeof value !== 'object') return "";
       if (Array.isArray(value)) {
         return value
           .map((item: any) =>
-            content.replace(/{{\s*this\.(\w+)\s*}}/g, (_match: string, prop: string) => String(item[prop] ?? ""))
+            content.replace(/{{\s*this\.([a-zA-Z_][a-zA-Z0-9_.]*)\s*}}/g, (_match: string, prop: string) => String(item[prop] ?? ""))
           )
           .join("");
       } else {

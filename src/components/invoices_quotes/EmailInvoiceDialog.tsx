@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Invoice, Customer, Supplier, Organization } from '@/types';
+import { Invoice, PurchaseInvoice, Customer, Supplier, Organization } from '@/types';
 import { Mail, Send, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -41,8 +41,8 @@ export function EmailInvoiceDialog({
         ? customer?.email || ''
         : supplier?.email || '';
       
-      const invoiceNumber = invoice.type === 'purchase' 
-        ? invoice.invoiceNumber || invoice.id.slice(-8)
+      const invoiceNumber = invoice.type === 'purchase'
+        ? (invoice as PurchaseInvoice).invoiceNumber || invoice.id.slice(-8)
         : invoice.id.slice(-8);
 
       setRecipientEmail(recipient);

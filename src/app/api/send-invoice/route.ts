@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import puppeteer from 'puppeteer';
-import { Invoice, Payment } from '@/types';
+
+import { Payment } from '@/types';
+import { InvoiceType } from '@/types/enums';
 import { adminDb } from '@/lib/firebase/server-config';
 import { renderTemplate } from '@/lib/template-renderer';
 import { InvoiceTemplateData } from '@/types/template';
@@ -21,6 +23,14 @@ interface SMTPErr {
 // Firestore Timestamp interface
 interface FirestoreTimestamp {
   toDate(): Date;
+}
+
+// Invoice item interface for InvoiceData
+interface InvoiceItemData {
+  name?: string;
+  quantity?: number;
+  unitPrice?: number;
+  total?: number;
 }
 
 // Invoice data interface for admin SDK
@@ -175,6 +185,7 @@ async function renderInvoiceWithTemplate(
     invoiceDate: convertDateField(invoice.createdAt)?.toLocaleDateString() || "",
     dueDate: convertDateField(invoice.dueDate)?.toLocaleDateString() || "",
     status: invoice.status || "",
+    invoiceType: invoice.type === 'sales' ? InvoiceType.SALES : invoice.type === 'purchase' ? InvoiceType.PURCHASE : InvoiceType.SALES,
     companyName: organization?.name || "",
     companyNameAr: organization?.nameAr || "",
     companyAddress: organization?.address || "",
@@ -310,7 +321,7 @@ async function generatePDF(htmlContent: string): Promise<Buffer> {
 }
 
 // Generate invoice content (fallback when PDF generation is not available)
-const generateInvoiceContent = async (invoice: Invoice): Promise<{ buffer: Buffer; filename: string; contentType: string }> => {
+const generateInvoiceContent = async (invoice: InvoiceData): Promise<{ buffer: Buffer; filename: string; contentType: string }> => {
   try {
     // Try to create a proper formatted text invoice
     const invoiceText = `
@@ -322,31 +333,31 @@ Date: ${convertDateField(invoice.createdAt)?.toLocaleDateString() || 'N/A'}
 Due Date: ${convertDateField(invoice.dueDate)?.toLocaleDateString() || 'N/A'}
 
 CLIENT INFORMATION:
-${invoice.type === 'sales' ? `Client: ${invoice.clientName}` : `Supplier: ${invoice.supplierId || 'N/A'}`}
-${invoice.type === 'sales' ? `Email: ${invoice.clientEmail || 'N/A'}` : ''}
+${invoice.type === 'sales' ? `Client: ${invoice.clientName || 'N/A'}` : `Supplier: ${invoice.supplierName || 'N/A'}`}
+${invoice.type === 'sales' ? `Email: ${invoice.clientEmail || 'N/A'}` : `Email: ${invoice.supplierEmail || 'N/A'}`}
 
 ITEMS:
 -------------------------------------
-${invoice.items.map((item, index) => 
-  `${index + 1}. ${item.name}
-   Quantity: ${item.quantity} × $${item.unitPrice.toFixed(2)} = $${item.total.toFixed(2)}`
+${(invoice.items as InvoiceItemData[]).map((item: InvoiceItemData, index: number) =>
+  `${index + 1}. ${item.name || 'N/A'}
+   Quantity: ${item.quantity || 0} × $${(item.unitPrice || 0).toFixed(2)} = $${(item.total || 0).toFixed(2)}`
 ).join('\n\n')}
 
 SUMMARY:
 -------------------------------------
-Subtotal: $${invoice.subtotal.toFixed(2)}
-Tax Rate: ${invoice.taxRate}%
-Tax Amount: $${invoice.taxAmount.toFixed(2)}
+Subtotal: $${(invoice.subtotal || 0).toFixed(2)}
+Tax Rate: ${invoice.taxRate || 0}%
+Tax Amount: $${(invoice.taxAmount || 0).toFixed(2)}
 TOTAL: $${invoice.total.toFixed(2)}
 
 PAYMENTS:
 -------------------------------------
-${'payments' in invoice && invoice.payments.length > 0
-  ? invoice.payments.map((p: Payment) => `${p.paymentMethod}: $${p.amount.toFixed(2)} (${convertDateField(p.paymentDate)?.toLocaleDateString() || 'N/A'})`).join('\n')
+${'payments' in invoice && Array.isArray(invoice.payments) && invoice.payments.length > 0
+  ? (invoice.payments as Payment[]).map((p: Payment) => `${p.paymentMethod}: $${p.amount.toFixed(2)} (${convertDateField(p.paymentDate)?.toLocaleDateString() || 'N/A'})`).join('\n')
   : 'No payments recorded'
 }
 
-Amount Due: $${(invoice.total - (('payments' in invoice ? invoice.payments.reduce((sum: number, p: Payment) => sum + p.amount, 0) : 0))).toFixed(2)}
+Amount Due: $${(invoice.total - (('payments' in invoice && Array.isArray(invoice.payments) ? (invoice.payments as Payment[]).reduce((sum: number, p: Payment) => sum + p.amount, 0) : 0))).toFixed(2)}
 =====================================
 
 This invoice was generated from DijiPOS System.
@@ -504,7 +515,7 @@ export async function POST(request: NextRequest) {
     } else {
       // Fallback to text generation
       try {
-        invoiceContent = await generateInvoiceContent(invoice as unknown as Invoice);
+        invoiceContent = await generateInvoiceContent(invoice);
       } catch (fallbackError) {
         console.error('Error generating fallback invoice content:', fallbackError);
         return NextResponse.json(

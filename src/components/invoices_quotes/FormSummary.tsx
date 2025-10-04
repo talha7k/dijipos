@@ -17,7 +17,7 @@ interface EditableTableCellProps {
   type?: 'text' | 'number' | 'date';
   step?: string;
   min?: string;
-  onSave: (value: string | number) => void;
+  onSave?: (value: string | number) => void;
   className?: string;
 }
 
@@ -26,11 +26,13 @@ function EditableTableCell({ value, type = 'text', step, min, onSave, className 
   const [editValue, setEditValue] = useState(value.toString());
 
   const handleDoubleClick = () => {
+    if (!onSave) return;
     setIsEditing(true);
     setEditValue(value.toString());
   };
 
   const handleSave = () => {
+    if (!onSave) return;
     const newValue = type === 'number' ? parseFloat(editValue) || 0 : editValue;
     onSave(newValue);
     setIsEditing(false);
@@ -69,16 +71,18 @@ function EditableTableCell({ value, type = 'text', step, min, onSave, className 
 
   return (
     <TableCell
-      className={`${className} cursor-pointer hover:bg-green-50 dark:hover:bg-green-950/20 transition-colors group relative`}
+      className={`${className} ${onSave ? 'cursor-pointer hover:bg-green-50 dark:hover:bg-green-950/20 transition-colors group relative' : ''}`}
       onDoubleClick={handleDoubleClick}
     >
       <div className="flex items-center justify-between">
         <span className={!value ? "text-muted-foreground italic" : ""}>
-          {type === 'number' && step === '0.01' ? `$${value}` : value || "Double-click to edit"}
+          {type === 'number' && step === '0.01' ? `$${value}` : value || (onSave ? "Double-click to edit" : "")}
         </span>
-        <div className="opacity-0 group-hover:opacity-70 transition-opacity text-xs text-muted-foreground">
-          ✏️
-        </div>
+        {onSave && (
+          <div className="opacity-0 group-hover:opacity-70 transition-opacity text-xs text-muted-foreground">
+            ✏️
+          </div>
+        )}
       </div>
     </TableCell>
   );
@@ -91,9 +95,11 @@ interface FormSummaryProps {
   total: number;
   dueDate?: string;
   showDueDate?: boolean;
-  onTaxRateChange: (rate: number) => void;
+  onTaxRateChange?: (rate: number) => void;
   onDueDateChange?: (date: string) => void;
   mode?: 'quote' | 'invoice';
+  isVatEnabled?: boolean;
+  isVatInclusive?: boolean;
 }
 
 export default function FormSummary({
@@ -106,6 +112,8 @@ export default function FormSummary({
   onTaxRateChange,
   onDueDateChange,
   mode = 'quote',
+  isVatEnabled = true,
+  isVatInclusive = false,
 }: FormSummaryProps) {
   const title = mode === 'invoice' ? 'Invoice Summary' : 'Quote Summary';
 
@@ -124,17 +132,19 @@ export default function FormSummary({
             <TableCell>Subtotal</TableCell>
             <TableCell className="text-right font-medium">${subtotal.toFixed(2)}</TableCell>
           </TableRow>
-          <TableRow>
-            <EditableTableCell
-              value={`Tax Rate (${taxRate}%)`}
-              type="number"
-              step="0.01"
-              min="0"
-              onSave={(value) => onTaxRateChange(typeof value === 'number' ? value : parseFloat(value.toString()) || 0)}
-              className="font-medium"
-            />
-            <TableCell className="text-right">${taxAmount.toFixed(2)}</TableCell>
-          </TableRow>
+          {isVatEnabled && (
+            <TableRow>
+              <EditableTableCell
+                value={`Tax Rate (${taxRate}%) ${isVatInclusive ? '(Inclusive)' : '(Exclusive)'}`}
+                type="number"
+                step="0.01"
+                min="0"
+                onSave={onTaxRateChange ? (value) => onTaxRateChange(typeof value === 'number' ? value : parseFloat(value.toString()) || 0) : undefined}
+                className="font-medium"
+              />
+              <TableCell className="text-right">${taxAmount.toFixed(2)}</TableCell>
+            </TableRow>
+          )}
           {showDueDate && onDueDateChange && (
             <TableRow>
               <TableCell className="font-medium">Due Date</TableCell>

@@ -72,11 +72,18 @@ export interface PurchaseInvoice {
   dueDate: Date;
   notes?: string;
   includeQR: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+   createdAt: Date;
+   updatedAt: Date;
+ }
+
+// Type guard functions
+export function isSalesInvoice(invoice: SalesInvoice | PurchaseInvoice): invoice is SalesInvoice {
+  return invoice.type === InvoiceType.SALES;
 }
 
-export type Invoice = SalesInvoice | PurchaseInvoice;
+export function isPurchaseInvoice(invoice: SalesInvoice | PurchaseInvoice): invoice is PurchaseInvoice {
+  return invoice.type === InvoiceType.PURCHASE;
+}
 
 // Import InvoiceItem from product-service types
 import { InvoiceItem as Item } from './product-service';

@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { usePayments } from '@/lib/hooks/usePayments';
-import { useInvoices } from '@/lib/hooks/useInvoices';
+import { useState, useMemo, useEffect } from 'react';
+import { useOrders } from '@/lib/hooks/useOrders';
+import { useOrganization } from '@/lib/hooks/useOrganization';
+import { Order, OrderPayment } from '@/types';
 
 
 import { Button } from '@/components/ui/button';
@@ -17,34 +18,54 @@ import { Loader } from '@/components/ui/loader';
 import { TableFilter } from '@/components/shared/TableFilter';
 
 function PaymentsContent() {
-  const { payments, loading: paymentsLoading, createPayment } = usePayments();
-  const { salesInvoices, purchaseInvoices, loading: invoicesLoading } = useInvoices();
-  const invoices = [...salesInvoices, ...purchaseInvoices];
+  const { selectedOrganization } = useOrganization();
+  const { orders, loading: ordersLoading, addPaymentToOrder, getPaymentsForOrder } = useOrders();
+  const [orderPayments, setOrderPayments] = useState<OrderPayment[]>([]);
+  const [loadingPayments, setLoadingPayments] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedInvoiceId, setSelectedInvoiceId] = useState('');
+  const [selectedOrderId, setSelectedOrderId] = useState('');
   const [amount, setAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
   const [notes, setNotes] = useState('');
   const [filters, setFilters] = useState({});
 
+  // Fetch all order payments
+  useEffect(() => {
+    const fetchAllOrderPayments = async () => {
+      if (!orders.length) return;
+      setLoadingPayments(true);
+      try {
+        const paymentsPromises = orders.map(order => getPaymentsForOrder(order.id));
+        const paymentsArrays = await Promise.all(paymentsPromises);
+        const allPayments = paymentsArrays.flat();
+        setOrderPayments(allPayments);
+      } catch (error) {
+        console.error('Error fetching order payments:', error);
+      } finally {
+        setLoadingPayments(false);
+      }
+    };
+    fetchAllOrderPayments();
+  }, [orders, getPaymentsForOrder]);
+
   const columns = [
-    { accessorKey: 'invoiceName', header: 'Invoice', filterType: 'text' as const },
+    { accessorKey: 'orderNumber', header: 'Order', filterType: 'text' as const },
     { accessorKey: 'paymentMethod', header: 'Payment Method', filterType: 'text' as const },
     { accessorKey: 'amount', header: 'Amount', filterType: 'text' as const },
     { accessorKey: 'paymentDate', header: 'Date', filterType: 'date' as const },
   ];
 
   const filteredPayments = useMemo(() => {
-    return (payments || []).filter(payment => {
-      const invoice = invoices.find(inv => inv.id === payment.invoiceId);
-      const invoiceName = invoice ? (invoice.type === 'sales' ? invoice.clientName : invoice.supplierName || 'Unknown') : 'Unknown';
+    return orderPayments.filter(payment => {
+      const order = orders.find(o => o.id === payment.orderId);
+      const orderNumber = order ? order.orderNumber : 'Unknown';
 
       return Object.entries(filters).every(([key, value]) => {
         if (!value) return true;
 
         switch (key) {
-          case 'invoiceName':
-            return invoiceName.toLowerCase().includes((value as string).toLowerCase());
+          case 'orderNumber':
+            return orderNumber.toLowerCase().includes((value as string).toLowerCase());
           case 'paymentMethod':
             return payment.paymentMethod.toLowerCase().includes((value as string).toLowerCase());
           case 'amount':
@@ -56,17 +77,17 @@ function PaymentsContent() {
         }
       });
     });
-  }, [payments, invoices, filters]);
+  }, [orderPayments, orders, filters]);
 
-  const loading = paymentsLoading || invoicesLoading;
+  const loading = ordersLoading || loadingPayments;
 
   const handleAddPayment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedInvoiceId) return;
+    if (!selectedOrderId || !selectedOrganization?.id) return;
 
     try {
-      await createPayment({
-        invoiceId: selectedInvoiceId,
+      await addPaymentToOrder(selectedOrderId, {
+        organizationId: selectedOrganization.id,
         amount: parseFloat(amount),
         paymentDate: new Date(),
         paymentMethod,
@@ -74,10 +95,15 @@ function PaymentsContent() {
       });
 
       setDialogOpen(false);
-      setSelectedInvoiceId('');
+      setSelectedOrderId('');
       setAmount('');
       setPaymentMethod('');
       setNotes('');
+      // Refetch payments
+      const paymentsPromises = orders.map(order => getPaymentsForOrder(order.id));
+      const paymentsArrays = await Promise.all(paymentsPromises);
+      const allPayments = paymentsArrays.flat();
+      setOrderPayments(allPayments);
     } catch (error) {
       console.error('Error creating payment:', error);
     }
@@ -108,21 +134,21 @@ function PaymentsContent() {
               <DialogTitle>Add New Payment</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleAddPayment} className="space-y-4">
-              <div>
-                <Label htmlFor="invoice">Invoice</Label>
-                <Select value={selectedInvoiceId} onValueChange={setSelectedInvoiceId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select invoice" />
-                  </SelectTrigger>
-                  <SelectContent>
-                     {invoices.map((invoice) => (
-                       <SelectItem key={invoice.id} value={invoice.id}>
-                         {invoice.type === 'sales' ? invoice.clientName : `${invoice.supplierName || 'Unknown'} (Purchase)`} - ${invoice.total.toFixed(2)}
-                       </SelectItem>
-                     ))}
-                  </SelectContent>
-                </Select>
-              </div>
+               <div>
+                 <Label htmlFor="order">Order</Label>
+                 <Select value={selectedOrderId} onValueChange={setSelectedOrderId}>
+                   <SelectTrigger>
+                     <SelectValue placeholder="Select order" />
+                   </SelectTrigger>
+                   <SelectContent>
+                      {orders.map((order) => (
+                        <SelectItem key={order.id} value={order.id}>
+                            {order.orderNumber} - ${order.total.toFixed(2)}
+                        </SelectItem>
+                      ))}
+                   </SelectContent>
+                 </Select>
+               </div>
               <div>
                 <Label htmlFor="amount">Amount</Label>
                 <Input
@@ -163,37 +189,37 @@ function PaymentsContent() {
          </CardHeader>
          <CardContent>
            <TableFilter columns={columns} onFilterChange={setFilters} />
-           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Invoice</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Method</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Notes</TableHead>
-              </TableRow>
-            </TableHeader>
-             <TableBody>
-               {filteredPayments.map((payment) => {
-                 const invoice = invoices.find(inv => inv.id === payment.invoiceId);
-                 return (
-                   <TableRow key={payment.id}>
-                      <TableCell>{invoice ? (invoice.type === 'sales' ? invoice.clientName : invoice.supplierName || 'Unknown') : 'Unknown'}</TableCell>
-                     <TableCell>${payment.amount.toFixed(2)}</TableCell>
-                     <TableCell>{payment.paymentMethod}</TableCell>
-                     <TableCell>{payment.paymentDate?.toLocaleDateString()}</TableCell>
-                     <TableCell>{payment.notes}</TableCell>
-                   </TableRow>
-                 );
-               })}
+            <Table>
+             <TableHeader>
+               <TableRow>
+                 <TableHead>Order</TableHead>
+                 <TableHead>Amount</TableHead>
+                 <TableHead>Method</TableHead>
+                 <TableHead>Date</TableHead>
+                 <TableHead>Notes</TableHead>
+               </TableRow>
+             </TableHeader>
+              <TableBody>
+                {filteredPayments.map((payment) => {
+                  const order = orders.find(o => o.id === payment.orderId);
+                  return (
+                    <TableRow key={payment.id}>
+                         <TableCell>{order ? order.orderNumber : 'Unknown'}</TableCell>
+                      <TableCell>${payment.amount.toFixed(2)}</TableCell>
+                      <TableCell>{payment.paymentMethod}</TableCell>
+                      <TableCell>{payment.paymentDate?.toLocaleDateString()}</TableCell>
+                      <TableCell>{payment.notes}</TableCell>
+                    </TableRow>
+                  );
+                })}
                {filteredPayments.length === 0 && (
                  <TableRow>
-                   <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
-                     <div className="flex flex-col items-center gap-2">
-                       <Wallet className="h-8 w-8" />
-                       <p>{payments.length === 0 ? "No payments found. Click Add Payment to get started." : "No payments match your filters."}</p>
-                     </div>
-                   </TableCell>
+                    <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
+                      <div className="flex flex-col items-center gap-2">
+                        <Wallet className="h-8 w-8" />
+                        <p>{orderPayments.length === 0 ? "No payments found. Click Add Payment to get started." : "No payments match your filters."}</p>
+                      </div>
+                    </TableCell>
                  </TableRow>
                )}
             </TableBody>
