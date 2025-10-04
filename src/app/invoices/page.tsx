@@ -7,7 +7,7 @@ import { useMemo } from "react";
 import { Invoice, Payment, SalesInvoice, PurchaseInvoice } from "@/types";
 import { InvoiceList } from "@/components/invoices_quotes/InvoiceList";
 import InvoiceForm from "@/components/invoices_quotes/InvoiceForm";
-import { InvoiceDetails } from "@/components/invoices_quotes/InvoiceDetails";
+import { InvoiceDetailsDialog } from "@/components/invoices_quotes/InvoiceDetailsDialog";
 import { InvoicePrintDialog } from "@/components/invoices_quotes/InvoicePrintDialog";
 import { Button } from "@/components/ui/button";
 import { Plus, Printer, Receipt, Edit, Mail, Trash2 } from "lucide-react";
@@ -61,6 +61,7 @@ export default function InvoicesPage() {
     createSalesInvoice,
     createPurchaseInvoice,
     deleteExistingInvoice,
+    addPaymentToInvoice,
   } = useInvoices();
   const { customers, loading: customersLoading } = useCustomers();
   const { suppliers, loading: suppliersLoading } = useSuppliers();
@@ -107,6 +108,33 @@ export default function InvoicesPage() {
       await updateExistingInvoice(invoiceId, { status: newStatus });
     } catch (error) {
       console.error("Error updating invoice status:", error);
+    }
+  };
+
+  const handleAddPayment = async (
+    invoiceId: string,
+    paymentData: {
+      amount: number;
+      paymentMethod: string;
+      paymentDate: Date;
+      reference?: string;
+      notes?: string;
+    }
+  ) => {
+    try {
+      await addPaymentToInvoice(invoiceId, {
+        organizationId: selectedOrganization?.id || '',
+        amount: paymentData.amount,
+        paymentMethod: paymentData.paymentMethod,
+        paymentDate: paymentData.paymentDate,
+        reference: paymentData.reference,
+        notes: paymentData.notes,
+      });
+      toast.success('Payment added successfully');
+    } catch (error) {
+      console.error('Error adding payment:', error);
+      toast.error('Failed to add payment');
+      throw error;
     }
   };
 
@@ -340,78 +368,18 @@ export default function InvoicesPage() {
       </Dialog>
 
       {/* Invoice Details Dialog */}
-      <Dialog open={showDetails} onOpenChange={setShowDetails}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Invoice Details</DialogTitle>
-          </DialogHeader>
-          {selectedInvoice && (
-            <div className="flex justify-end gap-2 mb-4">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => {
-                  setEditingInvoice(selectedInvoice);
-                  setShowForm(true);
-                }}
-                disabled={selectedInvoice.status === 'paid'}
-              >
-                <Edit className="w-4 h-4 mr-2" />
-                Edit
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => setShowEmailDialog(true)}
-              >
-                <Mail className="w-4 h-4 mr-2" />
-                Email
-              </Button>
-              <InvoicePrintDialog
-                invoice={selectedInvoice}
-                organization={selectedOrganization}
-                invoiceTemplates={invoiceTemplates}
-                customer={
-                  selectedInvoice.type === "sales" && selectedInvoice.clientName
-                    ? customers.find((c) => c.name === selectedInvoice.clientName)
-                    : undefined
-                }
-                supplier={
-                  selectedInvoice.type === "purchase" &&
-                  selectedInvoice.supplierId
-                    ? suppliers.find((s) => s.id === selectedInvoice.supplierId)
-                    : undefined
-                }
-                settings={printerSettings?.invoices}
-              >
-                <Button variant="outline" size="sm">
-                  <Printer className="w-4 h-4 mr-2" />
-                  Print
-                </Button>
-              </InvoicePrintDialog>
-            </div>
-          )}
-          {selectedInvoice && (
-            <InvoiceDetails
-              invoice={selectedInvoice}
-              organization={selectedOrganization}
-              customer={
-                selectedInvoice.type === "sales" && selectedInvoice.clientName
-                  ? customers.find((c) => c.name === selectedInvoice.clientName)
-                  : undefined
-              }
-              supplier={
-                selectedInvoice.type === "purchase" &&
-                selectedInvoice.supplierId
-                  ? suppliers.find((s) => s.id === selectedInvoice.supplierId)
-                  : undefined
-              }
-              payments={getPaymentsForInvoice(selectedInvoice.id)}
-              onStatusChange={handleStatusChange}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+      {selectedInvoice && (
+        <InvoiceDetailsDialog
+          invoice={selectedInvoice}
+          customers={customers}
+          suppliers={suppliers}
+          payments={groupedPayments}
+          paymentTypes={storeSettings?.paymentTypes || []}
+          open={showDetails}
+          onOpenChange={setShowDetails}
+          onAddPayment={handleAddPayment}
+        />
+      )}
 
       {/* Email Invoice Dialog */}
       <EmailInvoiceDialog

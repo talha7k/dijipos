@@ -37,7 +37,7 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
 
   
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const handleUpdateSettings = async (field: string, value: string | number | boolean) => {
 
     if (!organizationId) {

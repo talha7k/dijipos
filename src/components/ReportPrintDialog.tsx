@@ -175,7 +175,7 @@ export function ReportPrintDialog({
     renderPreview();
   }, [open, selectedTemplate, data, reportTemplates]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   useEffect(() => {
     if (!selectedTemplate) return;
     const template = reportTemplates.find((t) => t.id === selectedTemplate);

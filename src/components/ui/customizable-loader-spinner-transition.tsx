@@ -224,7 +224,7 @@ export const Component = () => {
             <div
               key={square.id}
               className="nested-square"
-              // eslint-disable-next-line react/jsx-key
+               
               style={
                 {
                   position: "absolute",
