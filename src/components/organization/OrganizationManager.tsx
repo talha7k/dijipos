@@ -273,9 +273,9 @@ export function OrganizationManager() {
               : "bg-gradient-to-r from-white/80 to-blue-50/80 border-blue-200/50"
           } backdrop-blur-sm`}
         >
-          <div className="flex-1 flex flex-col md:flex-row md:items-center justify-center mb-6 md:mb-0">
+          <div className="flex-1 flex flex-row items-center justify-center mb-6 md:mb-0">
             <div
-              className={`p-2 rounded-2xl mb-4 md:mb-0 ${
+              className={`p-2 rounded-2xl ${
                 isDark
                   ? "bg-gradient-to-r from-purple-600/10 to-blue-600/10"
                   : "bg-gradient-to-r from-blue-600/10 to-indigo-600/10"
@@ -290,7 +290,7 @@ export function OrganizationManager() {
               />
             </div>
             <h1
-              className={`text-3xl md:text-5xl font-bold md:ml-6 text-center md:text-left ${
+              className={`text-3xl md:text-5xl font-bold ml-4 md:ml-6 ${
                 isDark ? "text-white" : "text-gray-900"
               }`}
             >
