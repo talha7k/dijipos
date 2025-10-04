@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Invoice, Payment, InvoiceStatus, Organization, InvoiceTemplate, Customer, Supplier, DocumentPrintSettings, SalesInvoice } from '@/types';
-import { Printer, Eye, MoreHorizontal } from 'lucide-react';
+import { Printer, Eye, MoreHorizontal, Trash2 } from 'lucide-react';
 import { InvoiceActionsDialog } from './InvoiceActionsDialog';
 import { InvoicePrintDialog } from './InvoicePrintDialog';
 
@@ -16,6 +16,7 @@ interface InvoiceActionsProps {
   onDuplicate?: (invoice: Invoice) => void;
   onSend?: (invoice: Invoice) => void;
   onDownloadPDF?: (invoice: Invoice) => void;
+  onDelete?: (invoice: Invoice) => void;
   organization: Organization | null;
   invoiceTemplates: InvoiceTemplate[];
   customers: Customer[];
@@ -32,6 +33,7 @@ export function InvoiceActions({
   onDuplicate,
   onSend,
   onDownloadPDF,
+  onDelete,
   organization,
   invoiceTemplates,
   customers,
@@ -53,6 +55,11 @@ export function InvoiceActions({
   const handleActionsClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     setShowActionsDialog(true);
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDelete?.(invoice);
   };
 
   const customer = invoice.type === 'sales' ? customers.find(c => c.id === (invoice as SalesInvoice).clientName) : undefined;
@@ -96,6 +103,16 @@ export function InvoiceActions({
           title="View Details"
         >
           <Eye className="h-4 w-4" />
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleDelete}
+          title="Delete Invoice"
+          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+        >
+          <Trash2 className="h-4 w-4" />
         </Button>
 
         {invoice.status === 'draft' && (

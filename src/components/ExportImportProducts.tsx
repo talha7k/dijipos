@@ -152,47 +152,46 @@ export function ExportImportProducts({
             or import from a JSON file.
           </CardDescription>
         </CardHeader>
-         <CardContent className="space-y-4">
-           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-             {/* Left Column */}
-             <div className="space-y-4">
-               <div className="space-y-3">
-                 <h3 className="text-lg font-medium">Export Current Data</h3>
-                 <Button
-                   onClick={handleExport}
-                   disabled={!canExport}
-                   variant="outline"
-                   className="flex items-center gap-2 w-full"
-                 >
-                   <Download className="w-4 h-4" />
-                   Export Current Data
-                 </Button>
-                 {!canExport && (
-                   <p className="text-sm text-muted-foreground">
-                     You need to be logged in and have an organization selected
-                     to export data.
-                   </p>
-              )}
-               </div>
-             </div>
-           </div>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Left Column */}
+            <div className="space-y-4">
+              <div className="space-y-3">
+                <h3 className="text-lg font-medium">Export Current Data</h3>
+                <Button
+                  onClick={handleExport}
+                  disabled={!canExport}
+                  variant="outline"
+                  className="flex items-center gap-2 w-full"
+                >
+                  <Download className="w-4 h-4" />
+                  Export Current Data
+                </Button>
+                {!canExport && (
+                  <p className="text-sm text-muted-foreground">
+                    You need to be logged in and have an organization selected
+                    to export data.
+                  </p>
+                )}
+              </div>
+            </div>
 
-             {/* Right Column */}
-             <div className="space-y-4">
-               <div className="space-y-3">
-                 <h3 className="text-lg font-medium">Download Sample Data</h3>
-                 <Button
-                   onClick={handleDownloadSample}
-                   variant="outline"
-                   className="flex items-center gap-2 w-full"
-                 >
-                   <FileText className="w-4 h-4" />
-                   Download Sample Data
-                 </Button>
-               </div>
+            {/* Right Column */}
+            <div className="space-y-4">
+            <div className="space-y-3">
+              <h3 className="text-lg font-medium">Download Sample Data</h3>
+              <Button
+                onClick={handleDownloadSample}
+                variant="outline"
+                className="flex items-center gap-2 w-full"
+              >
+                <FileText className="w-4 h-4" />
+                Download Sample Data
+              </Button>
+            </div>
 
-               <div className="space-y-3">
-                 <h3 className="text-lg font-medium">Import Data</h3>
+            <div className="space-y-3">
+              <h3 className="text-lg font-medium">Import Data</h3>
 
               {/* File Selection */}
               <div className="space-y-2">
@@ -332,6 +331,7 @@ export function ExportImportProducts({
                   </CardContent>
                 </Card>
               )}
+            </div>
             </div>
           </div>
 

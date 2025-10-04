@@ -25,6 +25,7 @@ interface InvoiceListProps {
   onDuplicate?: (invoice: Invoice) => void;
   onSend?: (invoice: Invoice) => void;
   onDownloadPDF?: (invoice: Invoice) => void;
+  onDelete?: (invoice: Invoice) => void;
   organization: Organization | null;
   invoiceTemplates: InvoiceTemplate[];
   settings?: DocumentPrintSettings | null;
@@ -42,6 +43,7 @@ export function InvoiceList({
   onDuplicate,
   onSend,
   onDownloadPDF,
+  onDelete,
   organization,
   invoiceTemplates,
   settings,
@@ -110,6 +112,7 @@ export function InvoiceList({
                      onDuplicate={onDuplicate}
                      onSend={onSend}
                      onDownloadPDF={onDownloadPDF}
+                     onDelete={onDelete}
                      organization={organization}
                      invoiceTemplates={invoiceTemplates}
                      customers={customers}

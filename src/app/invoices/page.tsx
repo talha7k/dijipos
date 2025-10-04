@@ -10,7 +10,7 @@ import InvoiceForm from "@/components/invoices_quotes/InvoiceForm";
 import { InvoiceDetails } from "@/components/invoices_quotes/InvoiceDetails";
 import { InvoicePrintDialog } from "@/components/invoices_quotes/InvoicePrintDialog";
 import { Button } from "@/components/ui/button";
-import { Plus, Printer, Receipt, Edit, Mail } from "lucide-react";
+import { Plus, Printer, Receipt, Edit, Mail, Trash2 } from "lucide-react";
 import { EmailInvoiceDialog } from "@/components/invoices_quotes/EmailInvoiceDialog";
 import { useSeparatedTemplates } from "@/lib/hooks/useSeparatedTemplates";
 import { useStoreSettings } from "@/lib/hooks/useStoreSettings";
@@ -20,6 +20,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useInvoices } from "@/lib/hooks/useInvoices";
@@ -37,6 +39,7 @@ export default function InvoicesPage() {
   const [activeTab, setActiveTab] = useState("all");
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
   const [showEmailDialog, setShowEmailDialog] = useState(false);
+  const [invoiceToDelete, setInvoiceToDelete] = useState<Invoice | null>(null);
 
   // Use custom hooks for data fetching
   const {
@@ -45,6 +48,7 @@ export default function InvoicesPage() {
     loading: invoicesLoading,
     updateExistingInvoice,
     createSalesInvoice,
+    deleteExistingInvoice,
   } = useInvoices();
   const { customers, loading: customersLoading } = useCustomers();
   const { suppliers, loading: suppliersLoading } = useSuppliers();
@@ -118,6 +122,17 @@ export default function InvoicesPage() {
     return groupedPayments[invoiceId] || [];
   };
 
+  const handleDeleteInvoice = async (invoice: Invoice) => {
+    try {
+      await deleteExistingInvoice(invoice.id);
+      toast.success("Invoice deleted successfully");
+      setInvoiceToDelete(null);
+    } catch (error) {
+      console.error("Error deleting invoice:", error);
+      toast.error("Failed to delete invoice");
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-64 space-y-4">
@@ -181,6 +196,9 @@ export default function InvoicesPage() {
         onDownloadPDF={(invoice) => {
           // Handle PDF download
           console.log("Download PDF for invoice:", invoice.id);
+        }}
+        onDelete={(invoice) => {
+          setInvoiceToDelete(invoice);
         }}
         organization={selectedOrganization}
         invoiceTemplates={invoiceTemplates}
@@ -311,6 +329,37 @@ export default function InvoicesPage() {
         open={showEmailDialog}
         onOpenChange={setShowEmailDialog}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!invoiceToDelete} onOpenChange={(open) => !open && setInvoiceToDelete(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Invoice</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this invoice? This action cannot be undone.
+              {invoiceToDelete && (
+                <span className="block mt-2 font-medium">
+                  Invoice #{invoiceToDelete.id.slice(-8)} - ${invoiceToDelete.total.toFixed(2)}
+                </span>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setInvoiceToDelete(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => invoiceToDelete && handleDeleteInvoice(invoiceToDelete)}
+            >
+              Delete Invoice
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
     </div>
   );
