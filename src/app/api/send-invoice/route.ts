@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { Invoice, ItemType, InvoiceStatus, InvoiceType, Payment } from '@/types';
-import { adminDb } from '@/lib/firebase/config';
+import { adminDb } from '@/lib/firebase/server-config';
 
 // SMTP Error interface
 interface SMTPErr {
