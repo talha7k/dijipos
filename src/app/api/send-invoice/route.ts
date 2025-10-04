@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { Invoice, ItemType, InvoiceStatus, InvoiceType, Payment } from '@/types';
-import { getInvoice } from '@/lib/firebase/firestore/invoices';
+import { adminDb } from '@/lib/firebase/config';
 
 // SMTP Error interface
 interface SMTPErr {
@@ -10,6 +10,48 @@ interface SMTPErr {
   command?: string;
   response?: string;
   responseCode?: number;
+}
+
+// Invoice data interface for admin SDK
+interface InvoiceData {
+  id: string;
+  organizationId: string;
+  type: string;
+  status: string;
+  total: number;
+  items: unknown[];
+  createdAt: Date;
+  updatedAt: Date;
+  dueDate?: Date;
+  invoiceDate?: Date;
+  validUntil?: Date;
+  [key: string]: unknown;
+}
+
+// Get invoice using Admin SDK
+async function getInvoice(invoiceId: string): Promise<InvoiceData | null> {
+  try {
+    const docRef = adminDb.collection('invoices').doc(invoiceId);
+    const docSnap = await docRef.get();
+
+    if (!docSnap.exists) {
+      return null;
+    }
+
+    const data = docSnap.data();
+    return {
+      id: docSnap.id,
+      ...data,
+      createdAt: data?.createdAt?.toDate() || new Date(),
+      updatedAt: data?.updatedAt?.toDate() || new Date(),
+      invoiceDate: data?.invoiceDate?.toDate(),
+      dueDate: data?.dueDate?.toDate(),
+      validUntil: data?.validUntil?.toDate(),
+    } as InvoiceData;
+  } catch (error) {
+    console.error('Error fetching invoice with admin SDK:', error);
+    throw error;
+  }
 }
 
 // SMTP configuration from environment variables
@@ -149,7 +191,7 @@ export async function POST(request: NextRequest) {
 
     // Fetch real invoice data
     const invoice = await getInvoice(invoiceId);
-    
+
     if (!invoice) {
       return NextResponse.json(
         { error: 'Invoice not found' },
@@ -166,7 +208,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate invoice attachment
-    const invoiceContent = await generateInvoiceContent(invoice);
+    const invoiceContent = await generateInvoiceContent(invoice as unknown as Invoice);
 
     // Create transporter and send email
     const transporter = createTransporter();
