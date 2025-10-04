@@ -193,7 +193,7 @@ export default function ProductsServicesPage() {
           setSearchTerm("");
         }}
       >
-        <TabsList className="py-8">
+        <TabsList>
           <TabsTrigger value="sales-products">
             <Package className="w-4 h-4 mr-2" />
             Sales Products
@@ -217,7 +217,7 @@ export default function ProductsServicesPage() {
         </TabsList>
 
         <TabsContent value="sales-products" className="space-y-4">
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 py-8">
             <Package className="h-6 w-6" />
             <h2 className="text-2xl font-bold">Sales Products</h2>
           </div>
@@ -304,7 +304,7 @@ export default function ProductsServicesPage() {
         </TabsContent>
 
         <TabsContent value="sales-services" className="space-y-4">
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 py-8">
             <Wrench className="h-6 w-6" />
             <h2 className="text-2xl font-bold">Sales Services</h2>
           </div>
@@ -391,9 +391,9 @@ export default function ProductsServicesPage() {
         </TabsContent>
 
         <TabsContent value="purchase-products" className="space-y-4">
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 py-8">
             <Package className="h-6 w-6" />
-            <h2 className="text-2xl font-bold">Purchase Products</h2>
+            <h2 className="text-2xl font-bold">Sales Products</h2>
           </div>
           <div className="flex flex-col md:flex-row gap-6">
             <div className="w-full md:w-1/3">
@@ -479,9 +479,9 @@ export default function ProductsServicesPage() {
         </TabsContent>
 
         <TabsContent value="purchase-services" className="space-y-4">
-          <div className="flex items-center gap-2 mb-4">
-            <Wrench className="h-6 w-6" />
-            <h2 className="text-2xl font-bold">Purchase Services</h2>
+          <div className="flex items-center gap-2 py-8">
+            <Package className="h-6 w-6" />
+            <h2 className="text-2xl font-bold">Purchase Products</h2>
           </div>
           <div className="flex flex-col md:flex-row gap-6">
             <div className="w-full md:w-1/3">
