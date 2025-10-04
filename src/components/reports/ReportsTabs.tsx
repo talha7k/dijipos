@@ -185,7 +185,7 @@ export function ReportsTabs() {
       <TabsList>
         <TabsTrigger value="pos">POS</TabsTrigger>
         <TabsTrigger value="invoices">Invoices</TabsTrigger>
-        <TabsTrigger value="quotes">Quotes</TabsTrigger>
+
       </TabsList>
 
       <TabsContent value="pos">
@@ -265,41 +265,7 @@ export function ReportsTabs() {
         </Card>
       </TabsContent>
 
-      <TabsContent value="quotes">
-        <Card>
-          <CardHeader>
-            <CardTitle>Quotes Report</CardTitle>
-            <Button size="sm">
-              <Download className="h-4 w-4 mr-2" />
-              Export
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Quote #</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Total</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {salesInvoices
-                  .filter(invoice => invoice.status === 'quote')
-                  .map((quote) => (
-                    <TableRow key={quote.id}>
-                      <TableCell>{quote.id.slice(-8)}</TableCell>
-                      <TableCell>{quote.clientName}</TableCell>
-                      <TableCell>{format(quote.createdAt, "PPP")}</TableCell>
-                      <TableCell>{quote.total.toFixed(2)}</TableCell>
-                    </TableRow>
-                  ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      </TabsContent>
+
     </Tabs>
   );
 }

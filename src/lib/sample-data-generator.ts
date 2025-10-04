@@ -1,6 +1,6 @@
 import { db } from '@/lib/firebase/config';
 import { collection, doc, writeBatch } from 'firebase/firestore';
-import { Product, Service, Quote, Customer, Supplier, InvoiceItem as Item, Payment, SalesInvoice, PurchaseInvoice, Category, Order, OrderPayment, CartItem, OrderType, PaymentType, Table, TableStatus, OrderStatus, PaymentStatus, CategoryType, ItemType, InvoiceType, QuoteStatus, InvoiceStatus, PurchaseInvoiceStatus, ProductTransactionType } from '@/types';
+import { Product, Service, Customer, Supplier, InvoiceItem as Item, Payment, SalesInvoice, PurchaseInvoice, Category, Order, OrderPayment, CartItem, OrderType, PaymentType, Table, TableStatus, OrderStatus, PaymentStatus, CategoryType, ItemType, InvoiceType, InvoiceStatus, PurchaseInvoiceStatus, ProductTransactionType } from '@/types';
  
 // --- HELPER FUNCTIONS ---
 
@@ -331,32 +331,7 @@ const generateItems = (products: Omit<Product, 'organizationId'>[], services: Om
     return items;
 };
 
-const generateQuotes = (count: number, customers: Omit<Customer, 'organizationId'>[], products: Omit<Product, 'organizationId'>[], services: Omit<Service, 'organizationId'>[]): Omit<Quote, 'organizationId'>[] => {
-    return Array.from({ length: count }, () => {
-        const customer = getRandomElement(customers);
-        const items = generateItems(products, services);
-        const subtotal = items.reduce((sum, item) => sum + item.total, 0);
-        const taxRate = 15;
-        const taxAmount = subtotal * (taxRate / 100);
-        const total = subtotal + taxAmount;
-        
-        return {
-            id: generateId('quote'),
-            clientName: customer.name,
-            clientEmail: customer.email,
-            clientAddress: customer.address,
-            items,
-            subtotal,
-            taxRate,
-            taxAmount,
-            total,
-            status: getRandomElement([QuoteStatus.DRAFT, QuoteStatus.SENT, QuoteStatus.ACCEPTED, QuoteStatus.REJECTED]),
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            validUntil: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15 days from now
-        };
-    });
-};
+
 
 const generateInvoices = (count: number, customers: Omit<Customer, 'organizationId'>[], suppliers: Omit<Supplier, 'organizationId'>[], products: Omit<Product, 'organizationId'>[], services: Omit<Service, 'organizationId'>[], paymentTypes: Omit<PaymentType, 'organizationId'>[], organizationId: string): { invoices: (Omit<SalesInvoice, 'organizationId'> | Omit<PurchaseInvoice, 'organizationId'>)[], payments: Payment[] } => {
     const allInvoices: (Omit<SalesInvoice, 'organizationId'> | Omit<PurchaseInvoice, 'organizationId'>)[] = [];
@@ -504,7 +479,6 @@ export async function generateSampleData(organizationId: string) {
     }
 
     // 2. Generate dependent data
-    const quotes = generateQuotes(COUNTS.QUOTES, customers, products, services);
     const { invoices, payments } = generateInvoices(COUNTS.INVOICES, customers, suppliers, products, services, paymentTypes, organizationId);
     const { orders, orderPayments } = generateOrders(COUNTS.ORDERS, customers, products, services, orderTypes, paymentTypes, organizationId);
 
@@ -522,7 +496,6 @@ export async function generateSampleData(organizationId: string) {
         suppliers,
         orderTypes,
         paymentTypes,
-        quotes,
         invoices,
         payments,
         orders,

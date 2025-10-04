@@ -1,4 +1,4 @@
-import { ReceiptTemplate, InvoiceTemplate, QuoteTemplate, PrinterSettings } from "@/types";
+import { ReceiptTemplate, InvoiceTemplate, PrinterSettings } from "@/types";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
-type TemplateType = ReceiptTemplate | InvoiceTemplate | QuoteTemplate;
+type TemplateType = ReceiptTemplate | InvoiceTemplate;
 
 interface TemplateSelectorProps {
   templates: TemplateType[];
@@ -21,7 +21,7 @@ interface TemplateSelectorProps {
   className?: string;
   variant?: 'select' | 'radio';
   printerSettings?: PrinterSettings | null;
-  templateType?: 'receipts' | 'invoices' | 'quotes';
+  templateType?: 'receipts' | 'invoices';
 }
 
 export function TemplateSelector({
@@ -43,7 +43,6 @@ export function TemplateSelector({
     printerSettings: printerSettings ? {
       receipts: printerSettings.receipts?.defaultTemplateId,
       invoices: printerSettings.invoices?.defaultTemplateId,
-      quotes: printerSettings.quotes?.defaultTemplateId,
     } : null,
     templates: templates.map(t => ({ id: t.id, name: t.name }))
   });
@@ -66,7 +65,6 @@ export function TemplateSelector({
       printerSettings: printerSettings ? {
         receipts: printerSettings.receipts?.defaultTemplateId,
         invoices: printerSettings.invoices?.defaultTemplateId,
-        quotes: printerSettings.quotes?.defaultTemplateId,
       } : null,
     });
     

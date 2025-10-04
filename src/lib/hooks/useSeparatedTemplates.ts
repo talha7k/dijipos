@@ -2,17 +2,14 @@ import { useMemo } from "react";
 import {
   ReceiptTemplate,
   InvoiceTemplate,
-  QuoteTemplate,
   ReceiptTemplateType,
   InvoiceTemplateType,
-  QuoteTemplateType,
 } from "@/types";
 import { useRealtimeCollection } from "./useRealtimeCollection";
 import { useOrganization } from "./useOrganization";
 import { useStoreSettings } from "./useStoreSettings";
 import {
   STATIC_INVOICE_TEMPLATE_IDS,
-  STATIC_QUOTE_TEMPLATE_IDS,
   STATIC_RECEIPT_TEMPLATE_IDS,
 } from "@/types";
 
@@ -24,17 +21,14 @@ interface SeparatedTemplatesState {
   // Static templates (always available, not in Firestore)
   staticReceiptTemplates: ReceiptTemplate[];
   staticInvoiceTemplates: InvoiceTemplate[];
-  staticQuoteTemplates: QuoteTemplate[];
 
   // Custom templates (from Firestore)
   customReceiptTemplates: ReceiptTemplate[];
   customInvoiceTemplates: InvoiceTemplate[];
-  customQuoteTemplates: QuoteTemplate[];
 
   // Combined templates for UI (static + custom)
   allReceiptTemplates: ReceiptTemplate[];
   allInvoiceTemplates: InvoiceTemplate[];
-  allQuoteTemplates: QuoteTemplate[];
 
   loading: boolean;
   error: string | null;
@@ -74,16 +68,7 @@ export function useSeparatedTemplates(): SeparatedTemplatesState {
     null,
   );
 
-  const {
-    data: customQuoteTemplates,
-    loading: quoteLoading,
-    error: quoteError,
-  } = useRealtimeCollection<QuoteTemplate>(
-    "quoteTemplates",
-    organizationId,
-    [],
-    null,
-  );
+
 
   // Get static templates (local only)
   const staticReceiptTemplates = useMemo(() => {
@@ -232,56 +217,7 @@ export function useSeparatedTemplates(): SeparatedTemplatesState {
     ];
   }, [organizationId]);
 
-  const staticQuoteTemplates = useMemo(() => {
-    if (!organizationId) return [];
 
-    return [
-      {
-        id: "english-quote",
-        name: "English Quote",
-        description: "English quote template",
-        type: "english" as QuoteTemplateType,
-        content: "",
-        isDefault: false,
-        fields: [],
-        style: {
-          primaryColor: "#000000",
-          secondaryColor: "#666666",
-          backgroundColor: "#ffffff",
-          textColor: "#000000",
-          fontFamily: "Arial",
-          fontSize: 12,
-          showLogo: true,
-          showWatermark: false,
-        },
-        organizationId,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      {
-        id: "arabic-quote",
-        name: "Arabic Quote",
-        description: "Arabic quote template",
-        type: "arabic" as QuoteTemplateType,
-        content: "",
-        isDefault: false,
-        fields: [],
-        style: {
-          primaryColor: "#000000",
-          secondaryColor: "#666666",
-          backgroundColor: "#ffffff",
-          textColor: "#000000",
-          fontFamily: "Arial",
-          fontSize: 12,
-          showLogo: true,
-          showWatermark: false,
-        },
-        organizationId,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-    ];
-  }, [organizationId]);
 
   // Combine static and custom templates, marking defaults
   const allReceiptTemplates = useMemo(() => {
@@ -332,43 +268,18 @@ export function useSeparatedTemplates(): SeparatedTemplatesState {
     printerSettings?.invoices?.defaultTemplateId,
   ]);
 
-  const allQuoteTemplates = useMemo(() => {
-    const defaultId = printerSettings?.quotes?.defaultTemplateId;
-    console.log(
-      "[useSeparatedTemplates] Computing allQuoteTemplates with defaultId:",
-      defaultId,
-    );
 
-    const staticWithDefaults = staticQuoteTemplates.map((template) => ({
-      ...template,
-      isDefault: defaultId === template.id,
-    }));
 
-    const customWithDefaults = customQuoteTemplates.map((template) => ({
-      ...template,
-      isDefault: defaultId === template.id,
-    }));
-
-    return [...staticWithDefaults, ...customWithDefaults];
-  }, [
-    staticQuoteTemplates,
-    customQuoteTemplates,
-    printerSettings?.quotes?.defaultTemplateId,
-  ]);
-
-  const loading = receiptLoading || invoiceLoading || quoteLoading;
-  const error = receiptError || invoiceError || quoteError;
+  const loading = receiptLoading || invoiceLoading;
+  const error = receiptError || invoiceError;
 
   return {
     staticReceiptTemplates,
     staticInvoiceTemplates,
-    staticQuoteTemplates,
     customReceiptTemplates,
     customInvoiceTemplates,
-    customQuoteTemplates,
     allReceiptTemplates,
     allInvoiceTemplates,
-    allQuoteTemplates,
     loading,
     error,
   };

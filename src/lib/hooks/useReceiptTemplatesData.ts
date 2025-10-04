@@ -10,7 +10,6 @@ import { defaultArabicReceiptA4Template } from "@/components/templates/receipt/d
 import {
   STATIC_RECEIPT_TEMPLATE_IDS,
   STATIC_INVOICE_TEMPLATE_IDS,
-  STATIC_QUOTE_TEMPLATE_IDS,
 } from "@/types";
 export function useReceiptTemplatesData(organizationId: string | undefined) {
   const [receiptTemplates, setReceiptTemplates] = useState<ReceiptTemplate[]>(

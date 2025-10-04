@@ -9,7 +9,7 @@ import { FontSize } from '@/types/enums';
 
 interface PrinterSettingsPreviewProps {
   printerSettings?: PrinterSettings | null;
-  documentType: 'receipts' | 'invoices' | 'quotes';
+  documentType: 'receipts' | 'invoices';
   title?: string;
 }
 

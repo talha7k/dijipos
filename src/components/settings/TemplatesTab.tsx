@@ -7,7 +7,6 @@ import { FontSize } from "@/types/enums";
 import {
   ReceiptTemplate,
   InvoiceTemplate,
-  QuoteTemplate,
   TemplateCategory,
   PrinterSettings,
 } from "@/types";
@@ -18,16 +17,13 @@ import { useStoreSettings } from "@/lib/hooks/useStoreSettings";
 import {
   STATIC_RECEIPT_TEMPLATE_IDS,
   STATIC_INVOICE_TEMPLATE_IDS,
-  STATIC_QUOTE_TEMPLATE_IDS,
 } from "@/types";
 import { useSeparatedTemplates } from "@/lib/hooks/useSeparatedTemplates";
 import {
   createReceiptTemplate,
   createInvoiceTemplate,
-  createQuoteTemplate,
   deleteReceiptTemplate,
   deleteInvoiceTemplate,
-  deleteQuoteTemplate,
 } from "@/lib/firebase/firestore/templates";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -88,7 +84,6 @@ export function TemplatesTab({}: TemplatesTabProps) {
   const {
     allReceiptTemplates,
     allInvoiceTemplates,
-    allQuoteTemplates,
     loading,
   } = useSeparatedTemplates();
   const { storeSettings, refreshStoreSettings } = useStoreSettings();
@@ -100,7 +95,6 @@ export function TemplatesTab({}: TemplatesTabProps) {
   const [localDefaults, setLocalDefaults] = useState({
     receipt: printerSettings?.receipts?.defaultTemplateId,
     invoice: printerSettings?.invoices?.defaultTemplateId,
-    quote: printerSettings?.quotes?.defaultTemplateId,
   });
 
   // Update local defaults when printer settings change
@@ -108,13 +102,11 @@ export function TemplatesTab({}: TemplatesTabProps) {
     console.log("[TemplatesTab] useEffect triggered with dependencies:", {
       receipt: printerSettings?.receipts?.defaultTemplateId,
       invoice: printerSettings?.invoices?.defaultTemplateId,
-      quote: printerSettings?.quotes?.defaultTemplateId,
       printerSettingsExists: !!printerSettings,
     });
     const newDefaults = {
       receipt: printerSettings?.receipts?.defaultTemplateId,
       invoice: printerSettings?.invoices?.defaultTemplateId,
-      quote: printerSettings?.quotes?.defaultTemplateId,
     };
     console.log("[TemplatesTab] Setting localDefaults to:", newDefaults);
     setLocalDefaults(newDefaults);
@@ -130,9 +122,7 @@ export function TemplatesTab({}: TemplatesTabProps) {
       case TemplateCategory.INVOICE:
         isDefault = localDefaults.invoice === templateId;
         break;
-      case TemplateCategory.QUOTE:
-        isDefault = localDefaults.quote === templateId;
-        break;
+
       default:
         isDefault = false;
     }
@@ -146,7 +136,6 @@ export function TemplatesTab({}: TemplatesTabProps) {
         comparison: {
           receipt: localDefaults.receipt === templateId,
           invoice: localDefaults.invoice === templateId,
-          quote: localDefaults.quote === templateId,
         },
       },
     );
@@ -163,9 +152,6 @@ export function TemplatesTab({}: TemplatesTabProps) {
       case TemplateCategory.INVOICE:
         templates = allInvoiceTemplates;
         break;
-      case TemplateCategory.QUOTE:
-        templates = allQuoteTemplates;
-        break;
       default:
         return [];
     }
@@ -175,17 +161,13 @@ export function TemplatesTab({}: TemplatesTabProps) {
       return templates.filter((template) =>
         selectedCategory === TemplateCategory.RECEIPT
           ? STATIC_RECEIPT_TEMPLATE_IDS.includes(template.id)
-          : selectedCategory === TemplateCategory.INVOICE
-            ? STATIC_INVOICE_TEMPLATE_IDS.includes(template.id)
-            : STATIC_QUOTE_TEMPLATE_IDS.includes(template.id),
+          : STATIC_INVOICE_TEMPLATE_IDS.includes(template.id),
       );
     } else if (templateView === "custom") {
       return templates.filter((template) =>
         selectedCategory === TemplateCategory.RECEIPT
           ? !STATIC_RECEIPT_TEMPLATE_IDS.includes(template.id)
-          : selectedCategory === TemplateCategory.INVOICE
-            ? !STATIC_INVOICE_TEMPLATE_IDS.includes(template.id)
-            : !STATIC_QUOTE_TEMPLATE_IDS.includes(template.id),
+          : !STATIC_INVOICE_TEMPLATE_IDS.includes(template.id),
       );
     }
 
@@ -222,14 +204,6 @@ export function TemplatesTab({}: TemplatesTabProps) {
           await createInvoiceTemplate(
             templateData as unknown as Omit<
               InvoiceTemplate,
-              "id" | "createdAt" | "updatedAt"
-            >,
-          );
-          break;
-        case TemplateCategory.QUOTE:
-          await createQuoteTemplate(
-            templateData as unknown as Omit<
-              QuoteTemplate,
               "id" | "createdAt" | "updatedAt"
             >,
           );
@@ -285,13 +259,6 @@ export function TemplatesTab({}: TemplatesTabProps) {
             bodyFont: "Helvetica",
             defaultTemplateId: "english-invoice",
           },
-          quotes: {
-            paperWidth: 210,
-            fontSize: FontSize.MEDIUM,
-            headingFont: "Arial",
-            bodyFont: "Helvetica",
-            defaultTemplateId: "english-quote",
-          },
         });
 
         // Get the newly created settings
@@ -334,9 +301,7 @@ export function TemplatesTab({}: TemplatesTabProps) {
         (selectedCategory === TemplateCategory.RECEIPT &&
           STATIC_RECEIPT_TEMPLATE_IDS.includes(templateId)) ||
         (selectedCategory === TemplateCategory.INVOICE &&
-          STATIC_INVOICE_TEMPLATE_IDS.includes(templateId)) ||
-        (selectedCategory === TemplateCategory.QUOTE &&
-          STATIC_QUOTE_TEMPLATE_IDS.includes(templateId));
+          STATIC_INVOICE_TEMPLATE_IDS.includes(templateId));
 
       console.log(
         `[TemplatesTab] Setting default template: ${templateId}, isStatic: ${isStaticTemplate}`,
@@ -367,7 +332,6 @@ export function TemplatesTab({}: TemplatesTabProps) {
         invoices: printerSettings?.invoices
           ? { ...printerSettings.invoices }
           : {},
-        quotes: printerSettings?.quotes ? { ...printerSettings.quotes } : {},
       };
 
       // Set the appropriate template ID based on category
@@ -377,9 +341,6 @@ export function TemplatesTab({}: TemplatesTabProps) {
           break;
         case TemplateCategory.INVOICE:
           settingsToUpdate.invoices!.defaultTemplateId = templateId;
-          break;
-        case TemplateCategory.QUOTE:
-          settingsToUpdate.quotes!.defaultTemplateId = templateId;
           break;
       }
 
@@ -426,9 +387,6 @@ export function TemplatesTab({}: TemplatesTabProps) {
         isStaticTemplate =
           STATIC_INVOICE_TEMPLATE_IDS.includes(deleteTemplateId);
         break;
-      case TemplateCategory.QUOTE:
-        isStaticTemplate = STATIC_QUOTE_TEMPLATE_IDS.includes(deleteTemplateId);
-        break;
     }
 
     if (isStaticTemplate) {
@@ -446,9 +404,6 @@ export function TemplatesTab({}: TemplatesTabProps) {
           break;
         case TemplateCategory.INVOICE:
           await deleteInvoiceTemplate(deleteTemplateId);
-          break;
-        case TemplateCategory.QUOTE:
-          await deleteQuoteTemplate(deleteTemplateId);
           break;
       }
       toast.success(`${selectedCategory} template deleted successfully`);
@@ -642,9 +597,6 @@ export function TemplatesTab({}: TemplatesTabProps) {
             <ToggleGroupItem value={TemplateCategory.INVOICE}>
               Invoice
             </ToggleGroupItem>
-            <ToggleGroupItem value={TemplateCategory.QUOTE}>
-              Quote
-            </ToggleGroupItem>
           </ToggleGroup>
         </div>
 
@@ -722,9 +674,7 @@ export function TemplatesTab({}: TemplatesTabProps) {
                           (selectedCategory === TemplateCategory.INVOICE &&
                             STATIC_INVOICE_TEMPLATE_IDS.includes(
                               template.id,
-                            )) ||
-                          (selectedCategory === TemplateCategory.QUOTE &&
-                            STATIC_QUOTE_TEMPLATE_IDS.includes(template.id))
+                            ))
                         }
                         className="text-destructive hover:text-destructive disabled:opacity-50"
                       >

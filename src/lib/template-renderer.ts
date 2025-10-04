@@ -2,11 +2,10 @@
 import {
   ReceiptTemplateData,
   InvoiceTemplateData,
-  QuoteTemplateData,
 } from "@/types/template";
 
 // A generic type to accept data for any kind of template.
-export type TemplateData = ReceiptTemplateData | InvoiceTemplateData | QuoteTemplateData | Record<string, any>;
+export type TemplateData = ReceiptTemplateData | InvoiceTemplateData | Record<string, any>;
 
 export type { ReceiptTemplateData };
 
