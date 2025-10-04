@@ -2,7 +2,6 @@
 // This would typically come from a database
 
 import {
-  Invoice,
   PurchaseInvoice,
   SalesInvoice,
   Category,
@@ -862,7 +861,7 @@ export const sampleProductsServices = [
 ];
 
 // Combined sample invoices (both sales and purchase)
-export const sampleInvoices: Omit<Invoice, "organizationId">[] = [
+export const sampleInvoices: (Omit<SalesInvoice, "organizationId"> | Omit<PurchaseInvoice, "organizationId">)[] = [
   ...samplePurchaseInvoices,
   ...sampleSalesInvoices,
 ];

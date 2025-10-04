@@ -1,6 +1,6 @@
 import { db } from '@/lib/firebase/config';
 import { collection, doc, writeBatch } from 'firebase/firestore';
-import { Product, Service, Quote, Customer, Supplier, InvoiceItem as Item, Payment, Invoice, Category, Order, OrderPayment, CartItem, OrderType, PaymentType, Table, TableStatus, OrderStatus, PaymentStatus, CategoryType, ItemType, InvoiceType, QuoteStatus, InvoiceStatus, ProductTransactionType } from '@/types';
+import { Product, Service, Quote, Customer, Supplier, InvoiceItem as Item, Payment, SalesInvoice, PurchaseInvoice, Category, Order, OrderPayment, CartItem, OrderType, PaymentType, Table, TableStatus, OrderStatus, PaymentStatus, CategoryType, ItemType, InvoiceType, QuoteStatus, InvoiceStatus, PurchaseInvoiceStatus, ProductTransactionType } from '@/types';
  
 // --- HELPER FUNCTIONS ---
 
@@ -358,8 +358,8 @@ const generateQuotes = (count: number, customers: Omit<Customer, 'organizationId
     });
 };
 
-const generateInvoices = (count: number, customers: Omit<Customer, 'organizationId'>[], suppliers: Omit<Supplier, 'organizationId'>[], products: Omit<Product, 'organizationId'>[], services: Omit<Service, 'organizationId'>[], paymentTypes: Omit<PaymentType, 'organizationId'>[], organizationId: string): { invoices: Omit<Invoice, 'organizationId'>[], payments: Payment[] } => {
-    const allInvoices: Omit<Invoice, 'organizationId'>[] = [];
+const generateInvoices = (count: number, customers: Omit<Customer, 'organizationId'>[], suppliers: Omit<Supplier, 'organizationId'>[], products: Omit<Product, 'organizationId'>[], services: Omit<Service, 'organizationId'>[], paymentTypes: Omit<PaymentType, 'organizationId'>[], organizationId: string): { invoices: (Omit<SalesInvoice, 'organizationId'> | Omit<PurchaseInvoice, 'organizationId'>)[], payments: Payment[] } => {
+    const allInvoices: (Omit<SalesInvoice, 'organizationId'> | Omit<PurchaseInvoice, 'organizationId'>)[] = [];
     const allPayments: Payment[] = [];
 
     Array.from({ length: count }, () => {
@@ -425,15 +425,28 @@ const generateInvoices = (count: number, customers: Omit<Customer, 'organization
 
         const isSales = Math.random() > 0.5; // 50% of invoices are sales
         if (isSales) {
-            const invoice: Omit<Invoice, 'organizationId'> = {
+            const customer = getRandomElement(customers);
+            const invoice: Omit<SalesInvoice, 'organizationId'> = {
                 ...baseInvoice,
                 type: InvoiceType.SALES,
+                clientName: customer.name,
+                clientEmail: customer.email,
+                clientAddress: customer.address,
+                payments,
             };
             allInvoices.push(invoice);
         } else {
-            const invoice: Omit<Invoice, 'organizationId'> = {
+            const supplier = getRandomElement(suppliers);
+            const invoice: Omit<PurchaseInvoice, 'organizationId'> = {
                 ...baseInvoice,
                 type: InvoiceType.PURCHASE,
+                supplierId: supplier.id,
+                supplierName: supplier.name,
+                supplierEmail: supplier.email,
+                supplierAddress: supplier.address,
+                status: getRandomElement([PurchaseInvoiceStatus.DRAFT, PurchaseInvoiceStatus.SENT, PurchaseInvoiceStatus.RECEIVED, PurchaseInvoiceStatus.PAID]),
+                invoiceDate: new Date(),
+                includeQR: Math.random() > 0.5,
             };
             allInvoices.push(invoice);
         }
