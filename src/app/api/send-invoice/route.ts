@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
-import { Invoice, ItemType, InvoiceStatus, InvoiceType, Payment } from '@/types';
+import puppeteer from 'puppeteer';
+import { Invoice, Payment } from '@/types';
 import { adminDb } from '@/lib/firebase/server-config';
+import { renderTemplate } from '@/lib/template-renderer';
+import { InvoiceTemplate, InvoiceTemplateData } from '@/types/template';
+import { createInvoiceQRData, generateZatcaQRCode } from '@/lib/zatca-qr';
 
 // SMTP Error interface
 interface SMTPErr {
@@ -30,6 +34,22 @@ interface InvoiceData {
   dueDate?: Date;
   invoiceDate?: Date;
   validUntil?: Date;
+  clientName?: string;
+  supplierName?: string;
+  customerNameAr?: string;
+  supplierNameAr?: string;
+  clientAddress?: string;
+  supplierAddress?: string;
+  clientEmail?: string;
+  supplierEmail?: string;
+  clientVAT?: string;
+  supplierVAT?: string;
+  customerLogo?: string;
+  supplierLogo?: string;
+  subtotal?: number;
+  taxRate?: number;
+  taxAmount?: number;
+  notes?: string;
   [key: string]: unknown;
 }
 
@@ -124,6 +144,202 @@ const createTransporter = () => {
   return nodemailer.createTransport(smtpConfig);
 };
 
+// Simple in-memory cache for templates (5 minute TTL)
+const templateCache = new Map<string, { template: InvoiceTemplate; timestamp: number }>();
+const TEMPLATE_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+// Get template from Firestore with caching
+async function getTemplate(templateId: string, organizationId: string): Promise<InvoiceTemplate | null> {
+  const cacheKey = `${organizationId}:${templateId}`;
+  const now = Date.now();
+
+  // Check cache first
+  const cached = templateCache.get(cacheKey);
+  if (cached && (now - cached.timestamp) < TEMPLATE_CACHE_TTL) {
+    return cached.template;
+  }
+
+  try {
+    const docRef = adminDb.collection('organizations').doc(organizationId).collection('templates').doc(templateId);
+    const docSnap = await docRef.get();
+
+    if (!docSnap.exists) {
+      return null;
+    }
+
+    const template = {
+      id: docSnap.id,
+      ...docSnap.data(),
+    } as InvoiceTemplate;
+
+    // Cache the template
+    templateCache.set(cacheKey, { template, timestamp: now });
+
+    // Clean up old cache entries periodically (simple cleanup)
+    if (templateCache.size > 50) { // Arbitrary limit
+      for (const [key, value] of templateCache.entries()) {
+        if ((now - value.timestamp) > TEMPLATE_CACHE_TTL) {
+          templateCache.delete(key);
+        }
+      }
+    }
+
+    return template;
+  } catch (error) {
+    console.error('Error fetching template:', error);
+    throw error;
+  }
+}
+
+// Render invoice with template
+async function renderInvoiceWithTemplate(
+  template: InvoiceTemplate,
+  invoice: InvoiceData,
+  organization: { name?: string; nameAr?: string; address?: string; email?: string; phone?: string; vatNumber?: string; logoUrl?: string; stampUrl?: string }
+): Promise<string> {
+  const qrCodeBase64 = await generateZatcaQRCode(
+    createInvoiceQRData(invoice as InvoiceData & { clientName?: string; supplierName?: string; clientEmail?: string; supplierEmail?: string; clientVAT?: string; supplierVAT?: string }, organization),
+  );
+
+  const data: InvoiceTemplateData = {
+    invoiceId: invoice.id,
+    invoiceDate: new Date(invoice.createdAt).toLocaleDateString(),
+    dueDate: invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : "",
+    status: invoice.status || "",
+    companyName: organization?.name || "",
+    companyNameAr: organization?.nameAr || "",
+    companyAddress: organization?.address || "",
+    companyEmail: organization?.email || "",
+    companyPhone: organization?.phone || "",
+    companyVat: organization?.vatNumber || "",
+    companyLogo: organization?.logoUrl || "",
+    companyStamp: organization?.stampUrl || "",
+    clientName: invoice.clientName || invoice.supplierName || "",
+    customerNameAr: invoice.customerNameAr || invoice.supplierNameAr || "",
+    clientAddress: invoice.clientAddress || invoice.supplierAddress || "",
+    clientEmail: invoice.clientEmail || invoice.supplierEmail || "",
+    clientVat: invoice.clientVAT || invoice.supplierVAT || "",
+    customerLogo: invoice.customerLogo || "",
+    supplierName: invoice.supplierName || "",
+    supplierNameAr: invoice.supplierNameAr || "",
+    supplierAddress: invoice.supplierAddress || "",
+    supplierEmail: invoice.supplierEmail || "",
+    supplierVat: invoice.supplierVAT || "",
+    supplierLogo: invoice.supplierLogo || "",
+    subtotal: (invoice.subtotal || 0).toFixed(2),
+    taxRate: (invoice.taxRate || 0).toString(),
+    taxAmount: (invoice.taxAmount || 0).toFixed(2),
+    total: (invoice.total || 0).toFixed(2),
+    notes: invoice.notes || "",
+    items: (invoice.items as Array<{ name?: string; description?: string; quantity?: number; unitPrice?: number; total?: number }> || []).map((item) => ({
+      name: item.name || "",
+      description: item.description || "",
+      quantity: item.quantity || 0,
+      unitPrice: (item.unitPrice || 0).toFixed(2),
+      total: (item.total || 0).toFixed(2),
+    })),
+    includeQR: true,
+    qrCodeUrl: qrCodeBase64,
+    headingFont: "Arial, sans-serif",
+    bodyFont: "Arial, sans-serif",
+    marginTop: 10,
+    marginBottom: 10,
+    paddingTop: 15,
+    paddingBottom: 15,
+    paddingLeft: 15,
+    paddingRight: 15,
+  };
+
+  return renderTemplate(template.content, data);
+}
+
+// Generate PDF from HTML using Puppeteer
+async function generatePDF(htmlContent: string): Promise<Buffer> {
+  let browser;
+  try {
+    // Validate input
+    if (!htmlContent || typeof htmlContent !== 'string' || htmlContent.trim().length === 0) {
+      throw new Error('Invalid HTML content provided for PDF generation');
+    }
+
+    browser = await puppeteer.launch({
+      headless: true,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        '--single-process', // <- this one doesn't work in Windows
+        '--disable-gpu'
+      ],
+      timeout: 30000 // 30 second timeout for browser launch
+    });
+
+    const page = await browser.newPage();
+
+    // Set reasonable timeouts
+    page.setDefaultTimeout(30000);
+    page.setDefaultNavigationTimeout(30000);
+
+    // Set viewport for better PDF rendering
+    await page.setViewport({ width: 1200, height: 800 });
+
+    // Load HTML content with error handling
+    try {
+      await page.setContent(htmlContent, {
+        waitUntil: 'networkidle0',
+        timeout: 30000
+      });
+    } catch (contentError) {
+      console.error('Error setting page content:', contentError);
+      throw new Error('Failed to load HTML content for PDF generation');
+    }
+
+    // Generate PDF with error handling
+    let pdfBuffer;
+    try {
+      pdfBuffer = await page.pdf({
+        format: 'A4',
+        printBackground: true,
+        margin: {
+          top: '20px',
+          right: '20px',
+          bottom: '20px',
+          left: '20px'
+        },
+        timeout: 30000
+      });
+    } catch (pdfError) {
+      console.error('Error creating PDF:', pdfError);
+      throw new Error('Failed to create PDF from HTML content');
+    }
+
+    // Validate PDF buffer
+    if (!pdfBuffer || pdfBuffer.length === 0) {
+      throw new Error('Generated PDF is empty');
+    }
+
+    return Buffer.from(pdfBuffer);
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+    // Re-throw with more context
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error('Unknown error occurred during PDF generation');
+  } finally {
+    if (browser) {
+      try {
+        await browser.close();
+      } catch (closeError) {
+        console.warn('Error closing browser:', closeError);
+      }
+    }
+  }
+}
+
 // Generate invoice content (fallback when PDF generation is not available)
 const generateInvoiceContent = async (invoice: Invoice): Promise<{ buffer: Buffer; filename: string; contentType: string }> => {
   try {
@@ -187,7 +403,7 @@ For questions, please contact the sender.
 
 export async function POST(request: NextRequest) {
   try {
-    const { invoiceId, recipientEmail, subject, message, organizationId } = await request.json();
+    const { invoiceId, recipientEmail, subject, message, organizationId, templateId } = await request.json();
 
     if (!invoiceId || !recipientEmail || !subject || !message) {
       return NextResponse.json(
@@ -237,8 +453,100 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Get organization data
+    const orgDoc = await adminDb.collection('organizations').doc(organizationId).get();
+    const organization = orgDoc.data() || {};
+
     // Generate invoice attachment
-    const invoiceContent = await generateInvoiceContent(invoice as unknown as Invoice);
+    let invoiceContent;
+    if (templateId) {
+      try {
+        // Use specified template
+        const template = await getTemplate(templateId, organizationId);
+        if (!template) {
+          console.error(`Template not found: ${templateId} for organization: ${organizationId}`);
+          return NextResponse.json(
+            { error: 'Invoice template not found. Please select a different template or contact support.' },
+            { status: 404 }
+          );
+        }
+
+        // Validate template has content
+        if (!template.content || template.content.trim().length === 0) {
+          console.error(`Template has no content: ${templateId}`);
+          return NextResponse.json(
+            { error: 'Invoice template is empty. Please select a different template or contact support.' },
+            { status: 400 }
+          );
+        }
+
+        let htmlContent;
+        try {
+          htmlContent = await renderInvoiceWithTemplate(template, invoice, organization);
+        } catch (renderError) {
+          console.error('Error rendering invoice template:', renderError);
+          return NextResponse.json(
+            {
+              error: 'Failed to render invoice template. The template may be corrupted.',
+              details: process.env.NODE_ENV === 'development' ? String(renderError) : undefined
+            },
+            { status: 500 }
+          );
+        }
+
+        // Validate rendered HTML
+        if (!htmlContent || htmlContent.trim().length === 0) {
+          console.error('Template rendering produced empty HTML');
+          return NextResponse.json(
+            { error: 'Invoice template rendering failed. Please try a different template.' },
+            { status: 500 }
+          );
+        }
+
+        let pdfBuffer;
+        try {
+          pdfBuffer = await generatePDF(htmlContent);
+        } catch (pdfError) {
+          console.error('Error generating PDF:', pdfError);
+          return NextResponse.json(
+            {
+              error: 'Failed to generate PDF. Please try again or contact support.',
+              details: process.env.NODE_ENV === 'development' ? String(pdfError) : undefined
+            },
+            { status: 500 }
+          );
+        }
+
+        invoiceContent = {
+          buffer: pdfBuffer,
+          filename: `invoice-${invoice.id.slice(-8)}.pdf`,
+          contentType: 'application/pdf'
+        };
+      } catch (templateError) {
+        console.error('Unexpected error processing template:', templateError);
+        return NextResponse.json(
+          {
+            error: 'An unexpected error occurred while processing the invoice template.',
+            details: process.env.NODE_ENV === 'development' ? String(templateError) : undefined
+          },
+          { status: 500 }
+        );
+      }
+    } else {
+      // Fallback to text generation
+      try {
+        invoiceContent = await generateInvoiceContent(invoice as unknown as Invoice);
+      } catch (fallbackError) {
+        console.error('Error generating fallback invoice content:', fallbackError);
+        return NextResponse.json(
+          {
+            error: 'Failed to generate invoice content. Please contact support.',
+            details: process.env.NODE_ENV === 'development' ? String(fallbackError) : undefined
+          },
+          { status: 500 }
+        );
+      }
+    }
 
     // Create transporter and send email
     const transporter = createTransporter();

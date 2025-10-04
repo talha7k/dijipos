@@ -72,6 +72,9 @@ export function generateZatcaQRString(data: ZatcaQRData): string {
 export function generateZatcaQRStringV2(data: { sellerName: string; vatNumber: string; timestamp: string; invoiceTotal: string; vatTotal: string }): string {
   // Parse timestamp to extract date and time
   const timestamp = new Date(data.timestamp);
+  if (isNaN(timestamp.getTime())) {
+    throw new Error('Invalid timestamp in generateZatcaQRStringV2');
+  }
   const dateString = timestamp.toISOString().split('T')[0];
   const timeString = timestamp.toTimeString().split(' ')[0];
 
@@ -147,6 +150,9 @@ export async function generateZatcaQRCode(data: ZatcaQRData): Promise<string> {
  */
 export function createInvoiceQRData(invoice: { createdAt: Date | string; total: number; taxAmount?: number; invoiceNumber?: string; id: string; clientName?: string; clientVAT?: string }, organization: { name?: string; vatNumber?: string } | null): ZatcaQRData {
   const invoiceDate = new Date(invoice.createdAt);
+  if (isNaN(invoiceDate.getTime())) {
+    throw new Error('Invalid invoice createdAt date');
+  }
   const dateString = invoiceDate.toISOString().split('T')[0];
   const timeString = invoiceDate.toTimeString().split(' ')[0];
 
@@ -182,6 +188,9 @@ export function createInvoiceQRData(invoice: { createdAt: Date | string; total: 
  */
 export function createReceiptQRData(order: { createdAt: Date | string; total: number; taxAmount?: number; orderNumber: string; customerName?: string }, organization: { name?: string; vatNumber?: string } | null): ZatcaQRData {
   const orderDate = new Date(order.createdAt);
+  if (isNaN(orderDate.getTime())) {
+    throw new Error('Invalid order createdAt date');
+  }
   const dateString = orderDate.toISOString().split('T')[0];
   const timeString = orderDate.toTimeString().split(' ')[0];
 

@@ -8,7 +8,7 @@ import { createInvoiceQRData, generateZatcaQRCode } from "@/lib/zatca-qr";
 import { DocumentPrintSettings } from "@/types"; // Assuming types are in @/types
 import { DialogWithActions } from "@/components/ui/DialogWithActions";
 import { Button } from "@/components/ui/button";
-import { Printer } from "lucide-react";
+import { Printer, Mail } from "lucide-react";
 import { toast } from "sonner";
 const defaultInvoiceEnglish = `<!DOCTYPE html><html><body><h1>Invoice {{invoiceId}}</h1></body></html>`;
 const defaultInvoiceArabic = `<!DOCTYPE html><html dir="rtl"><body><h1>فاتورة {{invoiceId}}</h1></body></html>`;
@@ -113,6 +113,8 @@ interface InvoicePrintDialogProps {
   supplier?: Supplier;
   children: React.ReactNode;
   settings?: DocumentPrintSettings | null; // Use the new settings type
+  previewMode?: boolean;
+  onEmail?: (invoice: Invoice, templateId: string) => void;
 }
 
 export function InvoicePrintDialog({
@@ -123,6 +125,8 @@ export function InvoicePrintDialog({
   supplier,
   children,
   settings,
+  previewMode = false,
+  onEmail,
 }: InvoicePrintDialogProps) {
   const [open, setOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
@@ -334,16 +338,33 @@ export function InvoicePrintDialog({
     }
   };
 
+  const handleEmail = () => {
+    if (onEmail && selectedTemplate) {
+      onEmail(invoice, selectedTemplate);
+      setOpen(false);
+    }
+  };
+
   return (
     <DialogWithActions
       open={open}
       onOpenChange={setOpen}
-      title="Print Invoice"
+      title={previewMode ? "Preview Invoice" : "Print Invoice"}
       actions={
         <>
           <Button variant="outline" onClick={() => setOpen(false)}>
-            Cancel
+            {previewMode ? "Close" : "Cancel"}
           </Button>
+          {previewMode && onEmail && (
+            <Button
+              variant="outline"
+              onClick={handleEmail}
+              disabled={!selectedTemplate}
+            >
+              <Mail className="h-4 w-4 mr-2" />
+              Email
+            </Button>
+          )}
           <Button
             onClick={handlePrint}
             disabled={!selectedTemplate || isGenerating}
@@ -359,7 +380,7 @@ export function InvoicePrintDialog({
         className="flex h-[80vh] font-sans"
         style={{ maxHeight: "calc(100vh - 100px)" }}
       >
-        <div className="w-1/4 p-4 border-r bg-muted overflow-y-auto space-y-4">
+        <div className={`${previewMode ? 'w-1/5' : 'w-1/4'} p-4 border-r bg-muted overflow-y-auto space-y-4`}>
           <h2 className="text-lg font-bold">Settings</h2>
           <div>
             <label className="block text-sm font-medium">Template</label>
@@ -375,34 +396,38 @@ export function InvoicePrintDialog({
               ))}
             </select>
           </div>
-          <div>
-            <label className="block text-sm font-medium">Paper Size</label>
-            <select
-              value={pageSize}
-              onChange={(e) => setPageSize(e.target.value)}
-              className="w-full p-2 border rounded"
-            >
-              <option value="210mm">A4 (210mm)</option>
-              <option value="80mm">80mm Thermal</option>
-              <option value="58mm">58mm Thermal</option>
-            </select>
-          </div>
-          <SettingsInputGroup
-            label="Margins (mm)"
-            values={margins}
-            onChange={(key, value) =>
-              setMargins((m) => ({ ...m, [key]: Number(value) }))
-            }
-          />
-          <SettingsInputGroup
-            label="Paddings (mm)"
-            values={paddings}
-            onChange={(key, value) =>
-              setPaddings((p) => ({ ...p, [key]: Number(value) }))
-            }
-          />
+          {!previewMode && (
+            <>
+              <div>
+                <label className="block text-sm font-medium">Paper Size</label>
+                <select
+                  value={pageSize}
+                  onChange={(e) => setPageSize(e.target.value)}
+                  className="w-full p-2 border rounded"
+                >
+                  <option value="210mm">A4 (210mm)</option>
+                  <option value="80mm">80mm Thermal</option>
+                  <option value="58mm">58mm Thermal</option>
+                </select>
+              </div>
+              <SettingsInputGroup
+                label="Margins (mm)"
+                values={margins}
+                onChange={(key, value) =>
+                  setMargins((m) => ({ ...m, [key]: Number(value) }))
+                }
+              />
+              <SettingsInputGroup
+                label="Paddings (mm)"
+                values={paddings}
+                onChange={(key, value) =>
+                  setPaddings((p) => ({ ...p, [key]: Number(value) }))
+                }
+              />
+            </>
+          )}
         </div>
-        <div className="w-3/4 p-6 bg-gray-200 overflow-y-auto flex justify-center items-start">
+        <div className={`${previewMode ? 'w-4/5' : 'w-3/4'} p-6 bg-gray-200 overflow-y-auto flex justify-center items-start`}>
           <div
             className="bg-white shadow-lg"
             style={{

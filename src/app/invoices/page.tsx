@@ -40,9 +40,10 @@ export default function InvoicesPage() {
   const [activeTab, setActiveTab] = useState("all");
   const [transactionTypeFilter, setTransactionTypeFilter] = useState<"sales" | "purchase" | "all">("sales");
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
-  const [showEmailDialog, setShowEmailDialog] = useState(false);
-  const [invoiceToDelete, setInvoiceToDelete] = useState<Invoice | null>(null);
-  const [filters, setFilters] = useState({});
+   const [showEmailDialog, setShowEmailDialog] = useState(false);
+   const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
+   const [invoiceToDelete, setInvoiceToDelete] = useState<Invoice | null>(null);
+   const [filters, setFilters] = useState({});
 
   const columns = [
     { accessorKey: 'clientName', header: 'Client Name', filterType: 'text' as const },
@@ -279,14 +280,19 @@ export default function InvoicesPage() {
           // Handle duplicate - could create copy
           console.log("Duplicate invoice:", invoice.id);
         }}
-        onSend={(invoice) => {
-          // Handle send - could send via email
-          console.log("Send invoice:", invoice.id);
-        }}
-        onDownloadPDF={(invoice) => {
-          // Handle PDF download
-          console.log("Download PDF for invoice:", invoice.id);
-        }}
+         onSend={(invoice) => {
+           setSelectedInvoice(invoice);
+           setShowEmailDialog(true);
+         }}
+         onEmail={(invoice, templateId) => {
+           setSelectedInvoice(invoice);
+           setSelectedTemplateId(templateId);
+           setShowEmailDialog(true);
+         }}
+         onDownloadPDF={(invoice) => {
+           // Handle PDF download
+           console.log("Download PDF for invoice:", invoice.id);
+         }}
         onDelete={(invoice) => {
           setInvoiceToDelete(invoice);
         }}
@@ -423,6 +429,7 @@ export default function InvoicesPage() {
         organization={selectedOrganization}
         open={showEmailDialog}
         onOpenChange={setShowEmailDialog}
+        selectedTemplateId={selectedTemplateId}
       />
 
       {/* Delete Confirmation Dialog */}

@@ -14,40 +14,42 @@ function isPurchaseInvoice(invoice: Invoice): invoice is PurchaseInvoice {
 }
 
 interface InvoiceListProps {
-  invoices: Invoice[];
-  customers: Customer[];
-  suppliers: Supplier[];
-  payments: { [invoiceId: string]: Payment[] };
-  onInvoiceClick: (invoice: Invoice) => void;
-  onViewDetails: (invoice: Invoice) => void;
-  onStatusChange: (invoiceId: string, status: Invoice['status']) => void;
-  onEdit?: (invoice: Invoice) => void;
-  onDuplicate?: (invoice: Invoice) => void;
-  onSend?: (invoice: Invoice) => void;
-  onDownloadPDF?: (invoice: Invoice) => void;
-  onDelete?: (invoice: Invoice) => void;
-  organization: Organization | null;
-  invoiceTemplates: InvoiceTemplate[];
-  settings?: DocumentPrintSettings | null;
-}
+   invoices: Invoice[];
+   customers: Customer[];
+   suppliers: Supplier[];
+   payments: { [invoiceId: string]: Payment[] };
+   onInvoiceClick: (invoice: Invoice) => void;
+   onViewDetails: (invoice: Invoice) => void;
+   onStatusChange: (invoiceId: string, status: Invoice['status']) => void;
+   onEdit?: (invoice: Invoice) => void;
+   onDuplicate?: (invoice: Invoice) => void;
+   onSend?: (invoice: Invoice) => void;
+   onEmail?: (invoice: Invoice, templateId: string) => void;
+   onDownloadPDF?: (invoice: Invoice) => void;
+   onDelete?: (invoice: Invoice) => void;
+   organization: Organization | null;
+   invoiceTemplates: InvoiceTemplate[];
+   settings?: DocumentPrintSettings | null;
+ }
 
 export function InvoiceList({
-  invoices,
-  customers,
-  suppliers,
-  payments,
-  onInvoiceClick,
-  onViewDetails,
-  onStatusChange,
-  onEdit,
-  onDuplicate,
-  onSend,
-  onDownloadPDF,
-  onDelete,
-  organization,
-  invoiceTemplates,
-  settings,
-}: InvoiceListProps) {
+   invoices,
+   customers,
+   suppliers,
+   payments,
+   onInvoiceClick,
+   onViewDetails,
+   onStatusChange,
+   onEdit,
+   onDuplicate,
+   onSend,
+   onEmail,
+   onDownloadPDF,
+   onDelete,
+   organization,
+   invoiceTemplates,
+   settings,
+ }: InvoiceListProps) {
   return (
     <div className="overflow-x-auto">
       <Table>
@@ -103,22 +105,23 @@ export function InvoiceList({
               </TableCell>
               <TableCell onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center gap-2">
-                   <InvoiceActions
-                     invoice={invoice}
-                     payments={payments[invoice.id] || []}
-                     onViewDetails={onViewDetails}
-                     onStatusChange={onStatusChange}
-                     onEdit={onEdit}
-                     onDuplicate={onDuplicate}
-                     onSend={onSend}
-                     onDownloadPDF={onDownloadPDF}
-                     onDelete={onDelete}
-                     organization={organization}
-                     invoiceTemplates={invoiceTemplates}
-                     customers={customers}
-                     suppliers={suppliers}
-                     settings={settings}
-                   />
+                    <InvoiceActions
+                      invoice={invoice}
+                      payments={payments[invoice.id] || []}
+                      onViewDetails={onViewDetails}
+                      onStatusChange={onStatusChange}
+                      onEdit={onEdit}
+                      onDuplicate={onDuplicate}
+                      onSend={onSend}
+                      onEmail={onEmail}
+                      onDownloadPDF={onDownloadPDF}
+                      onDelete={onDelete}
+                      organization={organization}
+                      invoiceTemplates={invoiceTemplates}
+                      customers={customers}
+                      suppliers={suppliers}
+                      settings={settings}
+                    />
                 </div>
               </TableCell>
             </TableRow>

@@ -3,43 +3,45 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Invoice, Payment, InvoiceStatus, Organization, InvoiceTemplate, Customer, Supplier, DocumentPrintSettings, SalesInvoice } from '@/types';
-import { Printer, Eye, MoreHorizontal, Trash2 } from 'lucide-react';
+import { Printer, Eye, MoreHorizontal, Trash2, Mail } from 'lucide-react';
 import { InvoiceActionsDialog } from './InvoiceActionsDialog';
 import { InvoicePrintDialog } from './InvoicePrintDialog';
 
 interface InvoiceActionsProps {
-  invoice: Invoice;
-  payments: Payment[];
-  onViewDetails: (invoice: Invoice) => void;
-  onStatusChange: (invoiceId: string, status: Invoice['status']) => void;
-  onEdit?: (invoice: Invoice) => void;
-  onDuplicate?: (invoice: Invoice) => void;
-  onSend?: (invoice: Invoice) => void;
-  onDownloadPDF?: (invoice: Invoice) => void;
-  onDelete?: (invoice: Invoice) => void;
-  organization: Organization | null;
-  invoiceTemplates: InvoiceTemplate[];
-  customers: Customer[];
-  suppliers: Supplier[];
-  settings?: DocumentPrintSettings | null;
-}
+   invoice: Invoice;
+   payments: Payment[];
+   onViewDetails: (invoice: Invoice) => void;
+   onStatusChange: (invoiceId: string, status: Invoice['status']) => void;
+   onEdit?: (invoice: Invoice) => void;
+   onDuplicate?: (invoice: Invoice) => void;
+   onSend?: (invoice: Invoice) => void;
+   onEmail?: (invoice: Invoice, templateId: string) => void;
+   onDownloadPDF?: (invoice: Invoice) => void;
+   onDelete?: (invoice: Invoice) => void;
+   organization: Organization | null;
+   invoiceTemplates: InvoiceTemplate[];
+   customers: Customer[];
+   suppliers: Supplier[];
+   settings?: DocumentPrintSettings | null;
+ }
 
 export function InvoiceActions({
-  invoice,
-  payments,
-  onViewDetails,
-  onStatusChange,
-  onEdit,
-  onDuplicate,
-  onSend,
-  onDownloadPDF,
-  onDelete,
-  organization,
-  invoiceTemplates,
-  customers,
-  suppliers,
-  settings,
-}: InvoiceActionsProps) {
+   invoice,
+   payments,
+   onViewDetails,
+   onStatusChange,
+   onEdit,
+   onDuplicate,
+   onSend,
+   onEmail,
+   onDownloadPDF,
+   onDelete,
+   organization,
+   invoiceTemplates,
+   customers,
+   suppliers,
+   settings,
+ }: InvoiceActionsProps) {
   const [showActionsDialog, setShowActionsDialog] = useState(false);
 
   const handleViewDetails = (e: React.MouseEvent) => {
@@ -77,6 +79,26 @@ export function InvoiceActions({
           <MoreHorizontal className="h-4 w-4 mr-1" />
           Actions
         </Button>
+
+        <InvoicePrintDialog
+          invoice={invoice}
+          organization={organization}
+          invoiceTemplates={invoiceTemplates}
+          customer={customer}
+          supplier={supplier}
+          settings={settings}
+          previewMode={true}
+          onEmail={onEmail}
+        >
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => e.stopPropagation()}
+            title="Preview Invoice"
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
+        </InvoicePrintDialog>
 
         <InvoicePrintDialog
           invoice={invoice}

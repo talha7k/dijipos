@@ -99,7 +99,7 @@ export default function InvoiceForm({
     invoice?.type === "purchase" ? invoice.invoiceNumber || "" : "",
   );
   const [invoiceDate, setInvoiceDate] = useState(() => {
-    if (invoice?.type === "purchase" && invoice.invoiceDate) {
+    if (invoice?.type === "purchase" && invoice.invoiceDate && !isNaN(new Date(invoice.invoiceDate).getTime())) {
       return new Date(invoice.invoiceDate).toISOString().split("T")[0];
     }
     const date = new Date();

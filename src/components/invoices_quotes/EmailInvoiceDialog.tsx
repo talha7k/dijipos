@@ -17,6 +17,7 @@ interface EmailInvoiceDialogProps {
   organization: Organization | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  selectedTemplateId?: string;
 }
 
 export function EmailInvoiceDialog({
@@ -25,7 +26,8 @@ export function EmailInvoiceDialog({
   supplier,
   organization,
   open,
-  onOpenChange
+  onOpenChange,
+  selectedTemplateId
 }: EmailInvoiceDialogProps) {
   const [recipientEmail, setRecipientEmail] = useState('');
   const [subject, setSubject] = useState('');
@@ -81,6 +83,7 @@ export function EmailInvoiceDialog({
           subject,
           message,
           organizationId: organization.id,
+          templateId: selectedTemplateId,
         }),
       });
 

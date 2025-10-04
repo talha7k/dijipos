@@ -43,8 +43,9 @@ export default function ZatcaQR({ invoice, organization }: ZatcaQRProps) {
         // Fallback to ZATCA JSON format if generation fails
         const sellerName = organization.name;
         const vatNumber = organization.vatNumber || '';
-        const invoiceDate = invoice.createdAt.toISOString().split('T')[0];
-        const invoiceTime = invoice.createdAt.toTimeString().split(' ')[0];
+        const createdAt = new Date(invoice.createdAt);
+        const invoiceDate = !isNaN(createdAt.getTime()) ? createdAt.toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+        const invoiceTime = !isNaN(createdAt.getTime()) ? createdAt.toTimeString().split(' ')[0] : new Date().toTimeString().split(' ')[0];
         const total = invoice.total.toFixed(2);
         const vatAmount = invoice.taxAmount.toFixed(2);
 
