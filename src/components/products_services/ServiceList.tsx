@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCurrency } from '@/lib/hooks/useCurrency';
 import { Badge } from '@/components/ui/badge';
 import { ActionButtons } from '@/components/ui/action-buttons';
-import { Wrench, Layers } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Wrench, Layers, Plus } from 'lucide-react';
 
 interface ServiceListProps {
   services: Service[];
@@ -15,6 +16,7 @@ interface ServiceListProps {
   selectedTransactionType: ProductTransactionType | null;
   onEditService: (service: Service) => void;
   onDeleteService: (serviceId: string) => void;
+  onAddService?: () => void;
 }
 
 export function ServiceList({
@@ -24,7 +26,8 @@ export function ServiceList({
   searchTerm,
   selectedTransactionType,
   onEditService,
-  onDeleteService
+  onDeleteService,
+  onAddService,
 }: ServiceListProps) {
   const { formatCurrency } = useCurrency();
 
@@ -54,16 +57,29 @@ export function ServiceList({
 
   return (
     <div>
-      {selectedCategory && (
-        <div className="mb-4 p-3 bg-muted/50 rounded-md">
-          <h3 className="text-lg font-medium">
-            {categories.find((c) => c.id === selectedCategory)?.name || "Selected"} Category
-          </h3>
-          <p className="text-sm text-muted-foreground">
-            Showing services in this category
-          </p>
+      <div className="mb-4 p-3 bg-muted/50 rounded-md">
+        <div className="flex justify-between items-center">
+          <div>
+            <h3 className="text-lg font-medium">
+              {selectedCategory
+                ? `${categories.find((c) => c.id === selectedCategory)?.name || "Selected"} Category`
+                : "All Services"
+              }
+            </h3>
+            {selectedCategory && (
+              <p className="text-sm text-muted-foreground">
+                Showing services in this category
+              </p>
+            )}
+          </div>
+          {onAddService && (
+            <Button onClick={onAddService} size="sm">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Service
+            </Button>
+          )}
         </div>
-      )}
+      </div>
       {filteredServices.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filteredServices.map((service) => (

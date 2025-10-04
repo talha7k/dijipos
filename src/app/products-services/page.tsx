@@ -263,40 +263,26 @@ export default function ProductsServicesPage() {
                 </CardContent>
               </Card>
             </div>
-            <div className="w-full md:w-2/3">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex justify-end pb-2">
-                    <AddProductDialog
-                      open={productDialogOpen}
-                      onOpenChange={setProductDialogOpen}
-                      onAddProduct={handleAddItem}
-                      onUpdateProduct={handleUpdateItem}
-                      productToEdit={productToEdit}
-                      categories={categories.filter(
-                        (c) =>
-                          c.type === CategoryType.PRODUCT &&
-                          c.transactionType === ProductTransactionType.SALES,
-                      )}
-                      selectedCategory={selectedCategory}
-                      defaultTransactionType={ProductTransactionType.SALES}
-                    />
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ProductList
-                    products={items.filter(
-                      (item) =>
-                        item.itemType === ItemType.PRODUCT &&
-                        item.transactionType === ProductTransactionType.SALES,
-                    )}
-                    categories={categories}
-                    selectedCategory={selectedCategory}
-                    searchTerm={searchTerm}
-                    selectedTransactionType={ProductTransactionType.SALES}
-                    onEditProduct={handleEditItem}
-                    onDeleteProduct={handleDeleteItem}
-                  />
+             <div className="w-full md:w-2/3">
+               <Card>
+                 <CardContent>
+                   <ProductList
+                     products={items.filter(
+                       (item) =>
+                         item.itemType === ItemType.PRODUCT &&
+                         item.transactionType === ProductTransactionType.SALES,
+                     )}
+                     categories={categories}
+                     selectedCategory={selectedCategory}
+                     searchTerm={searchTerm}
+                     selectedTransactionType={ProductTransactionType.SALES}
+                     onEditProduct={handleEditItem}
+                     onDeleteProduct={handleDeleteItem}
+                     onAddProduct={() => {
+                       setProductToEdit(null);
+                       setProductDialogOpen(true);
+                     }}
+                   />
                 </CardContent>
               </Card>
             </div>
@@ -350,40 +336,26 @@ export default function ProductsServicesPage() {
                 </CardContent>
               </Card>
             </div>
-            <div className="w-full md:w-2/3">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex justify-end pb-2">
-                    <AddServiceDialog
-                      open={serviceDialogOpen}
-                      onOpenChange={setServiceDialogOpen}
-                      onAddService={handleAddItem}
-                      onUpdateService={handleUpdateItem}
-                      serviceToEdit={serviceToEdit}
-                      categories={categories.filter(
-                        (c) =>
-                          c.type === CategoryType.SERVICE &&
-                          c.transactionType === ProductTransactionType.SALES,
-                      )}
-                      selectedCategory={selectedCategory}
-                      defaultTransactionType={ProductTransactionType.SALES}
-                    />
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ServiceList
-                    services={items.filter(
-                      (item) =>
-                        item.itemType === ItemType.SERVICE &&
-                        item.transactionType === ProductTransactionType.SALES,
-                    )}
-                    categories={categories}
-                    selectedCategory={selectedCategory}
-                    searchTerm={searchTerm}
-                    selectedTransactionType={ProductTransactionType.SALES}
-                    onEditService={handleEditItem}
-                    onDeleteService={handleDeleteItem}
-                  />
+             <div className="w-full md:w-2/3">
+               <Card>
+                 <CardContent>
+                   <ServiceList
+                     services={items.filter(
+                       (item) =>
+                         item.itemType === ItemType.SERVICE &&
+                         item.transactionType === ProductTransactionType.SALES,
+                     )}
+                     categories={categories}
+                     selectedCategory={selectedCategory}
+                     searchTerm={searchTerm}
+                     selectedTransactionType={ProductTransactionType.SALES}
+                     onEditService={handleEditItem}
+                     onDeleteService={handleDeleteItem}
+                     onAddService={() => {
+                       setServiceToEdit(null);
+                       setServiceDialogOpen(true);
+                     }}
+                   />
                 </CardContent>
               </Card>
             </div>
@@ -437,41 +409,27 @@ export default function ProductsServicesPage() {
                 </CardContent>
               </Card>
             </div>
-            <div className="w-full md:w-2/3">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex justify-end pb-2">
-                    <AddProductDialog
-                      open={productDialogOpen}
-                      onOpenChange={setProductDialogOpen}
-                      onAddProduct={handleAddItem}
-                      onUpdateProduct={handleUpdateItem}
-                      productToEdit={productToEdit}
-                      categories={categories.filter(
-                        (c) =>
-                          c.type === CategoryType.PRODUCT &&
-                          c.transactionType === ProductTransactionType.PURCHASE,
-                      )}
-                      selectedCategory={selectedCategory}
-                      defaultTransactionType={ProductTransactionType.PURCHASE}
-                    />
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ProductList
-                    products={items.filter(
-                      (item) =>
-                        item.itemType === ItemType.PRODUCT &&
-                        item.transactionType ===
-                          ProductTransactionType.PURCHASE,
-                    )}
-                    categories={categories}
-                    selectedCategory={selectedCategory}
-                    searchTerm={searchTerm}
-                    selectedTransactionType={ProductTransactionType.PURCHASE}
-                    onEditProduct={handleEditItem}
-                    onDeleteProduct={handleDeleteItem}
-                  />
+             <div className="w-full md:w-2/3">
+               <Card>
+                 <CardContent>
+                   <ProductList
+                     products={items.filter(
+                       (item) =>
+                         item.itemType === ItemType.PRODUCT &&
+                         item.transactionType ===
+                           ProductTransactionType.PURCHASE,
+                     )}
+                     categories={categories}
+                     selectedCategory={selectedCategory}
+                     searchTerm={searchTerm}
+                     selectedTransactionType={ProductTransactionType.PURCHASE}
+                     onEditProduct={handleEditItem}
+                     onDeleteProduct={handleDeleteItem}
+                     onAddProduct={() => {
+                       setProductToEdit(null);
+                       setProductDialogOpen(true);
+                     }}
+                   />
                 </CardContent>
               </Card>
             </div>
@@ -546,20 +504,24 @@ export default function ProductsServicesPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ServiceList
-                    services={items.filter(
-                      (item) =>
-                        item.itemType === ItemType.SERVICE &&
-                        item.transactionType ===
-                          ProductTransactionType.PURCHASE,
-                    )}
-                    categories={categories}
-                    selectedCategory={selectedCategory}
-                    searchTerm={searchTerm}
-                    selectedTransactionType={ProductTransactionType.PURCHASE}
-                    onEditService={handleEditItem}
-                    onDeleteService={handleDeleteItem}
-                  />
+                   <ServiceList
+                     services={items.filter(
+                       (item) =>
+                         item.itemType === ItemType.SERVICE &&
+                         item.transactionType ===
+                           ProductTransactionType.PURCHASE,
+                     )}
+                     categories={categories}
+                     selectedCategory={selectedCategory}
+                     searchTerm={searchTerm}
+                     selectedTransactionType={ProductTransactionType.PURCHASE}
+                     onEditService={handleEditItem}
+                     onDeleteService={handleDeleteItem}
+                     onAddService={() => {
+                       setServiceToEdit(null);
+                       setServiceDialogOpen(true);
+                     }}
+                   />
                 </CardContent>
               </Card>
             </div>

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ActionButtons } from '@/components/ui/action-buttons';
 import { ChevronRight, ChevronDown, Folder, FolderOpen } from 'lucide-react';
-import { Category, Product, Service, ItemType, CategoryType } from '@/types';
+import { Category, Product, Service, CategoryType } from '@/types';
 
 interface CategoryTreeProps {
   categories: Category[];
@@ -49,10 +49,10 @@ function CategoryTreeNode({
   };
 
   const getItemsCount = (categoryId: string) => {
-    if (type === ItemType.PRODUCT && products.length > 0) {
+    if (type === 'product' && products.length > 0) {
       return products.filter(p => p.categoryId === categoryId).length;
     }
-    if (type === ItemType.SERVICE && services.length > 0) {
+    if (type === 'service' && services.length > 0) {
       return services.filter(s => s.categoryId === categoryId).length;
     }
     return 0;
@@ -165,8 +165,29 @@ export function CategoryTree({
         (level === 0 ? !c.parentId : true)
       );
 
+  const totalItemsCount = type === 'product'
+    ? products.length
+    : services.length;
+
   return (
     <div className="space-y-1">
+      <div className="flex items-center justify-between w-full group">
+        <Button
+          type="button"
+          variant={selectedCategory === null ? "default" : "ghost"}
+          size="sm"
+          className="flex-1 justify-start"
+          onClick={() => onCategorySelect(null)}
+        >
+          <div className="flex items-center gap-2 flex-1">
+            <Folder className="h-4 w-4" />
+            <span>Show All</span>
+          </div>
+          <Badge variant={selectedCategory === null ? "default" : "secondary"} className="ml-auto">
+            {totalItemsCount}
+          </Badge>
+        </Button>
+      </div>
       {filteredCategories.map(category => (
         <CategoryTreeNode
           key={category.id}

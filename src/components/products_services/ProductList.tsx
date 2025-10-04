@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCurrency } from "@/lib/hooks/useCurrency";
 import { Badge } from "@/components/ui/badge";
 import { ActionButtons } from "@/components/ui/action-buttons";
-import { Package, Layers } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Package, Layers, Plus } from "lucide-react";
 
 interface ProductListProps {
   products: Product[];
@@ -15,6 +16,7 @@ interface ProductListProps {
   selectedTransactionType: ProductTransactionType | null;
   onEditProduct: (product: Product) => void;
   onDeleteProduct: (productId: string) => void;
+  onAddProduct?: () => void;
 }
 
 export function ProductList({
@@ -25,6 +27,7 @@ export function ProductList({
   selectedTransactionType,
   onEditProduct,
   onDeleteProduct,
+  onAddProduct,
 }: ProductListProps) {
   const { formatCurrency } = useCurrency();
 
@@ -59,19 +62,25 @@ export function ProductList({
 
   return (
     <div>
-      {selectedCategory && (
-        <div className="mb-4 p-3 bg-muted/50 rounded-md">
+      <div className="mb-4 p-3 bg-muted/50 rounded-md">
+        <div className="flex justify-between items-center">
           <h3 className="text-lg font-medium">
-            {categories.find((c) => c.id === selectedCategory)?.name || "Selected"} Category
+            {selectedCategory
+              ? `${categories.find((c) => c.id === selectedCategory)?.name || "Selected"} Category`
+              : "All Products"
+            }
           </h3>
-          <p className="text-sm text-muted-foreground">
-            Showing products in this category
-          </p>
+          {onAddProduct && (
+            <Button onClick={onAddProduct} size="sm">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Product
+            </Button>
+          )}
         </div>
-      )}
+      </div>
       <div className="mt-3">
         {filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredProducts.map((product) => (
               <Card key={product.id} className="overflow-hidden py-2 pt-4">
                 <CardHeader className="pb-0">
@@ -109,8 +118,12 @@ export function ProductList({
                             key={variation.id}
                             className="flex justify-between items-center text-xs"
                           >
-                            <span className="text-muted-foreground">{variation.name}</span>
-                            <span className="font-medium">{formatCurrency(variation.price)}</span>
+                            <span className="text-muted-foreground">
+                              {variation.name}
+                            </span>
+                            <span className="font-medium">
+                              {formatCurrency(variation.price)}
+                            </span>
                           </div>
                         ))}
                         {product.variations.length > 3 && (
