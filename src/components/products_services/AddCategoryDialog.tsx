@@ -140,15 +140,16 @@ export function AddCategoryDialog({
                     </Badge>
                   </Button>
 
-                  <CategoryTree
-                    categories={filteredCategories}
-                    products={[]}
-                    services={[]}
-                    selectedCategory={selectedParentId}
-                    onCategorySelect={setSelectedParentId}
-                    onCategoryDelete={() => {}} // No delete functionality in this context
-                    type={type}
-                  />
+                   <CategoryTree
+                     categories={filteredCategories}
+                     products={[]}
+                     services={[]}
+                     selectedCategory={selectedParentId}
+                     onCategorySelect={setSelectedParentId}
+                     onCategoryDelete={() => {}} // No delete functionality in this context
+                     type={type}
+                     showAllOption={false}
+                   />
                 </CardContent>
               </Card>
             </div>

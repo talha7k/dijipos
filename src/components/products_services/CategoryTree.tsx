@@ -17,6 +17,7 @@ interface CategoryTreeProps {
   type: CategoryType;
   level?: number;
   isRecursive?: boolean;
+  showAllOption?: boolean;
 }
 
 function CategoryTreeNode({
@@ -144,7 +145,8 @@ export function CategoryTree({
   onCategoryDelete,
   type,
   level = 0,
-  isRecursive = false
+  isRecursive = false,
+  showAllOption = true
 }: CategoryTreeProps) {
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
 
@@ -171,23 +173,25 @@ export function CategoryTree({
 
   return (
     <div className="space-y-1">
-      <div className="flex items-center justify-between w-full group">
-        <Button
-          type="button"
-          variant={selectedCategory === null ? "default" : "ghost"}
-          size="sm"
-          className="flex-1 justify-start"
-          onClick={() => onCategorySelect(null)}
-        >
-          <div className="flex items-center gap-2 flex-1">
-            <Folder className="h-4 w-4" />
-            <span>Show All</span>
-          </div>
-          <Badge variant={selectedCategory === null ? "default" : "secondary"} className="ml-auto">
-            {totalItemsCount}
-          </Badge>
-        </Button>
-      </div>
+      {showAllOption && (
+        <div className="flex items-center justify-between w-full group">
+          <Button
+            type="button"
+            variant={selectedCategory === null ? "default" : "ghost"}
+            size="sm"
+            className="flex-1 justify-start"
+            onClick={() => onCategorySelect(null)}
+          >
+            <div className="flex items-center gap-2 flex-1">
+              <Folder className="h-4 w-4" />
+              <span>Show All</span>
+            </div>
+            <Badge variant={selectedCategory === null ? "default" : "secondary"} className="ml-auto">
+              {totalItemsCount}
+            </Badge>
+          </Button>
+        </div>
+      )}
       {filteredCategories.map(category => (
         <CategoryTreeNode
           key={category.id}
