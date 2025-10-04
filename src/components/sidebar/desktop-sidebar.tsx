@@ -54,34 +54,38 @@ const getNavigationItems = (role: string): NavigationItem[] => {
           href: "/payments",
           icon: Wallet,
         },
+      ],
+    },
+  ];
+
+  const inventoryItems: NavigationItem[] = [
+    {
+      title: "Inventory",
+      icon: BarChart3,
+      children: [
         {
           title: "Products & Services",
           href: "/products-services",
           icon: BarChart3,
         },
         {
-          title: "Customers",
-          href: "/customers",
-          icon: Users,
+          title: "Invoices",
+          href: "/invoices",
+          icon: FileMinus,
         },
       ],
     },
   ];
 
-  const purchaseItems: NavigationItem[] = [
+  const contactsItems: NavigationItem[] = [
     {
-      title: "Invoices",
-      icon: FileMinus,
+      title: "Contacts",
+      icon: Users,
       children: [
         {
-          title: "Invoices",
-          href: "/invoices",
-          icon: Receipt,
-        },
-        {
-          title: "Products & Services",
-          href: "/products-services",
-          icon: BarChart3,
+          title: "Customers",
+          href: "/customers",
+          icon: Users,
         },
         {
           title: "Suppliers",
@@ -120,13 +124,13 @@ const getNavigationItems = (role: string): NavigationItem[] => {
 
   switch (role) {
     case "admin":
-      return [...baseItems, ...salesItems, ...purchaseItems, ...adminItems];
+      return [...baseItems, ...salesItems, ...inventoryItems, ...contactsItems, ...adminItems];
     case "manager":
-      return [...baseItems, ...salesItems, ...purchaseItems, ...managerItems];
+      return [...baseItems, ...salesItems, ...inventoryItems, ...contactsItems, ...managerItems];
     case "cashier":
-      return [...baseItems, ...salesItems];
+      return [...baseItems, ...salesItems, ...inventoryItems, ...contactsItems];
     case "waiter":
-      return [...baseItems, ...salesItems];
+      return [...baseItems, ...salesItems, ...inventoryItems, ...contactsItems];
     default:
       return baseItems;
   }

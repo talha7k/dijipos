@@ -62,31 +62,32 @@ const navigationItems: NavigationItem[] = [
         href: "/payments",
         icon: Wallet,
       },
+    ],
+  },
+  {
+    title: "Inventory",
+    icon: BarChart3,
+    children: [
       {
         title: "Products & Services",
         href: "/products-services",
         icon: BarChart3,
       },
       {
-        title: "Customers",
-        href: "/customers",
-        icon: Users,
+        title: "Invoices",
+        href: "/invoices",
+        icon: FileMinus,
       },
     ],
   },
   {
-    title: "Invoices",
-    icon: FileMinus,
+    title: "Contacts",
+    icon: Users,
     children: [
       {
-        title: "Invoices",
-        href: "/invoices",
-        icon: Receipt,
-      },
-      {
-        title: "Products & Services",
-        href: "/products-services",
-        icon: BarChart3,
+        title: "Customers",
+        href: "/customers",
+        icon: Users,
       },
       {
         title: "Suppliers",
