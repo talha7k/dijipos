@@ -10,6 +10,10 @@ import { InvoiceTemplateData } from '@/types/template';
 import { createInvoiceQRData, generateZatcaQRCode } from '@/lib/zatca-qr';
 import { defaultInvoiceEnglish } from '@/components/templates/invoice/default-invoice-english';
 import { defaultInvoiceArabic } from '@/components/templates/invoice/default-invoice-arabic';
+import { salesInvoiceEnglish } from '@/components/templates/invoice/sales-invoice-english';
+import { purchaseInvoiceEnglish } from '@/components/templates/invoice/purchase-invoice-english';
+import { salesInvoiceArabic } from '@/components/templates/invoice/sales-invoice-arabic';
+import { purchaseInvoiceArabic } from '@/components/templates/invoice/purchase-invoice-arabic';
 
 // SMTP Error interface
 interface SMTPErr {
@@ -156,17 +160,28 @@ const createTransporter = () => {
   return nodemailer.createTransport(smtpConfig);
 };
 
-// Get local template by ID
-function getLocalTemplate(templateId: string): string | null {
+// Get local template by ID and invoice type
+function getLocalTemplate(templateId: string, invoiceType: string): string | null {
   switch (templateId) {
+    case 'sales-invoice-english':
+      return salesInvoiceEnglish;
+    case 'purchase-invoice-english':
+      return purchaseInvoiceEnglish;
+    case 'sales-invoice-arabic':
+      return salesInvoiceArabic;
+    case 'purchase-invoice-arabic':
+      return purchaseInvoiceArabic;
+    // Legacy support for old template IDs
     case 'default-invoice-english':
-      return defaultInvoiceEnglish;
+    case 'english-invoice':
+      return invoiceType === 'sales' ? salesInvoiceEnglish : purchaseInvoiceEnglish;
     case 'default-invoice-arabic':
-      return defaultInvoiceArabic;
+    case 'arabic-invoice':
+      return invoiceType === 'sales' ? salesInvoiceArabic : purchaseInvoiceArabic;
     default:
-      // Default fallback to English template
-      console.warn(`Unknown template ID: ${templateId}, using default English template`);
-      return defaultInvoiceEnglish;
+      // Default fallback based on invoice type
+      console.warn(`Unknown template ID: ${templateId}, using default template for ${invoiceType}`);
+      return invoiceType === 'sales' ? salesInvoiceEnglish : purchaseInvoiceEnglish;
   }
 }
 
@@ -186,6 +201,8 @@ async function renderInvoiceWithTemplate(
     dueDate: convertDateField(invoice.dueDate)?.toLocaleDateString() || "",
     status: invoice.status || "",
     invoiceType: invoice.type === 'sales' ? InvoiceType.SALES : invoice.type === 'purchase' ? InvoiceType.PURCHASE : InvoiceType.SALES,
+    isSalesInvoice: invoice.type === 'sales',
+    isPurchaseInvoice: invoice.type === 'purchase',
     companyName: organization?.name || "",
     companyNameAr: organization?.nameAr || "",
     companyAddress: organization?.address || "",
@@ -442,7 +459,7 @@ export async function POST(request: NextRequest) {
     if (templateId) {
       try {
         // Use specified template
-        const templateContent = getLocalTemplate(templateId);
+        const templateContent = getLocalTemplate(templateId, invoice.type);
         if (!templateContent) {
           console.error(`Template not found: ${templateId}`);
           return NextResponse.json(

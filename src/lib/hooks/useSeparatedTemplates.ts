@@ -17,6 +17,10 @@ import {
 } from "@/types";
 import { defaultInvoiceEnglish } from "@/components/templates/invoice/default-invoice-english";
 import { defaultInvoiceArabic } from "@/components/templates/invoice/default-invoice-arabic";
+import { salesInvoiceEnglish } from "@/components/templates/invoice/sales-invoice-english";
+import { purchaseInvoiceEnglish } from "@/components/templates/invoice/purchase-invoice-english";
+import { salesInvoiceArabic } from "@/components/templates/invoice/sales-invoice-arabic";
+import { purchaseInvoiceArabic } from "@/components/templates/invoice/purchase-invoice-arabic";
 interface SeparatedTemplatesState {
   // Static templates (always available, not in Firestore)
   staticReceiptTemplates: ReceiptTemplate[];
@@ -139,11 +143,11 @@ export function useSeparatedTemplates(): SeparatedTemplatesState {
 
     return [
       {
-        id: "english-invoice",
-        name: "English Invoice",
-        description: "English invoice template",
+        id: "sales-invoice-english",
+        name: "Sales Invoice (English)",
+        description: "English sales invoice template",
         type: "english" as InvoiceTemplateType,
-        content: defaultInvoiceEnglish,
+        content: salesInvoiceEnglish,
         isDefault: false,
         fields: [],
         style: {
@@ -161,11 +165,55 @@ export function useSeparatedTemplates(): SeparatedTemplatesState {
         updatedAt: new Date(),
       },
       {
-        id: "arabic-invoice",
-        name: "Arabic Invoice",
-        description: "Arabic invoice template",
+        id: "purchase-invoice-english",
+        name: "Purchase Invoice (English)",
+        description: "English purchase invoice template",
+        type: "english" as InvoiceTemplateType,
+        content: purchaseInvoiceEnglish,
+        isDefault: false,
+        fields: [],
+        style: {
+          primaryColor: "#000000",
+          secondaryColor: "#666666",
+          backgroundColor: "#ffffff",
+          textColor: "#000000",
+          fontFamily: "Arial",
+          fontSize: 12,
+          showLogo: true,
+          showWatermark: false,
+        },
+        organizationId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: "sales-invoice-arabic",
+        name: "فاتورة مبيعات (عربي)",
+        description: "Arabic sales invoice template",
         type: "arabic" as InvoiceTemplateType,
-        content: defaultInvoiceArabic,
+        content: salesInvoiceArabic,
+        isDefault: false,
+        fields: [],
+        style: {
+          primaryColor: "#000000",
+          secondaryColor: "#666666",
+          backgroundColor: "#ffffff",
+          textColor: "#000000",
+          fontFamily: "Arial",
+          fontSize: 12,
+          showLogo: true,
+          showWatermark: false,
+        },
+        organizationId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: "purchase-invoice-arabic",
+        name: "فاتورة مشتريات (عربي)",
+        description: "Arabic purchase invoice template",
+        type: "arabic" as InvoiceTemplateType,
+        content: purchaseInvoiceArabic,
         isDefault: false,
         fields: [],
         style: {
