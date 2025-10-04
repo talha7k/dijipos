@@ -42,6 +42,10 @@ export default function ProductsServicesPage() {
 
   const loading = itemsLoading || categoriesLoading;
 
+  const filteredCategories = categories.filter(category => 
+    !selectedTransactionType || category.transactionType === selectedTransactionType
+  );
+
   const handleAddItem = async (item: Omit<Item, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>) => {
     try {
       await createItem(item);
@@ -81,6 +85,7 @@ export default function ProductsServicesPage() {
     description: string;
     type: 'product' | 'service';
     parentId: string | null;
+    transactionType: ProductTransactionType;
   }) => {
     try {
       await createCategory({
@@ -176,7 +181,7 @@ export default function ProductsServicesPage() {
                       open={categoryDialogOpen}
                       onOpenChange={setCategoryDialogOpen}
                       onAddCategory={handleAddCategory}
-                      categories={categories}
+                      categories={filteredCategories}
                       defaultType={CategoryType.PRODUCT}
                       selectedParentId={selectedCategory}
                     />
@@ -205,7 +210,7 @@ export default function ProductsServicesPage() {
                     </Button>
 
                     <CategoryTree
-                      categories={categories}
+                      categories={filteredCategories}
                       products={items.filter(item => item.itemType === ItemType.PRODUCT)}
                       services={items.filter(item => item.itemType === ItemType.SERVICE)}
                       selectedCategory={selectedCategory}
@@ -233,7 +238,7 @@ export default function ProductsServicesPage() {
                       onAddProduct={handleAddItem}
                       onUpdateProduct={handleUpdateItem}
                       productToEdit={productToEdit}
-                      categories={categories}
+                      categories={filteredCategories}
                       selectedCategory={selectedCategory}
                     />
                   </CardTitle>
@@ -247,12 +252,12 @@ export default function ProductsServicesPage() {
                     />
                   </div>
                   <div>
-                    <Select value={selectedTransactionType || ''} onValueChange={(value) => setSelectedTransactionType(value ? value as ProductTransactionType : null)}>
+                    <Select value={selectedTransactionType || 'all'} onValueChange={(value) => setSelectedTransactionType(value === 'all' ? null : value as ProductTransactionType)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Filter by transaction type" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">All Types</SelectItem>
+                        <SelectItem value="all">All Types</SelectItem>
                         <SelectItem value={ProductTransactionType.SALES}>Sales</SelectItem>
                         <SelectItem value={ProductTransactionType.PURCHASE}>Purchase</SelectItem>
                       </SelectContent>
@@ -290,7 +295,7 @@ export default function ProductsServicesPage() {
                       open={categoryDialogOpen}
                       onOpenChange={setCategoryDialogOpen}
                       onAddCategory={handleAddCategory}
-                      categories={categories}
+                      categories={filteredCategories}
                       defaultType={CategoryType.SERVICE}
                       selectedParentId={selectedCategory}
                     />
@@ -319,7 +324,7 @@ export default function ProductsServicesPage() {
                     </Button>
 
                     <CategoryTree
-                      categories={categories}
+                      categories={filteredCategories}
                       products={items.filter(item => item.itemType === ItemType.PRODUCT)}
                       services={items.filter(item => item.itemType === ItemType.SERVICE)}
                       selectedCategory={selectedCategory}
@@ -347,7 +352,7 @@ export default function ProductsServicesPage() {
                       onAddService={handleAddItem}
                       onUpdateService={handleUpdateItem}
                       serviceToEdit={serviceToEdit}
-                      categories={categories}
+                      categories={filteredCategories}
                       selectedCategory={selectedCategory}
                     />
                   </CardTitle>
@@ -361,12 +366,12 @@ export default function ProductsServicesPage() {
                     />
                   </div>
                   <div>
-                    <Select value={selectedTransactionType || ''} onValueChange={(value) => setSelectedTransactionType(value ? value as ProductTransactionType : null)}>
+                    <Select value={selectedTransactionType || 'all'} onValueChange={(value) => setSelectedTransactionType(value === 'all' ? null : value as ProductTransactionType)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Filter by transaction type" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">All Types</SelectItem>
+                        <SelectItem value="all">All Types</SelectItem>
                         <SelectItem value={ProductTransactionType.SALES}>Sales</SelectItem>
                         <SelectItem value={ProductTransactionType.PURCHASE}>Purchase</SelectItem>
                       </SelectContent>

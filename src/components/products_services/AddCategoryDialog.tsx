@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { FolderPlus } from 'lucide-react';
-import { Category, CategoryType } from '@/types';
+import { Category, CategoryType, ProductTransactionType } from '@/types';
 import { CategoryTree } from './CategoryTree';
 
 interface AddCategoryDialogProps {
@@ -21,6 +21,7 @@ interface AddCategoryDialogProps {
     description: string;
     type: CategoryType;
     parentId: string | null;
+    transactionType: ProductTransactionType;
   }) => void;
   categories: Category[];
   defaultType?: CategoryType;
@@ -38,6 +39,7 @@ export function AddCategoryDialog({
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [type, setType] = useState<CategoryType>(defaultType);
+  const [transactionType, setTransactionType] = useState<ProductTransactionType>(ProductTransactionType.SALES);
   const [selectedParentId, setSelectedParentId] = useState<string | null>(propSelectedParentId || null);
 
   // Update selectedParentId when prop changes
@@ -54,13 +56,15 @@ export function AddCategoryDialog({
       name,
       description,
       type,
-      parentId: selectedParentId
+      parentId: selectedParentId,
+      transactionType
     });
 
     // Reset form
     setName('');
     setDescription('');
     setType(defaultType);
+    setTransactionType(ProductTransactionType.SALES);
     setSelectedParentId(null);
     onOpenChange(false);
   };
@@ -160,7 +164,20 @@ export function AddCategoryDialog({
                     </SelectContent>
                   </Select>
                 </div>
-                
+                <div>
+                  <Label htmlFor="transactionType">Transaction Type</Label>
+                  <Select value={transactionType} onValueChange={(value) => setTransactionType(value as ProductTransactionType)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select transaction type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={ProductTransactionType.SALES}>Sales</SelectItem>
+                      <SelectItem value={ProductTransactionType.PURCHASE}>Purchase</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 gap-4">
                 <div>
                   <Label>Parent Category</Label>
                   <div className="mt-2">

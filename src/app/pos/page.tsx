@@ -864,6 +864,9 @@ export default function SimplifiedPOSPage() {
     (currentView !== "orders" ? ordersLoading : false) ||
     storeSettingsLoading;
 
+  const salesItems = items.filter(item => item.transactionType === "sales");
+  const salesCategories = categories.filter(category => category.transactionType === "sales");
+
   if (loading) {
     return (
       <div className="h-screen flex flex-col items-center justify-center space-y-4">
@@ -923,8 +926,8 @@ export default function SimplifiedPOSPage() {
             currentView={
               currentView as import("./components/POSViewsManager").POSViewType
             }
-            items={items}
-            categories={categories}
+            items={salesItems}
+            categories={salesCategories}
             tables={tables}
             customers={customers}
             orders={orders}

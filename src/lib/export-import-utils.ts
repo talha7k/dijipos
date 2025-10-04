@@ -128,6 +128,7 @@ export function validateImportData(data: unknown): data is ImportData {
     if (!category.id || typeof category.id !== "string") return false;
     if (!category.name || typeof category.name !== "string") return false;
     if (!category.type || typeof category.type !== "string") return false;
+    if (!category.transactionType || typeof category.transactionType !== "string") return false;
   }
 
   // Validate items structure
@@ -257,6 +258,7 @@ export async function importProductsAndCategories(
           description: category.description,
           parentId: category.parentId,
           type: category.type,
+          transactionType: category.transactionType,
         });
         // Store mapping from old ID to new ID
         categoryIdMapping.set(category.id, newCategoryId);

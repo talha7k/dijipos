@@ -7,6 +7,7 @@ export interface Category {
   description?: string;
   parentId?: string; // For hierarchical categories
   type: CategoryType; // Category can be for products, services, or both
+  transactionType: ProductTransactionType; // Transaction type: sales or purchase
   organizationId: string;
   createdAt: Date;
   updatedAt: Date;

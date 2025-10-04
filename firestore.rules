@@ -17,12 +17,17 @@ service cloud.firestore {
 
     // Organization users collection - users can read/write their own associations and read users in organizations
     match /organizationUsers/{documentId} {
-      // Allow users to read/write their own organization associations
-      allow read, write: if isAuthenticated() && request.auth.uid == resource.data.userId;
+      // Allow users to create their own organization associations
       allow create: if isAuthenticated() && request.auth.uid == request.resource.data.userId;
+      
+      // Allow users to update their own organization associations
+      allow write: if isAuthenticated() && request.auth.uid == resource.data.userId;
 
-      // Allow authenticated users to read organizationUsers (application handles organization membership)
-      allow read: if isAuthenticated();
+      // Allow authenticated users to read individual organizationUsers documents
+      allow get: if isAuthenticated();
+      
+      // Allow authenticated users to list organizationUsers (for queries)
+      allow list: if isAuthenticated();
     }
 
     // Users collection - authenticated users can read/write their own data
@@ -56,7 +61,7 @@ service cloud.firestore {
     match /{collectionName}/{document=**} {
       allow read, write: if isAuthenticated() &&
         collectionName in [
-          'categories', 'products', 'services', 'customers', 'suppliers',
+          'categories', 'products', 'services', 'items', 'customers', 'suppliers',
           'orders', 'invoices', 'quotes', 'payments',
           'salesInvoices', 'purchaseInvoices', 'orderPayments',
           'purchaseProducts', 'purchaseServices',
@@ -70,7 +75,7 @@ service cloud.firestore {
       allow read, write, delete: if 
         exists(/databases/$(database)/documents/super-admins/$(request.auth.uid)) &&
         collectionName in [
-          'categories', 'products', 'services', 'customers', 'suppliers',
+          'categories', 'products', 'services', 'items', 'customers', 'suppliers',
           'orders', 'invoices', 'quotes', 'payments',
           'salesInvoices', 'purchaseInvoices', 'orderPayments',
           'purchaseProducts', 'purchaseServices',

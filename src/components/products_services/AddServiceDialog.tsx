@@ -78,7 +78,7 @@ export function AddServiceDialog({
   };
 
   const renderCategoryOptions = (parentId: string | null = null, level = 0) => {
-    const serviceCategories = categories.filter(c => c.type === CategoryType.SERVICE);
+    const serviceCategories = categories.filter(c => c.type === CategoryType.SERVICE && c.transactionType === transactionType);
     const filteredCategories = parentId === null
       ? serviceCategories.filter(c => !c.parentId)
       : serviceCategories.filter(c => c.parentId === parentId);

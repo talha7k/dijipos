@@ -78,7 +78,7 @@ export function AddProductDialog({
   };
 
   const renderCategoryOptions = (parentId: string | null = null, level = 0) => {
-    const productCategories = categories.filter(c => c.type === CategoryType.PRODUCT);
+    const productCategories = categories.filter(c => c.type === CategoryType.PRODUCT && c.transactionType === transactionType);
     const filteredCategories = parentId === null
       ? productCategories.filter(c => !c.parentId)
       : productCategories.filter(c => c.parentId === parentId);
