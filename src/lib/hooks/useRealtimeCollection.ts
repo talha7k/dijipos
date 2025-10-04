@@ -73,17 +73,26 @@ export function useRealtimeCollection<T extends { id: string }>(
           if (!isMounted) return; // Don't update state if component unmounted
 
           try {
-            const documents = snapshot.docs.map((doc) => ({
-              id: doc.id,
-              ...doc.data(),
-              // Convert Firestore Timestamps to Date objects
-              ...(doc.data().createdAt && {
-                createdAt: doc.data().createdAt.toDate(),
-              }),
-              ...(doc.data().updatedAt && {
-                updatedAt: doc.data().updatedAt.toDate(),
-              }),
-            })) as T[];
+            const documents = snapshot.docs.map((doc) => {
+              const data = doc.data();
+
+              // Convert Firestore Timestamps to Date objects for all date fields
+              const convertedData: any = { ...data };
+
+              // Convert known date fields
+              const dateFields = ['createdAt', 'updatedAt', 'paymentDate', 'dueDate', 'invoiceDate', 'validUntil', 'expiresAt'];
+
+              dateFields.forEach(field => {
+                if (data[field] && typeof data[field].toDate === 'function') {
+                  convertedData[field] = data[field].toDate();
+                }
+              });
+
+              return {
+                id: doc.id,
+                ...convertedData,
+              };
+            }) as T[];
 
             setData(documents);
             setLoading(false);
