@@ -9,9 +9,22 @@ export const Component = () => {
   const [squareCount, setSquareCount] = useState(12);
   const [speed, setSpeed] = useState(0.35);
   const [showControls, setShowControls] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+
+    // Check if device is mobile
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+    };
 
     // Inject animation styles
     const styleId = "nested-squares-styles";
@@ -239,26 +252,27 @@ export const Component = () => {
         </div>
       </div>
 
-      {/* Controls */}
-      <div
-        className="control-panel"
-        style={{
-          position: "fixed",
-          bottom: showControls ? "32px" : "-100px",
-          left: "50%",
-          transform: "translateX(-50%)",
-          display: "flex",
-          alignItems: "center",
-          gap: "16px",
-          padding: "16px 24px",
-          backgroundColor: "rgba(255, 255, 255, 0.05)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
-          borderRadius: "20px",
-          border: "1px solid rgba(255, 255, 255, 0.1)",
-          boxShadow: "0 10px 40px rgba(0, 0, 0, 0.5)",
-        }}
-      >
+      {/* Controls - Hidden on mobile */}
+      {!isMobile && (
+        <div
+          className="control-panel"
+          style={{
+            position: "fixed",
+            bottom: showControls ? "32px" : "-100px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            display: "flex",
+            alignItems: "center",
+            gap: "16px",
+            padding: "16px 24px",
+            backgroundColor: "rgba(255, 255, 255, 0.05)",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
+            borderRadius: "20px",
+            border: "1px solid rgba(255, 255, 255, 0.1)",
+            boxShadow: "0 10px 40px rgba(0, 0, 0, 0.5)",
+          }}
+        >
         <button
           onClick={() => setIsPaused(!isPaused)}
           style={{
@@ -364,9 +378,11 @@ export const Component = () => {
           </span>
         </div>
       </div>
+      )}
 
-      {/* Toggle controls button */}
-      <button
+      {/* Toggle controls button - Hidden on mobile */}
+      {!isMobile && (
+        <button
         onClick={() => setShowControls(!showControls)}
         style={{
           position: "fixed",
@@ -396,6 +412,7 @@ export const Component = () => {
       >
         {showControls ? "✕" : "☰"}
       </button>
+      )}
 
       {/* Logo */}
       <div
