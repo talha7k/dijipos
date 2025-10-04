@@ -113,7 +113,7 @@ export default function InvoicesPage() {
   };
 
   const getFilteredInvoices = () => {
-    let filteredInvoices = getInvoicesByTransactionType();
+    const filteredInvoices = getInvoicesByTransactionType();
     
     // Then filter by status tab
     switch (activeTab) {

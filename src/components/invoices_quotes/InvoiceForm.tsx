@@ -20,6 +20,7 @@ import FormSummary from "@/components/invoices_quotes/FormSummary";
 import {
   Invoice,
   Item as ItemTypeType,
+  Item,
   ItemType,
   InvoiceType,
   InvoiceItem,
@@ -154,7 +155,7 @@ export default function InvoiceForm({
     }
   };
 
-  const updateItem = (index: number, field: any, value: string | number) => {
+  const updateItem = (index: number, field: keyof Item | keyof InvoiceItem, value: string | number) => {
     const newItems = [...invoiceItems];
     newItems[index] = { ...newItems[index], [field]: value };
     if (field === "quantity" || field === "unitPrice") {

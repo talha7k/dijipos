@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
-import { Invoice, ItemType, InvoiceStatus, InvoiceType } from '@/types';
+import { Invoice, ItemType, InvoiceStatus, InvoiceType, Payment } from '@/types';
 import { getInvoice } from '@/lib/firebase/firestore/invoices';
 
 // SMTP configuration from environment variables
@@ -55,12 +55,12 @@ TOTAL: $${invoice.total.toFixed(2)}
 
 PAYMENTS:
 -------------------------------------
-${'payments' in invoice && invoice.payments.length > 0 
-  ? invoice.payments.map((p: any) => `${p.paymentType}: $${p.amount.toFixed(2)} (${new Date(p.createdAt).toLocaleDateString()})`).join('\n')
+${'payments' in invoice && invoice.payments.length > 0
+  ? invoice.payments.map((p: Payment) => `${p.paymentMethod}: $${p.amount.toFixed(2)} (${new Date(p.paymentDate).toLocaleDateString()})`).join('\n')
   : 'No payments recorded'
 }
 
-Amount Due: $${(invoice.total - (('payments' in invoice ? invoice.payments.reduce((sum: number, p: any) => sum + p.amount, 0) : 0))).toFixed(2)}
+Amount Due: $${(invoice.total - (('payments' in invoice ? invoice.payments.reduce((sum: number, p: Payment) => sum + p.amount, 0) : 0))).toFixed(2)}
 =====================================
 
 This invoice was generated from DijiPOS System.
