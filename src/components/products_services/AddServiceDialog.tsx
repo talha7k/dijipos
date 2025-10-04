@@ -7,8 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus } from 'lucide-react';
-import { Service, Category, CategoryType, ProductTransactionType, ItemType } from '@/types';
+import { Plus, Trash2, GripVertical } from 'lucide-react';
+import { Service, Category, CategoryType, ProductTransactionType, ItemType, ProductVariation } from '@/types';
 import { useAtomValue } from 'jotai';
 import { vatSettingsAtom } from '@/atoms/posAtoms';
 import { getVATIndicationText } from '@/lib/vat-calculator';
@@ -39,6 +39,8 @@ export function AddServiceDialog({
   const [price, setPrice] = useState('');
   const [categoryId, setCategoryId] = useState<string>('');
   const [transactionType, setTransactionType] = useState<ProductTransactionType>(defaultTransactionType);
+  const [variations, setVariations] = useState<ProductVariation[]>([]);
+  const [newVariation, setNewVariation] = useState({ name: '', description: '', price: '' });
   const vatSettings = useAtomValue(vatSettingsAtom);
 
   const isEditMode = serviceToEdit !== null;
@@ -50,6 +52,7 @@ export function AddServiceDialog({
       setPrice(serviceToEdit.price.toString());
       setCategoryId(serviceToEdit.categoryId || '');
       setTransactionType(serviceToEdit.transactionType);
+      setVariations(serviceToEdit.variations || []);
     } else {
       // Reset form for adding new service
       setName('');
@@ -57,8 +60,27 @@ export function AddServiceDialog({
       setPrice('');
       setCategoryId(selectedCategory || '');
       setTransactionType(defaultTransactionType);
+      setVariations([]);
     }
+    setNewVariation({ name: '', description: '', price: '' });
   }, [serviceToEdit, isEditMode, selectedCategory, defaultTransactionType]);
+
+  const addVariation = () => {
+    if (newVariation.name && newVariation.price) {
+      const variation: ProductVariation = {
+        id: `var-${Date.now()}`,
+        name: newVariation.name,
+        description: newVariation.description || undefined,
+        price: parseFloat(newVariation.price)
+      };
+      setVariations([...variations, variation]);
+      setNewVariation({ name: '', description: '', price: '' });
+    }
+  };
+
+  const removeVariation = (id: string) => {
+    setVariations(variations.filter(v => v.id !== id));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,6 +90,7 @@ export function AddServiceDialog({
       description,
       price: parseFloat(price),
       categoryId: categoryId || undefined,
+      variations: variations.length > 0 ? variations : undefined,
       itemType: ItemType.SERVICE as const,
       transactionType
     };
@@ -173,6 +196,70 @@ export function AddServiceDialog({
               </SelectContent>
             </Select>
           </div>
+          
+          {/* Variations Section */}
+          <div>
+            <Label>Service Variations (Optional)</Label>
+            <div className="space-y-3 mt-2">
+              {/* Existing Variations */}
+              {variations.map((variation, index) => (
+                <div key={variation.id} className="flex items-center gap-2 p-3 border rounded-md bg-muted/50">
+                  <GripVertical className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex-1">
+                    <div className="font-medium">{variation.name}</div>
+                    {variation.description && (
+                      <div className="text-sm text-muted-foreground">{variation.description}</div>
+                    )}
+                    <div className="text-sm font-medium">${variation.price.toFixed(2)}</div>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeVariation(variation.id)}
+                    className="text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+              
+              {/* Add New Variation */}
+              <div className="space-y-2 p-3 border rounded-md border-dashed">
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    placeholder="Variation name (e.g., Basic, Premium)"
+                    value={newVariation.name}
+                    onChange={(e) => setNewVariation({ ...newVariation, name: e.target.value })}
+                  />
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="Price"
+                    value={newVariation.price}
+                    onChange={(e) => setNewVariation({ ...newVariation, price: e.target.value })}
+                  />
+                </div>
+                <Input
+                  placeholder="Description (optional)"
+                  value={newVariation.description}
+                  onChange={(e) => setNewVariation({ ...newVariation, description: e.target.value })}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addVariation}
+                  disabled={!newVariation.name || !newVariation.price}
+                  className="w-full"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Variation
+                </Button>
+              </div>
+            </div>
+          </div>
+          
           <div className="flex justify-end space-x-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel

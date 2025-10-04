@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCurrency } from '@/lib/hooks/useCurrency';
 import { Badge } from '@/components/ui/badge';
 import { ActionButtons } from '@/components/ui/action-buttons';
-import { Package } from 'lucide-react';
+import { Package, Layers } from 'lucide-react';
 
 interface ProductListProps {
   products: Product[];
@@ -82,9 +82,33 @@ export function ProductList({
                   )}
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
                     {product.description || 'No description available.'}
                   </p>
+                  
+                  {/* Variations Section */}
+                  {product.variations && product.variations.length > 0 && (
+                    <div className="mb-4 p-3 bg-muted/50 rounded-md">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Layers className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm font-medium">Variations ({product.variations.length})</span>
+                      </div>
+                      <div className="space-y-1">
+                        {product.variations.slice(0, 3).map((variation) => (
+                          <div key={variation.id} className="flex justify-between items-center text-xs">
+                            <span className="text-muted-foreground">{variation.name}</span>
+                            <span className="font-medium">{formatCurrency(variation.price)}</span>
+                          </div>
+                        ))}
+                        {product.variations.length > 3 && (
+                          <div className="text-xs text-muted-foreground italic">
+                            +{product.variations.length - 3} more variations
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  
                   <div className="flex justify-end">
                     <ActionButtons
                       onEdit={() => onEditProduct(product)}

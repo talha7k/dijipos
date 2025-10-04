@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCurrency } from '@/lib/hooks/useCurrency';
 import { Badge } from '@/components/ui/badge';
 import { ActionButtons } from '@/components/ui/action-buttons';
-import { Wrench } from 'lucide-react';
+import { Wrench, Layers } from 'lucide-react';
 
 interface ServiceListProps {
   services: Service[];
@@ -82,9 +82,33 @@ export function ServiceList({
                   )}
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
                     {service.description || 'No description available.'}
                   </p>
+                  
+                  {/* Variations Section */}
+                  {service.variations && service.variations.length > 0 && (
+                    <div className="mb-4 p-3 bg-muted/50 rounded-md">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Layers className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm font-medium">Variations ({service.variations.length})</span>
+                      </div>
+                      <div className="space-y-1">
+                        {service.variations.slice(0, 3).map((variation) => (
+                          <div key={variation.id} className="flex justify-between items-center text-xs">
+                            <span className="text-muted-foreground">{variation.name}</span>
+                            <span className="font-medium">{formatCurrency(variation.price)}</span>
+                          </div>
+                        ))}
+                        {service.variations.length > 3 && (
+                          <div className="text-xs text-muted-foreground italic">
+                            +{service.variations.length - 3} more variations
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  
                   <div className="flex justify-end">
                     <ActionButtons
                       onEdit={() => onEditService(service)}

@@ -100,6 +100,26 @@ export const sampleProducts: Omit<Item, "organizationId">[] = [
     description: "Classic pizza with tomato sauce, mozzarella, and basil",
     price: 15.99,
     categoryId: "cat3",
+    variations: [
+      {
+        id: "p1-var1",
+        name: "Small (10\")",
+        description: "Perfect for one person",
+        price: 12.99
+      },
+      {
+        id: "p1-var2", 
+        name: "Medium (12\")",
+        description: "Standard size",
+        price: 15.99
+      },
+      {
+        id: "p1-var3",
+        name: "Large (14\")",
+        description: "Great for sharing",
+        price: 18.99
+      }
+    ],
     itemType: ItemType.PRODUCT,
     transactionType: ProductTransactionType.SALES,
     createdAt: new Date(),
@@ -111,6 +131,20 @@ export const sampleProducts: Omit<Item, "organizationId">[] = [
     description: "Fresh romaine lettuce with Caesar dressing and croutons",
     price: 12.5,
     categoryId: "cat2",
+    variations: [
+      {
+        id: "p2-var1",
+        name: "Half Portion",
+        description: "Smaller appetite size",
+        price: 8.5
+      },
+      {
+        id: "p2-var2",
+        name: "Full Portion", 
+        description: "Regular size",
+        price: 12.5
+      }
+    ],
     itemType: ItemType.PRODUCT,
     transactionType: ProductTransactionType.SALES,
     createdAt: new Date(),
@@ -144,6 +178,20 @@ export const sampleProducts: Omit<Item, "organizationId">[] = [
     description: "Espresso with steamed milk and foam",
     price: 4.5,
     categoryId: "cat5",
+    variations: [
+      {
+        id: "p5-var1",
+        name: "Small (8oz)",
+        description: "Regular size",
+        price: 3.5
+      },
+      {
+        id: "p5-var2",
+        name: "Large (12oz)",
+        description: "Big cup",
+        price: 4.5
+      }
+    ],
     itemType: ItemType.PRODUCT,
     transactionType: ProductTransactionType.SALES,
     createdAt: new Date(),
@@ -192,6 +240,26 @@ export const sampleServices: Omit<Item, "organizationId">[] = [
     description: "Technical support and maintenance",
     price: 85.0,
     categoryId: "cat6",
+    variations: [
+      {
+        id: "s1-var1",
+        name: "Basic Support",
+        description: "Email and phone support during business hours",
+        price: 85.0
+      },
+      {
+        id: "s1-var2",
+        name: "Premium Support",
+        description: "24/7 support with remote assistance",
+        price: 150.0
+      },
+      {
+        id: "s1-var3",
+        name: "Enterprise Support",
+        description: "Dedicated support team with on-site visits",
+        price: 250.0
+      }
+    ],
     itemType: ItemType.SERVICE,
     transactionType: ProductTransactionType.SALES,
     createdAt: new Date(),
