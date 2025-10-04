@@ -267,15 +267,15 @@ export function OrganizationManager() {
 
         {/* Header */}
         <div
-          className={`flex items-stretch mb-12 p-8 rounded-2xl border ${
+          className={`flex flex-col md:flex-row md:items-stretch mb-12 p-8 rounded-2xl border ${
             isDark
               ? "bg-gradient-to-r from-slate-800/50 to-slate-900/50 border-slate-700/50"
               : "bg-gradient-to-r from-white/80 to-blue-50/80 border-blue-200/50"
           } backdrop-blur-sm`}
         >
-          <div className="flex-1 flex items-center justify-center">
+          <div className="flex-1 flex flex-col md:flex-row md:items-center justify-center mb-6 md:mb-0">
             <div
-              className={`p-2 rounded-2xl ${
+              className={`p-2 rounded-2xl mb-4 md:mb-0 ${
                 isDark
                   ? "bg-gradient-to-r from-purple-600/10 to-blue-600/10"
                   : "bg-gradient-to-r from-blue-600/10 to-indigo-600/10"
@@ -290,16 +290,16 @@ export function OrganizationManager() {
               />
             </div>
             <h1
-              className={`text-5xl font-bold ml-6 ${
+              className={`text-3xl md:text-5xl font-bold md:ml-6 text-center md:text-left ${
                 isDark ? "text-white" : "text-gray-900"
               }`}
             >
               DijiBill
             </h1>
           </div>
-          <div className="flex-2 flex items-center">
+          <div className="flex-1 md:flex-2 flex items-center md:justify-start justify-center">
             <p
-              className={`text-xl ${
+              className={`text-lg md:text-xl text-center md:text-left ${
                 isDark ? "text-gray-300" : "text-gray-600"
               }`}
             >
