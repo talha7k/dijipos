@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
-import puppeteer from 'puppeteer';
 
 import { Payment } from '@/types';
 import { InvoiceType } from '@/types/enums';
@@ -248,7 +247,7 @@ async function renderInvoiceWithTemplate(
   return renderTemplate(templateContent, data);
 }
 
-// Generate PDF from HTML using Puppeteer
+// Generate PDF from HTML using Puppeteer (Vercel-compatible)
 async function generatePDF(htmlContent: string): Promise<Buffer> {
   let browser;
   try {
@@ -257,21 +256,41 @@ async function generatePDF(htmlContent: string): Promise<Buffer> {
       throw new Error('Invalid HTML content provided for PDF generation');
     }
 
-    browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--no-first-run',
-        '--no-zygote',
-        '--single-process', // <- this one doesn't work in Windows
-        '--disable-gpu'
-      ],
-      timeout: 30000 // 30 second timeout for browser launch
-    });
+    // Environment-specific Puppeteer configuration
+    const isVercel = !!process.env.VERCEL_ENV;
+    let puppeteer: typeof import('puppeteer') | typeof import('puppeteer-core'),
+      launchOptions: import('puppeteer').LaunchOptions & import('puppeteer-core').LaunchOptions = {
+        headless: true,
+      };
 
+    if (isVercel) {
+      // Use lightweight packages for Vercel
+      const chromium = (await import("@sparticuz/chromium")).default;
+      puppeteer = await import("puppeteer-core");
+      launchOptions = {
+        ...launchOptions,
+        args: chromium.args,
+        executablePath: await chromium.executablePath(),
+      };
+    } else {
+      // Use full Puppeteer for local development
+      puppeteer = await import("puppeteer");
+      launchOptions = {
+        ...launchOptions,
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-accelerated-2d-canvas',
+          '--no-first-run',
+          '--no-zygote',
+          '--disable-gpu'
+        ],
+        timeout: 30000
+      };
+    }
+
+    browser = await puppeteer.launch(launchOptions);
     const page = await browser.newPage();
 
     // Set reasonable timeouts
@@ -329,7 +348,7 @@ async function generatePDF(htmlContent: string): Promise<Buffer> {
       try {
         await browser.close();
       } catch (closeError) {
-        console.warn('Error closing browser:', closeError);
+        console.error('Error closing browser:', closeError);
       }
     }
   }

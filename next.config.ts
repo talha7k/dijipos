@@ -10,6 +10,7 @@ const nextConfig = (phase: string) => {
     reactStrictMode: true,
     poweredByHeader: false,
     typedRoutes: true,
+    serverExternalPackages: ["@sparticuz/chromium", "puppeteer-core"],
     images: {
       remotePatterns: [
         {
