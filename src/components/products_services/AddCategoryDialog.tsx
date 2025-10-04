@@ -111,12 +111,12 @@ export function AddCategoryDialog({
             <div>
               <Label>Parent Category (Optional)</Label>
               <Card className="mt-2 h-96">
-                <CardHeader className="pb-3">
+                <CardHeader className="pb-2">
                   <CardTitle className="text-sm">
                     Select where to add this category
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-2 overflow-auto max-h-64">
+                <CardContent className="space-y-1 overflow-auto max-h-64">
                   <Button
                     type="button"
                     variant={selectedParentId === null ? "default" : "ghost"}

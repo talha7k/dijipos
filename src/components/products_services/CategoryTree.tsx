@@ -172,7 +172,7 @@ export function CategoryTree({
     : services.length;
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-1 -mt-1">
       {showAllOption && (
         <div className="flex items-center justify-between w-full group">
           <Button
