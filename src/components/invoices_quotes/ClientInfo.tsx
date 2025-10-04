@@ -12,8 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { getCustomerOptions, getCustomerById } from '@/lib/sample-data';
-import { sampleCustomers } from '@/lib/sample-data';
+import { Customer } from '@/types';
 
 interface EditableTableCellProps {
   value: string;
@@ -89,6 +88,7 @@ interface ClientInfoProps {
   clientAddress: string;
   clientVAT?: string;
   showVAT?: boolean;
+  customers: Customer[];
   onCustomerSelect: (customerId: string) => void;
   onClientNameChange: (name: string) => void;
   onClientEmailChange: (email: string) => void;
@@ -103,6 +103,7 @@ export default function ClientInfo({
   clientAddress,
   clientVAT = '',
   showVAT = false,
+  customers,
   onCustomerSelect,
   onClientNameChange,
   onClientEmailChange,
@@ -111,7 +112,7 @@ export default function ClientInfo({
 }: ClientInfoProps) {
   const handleCustomerSelect = (customerId: string) => {
     onCustomerSelect(customerId);
-    const customer = getCustomerById(sampleCustomers, customerId);
+    const customer = customers.find(c => c.id === customerId);
     if (customer) {
       onClientNameChange(customer.name);
       onClientEmailChange(customer.email);
@@ -124,12 +125,12 @@ export default function ClientInfo({
       <div>
         <Label>Select Customer</Label>
         <Combobox
-          options={getCustomerOptions(sampleCustomers)}
+          options={customers.map(customer => ({ value: customer.id, label: customer.name }))}
           value={selectedCustomerId}
           onValueChange={handleCustomerSelect}
           placeholder="Choose a customer..."
           searchPlaceholder="Search customers..."
-          emptyMessage="No customers found."
+          emptyMessage="No customers found. Click 'Add Customer' to create one."
           buttonWidth="w-full"
         />
       </div>

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useAtom } from "jotai";
 import { selectedOrganizationAtom } from "@/atoms";
 import { useMemo } from "react";
-import { Invoice, Payment, SalesInvoice } from "@/types";
+import { Invoice, Payment, SalesInvoice, PurchaseInvoice } from "@/types";
 import { InvoiceList } from "@/components/invoices_quotes/InvoiceList";
 import InvoiceForm from "@/components/invoices_quotes/InvoiceForm";
 import { InvoiceDetails } from "@/components/invoices_quotes/InvoiceDetails";
@@ -37,6 +37,7 @@ export default function InvoicesPage() {
   const [showForm, setShowForm] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
+  const [transactionTypeFilter, setTransactionTypeFilter] = useState<"sales" | "purchase" | "all">("sales");
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
   const [showEmailDialog, setShowEmailDialog] = useState(false);
   const [invoiceToDelete, setInvoiceToDelete] = useState<Invoice | null>(null);
@@ -48,6 +49,7 @@ export default function InvoicesPage() {
     loading: invoicesLoading,
     updateExistingInvoice,
     createSalesInvoice,
+    createPurchaseInvoice,
     deleteExistingInvoice,
   } = useInvoices();
   const { customers, loading: customersLoading } = useCustomers();
@@ -103,19 +105,37 @@ export default function InvoicesPage() {
     setShowDetails(true);
   };
 
+  const getInvoicesByTransactionType = () => {
+    if (transactionTypeFilter === "all") {
+      return invoices;
+    }
+    return invoices.filter((inv) => inv.type === transactionTypeFilter);
+  };
+
   const getFilteredInvoices = () => {
+    let filteredInvoices = getInvoicesByTransactionType();
+    
+    // Then filter by status tab
     switch (activeTab) {
       case "draft":
-        return invoices.filter((inv) => inv.status === "draft");
+        return filteredInvoices.filter((inv) => inv.status === "draft");
       case "sent":
-        return invoices.filter((inv) => inv.status === "sent");
+        return filteredInvoices.filter((inv) => inv.status === "sent");
       case "paid":
-        return invoices.filter((inv) => inv.status === "paid");
+        return filteredInvoices.filter((inv) => inv.status === "paid");
       case "overdue":
-        return invoices.filter((inv) => inv.status === "overdue");
+        return filteredInvoices.filter((inv) => inv.status === "overdue");
       default:
-        return invoices;
+        return filteredInvoices;
     }
+  };
+
+  const getInvoicesByTransactionTypeAndStatus = (status?: string) => {
+    let filteredInvoices = getInvoicesByTransactionType();
+    if (status) {
+      filteredInvoices = filteredInvoices.filter((inv) => inv.status === status);
+    }
+    return filteredInvoices;
   };
 
   const getPaymentsForInvoice = (invoiceId: string) => {
@@ -151,24 +171,54 @@ export default function InvoicesPage() {
         </h1>
         <Button onClick={() => setShowForm(true)}>
           <Plus className="w-4 h-4 mr-2" />
-          New Invoice
+          New {transactionTypeFilter === "purchase" ? "Purchase" : "Sales"} Invoice
         </Button>
+      </div>
+
+      {/* Transaction Type Filter */}
+      <div className="mb-6">
+        <div className="flex items-center gap-4">
+          <span className="text-sm font-medium">Transaction Type:</span>
+          <div className="flex gap-2">
+            <Button
+              variant={transactionTypeFilter === "sales" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setTransactionTypeFilter("sales")}
+            >
+              Sales Invoices
+            </Button>
+            <Button
+              variant={transactionTypeFilter === "purchase" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setTransactionTypeFilter("purchase")}
+            >
+              Purchase Invoices
+            </Button>
+            <Button
+              variant={transactionTypeFilter === "all" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setTransactionTypeFilter("all")}
+            >
+              All Types
+            </Button>
+          </div>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
         <TabsList>
-          <TabsTrigger value="all">All ({invoices.length})</TabsTrigger>
+          <TabsTrigger value="all">All ({getInvoicesByTransactionTypeAndStatus().length})</TabsTrigger>
           <TabsTrigger value="draft">
-            Draft ({invoices.filter((i) => i.status === "draft").length})
+            Draft ({getInvoicesByTransactionTypeAndStatus("draft").length})
           </TabsTrigger>
           <TabsTrigger value="sent">
-            Sent ({invoices.filter((i) => i.status === "sent").length})
+            Sent ({getInvoicesByTransactionTypeAndStatus("sent").length})
           </TabsTrigger>
           <TabsTrigger value="paid">
-            Paid ({invoices.filter((i) => i.status === "paid").length})
+            Paid ({getInvoicesByTransactionTypeAndStatus("paid").length})
           </TabsTrigger>
           <TabsTrigger value="overdue">
-            Overdue ({invoices.filter((i) => i.status === "overdue").length})
+            Overdue ({getInvoicesByTransactionTypeAndStatus("overdue").length})
           </TabsTrigger>
         </TabsList>
       </Tabs>
@@ -218,13 +268,18 @@ export default function InvoicesPage() {
           </DialogHeader>
           <InvoiceForm
             invoice={editingInvoice}
+            defaultType={transactionTypeFilter === "purchase" ? "purchase" : "sales"}
             onSubmit={async (invoiceData) => {
               try {
                 if (editingInvoice) {
                   await updateExistingInvoice(editingInvoice.id, invoiceData);
                   toast.success("Invoice updated successfully");
                 } else {
-                  await createSalesInvoice(invoiceData as Omit<SalesInvoice, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>);
+                  if (invoiceData.type === 'purchase') {
+                    await createPurchaseInvoice(invoiceData as Omit<PurchaseInvoice, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>);
+                  } else {
+                    await createSalesInvoice(invoiceData as Omit<SalesInvoice, 'id' | 'organizationId' | 'createdAt' | 'updatedAt'>);
+                  }
                   toast.success("Invoice created successfully");
                 }
                 setShowForm(false);

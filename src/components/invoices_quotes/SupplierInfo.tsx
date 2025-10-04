@@ -12,7 +12,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { getSupplierOptions, getSupplierById, sampleSuppliers } from '@/lib/sample-data';
+import { Supplier } from '@/types';
+import { useSuppliers } from '@/lib/hooks/useSuppliers';
 
 interface EditableTableCellProps {
   value: string;
@@ -81,6 +82,19 @@ function EditableTableCell({ value, type = 'text', onSave, className }: Editable
   );
 }
 
+// Utility functions for real supplier data
+const getSupplierOptions = (suppliers: Supplier[]) => {
+  return suppliers.map((supplier) => ({
+    value: supplier.id,
+    label: supplier.name,
+    description: supplier.email,
+  }));
+};
+
+const getSupplierById = (suppliers: Supplier[], id: string) => {
+  return suppliers.find((supplier) => supplier.id === id);
+};
+
 interface SupplierInfoProps {
   selectedSupplierId: string;
   supplierName: string;
@@ -108,9 +122,11 @@ export default function SupplierInfo({
   onSupplierAddressChange,
   onSupplierVATChange,
 }: SupplierInfoProps) {
+  const { suppliers } = useSuppliers();
+
   const handleSupplierSelect = (supplierId: string) => {
     onSupplierSelect(supplierId);
-    const supplier = getSupplierById(sampleSuppliers, supplierId);
+    const supplier = getSupplierById(suppliers, supplierId);
     if (supplier) {
       onSupplierNameChange(supplier.name);
       onSupplierEmailChange(supplier.email);
@@ -123,7 +139,7 @@ export default function SupplierInfo({
       <div>
         <Label>Select Supplier</Label>
         <Combobox
-          options={getSupplierOptions(sampleSuppliers)}
+          options={getSupplierOptions(suppliers)}
           value={selectedSupplierId}
           onValueChange={handleSupplierSelect}
           placeholder="Choose a supplier..."

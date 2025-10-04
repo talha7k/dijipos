@@ -6,22 +6,22 @@ import { DialogWithActions } from '@/components/ui/DialogWithActions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useCustomers } from '@/lib/hooks/useCustomers';
+import { useSuppliers } from '@/lib/hooks/useSuppliers';
 import { toast } from 'sonner';
-import { Customer } from '@/types';
+import { Supplier } from '@/types';
 import { Upload, X } from 'lucide-react';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/lib/firebase/config';
 
-interface AddCustomerDialogProps {
+interface AddSupplierDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCustomerAdded?: () => void;
-  editingCustomer?: Customer | null;
+  onSupplierAdded?: () => void;
+  editingSupplier?: Supplier | null;
 }
 
-export function AddCustomerDialog({ open, onOpenChange, onCustomerAdded, editingCustomer }: AddCustomerDialogProps) {
-  const { createCustomer, updateCustomer } = useCustomers();
+export function AddSupplierDialog({ open, onOpenChange, onSupplierAdded, editingSupplier }: AddSupplierDialogProps) {
+  const { createSupplier, updateSupplier } = useSuppliers();
   const [loading, setLoading] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [formData, setFormData] = useState({
@@ -35,15 +35,15 @@ export function AddCustomerDialog({ open, onOpenChange, onCustomerAdded, editing
   });
 
   useEffect(() => {
-    if (editingCustomer) {
+    if (editingSupplier) {
       setFormData({
-        name: editingCustomer.name,
-        nameAr: editingCustomer.nameAr || '',
-        email: editingCustomer.email,
-        phone: editingCustomer.phone || '',
-        address: editingCustomer.address || '',
-        vatNumber: editingCustomer.vatNumber || '',
-        logoUrl: editingCustomer.logoUrl || '',
+        name: editingSupplier.name,
+        nameAr: editingSupplier.nameAr || '',
+        email: editingSupplier.email,
+        phone: editingSupplier.phone || '',
+        address: editingSupplier.address || '',
+        vatNumber: editingSupplier.vatNumber || '',
+        logoUrl: editingSupplier.logoUrl || '',
       });
     } else {
       setFormData({
@@ -56,7 +56,7 @@ export function AddCustomerDialog({ open, onOpenChange, onCustomerAdded, editing
         logoUrl: '',
       });
     }
-  }, [editingCustomer, open]);
+  }, [editingSupplier, open]);
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !e.target.files[0]) return;
@@ -65,7 +65,7 @@ export function AddCustomerDialog({ open, onOpenChange, onCustomerAdded, editing
     setUploadingLogo(true);
 
     try {
-      const storageRef = ref(storage, `customers/${Date.now()}_logo`);
+      const storageRef = ref(storage, `suppliers/${Date.now()}_logo`);
       await uploadBytes(storageRef, file);
       const downloadUrl = await getDownloadURL(storageRef);
 
@@ -90,18 +90,18 @@ export function AddCustomerDialog({ open, onOpenChange, onCustomerAdded, editing
 
     setLoading(true);
     try {
-      if (editingCustomer) {
-        await updateCustomer(editingCustomer.id, formData);
-        toast.success('Customer updated successfully');
+      if (editingSupplier) {
+        await updateSupplier(editingSupplier.id, formData);
+        toast.success('Supplier updated successfully');
       } else {
-        await createCustomer(formData);
-        toast.success('Customer added successfully');
+        await createSupplier(formData);
+        toast.success('Supplier added successfully');
       }
 
       onOpenChange(false);
-      onCustomerAdded?.();
+      onSupplierAdded?.();
     } catch (error) {
-      toast.error(`Failed to ${editingCustomer ? 'update' : 'add'} customer`);
+      toast.error(`Failed to ${editingSupplier ? 'update' : 'add'} supplier`);
     } finally {
       setLoading(false);
     }
@@ -119,7 +119,7 @@ export function AddCustomerDialog({ open, onOpenChange, onCustomerAdded, editing
         Cancel
       </Button>
       <Button onClick={handleSave} disabled={loading}>
-        {loading ? (editingCustomer ? 'Updating...' : 'Adding...') : (editingCustomer ? 'Update' : 'Add') + ' Customer'}
+        {loading ? (editingSupplier ? 'Updating...' : 'Adding...') : (editingSupplier ? 'Update' : 'Add') + ' Supplier'}
       </Button>
     </>
   );
@@ -128,8 +128,8 @@ export function AddCustomerDialog({ open, onOpenChange, onCustomerAdded, editing
     <DialogWithActions
       open={open}
       onOpenChange={handleClose}
-      title={editingCustomer ? 'Edit Customer' : 'Add New Customer'}
-      description="Enter customer information"
+      title={editingSupplier ? 'Edit Supplier' : 'Add New Supplier'}
+      description="Enter supplier information"
       actions={actions}
       maxWidth="max-w-2xl"
       contentClassName="max-h-[70vh]"
@@ -142,7 +142,7 @@ export function AddCustomerDialog({ open, onOpenChange, onCustomerAdded, editing
               id="name"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="Customer name in English"
+              placeholder="Supplier name in English"
               disabled={loading}
             />
           </div>
@@ -152,7 +152,7 @@ export function AddCustomerDialog({ open, onOpenChange, onCustomerAdded, editing
               id="nameAr"
               value={formData.nameAr}
               onChange={(e) => setFormData({ ...formData, nameAr: e.target.value })}
-              placeholder="Customer name in Arabic"
+              placeholder="Supplier name in Arabic"
               dir="rtl"
               disabled={loading}
             />
@@ -164,7 +164,7 @@ export function AddCustomerDialog({ open, onOpenChange, onCustomerAdded, editing
               type="email"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              placeholder="customer@example.com"
+              placeholder="supplier@example.com"
               disabled={loading}
             />
           </div>
@@ -201,13 +201,13 @@ export function AddCustomerDialog({ open, onOpenChange, onCustomerAdded, editing
             />
           </div>
           <div className="space-y-4">
-            <Label>Customer Logo</Label>
+            <Label>Supplier Logo</Label>
             <div className="flex items-center space-x-4">
               {formData.logoUrl ? (
                 <div className="relative">
                   <Image
                     src={formData.logoUrl}
-                    alt="Customer Logo"
+                    alt="Supplier Logo"
                     width={96}
                     height={96}
                     className="w-24 h-24 object-contain border rounded"
