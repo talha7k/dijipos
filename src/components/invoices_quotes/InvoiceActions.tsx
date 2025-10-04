@@ -2,17 +2,16 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Invoice, Payment, InvoiceStatus, Organization, InvoiceTemplate, Customer, Supplier, DocumentPrintSettings, SalesInvoice } from '@/types';
-import { Printer, Eye, MoreHorizontal, Trash2, Mail } from 'lucide-react';
+import { Invoice, Payment, Organization, InvoiceTemplate, Customer, Supplier, DocumentPrintSettings, SalesInvoice } from '@/types';
+import { Printer, Eye, MoreHorizontal, Trash2, Mail, Edit } from 'lucide-react';
 import { InvoiceActionsDialog } from './InvoiceActionsDialog';
 import { InvoicePrintDialog } from './InvoicePrintDialog';
 
 interface InvoiceActionsProps {
    invoice: Invoice;
    payments: Payment[];
-   onViewDetails: (invoice: Invoice) => void;
-   onStatusChange: (invoiceId: string, status: Invoice['status']) => void;
-   onEdit?: (invoice: Invoice) => void;
+    onViewDetails: (invoice: Invoice) => void;
+    onEdit?: (invoice: Invoice) => void;
    onDuplicate?: (invoice: Invoice) => void;
    onSend?: (invoice: Invoice) => void;
    onEmail?: (invoice: Invoice, templateId: string) => void;
@@ -26,11 +25,10 @@ interface InvoiceActionsProps {
  }
 
 export function InvoiceActions({
-   invoice,
-   payments,
-   onViewDetails,
-   onStatusChange,
-   onEdit,
+    invoice,
+    payments,
+    onViewDetails,
+    onEdit,
    onDuplicate,
    onSend,
    onEmail,
@@ -49,10 +47,7 @@ export function InvoiceActions({
     onViewDetails(invoice);
   };
 
-  const handleStatusChange = (e: React.MouseEvent, newStatus: Invoice['status']) => {
-    e.stopPropagation();
-    onStatusChange(invoice.id, newStatus);
-  };
+
 
   const handleActionsClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -124,7 +119,7 @@ export function InvoiceActions({
           onClick={handleViewDetails}
           title="View Details"
         >
-          <Eye className="h-4 w-4" />
+          <Edit className="h-4 w-4" />
         </Button>
 
         <Button
@@ -136,36 +131,6 @@ export function InvoiceActions({
         >
           <Trash2 className="h-4 w-4" />
         </Button>
-
-        {invoice.status === 'draft' && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={(e) => handleStatusChange(e, InvoiceStatus.SENT)}
-          >
-            Send
-          </Button>
-        )}
-
-        {invoice.status === 'sent' && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={(e) => handleStatusChange(e, InvoiceStatus.PAID)}
-          >
-            Mark Paid
-          </Button>
-        )}
-
-        {invoice.status === 'overdue' && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={(e) => handleStatusChange(e, InvoiceStatus.PAID)}
-          >
-            Mark Paid
-          </Button>
-        )}
       </div>
 
       <InvoiceActionsDialog
@@ -177,8 +142,7 @@ export function InvoiceActions({
         onEdit={() => onEdit?.(invoice)}
         onDuplicate={() => onDuplicate?.(invoice)}
         onSend={() => onSend?.(invoice)}
-        onMarkAsPaid={() => onStatusChange(invoice.id, InvoiceStatus.PAID)}
-        onMarkAsSent={() => onStatusChange(invoice.id, InvoiceStatus.SENT)}
+
         onDownloadPDF={() => onDownloadPDF?.(invoice)}
       />
     </>

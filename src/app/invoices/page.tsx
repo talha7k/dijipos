@@ -407,6 +407,7 @@ export default function InvoicesPage() {
                   : undefined
               }
               payments={getPaymentsForInvoice(selectedInvoice.id)}
+              onStatusChange={handleStatusChange}
             />
           )}
         </DialogContent>

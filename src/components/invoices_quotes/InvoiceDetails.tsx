@@ -1,8 +1,8 @@
 'use client';
 
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Invoice, Payment, Organization, Customer, Supplier, PurchaseInvoice } from '@/types';
 import { formatCurrency, formatDate } from '@/lib/utils';
 
@@ -17,14 +17,16 @@ interface InvoiceDetailsProps {
   customer?: Customer;
   supplier?: Supplier;
   payments?: Payment[];
+  onStatusChange?: (invoiceId: string, status: Invoice['status']) => void;
 }
 
-export function InvoiceDetails({ 
-  invoice, 
-  organization, 
-  customer, 
-  supplier, 
-  payments = [] 
+export function InvoiceDetails({
+  invoice,
+  organization,
+  customer,
+  supplier,
+  payments = [],
+  onStatusChange
 }: InvoiceDetailsProps) {
   const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
   const remainingBalance = invoice.total - totalPaid;
@@ -35,13 +37,22 @@ export function InvoiceDetails({
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-bold">Invoice #{isPurchaseInvoice(invoice) ? invoice.invoiceNumber || invoice.id.slice(-8) : invoice.id.slice(-8)}</h1>
-          <Badge variant={
-            invoice.status === 'paid' ? 'default' :
-            invoice.status === 'overdue' ? 'destructive' :
-            'secondary'
-          } className="mt-2 capitalize">
-            {invoice.status}
-          </Badge>
+          <div className="mt-2">
+            <Select
+              value={invoice.status}
+              onValueChange={(value: Invoice['status']) => onStatusChange?.(invoice.id, value)}
+            >
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="sent">Sent</SelectItem>
+                <SelectItem value="paid">Paid</SelectItem>
+                <SelectItem value="overdue">Overdue</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <div className="text-right">
           <p className="text-sm text-gray-600">Invoice Date</p>

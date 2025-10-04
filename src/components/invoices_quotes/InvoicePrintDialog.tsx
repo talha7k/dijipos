@@ -365,13 +365,15 @@ export function InvoicePrintDialog({
               Email
             </Button>
           )}
-          <Button
-            onClick={handlePrint}
-            disabled={!selectedTemplate || isGenerating}
-          >
-            <Printer className="h-4 w-4 mr-2" />
-            {isGenerating ? "Processing..." : "Print Invoice"}
-          </Button>
+          {!previewMode && (
+            <Button
+              onClick={handlePrint}
+              disabled={!selectedTemplate || isGenerating}
+            >
+              <Printer className="h-4 w-4 mr-2" />
+              {isGenerating ? "Processing..." : "Print Invoice"}
+            </Button>
+          )}
         </>
       }
       trigger={children}
