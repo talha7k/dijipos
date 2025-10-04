@@ -8,7 +8,7 @@ import { indexedDBStorage } from "@/lib/storage";
 
 export const themeAtom = atomWithStorage<"light" | "dark">(
   "dijibill-theme",
-  "light",
+  "dark",
   indexedDBStorage,
 );
 
