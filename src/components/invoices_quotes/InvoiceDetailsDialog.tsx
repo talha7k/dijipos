@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Invoice, Payment, Organization, Customer, Supplier, PaymentType } from '@/types';
 import { CreditCard, Printer, Eye, Plus } from 'lucide-react';
 import { AddInvoicePaymentDialog } from './AddInvoicePaymentDialog';
@@ -52,12 +52,14 @@ export function InvoiceDetailsDialog({
       <DialogContent className="max-w-6xl max-h-[80vh] overflow-y-auto">
         {invoice ? (
           <div className="space-y-6">
+            <DialogHeader>
+              <DialogTitle>Invoice Details</DialogTitle>
+            </DialogHeader>
             {/* Dialog Header with Print Button */}
              <div className="flex justify-between items-center border-b pb-4">
-               <div>
-                 <h2 className="text-2xl font-bold">Invoice Details</h2>
-                 <p className="text-gray-600">Invoice #{invoice.id.slice(-8)}</p>
-               </div>
+              <div>
+                <p className="text-gray-600">Invoice #{invoice.id.slice(-8)}</p>
+              </div>
                <div className="flex gap-2">
                  {onAddPayment && (
                    <Button

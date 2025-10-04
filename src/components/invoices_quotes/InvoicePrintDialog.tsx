@@ -54,7 +54,7 @@ async function renderInvoice(
     taxAmount: (invoice.taxAmount || 0).toFixed(2),
     total: (invoice.total || 0).toFixed(2),
     notes: invoice.notes || "",
-    items: invoice.items.map((item) => ({
+    items: (invoice.items || []).map((item) => ({
       name: item.name,
       description: item.description || "",
       quantity: item.quantity,
@@ -73,11 +73,19 @@ async function renderInvoice(
     paddingLeft: 15,
     paddingRight: 15,
   };
-  const templateContent =
+  let templateContent =
     templateObj.content ||
     (templateObj.type?.includes("arabic")
       ? defaultInvoiceArabic
       : defaultInvoiceEnglish);
+
+  // Ensure the template has items support
+  if (!templateContent.includes('{{#each items}}')) {
+    templateContent = templateObj.type?.includes("arabic")
+      ? defaultInvoiceArabic
+      : defaultInvoiceEnglish;
+  }
+
   return renderTemplate(templateContent, data);
 }
 

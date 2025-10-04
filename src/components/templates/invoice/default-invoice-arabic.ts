@@ -8,8 +8,8 @@
       --heading-font: {{headingFont}};
       --body-font: {{bodyFont}};
     }
-body { font-family: var(--body-font), 'Amiri', serif; margin: 0; padding: 0; background: white; }
-      .container { max-width: 100%; margin: 0; padding: 0; }
+  .invoice-template { font-family: var(--body-font), 'Amiri', serif; margin: 0; padding: 0; background: white; color: #000000; }
+  .invoice-template .container { max-width: 100%; margin: 0; padding: 0; }
     .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; }
     .qr-section { margin-bottom: 20px; }
     .logo-section { position: relative; width: 192px; height: 80px; margin-left: auto; }
@@ -34,7 +34,8 @@ body { font-family: var(--body-font), 'Amiri', serif; margin: 0; padding: 0; bac
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="invoice-template">
+    <div class="container">
     <!-- Header -->
     <div class="header">
       <div>
@@ -175,6 +176,7 @@ body { font-family: var(--body-font), 'Amiri', serif; margin: 0; padding: 0; bac
       </div>
     </div>
     {{/companyStamp}}
+    </div>
   </div>
 </body>
 </html>`;
