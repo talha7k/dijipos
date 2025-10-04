@@ -675,7 +675,7 @@ export function TemplatesTab({}: TemplatesTabProps) {
                 : `No ${selectedCategory.toLowerCase()} templates added yet.`}
           </p>
         ) : (
-          <div className="grid gap-2">
+           <div className="grid grid-cols-1 gap-2">
             {templates.map((template) => (
               <div
                 key={template.id}
