@@ -11,8 +11,10 @@ import { DialogWithActions } from "@/components/ui/DialogWithActions";
 import { Button } from "@/components/ui/button";
 import { Printer, Mail } from "lucide-react";
 import { toast } from "sonner";
-import { defaultInvoiceEnglish } from "@/components/templates/invoice/default-invoice-english";
-import { defaultInvoiceArabic } from "@/components/templates/invoice/default-invoice-arabic";
+import { salesInvoiceEnglish } from "@/components/templates/invoice/sales-invoice-english";
+import { salesInvoiceArabic } from "@/components/templates/invoice/sales-invoice-arabic";
+import { purchaseInvoiceEnglish } from "@/components/templates/invoice/purchase-invoice-english";
+import { purchaseInvoiceArabic } from "@/components/templates/invoice/purchase-invoice-arabic";
 // --- END: Mock Dependencies ---
 
 async function renderInvoice(
@@ -75,17 +77,20 @@ async function renderInvoice(
     paddingLeft: 15,
     paddingRight: 15,
   };
+  // Determine if this is a purchase invoice (has supplier) or sales invoice (has customer)
+  const isPurchaseInvoice = !!supplier;
+
   let templateContent =
     templateObj.content ||
     (templateObj.type?.includes("arabic")
-      ? defaultInvoiceArabic
-      : defaultInvoiceEnglish);
+      ? (isPurchaseInvoice ? purchaseInvoiceArabic : salesInvoiceArabic)
+      : (isPurchaseInvoice ? purchaseInvoiceEnglish : salesInvoiceEnglish));
 
   // Ensure the template has items support
   if (!templateContent.includes('{{#each items}}')) {
     templateContent = templateObj.type?.includes("arabic")
-      ? defaultInvoiceArabic
-      : defaultInvoiceEnglish;
+      ? (isPurchaseInvoice ? purchaseInvoiceArabic : salesInvoiceArabic)
+      : (isPurchaseInvoice ? purchaseInvoiceEnglish : salesInvoiceEnglish);
   }
 
   console.log('Template content preview:', templateContent.substring(0, 200));

@@ -205,63 +205,18 @@ export interface InvoiceTemplateData {
   }>;
 }
 
-export interface QuoteTemplateData {
-  quoteId: string;
-  quoteDate: string;
-  validUntil: string;
-  status: string;
-  companyName: string;
-  companyNameAr: string;
-  companyAddress: string;
-  companyEmail: string;
-  companyPhone: string;
-  companyVat: string;
-  companyLogo: string;
-  clientName: string;
-  customerNameAr: string;
-  clientAddress: string;
-  clientEmail: string;
-  clientVat: string;
-  customerLogo: string;
-  subtotal: string;
-  taxRate: string;
-  taxAmount: string;
-  total: string;
-  notes: string;
-  includeQR: boolean;
-  qrCodeUrl?: string;
-  paperWidth?: number; // Paper width in mm for dynamic layout
-  marginTop?: number; // Top margin in mm
-  marginBottom?: number; // Bottom margin in mm
-  marginLeft?: number; // Left margin in mm
-  marginRight?: number; // Right margin in mm
-  paddingTop?: number; // Top padding in mm
-  paddingBottom?: number; // Bottom padding in mm
-  paddingLeft?: number; // Left padding in mm
-  paddingRight?: number; // Right padding in mm
-  fontSize?: FontSize; // Font size setting
-  headingFont?: string; // Font family for headings
-  bodyFont?: string; // Font family for body text
-  items: Array<{
-    name: string;
-    description: string;
-    quantity: number;
-    unitPrice: string;
-    total: string;
-  }>;
-}
+
 
 export type TemplateData =
   | ReceiptTemplateData
   | InvoiceTemplateData
-  | QuoteTemplateData
   | PosReportData;
 
 // Template categories
 export enum TemplateCategory {
   RECEIPT = "receipt",
   INVOICE = "invoice",
-  QUOTE = "quote",
+  POS_REPORT = "pos_report",
 }
 
 // Union type for all template types

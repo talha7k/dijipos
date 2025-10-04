@@ -69,7 +69,6 @@ export interface PrinterSettings {
   // Document-specific settings only
   receipts?: ReceiptsPrintSettings;
   invoices?: DocumentPrintSettings;
-  quotes?: DocumentPrintSettings;
 
   organizationId: string;
   createdAt: Date;

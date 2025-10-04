@@ -7,8 +7,7 @@ import { adminDb } from '@/lib/firebase/server-config';
 import { renderTemplate } from '@/lib/template-renderer';
 import { InvoiceTemplateData } from '@/types/template';
 import { createInvoiceQRData, generateZatcaQRCode } from '@/lib/zatca-qr';
-import { defaultInvoiceEnglish } from '@/components/templates/invoice/default-invoice-english';
-import { defaultInvoiceArabic } from '@/components/templates/invoice/default-invoice-arabic';
+
 import { salesInvoiceEnglish } from '@/components/templates/invoice/sales-invoice-english';
 import { purchaseInvoiceEnglish } from '@/components/templates/invoice/purchase-invoice-english';
 import { salesInvoiceArabic } from '@/components/templates/invoice/sales-invoice-arabic';

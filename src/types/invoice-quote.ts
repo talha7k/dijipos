@@ -1,23 +1,5 @@
 // Import enums from the main enums file
-import { QuoteStatus, InvoiceStatus, PurchaseInvoiceStatus, InvoiceType } from './enums';
-
-export interface Quote {
-  id: string;
-  organizationId: string;
-  clientName: string;
-  clientEmail: string;
-  clientAddress?: string;
-  items: Item[];
-  subtotal: number;
-  taxRate: number;
-  taxAmount: number;
-  total: number;
-  status: QuoteStatus;
-  notes?: string;
-  validUntil?: Date;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { InvoiceStatus, PurchaseInvoiceStatus, InvoiceType } from './enums';
 
 export interface Payment {
   id: string;
@@ -35,7 +17,6 @@ export interface SalesInvoice {
   id: string;
   organizationId: string;
   type: InvoiceType.SALES;
-  quoteId?: string;
   clientName: string;
   clientEmail: string;
   clientAddress?: string;

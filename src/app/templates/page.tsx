@@ -17,8 +17,10 @@ import { selectedOrganizationAtom } from '@/atoms';
 import { InvoiceTemplate, TemplateField, TemplateStyle, TemplateFieldType } from '@/types';
 import { InvoiceTemplateType } from '@/types/enums';
 import { Plus, Edit, Trash2, Copy, Eye } from 'lucide-react';
-import { defaultInvoiceEnglish } from '@/components/templates/invoice/default-invoice-english';
-import { defaultInvoiceArabic } from '@/components/templates/invoice/default-invoice-arabic';
+import { salesInvoiceEnglish } from '@/components/templates/invoice/sales-invoice-english';
+import { salesInvoiceArabic } from '@/components/templates/invoice/sales-invoice-arabic';
+import { purchaseInvoiceEnglish } from '@/components/templates/invoice/purchase-invoice-english';
+import { purchaseInvoiceArabic } from '@/components/templates/invoice/purchase-invoice-arabic';
 import { Loader } from '@/components/ui/loader';
 
 const defaultFields: TemplateField[] = [
@@ -116,7 +118,7 @@ function TemplatesContent() {
           isDefault: true,
           fields: defaultFields,
           style: defaultStyle,
-          content: defaultInvoiceEnglish,
+          content: salesInvoiceEnglish,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -129,7 +131,7 @@ function TemplatesContent() {
           isDefault: false,
           fields: defaultFields,
           style: { ...defaultStyle, fontFamily: 'Amiri, serif' },
-          content: defaultInvoiceArabic,
+          content: salesInvoiceArabic,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -161,7 +163,7 @@ function TemplatesContent() {
         isDefault: newTemplate.isDefault,
         fields: newTemplate.fields,
         style: newTemplate.style,
-        content: newTemplate.type === InvoiceTemplateType.ARABIC ? defaultInvoiceArabic : defaultInvoiceEnglish,
+        content: newTemplate.type === InvoiceTemplateType.ARABIC ? salesInvoiceArabic : salesInvoiceEnglish,
         createdAt: new Date(),
         updatedAt: new Date(),
       };

@@ -17,7 +17,7 @@ export const STATIC_INVOICE_TEMPLATE_IDS = [
   "arabic-invoice",
 ];
 
-export const STATIC_QUOTE_TEMPLATE_IDS = ["english-quote", "arabic-quote"];
+
 
 // Template type enums for each category
 export enum ReceiptTemplateType {
@@ -46,14 +46,7 @@ export enum InvoiceType {
   PURCHASE = "purchase",
 }
 
-export enum QuoteStatus {
-  DRAFT = "draft",
-  SENT = "sent",
-  ACCEPTED = "accepted",
-  REJECTED = "rejected",
-  EXPIRED = "expired",
-  CONVERTED = "converted",
-}
+
 
 export enum InvoiceStatus {
   DRAFT = "draft",
@@ -184,14 +177,7 @@ export const ORDER_STATUS_COLORS = {
   [OrderStatus.ON_HOLD]: OrderStatusColor.ON_HOLD,
 } as const;
 
-export const QUOTE_STATUS_COLORS = {
-  [QuoteStatus.DRAFT]: "gray",
-  [QuoteStatus.SENT]: "blue",
-  [QuoteStatus.ACCEPTED]: "green",
-  [QuoteStatus.REJECTED]: "red",
-  [QuoteStatus.EXPIRED]: "orange",
-  [QuoteStatus.CONVERTED]: "purple",
-} as const;
+
 
 export const INVOICE_STATUS_COLORS = {
   [InvoiceStatus.DRAFT]: "gray",
@@ -226,9 +212,7 @@ export function getOrderStatusColor(status: OrderStatus): string {
   return ORDER_STATUS_COLORS[status];
 }
 
-export function getQuoteStatusColor(status: QuoteStatus): string {
-  return QUOTE_STATUS_COLORS[status];
-}
+
 
 export function getInvoiceStatusColor(status: InvoiceStatus): string {
   return INVOICE_STATUS_COLORS[status];
@@ -253,14 +237,7 @@ export const ORDER_STATUS_BUTTON_VARIANTS = {
   [OrderStatus.ON_HOLD]: "secondary",
 } as const;
 
-export const QUOTE_STATUS_BUTTON_VARIANTS = {
-  [QuoteStatus.DRAFT]: "secondary",
-  [QuoteStatus.SENT]: "primary",
-  [QuoteStatus.ACCEPTED]: "success",
-  [QuoteStatus.REJECTED]: "danger",
-  [QuoteStatus.EXPIRED]: "warning",
-  [QuoteStatus.CONVERTED]: "purple",
-} as const;
+
 
 export const INVOICE_STATUS_BUTTON_VARIANTS = {
   [InvoiceStatus.DRAFT]: "secondary",

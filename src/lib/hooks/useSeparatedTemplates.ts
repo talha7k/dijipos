@@ -15,8 +15,7 @@ import {
   STATIC_QUOTE_TEMPLATE_IDS,
   STATIC_RECEIPT_TEMPLATE_IDS,
 } from "@/types";
-import { defaultInvoiceEnglish } from "@/components/templates/invoice/default-invoice-english";
-import { defaultInvoiceArabic } from "@/components/templates/invoice/default-invoice-arabic";
+
 import { salesInvoiceEnglish } from "@/components/templates/invoice/sales-invoice-english";
 import { purchaseInvoiceEnglish } from "@/components/templates/invoice/purchase-invoice-english";
 import { salesInvoiceArabic } from "@/components/templates/invoice/sales-invoice-arabic";

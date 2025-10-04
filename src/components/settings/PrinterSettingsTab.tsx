@@ -10,7 +10,7 @@ import { useInvoicesTemplatesData } from '@/lib/hooks/useInvoicesTemplatesData';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EditableSetting } from '@/components/ui/editable-setting';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { Settings, Receipt, FileText, Quote } from 'lucide-react';
+import { Settings, Receipt, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { FontSize } from '@/types/enums';
 import { Loader } from '@/components/ui/loader';
@@ -29,7 +29,7 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
 
   const { receiptTemplates, loading: templatesLoading } = useReceiptTemplatesData(organizationId || undefined);
   const { templates: invoiceTemplates } = useInvoicesTemplatesData(organizationId || undefined);
-  const quoteTemplates = invoiceTemplates; // Use invoice templates for quotes since they're the same now
+
   const { storeSettings, loading: storeSettingsLoading, refreshStoreSettings } = useStoreSettings();
 
   // Use store settings printer settings, fallback to prop
@@ -72,8 +72,6 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
             updatedSettings.receipts = {};
           } else if (documentType === 'invoices' && !updatedSettings.invoices) {
             updatedSettings.invoices = {};
-          } else if (documentType === 'quotes' && !updatedSettings.quotes) {
-            updatedSettings.quotes = {};
           }
 
           if (documentType === 'receipts') {
@@ -82,9 +80,6 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
           } else if (documentType === 'invoices') {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (updatedSettings.invoices as Record<string, any>)[settingField] = value;
-          } else if (documentType === 'quotes') {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (updatedSettings.quotes as Record<string, any>)[settingField] = value;
           }
         } else {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -110,12 +105,6 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
             headingFont: 'Arial',
             bodyFont: 'Helvetica',
           },
-          quotes: {
-            paperWidth: 210, // A4 width
-            fontSize: FontSize.MEDIUM,
-            headingFont: 'Arial',
-            bodyFont: 'Helvetica',
-          },
           createdAt: new Date(),
           updatedAt: new Date(),
         };
@@ -127,8 +116,6 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
             updatedSettings.receipts = { [settingField]: value };
           } else if (documentType === 'invoices') {
             updatedSettings.invoices = { [settingField]: value };
-          } else if (documentType === 'quotes') {
-            updatedSettings.quotes = { [settingField]: value };
           }
         } else {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -225,10 +212,7 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
               <FileText className="h-4 w-4 mr-2" />
               Invoices
             </ToggleGroupItem>
-            <ToggleGroupItem value="quotes">
-              <Quote className="h-4 w-4 mr-2" />
-              Quotes
-            </ToggleGroupItem>
+
           </ToggleGroup>
 
            {selectedTab === 'general' && (
@@ -274,19 +258,7 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
                      disabled={storeSettingsLoading}
                    />
 
-                   <EditableSetting
-                     key={`quote-template-${printerSettings?.quotes?.defaultTemplateId || 'none'}`}
-                     label="Default Quote Template"
-                     value={printerSettings?.quotes?.defaultTemplateId || ''}
-                     type="select"
-options={quoteTemplates.map((t) => ({
-                        value: t.id,
-                        label: t.name
-                      }))}
-                     onSave={(value) => handleUpdateSettings('quotes.defaultTemplateId', value)}
-                     placeholder="Select template"
-                     disabled={storeSettingsLoading}
-                   />
+
                  </div>
                )}
              </div>
@@ -560,136 +532,7 @@ options={quoteTemplates.map((t) => ({
 </div>
           )}
 
-           {selectedTab === 'quotes' && (
-             <div className="space-y-4">
-              <div className="space-y-6">
-                <div>
-                  <h2 className="text-lg font-semibold mb-3">Margins (mm)</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <EditableSetting
-                      label="Top Margin"
-                      value={printerSettings?.quotes?.marginTop?.toString() || '0'}
-                      type="number"
-                      onSave={(value) => handleUpdateSettings('quotes.marginTop', parseInt(value))}
-                      placeholder="Enter top margin in mm"
-                    />
-                    <EditableSetting
-                      label="Bottom Margin"
-                      value={printerSettings?.quotes?.marginBottom?.toString() || '0'}
-                      type="number"
-                      onSave={(value) => handleUpdateSettings('quotes.marginBottom', parseInt(value))}
-                      placeholder="Enter bottom margin in mm"
-                    />
-                    <EditableSetting
-                      label="Left Margin"
-                      value={printerSettings?.quotes?.marginLeft?.toString() || '0'}
-                      type="number"
-                      onSave={(value) => handleUpdateSettings('quotes.marginLeft', parseInt(value))}
-                      placeholder="Enter left margin in mm"
-                    />
-                    <EditableSetting
-                      label="Right Margin"
-                      value={printerSettings?.quotes?.marginRight?.toString() || '0'}
-                      type="number"
-                      onSave={(value) => handleUpdateSettings('quotes.marginRight', parseInt(value))}
-                      placeholder="Enter right margin in mm"
-                     />
-                   </div>
-                </div>
-                <div>
-                  <h2 className="text-lg font-semibold mb-3">Padding (mm)</h2>
-                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                     <EditableSetting
-                       label="Top Padding"
-                       value={printerSettings?.quotes?.paddingTop?.toString() || '0'}
-                      type="number"
-                      onSave={(value) => handleUpdateSettings('quotes.paddingTop', parseInt(value))}
-                      placeholder="Enter top padding in mm"
-                    />
-                    <EditableSetting
-                      label="Bottom Padding"
-                      value={printerSettings?.quotes?.paddingBottom?.toString() || '0'}
-                      type="number"
-                      onSave={(value) => handleUpdateSettings('quotes.paddingBottom', parseInt(value))}
-                      placeholder="Enter bottom padding in mm"
-                    />
-                    <EditableSetting
-                      label="Left Padding"
-                      value={printerSettings?.quotes?.paddingLeft?.toString() || '0'}
-                      type="number"
-                      onSave={(value) => handleUpdateSettings('quotes.paddingLeft', parseInt(value))}
-                      placeholder="Enter left padding in mm"
-                    />
-                    <EditableSetting
-                      label="Right Padding"
-                      value={printerSettings?.quotes?.paddingRight?.toString() || '0'}
-                      type="number"
-                      onSave={(value) => handleUpdateSettings('quotes.paddingRight', parseInt(value))}
-                      placeholder="Enter right padding in mm"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <h2 className="text-lg font-semibold mb-3">Printer Settings</h2>
-                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                       <EditableSetting
-                         label="Paper Size"
-                         value={printerSettings?.quotes?.paperWidth?.toString() || '210'}
-                        type="select"
-                        options={[
-                          { value: '210', label: '210mm (A4)' },
-                          { value: '216', label: '216mm (Letter)' },
-                          { value: '297', label: '297mm (A3)' },
-                        ]}
-                        onSave={(value) => handleUpdateSettings('quotes.paperWidth', parseInt(value))}
-                      />
-                      <div className="col-span-1 md:col-span-3 text-xs text-muted-foreground mt-1">
-                        Controls quote width and print preview window size
-                      </div>
-                    <EditableSetting
-                      label="Font Size"
-                      value={printerSettings?.quotes?.fontSize || FontSize.MEDIUM}
-                      type="select"
-                      options={[
-                        { value: FontSize.SMALL, label: 'Small' },
-                        { value: FontSize.MEDIUM, label: 'Medium' },
-                        { value: FontSize.LARGE, label: 'Large' },
-                      ]}
-                      onSave={(value) => handleUpdateSettings('quotes.fontSize', value)}
-                    />
-                    <EditableSetting
-                      label="Heading Font"
-                      value={printerSettings?.quotes?.headingFont || 'Arial'}
-                      type="select"
-                      options={[
-                        { value: 'Arial', label: 'Arial' },
-                        { value: 'Helvetica', label: 'Helvetica' },
-                        { value: 'Times New Roman', label: 'Times New Roman' },
-                        { value: 'Georgia', label: 'Georgia' },
-                        { value: 'Verdana', label: 'Verdana' },
-                        { value: 'Courier New', label: 'Courier New' },
-                      ]}
-                      onSave={(value) => handleUpdateSettings('quotes.headingFont', value)}
-                    />
-                    <EditableSetting
-                      label="Body Font"
-                      value={printerSettings?.quotes?.bodyFont || 'Helvetica'}
-                      type="select"
-                      options={[
-                        { value: 'Arial', label: 'Arial' },
-                        { value: 'Helvetica', label: 'Helvetica' },
-                        { value: 'Times New Roman', label: 'Times New Roman' },
-                        { value: 'Georgia', label: 'Georgia' },
-                        { value: 'Verdana', label: 'Verdana' },
-                        { value: 'Courier New', label: 'Courier New' },
-                      ]}
-                      onSave={(value) => handleUpdateSettings('quotes.bodyFont', value)}
-                    />
-                  </div>
-               </div>
-             </div>
-</div>
-          )}
+
          </div>
       </CardContent>
     </Card>

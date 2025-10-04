@@ -111,14 +111,7 @@ export const invoiceStatusColors = {
   cancelled: "bg-gray-100 text-gray-800",
 } as const;
 
-// Quote status colors
-export const quoteStatusColors = {
-  draft: "bg-gray-100 text-gray-800",
-  sent: "bg-blue-100 text-blue-800",
-  accepted: "bg-green-100 text-green-800",
-  rejected: "bg-red-100 text-red-800",
-  expired: "bg-orange-100 text-orange-800",
-} as const;
+
 
 // Helper functions
 export function getTableStatusColor(status: string, withBorder = true) {
@@ -143,12 +136,7 @@ export function getInvoiceStatusColor(status: string) {
   );
 }
 
-export function getQuoteStatusColor(status: string) {
-  return (
-    quoteStatusColors[status as keyof typeof quoteStatusColors] ||
-    quoteStatusColors.draft
-  );
-}
+
 
 // Text length utilities based on character count
 

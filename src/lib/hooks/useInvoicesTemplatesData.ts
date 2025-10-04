@@ -4,8 +4,10 @@ import { useState, useMemo } from 'react';
 import { InvoiceTemplate } from '@/types/template';
 import { InvoiceTemplateType } from '@/types/enums';
 
-import { defaultInvoiceEnglish } from '@/components/templates/invoice/default-invoice-english';
-import { defaultInvoiceArabic } from '@/components/templates/invoice/default-invoice-arabic';
+import { salesInvoiceEnglish } from '@/components/templates/invoice/sales-invoice-english';
+import { salesInvoiceArabic } from '@/components/templates/invoice/sales-invoice-arabic';
+import { purchaseInvoiceEnglish } from '@/components/templates/invoice/purchase-invoice-english';
+import { purchaseInvoiceArabic } from '@/components/templates/invoice/purchase-invoice-arabic';
 
 export function useInvoicesTemplatesData(organizationId: string | undefined) {
   const [templates, setTemplates] = useState<InvoiceTemplate[]>([]);
@@ -22,7 +24,7 @@ export function useInvoicesTemplatesData(organizationId: string | undefined) {
         name: 'English Invoice',
         description: 'English invoice template',
         type: InvoiceTemplateType.ENGLISH,
-        content: defaultInvoiceEnglish,
+        content: salesInvoiceEnglish,
         organizationId,
         fields: [],
         style: {
@@ -43,7 +45,7 @@ export function useInvoicesTemplatesData(organizationId: string | undefined) {
         name: 'Arabic Invoice',
         description: 'Arabic invoice template',
         type: InvoiceTemplateType.ARABIC,
-        content: defaultInvoiceArabic,
+        content: salesInvoiceArabic,
         organizationId,
         fields: [],
         style: {
