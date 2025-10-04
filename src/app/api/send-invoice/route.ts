@@ -268,7 +268,12 @@ async function generatePDF(htmlContent: string): Promise<Buffer> {
       puppeteer = await import("puppeteer-core");
       launchOptions = {
         ...launchOptions,
-        args: chromium.args,
+        args: [
+          ...chromium.args,
+          '--font-render-hinting=none',
+          '--disable-font-subpixel-positioning',
+          '--force-color-profile=srgb'
+        ],
         executablePath: await chromium.executablePath(),
       };
     } else {
@@ -283,7 +288,10 @@ async function generatePDF(htmlContent: string): Promise<Buffer> {
           '--disable-accelerated-2d-canvas',
           '--no-first-run',
           '--no-zygote',
-          '--disable-gpu'
+          '--disable-gpu',
+          '--font-render-hinting=none',
+          '--disable-font-subpixel-positioning',
+          '--force-color-profile=srgb'
         ],
         timeout: 30000
       };
@@ -299,9 +307,36 @@ async function generatePDF(htmlContent: string): Promise<Buffer> {
     // Set viewport for better PDF rendering
     await page.setViewport({ width: 1200, height: 800 });
 
+    // Add CSS for better Arabic font rendering before setting content
+    const enhancedHtml = htmlContent.replace(
+      '</head>',
+      `
+      <style>
+        /* Ensure Arabic fonts are available */
+        body, * {
+          font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', sans-serif !important;
+        }
+        
+        /* Arabic text specific styling */
+        [dir="rtl"], .arabic, .arabic-text {
+          font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', sans-serif !important;
+          direction: rtl;
+          text-align: right;
+        }
+        
+        /* Ensure proper text rendering */
+        * {
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+          text-rendering: optimizeLegibility;
+        }
+      </style>
+      </head>`
+    );
+
     // Load HTML content with error handling
     try {
-      await page.setContent(htmlContent, {
+      await page.setContent(enhancedHtml, {
         waitUntil: 'networkidle0',
         timeout: 30000
       });

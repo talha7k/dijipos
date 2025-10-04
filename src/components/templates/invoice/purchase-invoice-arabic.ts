@@ -21,14 +21,14 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
     .customer-logo, .supplier-logo { position: relative; width: 128px; height: 64px; margin-bottom: 8px; }
     .dates-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
     .table { width: 100%; margin-bottom: 30px; border-collapse: collapse; border: 1px solid #d1d5db; }
-    .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 8px; text-align: right; font-family: var(--heading-font), 'Tahoma', 'Arial Unicode MS', 'sans-serif'; }
-    .table td { border: 1px solid #d1d5db; padding: 8px; text-align: right; }
+    .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 4px; text-align: right; font-family: var(--heading-font), 'Tahoma', 'Arial Unicode MS', 'sans-serif'; }
+    .table td { border: 1px solid #d1d5db; padding: 4px; text-align: right; }
     .totals-stamp-container { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; }
     .totals { flex: 1; }
     .totals div { width: 256px; }
     .total-line { display: flex; justify-content: space-between; padding: 6px 0; }
     .total-bold { font-weight: bold; font-size: 1.125rem; border-top: 1px solid #d1d5db; padding-top: 6px; }
-    .stamp { flex: 0 0 auto; margin-right: 30px; }
+    .stamp { flex: 0 0 auto; margin-right: 30px; display: flex; justify-content: center; align-items: center; }
     .stamp div { text-align: center; }
     .stamp img { width: 96px; height: 96px; object-fit: contain; }
     .notes { margin-bottom: 30px; text-align: right; }
@@ -85,23 +85,35 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
         <p>{{supplierEmail}}</p>
          {{#supplierVat}}<p>VAT Number (الرقم الضريبي): {{supplierVat}}</p>{{/supplierVat}}
       </div>
-      <div>
-        <div class="dates-grid">
-          <div>
-             <p style="color: #6b7280;">Invoice Date (تاريخ الفاتورة):</p>
-             <p style="font-weight: 500;">{{invoiceDate}}</p>
-           </div>
-           {{#dueDate}}
-           <div>
-             <p style="color: #6b7280;">Due Date (تاريخ الاستحقاق):</p>
-             <p style="font-weight: 500;">{{dueDate}}</p>
-           </div>
-           {{/dueDate}}
-           <div>
-             <p style="color: #6b7280;">Status (الحالة):</p>
-             <p style="font-weight: 500; text-transform: capitalize;">{{status}}</p>
-           </div>
-        </div>
+      <div style="text-align: left;">
+        <h3 style="font-weight: 600; margin-bottom: 8px;">Bill To (إلى):</h3>
+        <p style="font-weight: 500;">{{companyNameAr}}</p>
+        {{#companyName}}
+        <p style="font-size: 1rem;">{{companyName}}</p>
+        {{/companyName}}
+        <p>{{companyAddress}}</p>
+        <p>{{companyEmail}}</p>
+        {{#companyVat}}<p>VAT Number (الرقم الضريبي): {{companyVat}}</p>{{/companyVat}}
+      </div>
+    </div>
+    
+    <!-- Dates Section -->
+    <div style="margin-bottom: 30px;">
+      <div class="dates-grid">
+        <div>
+           <p style="color: #6b7280;">Invoice Date (تاريخ الفاتورة):</p>
+           <p style="font-weight: 500;">{{invoiceDate}}</p>
+         </div>
+         {{#dueDate}}
+         <div>
+           <p style="color: #6b7280;">Due Date (تاريخ الاستحقاق):</p>
+           <p style="font-weight: 500;">{{dueDate}}</p>
+         </div>
+         {{/dueDate}}
+         <div>
+           <p style="color: #6b7280;">Status (الحالة):</p>
+           <p style="font-weight: 500; text-transform: capitalize;">{{status}}</p>
+         </div>
       </div>
     </div>
 
