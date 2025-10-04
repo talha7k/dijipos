@@ -3,9 +3,8 @@
 import React, { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
-import { Download, Upload, FileText, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Download, Upload, FileText } from 'lucide-react';
 import {
   downloadSampleData,
   exportProductsAndCategories,
@@ -16,6 +15,7 @@ import {
 } from '@/lib/export-import-utils';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { Category, Item } from '@/types';
+import { ImportResultDialog } from './ImportResultDialog';
 
 interface ExportImportProductsProps {
   organizationId?: string;
@@ -41,10 +41,11 @@ export function ExportImportProducts({
   const [overwriteExistingData, setOverwriteExistingData] = useState(false);
   const [overwriteDuplicates, setOverwriteDuplicates] = useState(false);
 
-  const { user } = useAuth();
-  const [isImporting, setIsImporting] = useState(false);
-  const [lastImportResult, setLastImportResult] = useState<ImportResult | null>(null);
-  const [importProgress, setImportProgress] = useState<ImportProgress | null>(null);
+   const { user } = useAuth();
+   const [isImporting, setIsImporting] = useState(false);
+   const [lastImportResult, setLastImportResult] = useState<ImportResult | null>(null);
+   const [importProgress, setImportProgress] = useState<ImportProgress | null>(null);
+   const [showResultDialog, setShowResultDialog] = useState(false);
 
   // Export function
   const handleExport = () => {
@@ -78,9 +79,12 @@ export function ExportImportProducts({
         items,
         { overwriteExisting: overwriteExistingData, skipDuplicates: !overwriteDuplicates, overwriteDuplicates },
         (progress) => setImportProgress(progress)
-      );
-      setLastImportResult(result);
-    } catch (error) {
+       );
+       setLastImportResult(result);
+       if (result.success) {
+         setShowResultDialog(true);
+       }
+     } catch (error) {
       setLastImportResult({
         success: false,
         message: `Import failed: ${error}`,
@@ -105,14 +109,15 @@ export function ExportImportProducts({
 
 
 
-  const clearFileSelection = () => {
-    setSelectedFile(null);
-    setImportProgress(null);
-    setLastImportResult(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
+   const clearFileSelection = () => {
+     setSelectedFile(null);
+     setImportProgress(null);
+     setLastImportResult(null);
+     setShowResultDialog(false);
+     if (fileInputRef.current) {
+       fileInputRef.current.value = '';
+     }
+   };
 
   const canExport = organizationId && user;
   const canImport = organizationId && user && selectedFile;
@@ -290,49 +295,11 @@ export function ExportImportProducts({
         </CardContent>
       </Card>
 
-      {/* Import Results */}
-      {lastImportResult && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              {lastImportResult.success ? (
-                <CheckCircle className="w-5 h-5 text-green-500" />
-              ) : (
-                <XCircle className="w-5 h-5 text-red-500" />
-              )}
-              Import Result
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Alert variant={lastImportResult.success ? "default" : "destructive"}>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{lastImportResult.message}</AlertDescription>
-            </Alert>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="text-center p-3 bg-muted rounded">
-                <div className="text-2xl font-bold">{lastImportResult.imported.categories}</div>
-                <div className="text-sm text-muted-foreground">Categories Imported</div>
-              </div>
-              <div className="text-center p-3 bg-muted rounded">
-                <div className="text-2xl font-bold">{lastImportResult.imported.items}</div>
-                <div className="text-sm text-muted-foreground">Items Imported</div>
-              </div>
-            </div>
-
-            {lastImportResult.errors.length > 0 && (
-              <div className="space-y-2">
-                <h4 className="font-medium text-sm">Errors:</h4>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  {lastImportResult.errors.map((error, index) => (
-                    <li key={index} className="list-disc list-inside">{error}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
+       <ImportResultDialog
+         open={showResultDialog}
+         onOpenChange={setShowResultDialog}
+         result={lastImportResult}
+       />
     </div>
   );
 }

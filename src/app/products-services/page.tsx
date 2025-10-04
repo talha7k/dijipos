@@ -182,10 +182,10 @@ export default function ProductsServicesPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between pb-2">
-                    <div className="flex items-center gap-2">
-                      <Package className="h-5 w-5" />
-                      Sales Product Categories
-                    </div>
+                     <div className="flex items-center gap-2">
+                       <Package className="h-5 w-5" />
+                       Categories
+                     </div>
                     <AddCategoryDialog
                       open={categoryDialogOpen}
                       onOpenChange={setCategoryDialogOpen}
@@ -252,10 +252,10 @@ export default function ProductsServicesPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between pb-2">
-                    <div className="flex items-center gap-2">
-                      <Wrench className="h-5 w-5" />
-                      Sales Service Categories
-                    </div>
+                     <div className="flex items-center gap-2">
+                       <Wrench className="h-5 w-5" />
+                       Categories
+                     </div>
                     <AddCategoryDialog
                       open={categoryDialogOpen}
                       onOpenChange={setCategoryDialogOpen}
@@ -322,10 +322,10 @@ export default function ProductsServicesPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between pb-2">
-                    <div className="flex items-center gap-2">
-                      <Package className="h-5 w-5" />
-                      Purchase Product Categories
-                    </div>
+                     <div className="flex items-center gap-2">
+                       <Package className="h-5 w-5" />
+                       Categories
+                     </div>
                     <AddCategoryDialog
                       open={categoryDialogOpen}
                       onOpenChange={setCategoryDialogOpen}
@@ -392,10 +392,10 @@ export default function ProductsServicesPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between pb-2">
-                    <div className="flex items-center gap-2">
-                      <Wrench className="h-5 w-5" />
-                      Purchase Service Categories
-                    </div>
+                     <div className="flex items-center gap-2">
+                       <Wrench className="h-5 w-5" />
+                       Categories
+                     </div>
                     <AddCategoryDialog
                       open={categoryDialogOpen}
                       onOpenChange={setCategoryDialogOpen}

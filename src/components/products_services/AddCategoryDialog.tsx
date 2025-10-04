@@ -1,17 +1,29 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { FolderPlus } from 'lucide-react';
-import { Category, CategoryType, ProductTransactionType } from '@/types';
-import { CategoryTree } from './CategoryTree';
+import { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { FolderPlus } from "lucide-react";
+import { Category, CategoryType, ProductTransactionType } from "@/types";
+import { CategoryTree } from "./CategoryTree";
 
 interface AddCategoryDialogProps {
   open: boolean;
@@ -36,13 +48,16 @@ export function AddCategoryDialog({
   categories,
   defaultType = CategoryType.PRODUCT,
   defaultTransactionType = ProductTransactionType.SALES,
-  selectedParentId: propSelectedParentId
+  selectedParentId: propSelectedParentId,
 }: AddCategoryDialogProps) {
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
   const [type, setType] = useState<CategoryType>(defaultType);
-  const [transactionType, setTransactionType] = useState<ProductTransactionType>(defaultTransactionType);
-  const [selectedParentId, setSelectedParentId] = useState<string | null>(propSelectedParentId || null);
+  const [transactionType, setTransactionType] =
+    useState<ProductTransactionType>(defaultTransactionType);
+  const [selectedParentId, setSelectedParentId] = useState<string | null>(
+    propSelectedParentId || null,
+  );
 
   useEffect(() => {
     setType(defaultType);
@@ -58,34 +73,32 @@ export function AddCategoryDialog({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     onAddCategory({
       name,
       description,
       type,
       parentId: selectedParentId,
-      transactionType
+      transactionType,
     });
 
     // Reset form
-    setName('');
-    setDescription('');
+    setName("");
+    setDescription("");
     setType(defaultType);
     setTransactionType(defaultTransactionType);
     setSelectedParentId(null);
     onOpenChange(false);
   };
 
-  const filteredCategories = categories.filter(c =>
-    c.type === type
-  );
+  const filteredCategories = categories.filter((c) => c.type === type);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
         <Button size="sm">
           <FolderPlus className="mr-1 h-4 w-4" />
-          Add Category
+          Add
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -99,7 +112,9 @@ export function AddCategoryDialog({
               <Label>Parent Category (Optional)</Label>
               <Card className="mt-2 h-96">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm">Select where to add this category</CardTitle>
+                  <CardTitle className="text-sm">
+                    Select where to add this category
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2 overflow-auto max-h-64">
                   <Button
@@ -116,11 +131,15 @@ export function AddCategoryDialog({
                       <div className="w-3" />
                       <span>Root Level (No Parent)</span>
                     </div>
-                    <Badge variant={selectedParentId === null ? "default" : "secondary"}>
+                    <Badge
+                      variant={
+                        selectedParentId === null ? "default" : "secondary"
+                      }
+                    >
                       Top Level
                     </Badge>
                   </Button>
-                  
+
                   <CategoryTree
                     categories={filteredCategories}
                     products={[]}
@@ -158,28 +177,44 @@ export function AddCategoryDialog({
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="categoryType">Type</Label>
-                   <Select value={type} onValueChange={(value: string) => {
-                     setType(value as CategoryType);
-                     setSelectedParentId(null); // Reset parent selection when type changes
-                   }}>
+                  <Select
+                    value={type}
+                    onValueChange={(value: string) => {
+                      setType(value as CategoryType);
+                      setSelectedParentId(null); // Reset parent selection when type changes
+                    }}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value={CategoryType.PRODUCT}>Products</SelectItem>
-                      <SelectItem value={CategoryType.SERVICE}>Services</SelectItem>
+                      <SelectItem value={CategoryType.PRODUCT}>
+                        Products
+                      </SelectItem>
+                      <SelectItem value={CategoryType.SERVICE}>
+                        Services
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
                   <Label htmlFor="transactionType">Transaction Type</Label>
-                  <Select value={transactionType} onValueChange={(value) => setTransactionType(value as ProductTransactionType)}>
+                  <Select
+                    value={transactionType}
+                    onValueChange={(value) =>
+                      setTransactionType(value as ProductTransactionType)
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select transaction type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value={ProductTransactionType.SALES}>Sales</SelectItem>
-                      <SelectItem value={ProductTransactionType.PURCHASE}>Purchase</SelectItem>
+                      <SelectItem value={ProductTransactionType.SALES}>
+                        Sales
+                      </SelectItem>
+                      <SelectItem value={ProductTransactionType.PURCHASE}>
+                        Purchase
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -189,9 +224,12 @@ export function AddCategoryDialog({
                   <Label>Parent Category</Label>
                   <div className="mt-2">
                     <Input
-                      value={selectedParentId 
-                        ? filteredCategories.find(c => c.id === selectedParentId)?.name || 'Unknown Category'
-                        : 'Root Level (No Parent)'
+                      value={
+                        selectedParentId
+                          ? filteredCategories.find(
+                              (c) => c.id === selectedParentId,
+                            )?.name || "Unknown Category"
+                          : "Root Level (No Parent)"
                       }
                       readOnly
                       className="bg-muted/50"
@@ -201,9 +239,13 @@ export function AddCategoryDialog({
               </div>
             </div>
           </div>
-          
+
           <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
             <Button type="submit">Add Category</Button>
