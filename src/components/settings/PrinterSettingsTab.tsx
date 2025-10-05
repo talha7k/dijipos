@@ -5,8 +5,8 @@ import { useAtomValue } from 'jotai';
 import { selectedOrganizationAtom, selectedOrganizationIdAtom } from '@/atoms';
 import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
 import { PrinterSettings } from '@/types';
-import { useReceiptTemplatesData } from '@/lib/hooks/useReceiptTemplatesData';
-import { useInvoicesTemplatesData } from '@/lib/hooks/useInvoicesTemplatesData';
+import { useStaticTemplates } from '@/lib/hooks/useStaticTemplates';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EditableSetting } from '@/components/ui/editable-setting';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -27,13 +27,15 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
 
 
 
-  const { receiptTemplates, loading: templatesLoading } = useReceiptTemplatesData(organizationId || undefined);
-  const { templates: invoiceTemplates } = useInvoicesTemplatesData(organizationId || undefined);
+  const { receiptTemplates, invoiceTemplates, loading: templatesLoading } = useStaticTemplates();
 
   const { storeSettings, loading: storeSettingsLoading, refreshStoreSettings } = useStoreSettings();
 
   // Use store settings printer settings, fallback to prop
   const printerSettings = storeSettings?.printerSettings || propPrinterSettings;
+
+  const salesInvoiceTemplates = invoiceTemplates.filter(t => t.id.includes('sales-invoice'));
+  const purchaseInvoiceTemplates = invoiceTemplates.filter(t => t.id.includes('purchase-invoice'));
 
   
 
@@ -245,16 +247,30 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
                    />
 
                    <EditableSetting
-                     key={`invoice-template-${printerSettings?.invoices?.defaultTemplateId || 'none'}`}
-                     label="Default Invoice Template"
-                     value={printerSettings?.invoices?.defaultTemplateId || ''}
+                     key={`sales-invoice-template-${printerSettings?.invoices?.defaultSalesTemplateId || 'none'}`}
+                     label="Default Sales Invoice Template"
+                     value={printerSettings?.invoices?.defaultSalesTemplateId || ''}
                      type="select"
-                     options={invoiceTemplates.map(t => ({
+                     options={salesInvoiceTemplates.map(t => ({
                        value: t.id,
                        label: t.name
                      }))}
-                     onSave={(value) => handleUpdateSettings('invoices.defaultTemplateId', value)}
-                     placeholder="Select template"
+                     onSave={(value) => handleUpdateSettings('invoices.defaultSalesTemplateId', value)}
+                     placeholder="Select sales template"
+                     disabled={storeSettingsLoading}
+                   />
+
+                   <EditableSetting
+                     key={`purchase-invoice-template-${printerSettings?.invoices?.defaultPurchaseTemplateId || 'none'}`}
+                     label="Default Purchase Invoice Template"
+                     value={printerSettings?.invoices?.defaultPurchaseTemplateId || ''}
+                     type="select"
+                     options={purchaseInvoiceTemplates.map(t => ({
+                       value: t.id,
+                       label: t.name
+                     }))}
+                     onSave={(value) => handleUpdateSettings('invoices.defaultPurchaseTemplateId', value)}
+                     placeholder="Select purchase template"
                      disabled={storeSettingsLoading}
                    />
 

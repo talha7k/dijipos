@@ -245,7 +245,7 @@ export function useSeparatedTemplates(): SeparatedTemplatesState {
   ]);
 
   const allInvoiceTemplates = useMemo(() => {
-    const defaultId = printerSettings?.invoices?.defaultTemplateId;
+    const defaultId = printerSettings?.invoices?.defaultSalesTemplateId;
     console.log(
       "[useSeparatedTemplates] Computing allInvoiceTemplates with defaultId:",
       defaultId,

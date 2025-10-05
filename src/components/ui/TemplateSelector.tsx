@@ -42,7 +42,7 @@ export function TemplateSelector({
     templatesCount: templates.length,
     printerSettings: printerSettings ? {
       receipts: printerSettings.receipts?.defaultTemplateId,
-      invoices: printerSettings.invoices?.defaultTemplateId,
+      invoices: printerSettings.invoices?.defaultSalesTemplateId,
     } : null,
     templates: templates.map(t => ({ id: t.id, name: t.name }))
   });
@@ -50,8 +50,14 @@ export function TemplateSelector({
   const getDefaultTemplateId = () => {
     if (!printerSettings || !templateType) return null;
     
-    const settings = printerSettings[templateType];
-    return settings?.defaultTemplateId || null;
+    if (templateType === 'receipts') {
+      const settings = printerSettings.receipts;
+      return settings?.defaultTemplateId || null;
+    } else if (templateType === 'invoices') {
+      const settings = printerSettings.invoices;
+      return settings?.defaultSalesTemplateId || null;
+    }
+    return null;
   };
 
   // Get the effective default template (from printer settings only)
@@ -64,7 +70,7 @@ export function TemplateSelector({
       templateType,
       printerSettings: printerSettings ? {
         receipts: printerSettings.receipts?.defaultTemplateId,
-        invoices: printerSettings.invoices?.defaultTemplateId,
+        invoices: printerSettings.invoices?.defaultSalesTemplateId,
       } : null,
     });
     

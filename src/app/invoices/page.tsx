@@ -13,7 +13,7 @@ import { EditCustomerDialog } from "@/components/invoices_quotes/EditCustomerDia
 import { Button } from "@/components/ui/button";
 import { Plus, Printer, Receipt, Edit, Mail, Trash2 } from "lucide-react";
 import { EmailInvoiceDialog } from "@/components/invoices_quotes/EmailInvoiceDialog";
-import { useSeparatedTemplates } from "@/lib/hooks/useSeparatedTemplates";
+import { useStaticTemplates } from "@/lib/hooks/useStaticTemplates";
 import { useStoreSettings } from "@/lib/hooks/useStoreSettings";
 import { Loader } from "@/components/ui/loader";
 import {
@@ -83,8 +83,7 @@ const [filters, setFilters] = useState({});
   const { customers, loading: customersLoading } = useCustomers();
   const { suppliers, loading: suppliersLoading } = useSuppliers();
   const { getPaymentsForInvoice: getInvoicePayments } = useInvoices();
-  const { allInvoiceTemplates: invoiceTemplates, loading: templatesLoading } =
-    useSeparatedTemplates();
+  const { invoiceTemplates, loading: templatesLoading } = useStaticTemplates();
   const { storeSettings } = useStoreSettings();
   const printerSettings = storeSettings?.printerSettings;
 

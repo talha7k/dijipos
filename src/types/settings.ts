@@ -4,7 +4,8 @@ import { FontSize, Currency, CurrencyLocale } from "./enums";
 // Document-specific print settings
 export interface DocumentPrintSettings {
   // Template selection
-  defaultTemplateId?: string;
+  defaultSalesTemplateId?: string;
+  defaultPurchaseTemplateId?: string;
 
   // Spacing (in mm)
   marginTop?: number;

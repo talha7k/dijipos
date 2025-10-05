@@ -165,12 +165,7 @@ export function InvoicePrintDialog({
   }, [invoiceTemplates, invoice.type]);
 
   // Initialize states with default values from settings (similar to ReceiptPrintDialog)
-  const [selectedTemplate, setSelectedTemplate] = useState<string>(() => {
-    const defaultTemplateId = settings?.defaultTemplateId;
-    // For initialization, we need to check templates, but they might not be filtered yet
-    // We'll use the first available template and let useEffect update it
-    return defaultTemplateId || invoiceTemplates[0]?.id || "";
-  });
+  const [selectedTemplate, setSelectedTemplate] = useState<string>("");
   const [pageSize, setPageSize] = useState(() => {
     return settings?.paperWidth ? `${settings.paperWidth}mm` : "210mm";
   });
@@ -194,7 +189,10 @@ export function InvoicePrintDialog({
   // Effect to update settings when props change (similar to ReceiptPrintDialog)
   useEffect(() => {
     // 1. Set default template
-    const defaultTemplateId = settings?.defaultTemplateId;
+    const defaultTemplateId = invoice.type === InvoiceType.SALES
+      ? settings?.defaultSalesTemplateId
+      : settings?.defaultPurchaseTemplateId;
+
     const isValidDefault =
       defaultTemplateId &&
       filteredTemplates.some((t) => t.id === defaultTemplateId);
@@ -225,7 +223,7 @@ export function InvoicePrintDialog({
 
     setMargins(newMargins);
     setPaddings(newPaddings);
-  }, [settings, filteredTemplates]);
+  }, [settings, filteredTemplates, invoice.type]);
 
   // Effect to clear preview when dialog closes
   useEffect(() => {

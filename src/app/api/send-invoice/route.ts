@@ -354,7 +354,7 @@ async function generatePDF(htmlContent: string): Promise<Buffer> {
            direction: rtl;
            text-align: right;
            margin: 0;
-           padding: 20px;
+           padding: 0;
          }
         .arabic-text {
           font-family: 'ArabicFont', 'Noto Sans Arabic', 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Geeza Pro', 'Arial', sans-serif !important;
@@ -422,10 +422,10 @@ async function generatePDF(htmlContent: string): Promise<Buffer> {
          printBackground: true,
          scale: 0.92,
          margin: {
-           top: '10px',
-           right: '10px',
-           bottom: '10px',
-           left: '10px'
+           top: '0px',
+           right: '0px',
+           bottom: '0px',
+           left: '0px'
          },
          timeout: 30000,
          waitForFonts: true

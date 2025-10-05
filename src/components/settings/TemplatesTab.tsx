@@ -94,19 +94,19 @@ export function TemplatesTab({}: TemplatesTabProps) {
   // Local state for default template IDs to ensure immediate UI updates
   const [localDefaults, setLocalDefaults] = useState({
     receipt: printerSettings?.receipts?.defaultTemplateId,
-    invoice: printerSettings?.invoices?.defaultTemplateId,
+    invoice: printerSettings?.invoices?.defaultSalesTemplateId,
   });
 
   // Update local defaults when printer settings change
   useEffect(() => {
     console.log("[TemplatesTab] useEffect triggered with dependencies:", {
       receipt: printerSettings?.receipts?.defaultTemplateId,
-      invoice: printerSettings?.invoices?.defaultTemplateId,
+      invoice: printerSettings?.invoices?.defaultSalesTemplateId,
       printerSettingsExists: !!printerSettings,
     });
     const newDefaults = {
       receipt: printerSettings?.receipts?.defaultTemplateId,
-      invoice: printerSettings?.invoices?.defaultTemplateId,
+      invoice: printerSettings?.invoices?.defaultSalesTemplateId,
     };
     console.log("[TemplatesTab] Setting localDefaults to:", newDefaults);
     setLocalDefaults(newDefaults);
@@ -257,7 +257,7 @@ export function TemplatesTab({}: TemplatesTabProps) {
             fontSize: FontSize.MEDIUM,
             headingFont: "Arial",
             bodyFont: "Helvetica",
-            defaultTemplateId: "english-invoice",
+            defaultSalesTemplateId: "english-invoice",
           },
         });
 
@@ -340,7 +340,7 @@ export function TemplatesTab({}: TemplatesTabProps) {
           settingsToUpdate.receipts!.defaultTemplateId = templateId;
           break;
         case TemplateCategory.INVOICE:
-          settingsToUpdate.invoices!.defaultTemplateId = templateId;
+          settingsToUpdate.invoices!.defaultSalesTemplateId = templateId;
           break;
       }
 

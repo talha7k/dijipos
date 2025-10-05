@@ -16,7 +16,7 @@ import {
   currentQueueNumberAtom,
   vatSettingsAtom,
 } from "@/atoms/posAtoms";
-import { useSeparatedTemplates } from "@/lib/hooks/useSeparatedTemplates";
+import { useStaticTemplates } from "@/lib/hooks/useStaticTemplates";
 import { useStoreSettings } from "@/lib/hooks/useStoreSettings";
 import { useCurrency } from "@/lib/hooks/useCurrency";
 import { calculateCartTotals } from "@/lib/vat-calculator";
@@ -62,7 +62,7 @@ export function POSCartSidebar({
   console.log('POSCartSidebar - cartItems.length:', cartItems.length);
   const organizationId = selectedOrganization?.id || "";
 
-  const { allReceiptTemplates: receiptTemplates = [] } = useSeparatedTemplates();
+  const { receiptTemplates = [] } = useStaticTemplates();
   const { storeSettings } = useStoreSettings();
   const printerSettings = storeSettings?.printerSettings;
   const { formatCurrency } = useCurrency();
