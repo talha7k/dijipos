@@ -27,8 +27,8 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
     .customer-logo, .supplier-logo { position: relative; width: 128px; height: 64px; margin-bottom: 8px; }
     .dates-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
      .table { width: 100%; margin-bottom: 30px; border-collapse: collapse; border: 1px solid #d1d5db; }
-       .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 8px; text-align: right; font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--heading-font), 'sans-serif'; }
-      .table td { border: 1px solid #d1d5db; padding: 8px; text-align: right; }
+       .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 4px 6px; text-align: right; font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--heading-font), 'sans-serif'; line-height: 1.3; vertical-align: middle; min-height: 1.1em; }
+      .table td { border: 1px solid #d1d5db; padding: 4px 6px; text-align: right; line-height: 1.3; vertical-align: middle; min-height: 1.1em; }
     .totals-stamp-container { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; }
     .totals { flex: 1; }
     .totals div { width: 256px; }
@@ -38,9 +38,17 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
     .stamp div { text-align: center; }
     .stamp img { width: 96px; height: 96px; object-fit: contain; }
     .notes { margin-bottom: 30px; text-align: right; }
-    .bilingual { display: flex; justify-content: space-between; align-items: center; }
-    .english { flex: 1; text-align: left; }
-    .arabic { flex: 1; text-align: right; direction: rtl; }
+     .bilingual { display: flex; justify-content: space-between; align-items: center; }
+     .english { flex: 1; text-align: left; }
+     .arabic { flex: 1; text-align: right; direction: rtl; }
+
+     /* PDF-specific spacing adjustments */
+     @media print {
+       .table th, .table td {
+         padding: 3px 5px;
+         line-height: 1.2;
+       }
+     }
   </style>
 </head>
 <body>
@@ -69,9 +77,9 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
           {{#companyName}}
           <h2 style="font-size: 1.125rem; font-weight: 600;">{{companyName}}</h2>
           {{/companyName}}
-           {{#companyNameAr}}
-           <p style="font-size: 1.125rem; font-weight: 600; font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', sans-serif;">{{companyNameAr}}</p>
-           {{/companyNameAr}}
+            {{#companyNameAr}}
+            <p style="font-size: 1.125rem; font-weight: 600;">{{companyNameAr}}</p>
+            {{/companyNameAr}}
             <p>Address (العنوان): {{companyAddress}}</p>
             <p>Email (البريد الإلكتروني): {{companyEmail}}</p>
             {{#companyPhone}}<p>Tel (الهاتف): {{companyPhone}}</p>{{/companyPhone}}
