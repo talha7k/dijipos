@@ -87,7 +87,7 @@ export const salesInvoiceEnglish = `<!DOCTYPE html>
 
          <div class="header-row-2">
            <div class="bill-to">
-             <h3 style="font-weight: 600; margin-bottom: 8px;">Bill To:</h3>
+             <h3 style="font-weight: 600; margin-bottom: 8px;">Billed To:</h3>
              <p style="font-weight: 500;">{{clientName}}</p>
              {{#customerNameAr}}
              <p style="font-size: 1rem;">{{customerNameAr}}</p>

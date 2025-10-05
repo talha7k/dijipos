@@ -85,7 +85,7 @@ export function InvoiceDetails({
 
         <Card>
           <CardHeader>
-            <CardTitle>Bill To</CardTitle>
+            <CardTitle>Billed To</CardTitle>
           </CardHeader>
           <CardContent>
             {isPurchaseInvoice(invoice) ? (
@@ -199,7 +199,7 @@ export function InvoiceDetails({
                 </div>
               )}
             </div>
-            
+
             {payments.length > 0 && (
               <div className="mt-4">
                 <h4 className="font-semibold mb-2">Payment History</h4>

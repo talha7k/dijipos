@@ -119,7 +119,7 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
               {{#supplierVat}}<p>🏢 VAT: {{supplierVat}}</p>{{/supplierVat}}
            </div>
             <div class="bill-to">
-              <h3 style="font-weight: 600; margin-bottom: 8px;">Bill To (إلى):</h3>
+              <h3 style="font-weight: 600; margin-bottom: 8px;">Billed To (إلى):</h3>
               {{#companyLogo}}
               <div style="margin-bottom: 8px;">
                 <img src="{{companyLogo}}" alt="شعار الشركة" style="width: 128px; height: 64px; object-fit: contain;" />

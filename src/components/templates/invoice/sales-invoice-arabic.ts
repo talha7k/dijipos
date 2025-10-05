@@ -100,7 +100,7 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
        </div>
 <div class="header-row-2">
             <div class="bill-to">
-              <h3 style="font-weight: 600; margin-bottom: 8px;">Bill To (إلى):</h3>
+              <h3 style="font-weight: 600; margin-bottom: 8px;">Billed To (إلى):</h3>
               {{#customerLogo}}
               <div style="margin-bottom: 8px;">
                 <img src="{{customerLogo}}" alt="شعار العميل" style="width: 128px; height: 64px; object-fit: contain;" />

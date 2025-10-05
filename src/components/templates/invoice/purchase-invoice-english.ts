@@ -97,7 +97,7 @@ export const purchaseInvoiceEnglish = `<!DOCTYPE html>
              {{#supplierVat}}<p>VAT: {{supplierVat}}</p>{{/supplierVat}}
            </div>
            <div class="bill-to">
-             <h3 style="font-weight: 600; margin-bottom: 8px;">Bill To:</h3>
+             <h3 style="font-weight: 600; margin-bottom: 8px;">Billed To:</h3>
              <h2 style="font-size: 1.25rem; font-weight: 600;">{{companyName}}</h2>
              {{#companyNameAr}}
              <p style="font-size: 1.125rem;">{{companyNameAr}}</p>
