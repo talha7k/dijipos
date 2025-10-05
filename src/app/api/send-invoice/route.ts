@@ -312,29 +312,52 @@ async function generatePDF(htmlContent: string): Promise<Buffer> {
     // Set viewport for better PDF rendering
     await page.setViewport({ width: 1200, height: 800 });
 
-    // Create a simplified HTML with embedded Arabic font support
-    const simplifiedHtml = `
+    // Emulate screen media type for better font rendering
+    await page.emulateMediaType('screen');
+
+    // Use template HTML directly with enhanced font support
+    const enhancedHtml = htmlContent.includes('<!DOCTYPE html>')
+      ? htmlContent.replace('<head>', `<head>
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
+      <style>
+        @font-face {
+          font-family: 'ArabicFont';
+          src: local('Noto Sans Arabic'), local('Tahoma'), local('Arial Unicode MS'), local('DejaVu Sans'), local('Geeza Pro');
+          unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF;
+          font-display: swap;
+        }
+        body, .invoice-template, .arabic-text {
+          font-family: 'ArabicFont', 'Noto Sans Arabic', 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Geeza Pro', 'Arial', sans-serif !important;
+        }
+      </style>`)
+      : `
     <!DOCTYPE html>
     <html dir="rtl">
     <head>
       <meta charset="utf-8">
       <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
       <title>Invoice</title>
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
       <style>
         @font-face {
           font-family: 'ArabicFont';
-          src: local('Tahoma'), local('Arial Unicode MS'), local('DejaVu Sans');
+          src: local('Noto Sans Arabic'), local('Tahoma'), local('Arial Unicode MS'), local('DejaVu Sans'), local('Geeza Pro');
           unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF;
+          font-display: swap;
         }
         body {
-          font-family: 'ArabicFont', 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', sans-serif;
+          font-family: 'ArabicFont', 'Noto Sans Arabic', 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Geeza Pro', 'Arial', sans-serif;
           direction: rtl;
           text-align: right;
           margin: 0;
           padding: 20px;
         }
         .arabic-text {
-          font-family: 'ArabicFont', 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', sans-serif !important;
+          font-family: 'ArabicFont', 'Noto Sans Arabic', 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Geeza Pro', 'Arial', sans-serif !important;
           direction: rtl !important;
           text-align: right !important;
           unicode-bidi: embed !important;
@@ -349,13 +372,19 @@ async function generatePDF(htmlContent: string): Promise<Buffer> {
 
     // Load HTML content with error handling
     try {
-      await page.setContent(simplifiedHtml, {
+      await page.setContent(enhancedHtml, {
         waitUntil: 'networkidle0',
         timeout: 30000
       });
       
-      // Wait for fonts to load
-      await new Promise(resolve => setTimeout(resolve, 3000));
+       // Wait for fonts to load properly
+       try {
+         await page.evaluate(() => document.fonts.ready);
+         console.log('Fonts loaded successfully via document.fonts.ready');
+       } catch (fontError) {
+         console.warn('Font loading check failed, using fallback timeout:', fontError);
+         await new Promise(resolve => setTimeout(resolve, 5000));
+       }
       
       // Test Arabic rendering
       const arabicTest = await page.evaluate(() => {
@@ -397,7 +426,8 @@ async function generatePDF(htmlContent: string): Promise<Buffer> {
           bottom: '20px',
           left: '20px'
         },
-        timeout: 30000
+        timeout: 30000,
+        waitForFonts: true
       });
     } catch (pdfError) {
       console.error('Error creating PDF:', pdfError);
