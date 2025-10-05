@@ -3,9 +3,10 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Payment, Organization, InvoiceTemplate, Customer, Supplier, DocumentPrintSettings, SalesInvoice, PurchaseInvoice, InvoiceType, PaymentType } from '@/types';
-import { Printer, Eye, MoreHorizontal, Trash2, Mail } from 'lucide-react';
-import { InvoiceActionsDialog } from './InvoiceActionsDialog';
+import { Printer, Eye, Trash2, Mail, Edit } from 'lucide-react';
+
 import { InvoicePrintDialog } from './InvoicePrintDialog';
+import { EditCustomerDialog } from './EditCustomerDialog';
 
 interface InvoiceActionsProps {
     invoice: SalesInvoice | PurchaseInvoice;
@@ -41,19 +42,17 @@ export function InvoiceActions({
     customers,
     suppliers,
     settings,
-   }: InvoiceActionsProps) {
-   const [showActionsDialog, setShowActionsDialog] = useState(false);
+    }: InvoiceActionsProps) {
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   const handleViewDetails = (e: React.MouseEvent) => {
     e.stopPropagation();
     onViewDetails(invoice);
   };
 
-
-
-  const handleActionsClick = (e: React.MouseEvent) => {
+  const handleEditCustomer = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setShowActionsDialog(true);
+    setShowEditDialog(true);
   };
 
   const handleDelete = (e: React.MouseEvent) => {
@@ -70,15 +69,14 @@ export function InvoiceActions({
   return (
     <>
       <div className="flex items-center gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleActionsClick}
-          title="More Actions"
-        >
-          <MoreHorizontal className="h-4 w-4 mr-1" />
-          Actions
-        </Button>
+         <Button
+           variant="ghost"
+           size="sm"
+           onClick={handleEditCustomer}
+           title="Edit Customer Info"
+         >
+           <Edit className="h-4 w-4" />
+         </Button>
 
          <Button
            variant="ghost"
@@ -138,20 +136,17 @@ export function InvoiceActions({
         </Button>
       </div>
 
-      <InvoiceActionsDialog
+      <EditCustomerDialog
         invoice={invoice}
-        payments={payments}
-        open={showActionsDialog}
-        onOpenChange={setShowActionsDialog}
-        onViewDetails={() => onViewDetails(invoice)}
-        onEdit={() => onEdit?.(invoice)}
-        onDuplicate={() => onDuplicate?.(invoice)}
-        onSend={() => onSend?.(invoice)}
-
-        onDownloadPDF={() => onDownloadPDF?.(invoice)}
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        onUpdate={(updatedInvoice) => {
+          // For now, we'll just log the update. In a real implementation,
+          // this would call an update function passed from the parent
+          console.log('Updated invoice:', updatedInvoice);
+          // You might want to call onEdit(updatedInvoice) or a specific update function
+        }}
       />
-
-
     </>
   );
 }

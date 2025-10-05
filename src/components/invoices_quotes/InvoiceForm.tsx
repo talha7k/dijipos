@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+
 import { Combobox } from "@/components/ui/combobox";
 import ItemList from "@/components/pos/ItemList";
 import ClientInfo from "@/components/invoices_quotes/ClientInfo";
@@ -231,21 +231,24 @@ export default function InvoiceForm({
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <Label>Invoice Type</Label>
-          <ToggleGroup
-            type="single"
-            value={invoiceType}
-            onValueChange={(value) => {
-              if (value) setInvoiceType(value as "sales" | "purchase");
-            }}
-            className="justify-start"
-          >
-            <ToggleGroupItem value="sales" aria-label="Sales Invoice">
+          <div className="flex gap-2 flex-wrap">
+            <Button
+              type="button"
+              variant={invoiceType === "sales" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setInvoiceType("sales")}
+            >
               Sales Invoice
-            </ToggleGroupItem>
-            <ToggleGroupItem value="purchase" aria-label="Purchase Invoice">
+            </Button>
+            <Button
+              type="button"
+              variant={invoiceType === "purchase" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setInvoiceType("purchase")}
+            >
               Purchase Invoice
-            </ToggleGroupItem>
-          </ToggleGroup>
+            </Button>
+          </div>
         </div>
 
         {invoiceType === InvoiceType.SALES ? (

@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { SalesInvoice, PurchaseInvoice, Payment, Organization, Customer, Supplier, PaymentType } from '@/types';
 import { CreditCard, Printer, Eye, Plus, Edit } from 'lucide-react';
 import { AddInvoicePaymentDialog } from './AddInvoicePaymentDialog';
+import { EditCustomerDialog } from './EditCustomerDialog';
 
 // Type guard to check if invoice is a PurchaseInvoice
 function isPurchaseInvoice(invoice: SalesInvoice | PurchaseInvoice): invoice is PurchaseInvoice {
@@ -49,6 +50,7 @@ export function InvoiceDetailsDialog({
   onAddPayment
 }: InvoiceDetailsDialogProps) {
   const [showAddPaymentDialog, setShowAddPaymentDialog] = useState(false);
+  const [showEditCustomerDialog, setShowEditCustomerDialog] = useState(false);
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-6xl max-h-[80vh] overflow-y-auto">
@@ -138,8 +140,20 @@ export function InvoiceDetailsDialog({
                    </div>
                 </div>
               </div>
-              <div>
-                <h3 className="font-semibold mb-2">Client Information</h3>
+               <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-semibold">Client Information</h3>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowEditCustomerDialog(true)}
+                      className="flex items-center gap-2"
+                      title="Edit customer/supplier information"
+                    >
+                      <Edit className="h-4 w-4" />
+                      Edit
+                    </Button>
+                  </div>
                 <div className="space-y-1 text-sm">
                   {isPurchaseInvoice(invoice) ? (
                     (() => {
@@ -360,6 +374,21 @@ export function InvoiceDetailsDialog({
             paymentTypes={paymentTypes}
             remainingAmount={invoice.total - (payments[invoice.id]?.reduce((sum, p) => sum + p.amount, 0) || 0)}
             invoiceId={invoice.id}
+          />
+        )}
+
+        {/* Edit Customer/Supplier Dialog */}
+        {invoice && (
+          <EditCustomerDialog
+            invoice={invoice}
+            open={showEditCustomerDialog}
+            onOpenChange={setShowEditCustomerDialog}
+            onUpdate={(updatedInvoice) => {
+              // For now, we'll just log the update. In a real implementation,
+              // this would call an update function passed from the parent
+              console.log('Updated invoice:', updatedInvoice);
+              // You might want to call onEdit(updatedInvoice) or a specific update function
+            }}
           />
         )}
       </DialogContent>
