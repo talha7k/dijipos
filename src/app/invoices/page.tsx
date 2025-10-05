@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useAtom } from "jotai";
 import { selectedOrganizationAtom } from "@/atoms";
 import { useMemo } from "react";
@@ -44,10 +44,17 @@ export default function InvoicesPage() {
     const [showEmailDialog, setShowEmailDialog] = useState(false);
     const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
     const [invoiceToDelete, setInvoiceToDelete] = useState<SalesInvoice | PurchaseInvoice | null>(null);
-    const [filters, setFilters] = useState({});
-    const [showEditCustomerDialog, setShowEditCustomerDialog] = useState(false);
-    const [invoiceToEditCustomer, setInvoiceToEditCustomer] = useState<SalesInvoice | PurchaseInvoice | null>(null);
-    const [isOpeningChildDialog, setIsOpeningChildDialog] = useState(false);
+const [filters, setFilters] = useState({});
+     const [showEditCustomerDialog, setShowEditCustomerDialog] = useState(false);
+     const [invoiceToEditCustomer, setInvoiceToEditCustomer] = useState<SalesInvoice | PurchaseInvoice | null>(null);
+     
+     // Ref to track child dialog state more reliably
+     const childDialogOpenRef = useRef(false);
+     
+     // Update ref when child dialog state changes
+     useEffect(() => {
+       childDialogOpenRef.current = showEditCustomerDialog;
+     }, [showEditCustomerDialog]);
 
   const columns = [
     {
@@ -330,8 +337,8 @@ export default function InvoicesPage() {
 
       {/* Create/Edit Invoice Dialog */}
       <Dialog open={showForm} onOpenChange={(open) => {
-        // Don't close the dialog if we're opening a child dialog
-        if (!open && !isOpeningChildDialog) {
+        // Don't close the dialog if a child dialog is open
+        if (!open && !childDialogOpenRef.current) {
           setShowForm(open);
           if (!open) {
             setEditingInvoice(null);
@@ -346,12 +353,9 @@ export default function InvoicesPage() {
             invoice={editingInvoice}
             defaultType={transactionTypeFilter === "purchase" ? "purchase" : "sales"}
              onEditCustomer={(invoice) => {
-               setIsOpeningChildDialog(true);
-               setInvoiceToEditCustomer(invoice);
-               setShowEditCustomerDialog(true);
-               // Reset the flag after a short delay
-               setTimeout(() => setIsOpeningChildDialog(false), 100);
-             }}
+                setInvoiceToEditCustomer(invoice);
+                setShowEditCustomerDialog(true);
+              }}
             onSubmit={async (invoiceData) => {
               try {
                 if (editingInvoice) {

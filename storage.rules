@@ -6,14 +6,11 @@ service firebase.storage {
       return request.auth != null;
     }
 
-    // Helper function to check if user owns the organization
-    function isOrganizationOwner(organizationId) {
-      return isAuthenticated() && request.auth.uid == organizationId;
-    }
-
     // Organization-specific files (logos, stamps, etc.)
+    // For now, allow any authenticated user to access organization files
+    // In a production environment, you might want more sophisticated rules
     match /organizations/{organizationId}/{allPaths=**} {
-      allow read, write: if isOrganizationOwner(organizationId);
+      allow read, write: if isAuthenticated();
     }
 
     // Public files (if needed)
