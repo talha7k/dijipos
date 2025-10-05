@@ -1,6 +1,4 @@
 'use client';
-
-import { useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Combobox } from '@/components/ui/combobox';
@@ -16,73 +14,6 @@ import {
 import { Supplier } from '@/types';
 import { useSuppliers } from '@/lib/hooks/useSuppliers';
 import { Plus, Edit } from 'lucide-react';
-
-interface EditableTableCellProps {
-  value: string;
-  type?: 'text' | 'email';
-  onSave: (value: string) => void;
-  className?: string;
-}
-
-function EditableTableCell({ value, type = 'text', onSave, className }: EditableTableCellProps) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [editValue, setEditValue] = useState(value);
-
-  const handleDoubleClick = () => {
-    setIsEditing(true);
-    setEditValue(value);
-  };
-
-  const handleSave = () => {
-    onSave(editValue);
-    setIsEditing(false);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSave();
-    } else if (e.key === 'Escape') {
-      setEditValue(value);
-      setIsEditing(false);
-    }
-  };
-
-  const handleBlur = () => {
-    handleSave();
-  };
-
-  if (isEditing) {
-    return (
-      <TableCell className={`${className} p-0`}>
-        <Input
-          value={editValue}
-          onChange={(e) => setEditValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          onBlur={handleBlur}
-          type={type}
-          autoFocus
-          className="h-8 border-2 border-primary bg-background px-2 py-1 shadow-sm focus-visible:ring-1"
-        />
-      </TableCell>
-    );
-  }
-
-  return (
-    <TableCell
-      className={`${className} cursor-pointer hover:bg-accent transition-colors group relative`}
-      onDoubleClick={handleDoubleClick}
-    >
-      <div className="flex items-center justify-between">
-        <span className={!value ? "text-muted-foreground italic" : ""}>
-          {value || "Double-click to edit"}
-        </span>
-        <div className="opacity-0 group-hover:opacity-70 transition-opacity text-xs text-muted-foreground">
-          ✏️
-        </div>
-      </div>
-    </TableCell>
-  );
-}
 
 // Utility functions for real supplier data
 const getSupplierOptions = (suppliers: Supplier[]) => {
@@ -215,53 +146,7 @@ export default function SupplierInfo({
         </Table>
       )}
 
-      {selectedSupplierId && !readOnly && (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead colSpan={4} className="bg-muted font-semibold">Supplier Information</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <TableRow>
-              <TableCell className="bg-muted/50 font-medium w-1/4">Supplier Name</TableCell>
-              <EditableTableCell
-                value={supplierName}
-                onSave={onSupplierNameChange}
-                className="font-medium w-1/4"
-              />
-              <TableCell className="bg-muted/50 font-medium w-1/4">Supplier Email</TableCell>
-              <EditableTableCell
-                value={supplierEmail}
-                type="email"
-                onSave={onSupplierEmailChange}
-                className="w-1/4"
-              />
-            </TableRow>
-            <TableRow>
-              <TableCell className="bg-muted/50 font-medium">Supplier Address</TableCell>
-              <EditableTableCell
-                value={supplierAddress}
-                onSave={onSupplierAddressChange}
-              />
-              {showVAT ? (
-                <>
-                  <TableCell className="bg-muted/50 font-medium">Supplier VAT Number</TableCell>
-                  <EditableTableCell
-                    value={supplierVAT}
-                    onSave={(value) => onSupplierVATChange?.(value)}
-                  />
-                </>
-              ) : (
-                <>
-                  <TableCell className="border-none"></TableCell>
-                  <TableCell className="border-none"></TableCell>
-                </>
-              )}
-            </TableRow>
-          </TableBody>
-        </Table>
-      )}
+
     </>
   );
 }

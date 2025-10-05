@@ -97,7 +97,7 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
             fontSize: FontSize.MEDIUM,
             headingFont: 'Arial',
             bodyFont: 'Helvetica',
-            lineSpacing: 1.2,
+            lineSpacing: 1.1,
             autoPrint: false,
           },
           invoices: {
@@ -380,7 +380,7 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
                     />
                     <EditableSetting
                       label="Line Spacing"
-                      value={printerSettings?.receipts?.lineSpacing?.toString() || '1.2'}
+                      value={printerSettings?.receipts?.lineSpacing?.toString() || '1.1'}
                       type="number"
                       onSave={(value) => handleUpdateSettings('receipts.lineSpacing', parseFloat(value))}
                       placeholder="Enter line spacing (e.g., 1.2)"
@@ -527,21 +527,28 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
                       ]}
                       onSave={(value) => handleUpdateSettings('invoices.headingFont', value)}
                     />
-                    <EditableSetting
-                      label="Body Font"
-                      value={printerSettings?.invoices?.bodyFont || 'Helvetica'}
-                      type="select"
-                      options={[
-                        { value: 'Arial', label: 'Arial' },
-                        { value: 'Helvetica', label: 'Helvetica' },
-                        { value: 'Times New Roman', label: 'Times New Roman' },
-                        { value: 'Georgia', label: 'Georgia' },
-                        { value: 'Verdana', label: 'Verdana' },
-                        { value: 'Courier New', label: 'Courier New' },
-                      ]}
-                      onSave={(value) => handleUpdateSettings('invoices.bodyFont', value)}
-                    />
-                  </div>
+                     <EditableSetting
+                       label="Body Font"
+                       value={printerSettings?.invoices?.bodyFont || 'Helvetica'}
+                       type="select"
+                       options={[
+                         { value: 'Arial', label: 'Arial' },
+                         { value: 'Helvetica', label: 'Helvetica' },
+                         { value: 'Times New Roman', label: 'Times New Roman' },
+                         { value: 'Georgia', label: 'Georgia' },
+                         { value: 'Verdana', label: 'Verdana' },
+                         { value: 'Courier New', label: 'Courier New' },
+                       ]}
+                       onSave={(value) => handleUpdateSettings('invoices.bodyFont', value)}
+                     />
+                     <EditableSetting
+                       label="Line Spacing"
+                       value={printerSettings?.invoices?.lineSpacing?.toString() || '1.1'}
+                       type="number"
+                       onSave={(value) => handleUpdateSettings('invoices.lineSpacing', parseFloat(value))}
+                       placeholder="Enter line spacing (e.g., 1.1)"
+                     />
+                   </div>
                </div>
              </div>
 </div>

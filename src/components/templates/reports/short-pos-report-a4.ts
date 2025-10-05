@@ -1,4 +1,5 @@
 export const shortPosReportA4 = `<html>
+<style>p { margin: 0; } h1, h2, h3, h4, h5, h6 { margin: 0; }</style>
 <body style="font-family: sans-serif; margin: 20px;">
     <h1 style="font-size: 24px; text-align: center; margin-bottom: 20px;">{{title}}</h1>
 

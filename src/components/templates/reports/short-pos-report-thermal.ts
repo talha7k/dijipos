@@ -1,4 +1,5 @@
 export const shortPosReportThermal = `<html>
+<style>p { margin: 0; } h1, h2, h3, h4, h5, h6 { margin: 0; }</style>
 <body style="font-family: monospace; font-size: 10px; margin: 5px;">
     <h1 style="font-size: 12px; text-align: center; margin-bottom: 5px;">{{title}}</h1>
 

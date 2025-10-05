@@ -1,4 +1,4 @@
-import React, { useState, useEffect, ReactNode, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { renderTemplate } from "@/lib/template-renderer";
 import { SalesInvoice, PurchaseInvoice } from "@/types/invoice-quote";
 import { InvoiceType } from "@/types";
@@ -23,6 +23,8 @@ async function renderInvoice(
   organization: Organization | null,
   customer?: Customer,
   supplier?: Supplier,
+  settings?: DocumentPrintSettings | null,
+  lineSpacing?: number,
 ): Promise<string> {
   const qrCodeBase64 = await generateZatcaQRCode(
     createInvoiceQRData(invoice, organization),
@@ -58,6 +60,7 @@ async function renderInvoice(
     taxAmount: (invoice.taxAmount || 0).toFixed(2),
     total: (invoice.total || 0).toFixed(2),
     notes: invoice.notes || "",
+    lineSpacing: lineSpacing ?? 1.1,
     includeQR: true,
     qrCodeUrl: qrCodeBase64,
     items: (invoice.items || []).map((item) => ({
@@ -181,6 +184,9 @@ export function InvoicePrintDialog({
       left: settings?.paddingLeft ?? 15,
     };
   });
+  const [lineSpacing, setLineSpacing] = useState(() => {
+    return settings?.lineSpacing ?? 1.1;
+  });
 
   // Effect to update settings when props change (similar to ReceiptPrintDialog)
   useEffect(() => {
@@ -221,16 +227,18 @@ export function InvoicePrintDialog({
     setPaddings(newPaddings);
   }, [settings, filteredTemplates, invoice.type]);
 
-  const renderPreview = async (template: InvoiceTemplate) => {
+  const renderPreview = useCallback(async (template: InvoiceTemplate) => {
     const content = await renderInvoice(
       template,
       invoice,
       organization,
       customer,
       supplier,
+      settings,
+      lineSpacing,
     );
     setRenderedHtml(content);
-  };
+  }, [invoice, organization, customer, supplier, settings, lineSpacing]);
 
   // Effect to clear preview when dialog closes
   useEffect(() => {
@@ -250,25 +258,7 @@ export function InvoicePrintDialog({
     }
   }, [open, selectedTemplate, invoice, organization, customer, supplier, filteredTemplates, renderPreview]);
 
-  // Effect to handle keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (open && (event.ctrlKey || event.metaKey) && event.key === 'p') {
-        event.preventDefault();
-        handlePrint();
-      }
-    };
-
-    if (open && filteredTemplates.length > 0) {
-      document.addEventListener('keydown', handleKeyDown);
-    }
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [open, selectedTemplate, renderedHtml, pageSize, margins, paddings, filteredTemplates, invoice]);
-
-  const handlePrint = async () => {
+  const handlePrint = useCallback(async () => {
     setIsGenerating(true);
     try {
       console.log("Print button clicked", { selectedTemplate, hasRenderedHtml: !!renderedHtml });
@@ -299,6 +289,7 @@ export function InvoicePrintDialog({
                 margin: 0;
                 padding: 0;
                 font-family: Arial, sans-serif;
+                line-height: ${lineSpacing};
               }
               .print-container {
                 width: 100%;
@@ -314,6 +305,7 @@ export function InvoicePrintDialog({
                 margin: 20px;
                 font-family: Arial, sans-serif;
                 background: #f5f5f5;
+                line-height: ${lineSpacing};
               }
               .print-container {
                 max-width: ${pageSize};
@@ -384,7 +376,25 @@ export function InvoicePrintDialog({
     } finally {
       setIsGenerating(false);
     }
-  };
+  }, [selectedTemplate, renderedHtml, filteredTemplates, pageSize, margins, paddings, lineSpacing, invoice]);
+
+  // Effect to handle keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (open && (event.ctrlKey || event.metaKey) && event.key === 'p') {
+        event.preventDefault();
+        handlePrint();
+      }
+    };
+
+    if (open && filteredTemplates.length > 0) {
+      document.addEventListener('keydown', handleKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [open, selectedTemplate, renderedHtml, pageSize, margins, paddings, filteredTemplates, invoice, handlePrint]);
 
   const handleEmail = () => {
     if (onEmail && selectedTemplate) {
@@ -446,6 +456,18 @@ export function InvoicePrintDialog({
               ))}
             </select>
           </div>
+          <div>
+            <label className="block text-sm font-medium">Line Height</label>
+            <input
+              type="number"
+              min="0.8"
+              max="2.0"
+              step="0.1"
+              value={lineSpacing}
+              onChange={(e) => setLineSpacing(Number(e.target.value))}
+              className="w-full p-2 border rounded"
+            />
+          </div>
           {!previewMode && (
             <>
               <div>
@@ -490,6 +512,7 @@ export function InvoicePrintDialog({
           >
             <div
               dir={direction}
+              style={{ lineHeight: lineSpacing }}
               dangerouslySetInnerHTML={{ __html: renderedHtml }}
             />
           </div>

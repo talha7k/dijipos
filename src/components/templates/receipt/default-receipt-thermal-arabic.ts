@@ -9,6 +9,8 @@ export const defaultArabicReceiptTemplate = `<!DOCTYPE html>
        --body-font: {{bodyFont}};
        --line-spacing: {{lineSpacing}};
      }
+     p { margin: 0; }
+     h1, h2, h3, h4, h5, h6 { margin: 0; }
       body { font-family: var(--body-font), 'Amiri', serif; font-size: 12px; line-height: var(--line-spacing); }
     .header { text-align: center; margin-bottom: 10px; }
     .header h2 { font-family: var(--heading-font), 'Amiri', serif; }
@@ -20,7 +22,7 @@ export const defaultArabicReceiptTemplate = `<!DOCTYPE html>
     .total { font-weight: bold; border-top: 1px solid #000; padding-top: 5px; margin-top: 10px; text-align: left; }
     .total-amount { font-weight: bold; font-size: 14px; border-top: 2px solid #000; padding-top: 5px; margin-top: 5px; }
     table { width: 100%; border-collapse: collapse; margin-bottom: 10px; table-layout: fixed; }
-    th, td { text-align: left; padding: 2px 10px; }
+    th, td { text-align: left; padding: 4px 10px; }
     th { font-weight: bold; border-bottom: 1px solid #000; font-family: var(--heading-font), 'Amiri', serif; font-size: 11px; }
     .amount-col { text-align: left; width: 70px; }
     .qty-col { text-align: center; width: 50px; }

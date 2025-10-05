@@ -63,6 +63,7 @@ async function renderReceipt(
     totalQty: totalQty,
     customHeader: printerSettings?.receipts?.customHeader || "",
     customFooter: printerSettings?.receipts?.customFooter || "",
+    lineSpacing: printerSettings?.receipts?.lineSpacing || 1.1,
     items: order.items.map((item) => ({
       ...item,
       unitPrice: (item.unitPrice || 0).toFixed(2),

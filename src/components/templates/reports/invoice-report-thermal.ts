@@ -1,4 +1,5 @@
 export const invoiceReportThermal = `<html>
+<style>p { margin: 0; } h1, h2, h3, h4, h5, h6 { margin: 0; }</style>
 <body style="font-family: monospace; margin: 5px; font-size: 12px;">
     <div style="text-align: center; margin-bottom: 15px;">
         <h1 style="font-size: 16px; margin: 0 0 5px 0;">{{title}}</h1>

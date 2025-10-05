@@ -248,7 +248,7 @@ export function TemplatesTab({}: TemplatesTabProps) {
             fontSize: FontSize.MEDIUM,
             headingFont: "Arial",
             bodyFont: "Helvetica",
-            lineSpacing: 1.2,
+            lineSpacing: 1.1,
             autoPrint: false,
             defaultTemplateId: templateId,
           },

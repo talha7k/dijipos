@@ -193,10 +193,11 @@ export interface InvoiceTemplateData {
   paddingBottom?: number; // Bottom padding in mm
   paddingLeft?: number; // Left padding in mm
   paddingRight?: number; // Right padding in mm
-  fontSize?: FontSize; // Font size setting
-  headingFont?: string; // Font family for headings
-  bodyFont?: string; // Font family for body text
-  items: Array<{
+   fontSize?: FontSize; // Font size setting
+   headingFont?: string; // Font family for headings
+   bodyFont?: string; // Font family for body text
+   lineSpacing?: number; // Line spacing (invoices only)
+   items: Array<{
     name: string;
     description: string;
     quantity: number;

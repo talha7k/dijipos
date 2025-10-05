@@ -9,6 +9,8 @@ export const defaultArabicReceiptA4Template = `<!DOCTYPE html>
       --body-font: {{bodyFont}};
       --line-spacing: {{lineSpacing}};
     }
+    p { margin: 0; }
+    h1, h2, h3, h4, h5, h6 { margin: 0; }
     body {
       font-family: var(--body-font), 'Amiri', serif;
       margin: 0;
@@ -73,8 +75,7 @@ export const defaultArabicReceiptA4Template = `<!DOCTYPE html>
     }
     .items-table td {
       border: 1px solid #e5e7eb;
-      padding: 12px;
-      text-align: left;
+      padding: 4px 12px;
     }
     .items-table td:first-child {
       text-align: left;

@@ -7,7 +7,10 @@ export const salesInvoiceEnglish = `<!DOCTYPE html>
     :root {
       --heading-font: {{headingFont}};
       --body-font: {{bodyFont}};
+      --line-spacing: {{lineSpacing}};
     }
+    p { margin: 0; }
+    h1, h2, h3, h4, h5, h6 { margin: 0; }
     .invoice-template { font-family: var(--body-font), system-ui, sans-serif; margin: 0; padding: 10px; background: white; color: #000000; }
      .invoice-template .container { max-width: 100%; margin: 0; padding: 0; }
      @page { margin: 10mm; }
@@ -19,7 +22,7 @@ export const salesInvoiceEnglish = `<!DOCTYPE html>
      .invoice-label { color: #6b7280; }
      .invoice-value { font-weight: 500; }
      .company-info, .billed-from { text-align: right; }
-     .billed-from p, .bill-to p, .dates-grid p { padding: 4px 0; }
+      .billed-from p, .bill-to p, .dates-grid p { padding: 2px 0; }
     .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 40px; }
     .bill-to, .supplier { margin-bottom: 20px; }
     .customer-logo, .supplier-logo { position: relative; width: 128px; height: 64px; margin-bottom: 10px; }
@@ -28,7 +31,7 @@ export const salesInvoiceEnglish = `<!DOCTYPE html>
        .invoice-details { width: 350px; }
     .table { width: 100%; margin-bottom: 40px; border-collapse: collapse; border: 1px solid #d1d5db; }
      .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 16px; text-align: center; font-family: var(--heading-font), system-ui, sans-serif; }
-    .table td { border: 1px solid #d1d5db; padding: 16px; }
+    .table td { border: 1px solid #d1d5db; padding: 4px 16px; line-height: var(--line-spacing); }
     .totals { display: flex; justify-content: flex-end; margin-bottom: 40px; }
      .totals div { width: 320px; }
     .total-line { display: flex; justify-content: space-between; padding: 8px 0; }
@@ -40,7 +43,7 @@ export const salesInvoiceEnglish = `<!DOCTYPE html>
       @media print {
         .invoice-template { padding: 0; }
         .table th { padding: 16px; text-align: center; }
-        .table td { padding: 8px; }
+        .table td { padding: 4px 8px; line-height: var(--line-spacing); }
         .billed-from p, .bill-to p, .dates-grid p { padding: 2px 0; }
       }
    </style>

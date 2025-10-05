@@ -13,18 +13,21 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
       :root {
         --heading-font: {{headingFont}};
         --body-font: {{bodyFont}};
+        --line-spacing: {{lineSpacing}};
       }
+      p { margin: 0; }
+      h1, h2, h3, h4, h5, h6 { margin: 0; }
       .invoice-template { font-family: 'ArabicFont', 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--body-font), 'sans-serif'; margin: 0; padding: 10px; background: white; color: #000000; unicode-bidi: embed; direction: ltr; }
      .invoice-template .container { max-width: 100%; margin: 0; padding: 0; }
      @page { margin: 10mm; }
 
-     /* Compact paragraph spacing */
-     .company-info p,
-     .bill-to p,
-     .billed-from p,
-     .dates-grid p {
-       margin: 1px 0;
-     }
+      /* Compact paragraph spacing */
+      .company-info p,
+      .bill-to p,
+      .billed-from p,
+      .dates-grid p {
+        padding: 2px 0;
+      }
       .header-row-1 { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
       .header-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
      .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
@@ -41,8 +44,8 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
     .customer-logo, .supplier-logo { position: relative; width: 128px; height: 64px; margin-bottom: 8px; }
      .dates-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
      .table { width: 100%; margin-bottom: 12px; border-collapse: collapse; border: 1px solid #d1d5db; }
-         .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 16px 12px; text-align: center; font-family: 'ArabicFont', 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--heading-font), 'sans-serif'; font-size: 11px; line-height: 1.3; vertical-align: middle; min-height: 1.1em; }
-       .table td { border: 1px solid #d1d5db; padding: 4px 6px; text-align: center; line-height: 1.3; vertical-align: middle; min-height: 1.1em; }
+          .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 16px 12px; text-align: center; font-family: 'ArabicFont', 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--heading-font), 'sans-serif'; font-size: 11px; line-height: var(--line-spacing); vertical-align: middle; min-height: 1.1em; }
+        .table td { border: 1px solid #d1d5db; padding: 4px 8px; text-align: center; line-height: var(--line-spacing); vertical-align: middle; min-height: 1.1em; }
      .totals-stamp-container { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
     .totals { flex: 1; }
       .totals div { width: 288px; }
@@ -74,7 +77,10 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
             margin: 1px 0;
           }
         }
-  </style>
+      @media print {
+        .table td { line-height: 1.1; }
+      }
+   </style>
 </head>
 <body>
   <div class="invoice-template">

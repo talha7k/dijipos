@@ -96,7 +96,7 @@ export async function getStoreSettings(organizationId: string): Promise<StoreSet
           fontSize: FontSize.MEDIUM,
           headingFont: 'Arial',
           bodyFont: 'Helvetica',
-          lineSpacing: 1.2,
+          lineSpacing: 1.1,
           autoPrint: false,
           defaultTemplateId: 'english-thermal', // Default receipt template
         },
@@ -105,6 +105,7 @@ export async function getStoreSettings(organizationId: string): Promise<StoreSet
           fontSize: FontSize.MEDIUM,
           headingFont: 'Arial',
           bodyFont: 'Helvetica',
+          lineSpacing: 1.1,
           defaultTemplateId: 'english-invoice', // Default invoice template
         },
         createdAt: Timestamp.now(),
@@ -216,7 +217,7 @@ export async function createDefaultStoreSettings(organizationId: string): Promis
         fontSize: FontSize.MEDIUM,
         headingFont: 'Arial',
         bodyFont: 'Helvetica',
-        lineSpacing: 1.2,
+        lineSpacing: 1.1,
         autoPrint: false,
         defaultTemplateId: 'english-thermal', // Default receipt template
       },
@@ -225,6 +226,7 @@ export async function createDefaultStoreSettings(organizationId: string): Promis
         fontSize: FontSize.MEDIUM,
         headingFont: 'Arial',
         bodyFont: 'Helvetica',
+        lineSpacing: 1.1,
         defaultTemplateId: 'english-invoice', // Default invoice template
       },
       createdAt: Timestamp.now(),
