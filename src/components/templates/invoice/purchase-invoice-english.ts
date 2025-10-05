@@ -35,11 +35,12 @@ export const purchaseInvoiceEnglish = `<!DOCTYPE html>
      .stamp { display: flex; justify-content: flex-end; margin-top: 40px; }
      .stamp div { text-align: center; }
       .stamp img { width: 150px; height: 150px; object-fit: contain; }
-     @media print {
-       .invoice-template { padding: 0; }
-       .table th, .table td { padding: 8px; }
-       .billed-from p, .bill-to p, .dates-grid p { padding: 2px 0; }
-     }
+      @media print {
+        .invoice-template { padding: 0; }
+        .table th { padding: 20px; text-align: center; }
+        .table td { padding: 8px; }
+        .billed-from p, .bill-to p, .dates-grid p { padding: 2px 0; }
+      }
    </style>
 </head>
 <body>
