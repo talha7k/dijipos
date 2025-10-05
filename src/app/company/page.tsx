@@ -124,9 +124,7 @@ function CompanyContent() {
     try {
       await updateOrganizationBranding(organizationId, "", stampUrl);
       setLogoUrl("");
-      // Refresh organization data
-      setSelectedOrganizationId(null);
-      setTimeout(() => setSelectedOrganizationId(organizationId), 100);
+      toast.success("Logo removed successfully!");
     } catch (error) {
       console.error("Error removing logo:", error);
       toast.error("Failed to remove logo.");
@@ -139,9 +137,7 @@ function CompanyContent() {
     try {
       await updateOrganizationBranding(organizationId, logoUrl, "");
       setStampUrl("");
-      // Refresh organization data
-      setSelectedOrganizationId(null);
-      setTimeout(() => setSelectedOrganizationId(organizationId), 100);
+      toast.success("Stamp removed successfully!");
     } catch (error) {
       console.error("Error removing stamp:", error);
       toast.error("Failed to remove stamp.");
@@ -343,18 +339,16 @@ function CompanyContent() {
         </TabsContent>
 
         <TabsContent value="branding" className="space-y-6">
-          <BrandingTab
-            logoUrl={logoUrl}
-            setLogoUrl={setLogoUrl}
-            stampUrl={stampUrl}
-            setStampUrl={setStampUrl}
-            handleRemoveLogo={handleRemoveLogo}
-            handleRemoveStamp={handleRemoveStamp}
-            handleSaveCompanyInfo={handleSaveCompanyInfo}
-            saving={saving}
-            organizationId={organizationId}
-          />
-        </TabsContent>
+           <BrandingTab
+             logoUrl={logoUrl}
+             setLogoUrl={setLogoUrl}
+             stampUrl={stampUrl}
+             setStampUrl={setStampUrl}
+             handleRemoveLogo={handleRemoveLogo}
+             handleRemoveStamp={handleRemoveStamp}
+             organizationId={organizationId}
+           />
+         </TabsContent>
 
         <TabsContent value="team" className="space-y-6">
           <TeamTab

@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { X } from 'lucide-react';
 import { ImageUpload } from '@/components/ui/image-upload';
+import { updateOrganizationBranding } from '@/lib/firebase/firestore/organizations';
+import { toast } from 'sonner';
 
 interface BrandingTabProps {
   logoUrl: string;
@@ -14,8 +16,6 @@ interface BrandingTabProps {
   setStampUrl: (value: string) => void;
   handleRemoveLogo: () => void;
   handleRemoveStamp: () => void;
-  handleSaveCompanyInfo: () => void;
-  saving: boolean;
   organizationId?: string;
 }
 
@@ -26,10 +26,42 @@ export function BrandingTab({
   setStampUrl,
   handleRemoveLogo,
   handleRemoveStamp,
-  handleSaveCompanyInfo,
-  saving,
   organizationId,
 }: BrandingTabProps) {
+  const handleLogoChange = async (url: string | null) => {
+    const newLogoUrl = url || '';
+    setLogoUrl(newLogoUrl);
+
+    if (organizationId) {
+      try {
+        await updateOrganizationBranding(organizationId, newLogoUrl, stampUrl);
+        toast.success('Logo updated successfully!');
+      } catch (error) {
+        console.error('Error updating logo:', error);
+        toast.error('Failed to update logo.');
+        // Revert local state on error
+        setLogoUrl(logoUrl);
+      }
+    }
+  };
+
+  const handleStampChange = async (url: string | null) => {
+    const newStampUrl = url || '';
+    setStampUrl(newStampUrl);
+
+    if (organizationId) {
+      try {
+        await updateOrganizationBranding(organizationId, logoUrl, newStampUrl);
+        toast.success('Stamp updated successfully!');
+      } catch (error) {
+        console.error('Error updating stamp:', error);
+        toast.error('Failed to update stamp.');
+        // Revert local state on error
+        setStampUrl(stampUrl);
+      }
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -65,7 +97,7 @@ export function BrandingTab({
               )}
               <ImageUpload
                 value={logoUrl}
-                onChange={(url) => setLogoUrl(url || '')}
+                onChange={handleLogoChange}
                 path={`organizations/${organizationId}`}
                 placeholder="Upload company logo"
                 maxSize={2}
@@ -101,7 +133,7 @@ export function BrandingTab({
               )}
               <ImageUpload
                 value={stampUrl}
-                onChange={(url) => setStampUrl(url || '')}
+                onChange={handleStampChange}
                 path={`organizations/${organizationId}`}
                 placeholder="Upload company stamp"
                 maxSize={2}
@@ -109,10 +141,6 @@ export function BrandingTab({
             </div>
           </div>
         </div>
-
-        <Button onClick={handleSaveCompanyInfo} loading={saving}>
-          Save Changes
-        </Button>
       </CardContent>
     </Card>
   );

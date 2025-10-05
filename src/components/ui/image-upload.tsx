@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Upload, X, Image as ImageIcon } from 'lucide-react';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { storage } from '@/lib/firebase/config';
 import { toast } from 'sonner';
 
@@ -112,9 +112,9 @@ export function ImageUpload({
   const handleRemove = async () => {
     if (value) {
       try {
-        // Optional: Delete file from storage
-        // const storageRef = ref(storage, value);
-        // await deleteObject(storageRef);
+        // Delete file from storage
+        const storageRef = ref(storage, value);
+        await deleteObject(storageRef);
       } catch (error) {
         console.warn('Could not delete image from storage:', error);
       }
