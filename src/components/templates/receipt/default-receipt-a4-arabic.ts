@@ -75,7 +75,7 @@ export const defaultArabicReceiptA4Template = `<!DOCTYPE html>
     }
     .items-table td {
       border: 1px solid #e5e7eb;
-      padding: 4px 12px;
+      padding: 2px 12px;
     }
     .items-table td:first-child {
       text-align: left;

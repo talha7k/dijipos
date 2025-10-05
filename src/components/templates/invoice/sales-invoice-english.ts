@@ -31,7 +31,7 @@ export const salesInvoiceEnglish = `<!DOCTYPE html>
        .invoice-details { width: 350px; }
     .table { width: 100%; margin-bottom: 40px; border-collapse: collapse; border: 1px solid #d1d5db; }
      .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 16px; text-align: center; font-family: var(--heading-font), system-ui, sans-serif; }
-    .table td { border: 1px solid #d1d5db; padding: 4px 16px; line-height: var(--line-spacing); }
+    .table td { border: 1px solid #d1d5db; padding: 2px 16px; line-height: var(--line-spacing); }
     .totals { display: flex; justify-content: flex-end; margin-bottom: 40px; }
      .totals div { width: 320px; }
     .total-line { display: flex; justify-content: space-between; padding: 8px 0; }
@@ -43,7 +43,7 @@ export const salesInvoiceEnglish = `<!DOCTYPE html>
       @media print {
         .invoice-template { padding: 0; }
         .table th { padding: 16px; text-align: center; }
-        .table td { padding: 4px 8px; line-height: var(--line-spacing); }
+        .table td { padding: 3px 8px; line-height: var(--line-spacing); }
         .billed-from p, .bill-to p, .dates-grid p { padding: 2px 0; }
       }
    </style>

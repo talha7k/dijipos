@@ -22,7 +22,7 @@ export const defaultEnglishReceiptTemplate = `<!DOCTYPE html>
     .total { font-weight: bold; border-top: 1px solid #000; padding-top: 5px; margin-top: 10px; }
     .total-amount { font-weight: bold; font-size: 14px; border-top: 2px solid #000; padding-top: 5px; margin-top: 5px; }
     table { width: 100%; border-collapse: collapse; margin-bottom: 10px; table-layout: fixed; }
-    th, td { text-align: left; padding: 4px 0; }
+    th, td { text-align: left; padding: 2px 0; }
     th { font-weight: bold; border-bottom: 1px solid #000; font-family: var(--heading-font), monospace; }
     .amount-col { text-align: right; width: 70px; }
     .qty-col { text-align: center; width: 60px; }

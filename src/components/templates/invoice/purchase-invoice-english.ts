@@ -31,7 +31,7 @@ export const purchaseInvoiceEnglish = `<!DOCTYPE html>
        .invoice-details { width: 350px; }
     .table { width: 100%; margin-bottom: 20px; border-collapse: collapse; border: 1px solid #d1d5db; }
      .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 20px; text-align: center; font-family: var(--heading-font), system-ui, sans-serif; }
-    .table td { border: 1px solid #d1d5db; padding: 4px 12px; line-height: var(--line-spacing); }
+    .table td { border: 1px solid #d1d5db; padding: 2px 12px; line-height: var(--line-spacing); }
     .totals { display: flex; justify-content: flex-end; margin-bottom: 20px; }
      .totals div { width: 320px; }
     .total-line { display: flex; justify-content: space-between; padding: 8px 0; }
