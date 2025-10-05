@@ -12,7 +12,7 @@ export const salesInvoiceEnglish = `<!DOCTYPE html>
      .invoice-template .container { max-width: 100%; margin: 0; padding: 0; }
      @page { margin: 10mm; }
      .header-row-1 { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
-     .header-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 40px; }
+      .header-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
     .qr-section { margin-bottom: 20px; }
     .logo-section { position: relative; width: 192px; height: 80px; margin-left: auto; }
     .invoice-title { font-size: 2rem; font-weight: bold; color: #1f2937; font-family: var(--heading-font), system-ui, sans-serif; }
@@ -23,7 +23,7 @@ export const salesInvoiceEnglish = `<!DOCTYPE html>
     .bill-to, .supplier { margin-bottom: 20px; }
     .customer-logo, .supplier-logo { position: relative; width: 128px; height: 64px; margin-bottom: 10px; }
      .dates-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-     .bill-to, .billed-from, .invoice-details { border: 1px solid #d1d5db; padding: 10px; border-radius: 8px; background: #f3f4f6; margin-bottom: 15px; }
+      .bill-to, .billed-from, .invoice-details { border: 1px solid #d1d5db; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
     .table { width: 100%; margin-bottom: 40px; border-collapse: collapse; border: 1px solid #d1d5db; }
      .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 12px; text-align: left; font-family: var(--heading-font), system-ui, sans-serif; }
     .table td { border: 1px solid #d1d5db; padding: 12px; }
@@ -45,24 +45,24 @@ export const salesInvoiceEnglish = `<!DOCTYPE html>
 <body>
   <div class="invoice-template">
     <div class="container">
-     <!-- Header -->
-     <div class="header">
-       <div class="header-row-1">
-          <div class="invoice-info invoice-details">
-           <h1 class="invoice-title">SALES INVOICE</h1>
-           <p class="invoice-number">Invoice #{{invoiceId}}</p>
-           <div class="dates-grid">
-             <div>
-               <p style="color: #6b7280;">Invoice Date:</p>
-               <p style="font-weight: 500;">{{invoiceDate}}</p>
-             </div>
-             <div>
-               <p style="color: #6b7280;">Due Date:</p>
-               <p style="font-weight: 500;">{{dueDate}}</p>
-             </div>
+      <!-- Header -->
+      <div class="header">
+        <h1 class="invoice-title" style="margin-bottom: 20px;">SALES INVOICE</h1>
+        <div class="header-row-1">
+           <div class="invoice-info invoice-details">
+            <p class="invoice-number">Invoice #{{invoiceId}}</p>
+            <div class="dates-grid">
+              <div>
+                <p style="color: #6b7280;">Invoice Date:</p>
+                <p style="font-weight: 500;">{{invoiceDate}}</p>
+              </div>
+              <div>
+                <p style="color: #6b7280;">Due Date:</p>
+                <p style="font-weight: 500;">{{dueDate}}</p>
+              </div>
 
-           </div>
-         </div>
+            </div>
+          </div>
          {{#includeQR}}
          <div class="qr-section">
            <div style="display: inline-block; padding: 8px; background: white; border: 1px solid #d1d5db; border-radius: 4px;">
@@ -86,29 +86,33 @@ export const salesInvoiceEnglish = `<!DOCTYPE html>
            </div>
          </div>
 
-         <div class="header-row-2">
-            <div class="bill-to">
-              <h3 style="font-weight: 600; color: #6b7280; margin-bottom: 8px;">Billed To:</h3>
-             <p style="font-weight: 500;">{{clientName}}</p>
-             {{#customerNameAr}}
-             <p style="font-size: 1rem;">{{customerNameAr}}</p>
-             {{/customerNameAr}}
-             <p>{{clientAddress}}</p>
-             <p>{{clientEmail}}</p>
-             {{#clientVat}}<p>VAT: {{clientVat}}</p>{{/clientVat}}
-           </div>
-            <div class="billed-from">
-              <h3 style="font-weight: 600; color: #6b7280; margin-bottom: 8px;">Billed From:</h3>
-             <h2 style="font-size: 1.25rem; font-weight: 600;">{{companyName}}</h2>
-             {{#companyNameAr}}
-             <p style="font-size: 1.125rem;">{{companyNameAr}}</p>
-             {{/companyNameAr}}
-             <p>📍 {{companyAddress}}</p>
-             <p>📧 {{companyEmail}}</p>
-             <p>📞 {{companyPhone}}</p>
-             {{#companyVat}}<p>VAT: {{companyVat}}</p>{{/companyVat}}
-           </div>
-         </div>
+          <div class="header-row-2">
+             <div>
+               <h3 style="font-weight: 600; color: #6b7280; margin-bottom: 8px;">Billed To:</h3>
+               <div class="bill-to">
+                <p style="font-weight: 500;">{{clientName}}</p>
+                {{#customerNameAr}}
+                <p style="font-size: 1rem;">{{customerNameAr}}</p>
+                {{/customerNameAr}}
+                <p>{{clientAddress}}</p>
+                <p>{{clientEmail}}</p>
+                {{#clientVat}}<p>VAT: {{clientVat}}</p>{{/clientVat}}
+               </div>
+             </div>
+             <div>
+               <h3 style="font-weight: 600; color: #6b7280; margin-bottom: 8px;">Billed From:</h3>
+               <div class="billed-from">
+                <h2 style="font-size: 1.25rem; font-weight: 600;">{{companyName}}</h2>
+                {{#companyNameAr}}
+                <p style="font-size: 1.125rem;">{{companyNameAr}}</p>
+                {{/companyNameAr}}
+                <p>📍 {{companyAddress}}</p>
+                <p>📧 {{companyEmail}}</p>
+                <p>📞 {{companyPhone}}</p>
+                {{#companyVat}}<p>VAT: {{companyVat}}</p>{{/companyVat}}
+               </div>
+             </div>
+          </div>
      </div>
 
 

@@ -25,8 +25,8 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
      .dates-grid p {
        margin: 1px 0;
      }
-     .header-row-1 { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
-     .header-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
+      .header-row-1 { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+      .header-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
      .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
     .qr-section { margin-bottom: 15px; }
     .logo-section { position: relative; width: 192px; height: 80px; margin-left: auto; }
@@ -34,8 +34,8 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
       .invoice-number { color: #374151; }
       .company-info, .billed-from { text-align: left; }
      .billed-from p, .bill-to p, .dates-grid p { padding: 4px 0; }
-    .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
-      .bill-to, .billed-from, .invoice-details { border: 1px solid #d1d5db; padding: 10px; border-radius: 8px; background: #f3f4f6; margin-bottom: 8px; }
+    .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 20px; }
+       .bill-to, .billed-from, .invoice-details { border: 1px solid #d1d5db; padding: 15px; border-radius: 8px; margin-bottom: 8px; }
     .customer-logo, .supplier-logo { position: relative; width: 128px; height: 64px; margin-bottom: 8px; }
      .dates-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
      .table { width: 100%; margin-bottom: 12px; border-collapse: collapse; border: 1px solid #d1d5db; }
@@ -49,7 +49,7 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
      .stamp { flex: 0 0 auto; margin-right: 30px; display: flex; justify-content: center; align-items: center; }
      .stamp div { text-align: center; }
       .stamp img { width: 150px; height: 150px; object-fit: contain; }
-     .notes { margin-bottom: 30px; text-align: left; }
+     .notes { margin-bottom: 20px; text-align: left; }
       .bilingual { display: flex; justify-content: space-between; align-items: center; }
       .english { flex: 1; text-align: left; }
       .arabic { flex: 1; text-align: left; direction: ltr; }
@@ -73,27 +73,27 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
 <body>
   <div class="invoice-template">
     <div class="container">
-     <!-- Header -->
-     <div class="header">
-       <div class="header-row-1">
-          <div class="invoice-info invoice-details">
-           <h1 class="invoice-title">Purchase Invoice / فاتورة مشتريات</h1>
-           <p class="invoice-number">Invoice # (رقم الفاتورة) <br/> {{invoiceId}}</p>
-            <div class="dates-grid">
-              <div>
-              <p style="color: #374151;">Invoice Date </br> (تاريخ الفاتورة)</p>
-                <p style="font-weight: 500;">{{invoiceDate}}</p>
-              </div>
-              <div>
-              <p style="color: #374151;">Due Date <br/> (تاريخ الاستحقاق)</p>
-                <p style="font-weight: 500;">{{dueDate}}</p>
-              </div>
-              <div>
-                <p style="color: #374151;">Status:</p>
-                <p style="font-weight: 500; text-transform: capitalize;">{{status}}</p>
-              </div>
-            </div>
-         </div>
+      <!-- Header -->
+      <div class="header">
+        <h1 class="invoice-title" style="margin-bottom: 20px;">Purchase Invoice / فاتورة مشتريات</h1>
+        <div class="header-row-1">
+           <div class="invoice-info invoice-details">
+            <p class="invoice-number">Invoice # (رقم الفاتورة) <br/> {{invoiceId}}</p>
+             <div class="dates-grid">
+               <div>
+               <p style="color: #374151;">Invoice Date </br> (تاريخ الفاتورة)</p>
+                 <p style="font-weight: 500;">{{invoiceDate}}</p>
+               </div>
+               <div>
+               <p style="color: #374151;">Due Date <br/> (تاريخ الاستحقاق)</p>
+                 <p style="font-weight: 500;">{{dueDate}}</p>
+               </div>
+               <div>
+                 <p style="color: #374151;">Status:</p>
+                 <p style="font-weight: 500; text-transform: capitalize;">{{status}}</p>
+               </div>
+             </div>
+          </div>
          {{#includeQR}}
          <div class="qr-section">
            <div style="display: inline-block; padding: 8px; background: white; border: 1px solid #d1d5db; border-radius: 4px;">
@@ -102,39 +102,43 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
          </div>
          {{/includeQR}}
        </div>
-<div class="header-row-2">
-            <div class="billed-from">
-              <h3 style="font-weight: 600; color: #6b7280; margin-bottom: 8px;">Billed From (من):</h3>
-              {{#supplierLogo}}
-              <div style="margin-bottom: 8px;">
-                <img src="{{supplierLogo}}" alt="شعار المورد" style="width: 128px; height: 64px; object-fit: contain;" />
-              </div>
-              {{/supplierLogo}}
-              <p style="font-weight: 500;">{{supplierNameAr}}</p>
-             {{#supplierName}}
-             <p style="font-size: 1rem;">{{supplierName}}</p>
-             {{/supplierName}}
-              <p>📍 {{supplierAddress}}</p>
-              <p>📧 {{supplierEmail}}</p>
-              {{#supplierVat}}<p>🏢 VAT: {{supplierVat}}</p>{{/supplierVat}}
-           </div>
-            <div class="bill-to">
-              <h3 style="font-weight: 600; color: #6b7280; margin-bottom: 8px;">Billed To (إلى):</h3>
-              {{#companyLogo}}
-              <div style="margin-bottom: 8px;">
-                <img src="{{companyLogo}}" alt="شعار الشركة" style="width: 128px; height: 64px; object-fit: contain;" />
-              </div>
-              {{/companyLogo}}
-              <h2 style="font-size: 1.25rem; font-weight: 600;">{{companyNameAr}}</h2>
-             {{#companyName}}
-             <p style="font-size: 1.125rem;">{{companyName}}</p>
-             {{/companyName}}
-             <p>📍 {{companyAddress}}</p>
-             <p>📧 {{companyEmail}}</p>
-             {{#companyPhone}}<p>📞 {{companyPhone}}</p>{{/companyPhone}}
-              {{#companyVat}}<p>🏢 VAT (الرقم الضريبي) <br/> {{companyVat}}</p>{{/companyVat}}
-           </div>
-         </div>
+ <div class="header-row-2">
+             <div>
+               <h3 style="font-weight: 600; color: #6b7280; margin-bottom: 8px;">Billed From (من):</h3>
+               <div class="billed-from">
+                 {{#supplierLogo}}
+                 <div style="margin-bottom: 8px;">
+                   <img src="{{supplierLogo}}" alt="شعار المورد" style="width: 128px; height: 64px; object-fit: contain;" />
+                 </div>
+                 {{/supplierLogo}}
+                 <p style="font-weight: 500;">{{supplierNameAr}}</p>
+                {{#supplierName}}
+                <p style="font-size: 1rem;">{{supplierName}}</p>
+                {{/supplierName}}
+                 <p>📍 {{supplierAddress}}</p>
+                 <p>📧 {{supplierEmail}}</p>
+                 {{#supplierVat}}<p>🏢 VAT: {{supplierVat}}</p>{{/supplierVat}}
+               </div>
+             </div>
+             <div>
+               <h3 style="font-weight: 600; color: #6b7280; margin-bottom: 8px;">Billed To (إلى):</h3>
+               <div class="bill-to">
+                 {{#companyLogo}}
+                 <div style="margin-bottom: 8px;">
+                   <img src="{{companyLogo}}" alt="شعار الشركة" style="width: 128px; height: 64px; object-fit: contain;" />
+                 </div>
+                 {{/companyLogo}}
+                 <h2 style="font-size: 1.25rem; font-weight: 600;">{{companyNameAr}}</h2>
+                {{#companyName}}
+                <p style="font-size: 1.125rem;">{{companyName}}</p>
+                {{/companyName}}
+                <p>📍 {{companyAddress}}</p>
+                <p>📧 {{companyEmail}}</p>
+                {{#companyPhone}}<p>📞 {{companyPhone}}</p>{{/companyPhone}}
+                 {{#companyVat}}<p>🏢 VAT (الرقم الضريبي) <br/> {{companyVat}}</p>{{/companyVat}}
+               </div>
+             </div>
+          </div>
        </div>
      </div>
 
