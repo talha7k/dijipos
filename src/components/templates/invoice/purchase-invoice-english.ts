@@ -22,7 +22,8 @@ export const purchaseInvoiceEnglish = `<!DOCTYPE html>
     .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 40px; }
     .bill-to, .supplier { margin-bottom: 20px; }
     .customer-logo, .supplier-logo { position: relative; width: 128px; height: 64px; margin-bottom: 10px; }
-    .dates-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+     .dates-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+     .bill-to, .billed-from, .invoice-details { border: 1px solid #d1d5db; padding: 10px; border-radius: 8px; background: #f3f4f6; margin-bottom: 15px; }
     .table { width: 100%; margin-bottom: 40px; border-collapse: collapse; border: 1px solid #d1d5db; }
      .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 16px; text-align: left; font-family: var(--heading-font), system-ui, sans-serif; }
     .table td { border: 1px solid #d1d5db; padding: 12px; }
@@ -47,7 +48,7 @@ export const purchaseInvoiceEnglish = `<!DOCTYPE html>
      <!-- Header -->
      <div class="header">
        <div class="header-row-1">
-         <div class="invoice-info">
+          <div class="invoice-info invoice-details">
            <h1 class="invoice-title">PURCHASE INVOICE</h1>
            <p class="invoice-number">Invoice #{{invoiceId}}</p>
            <div class="dates-grid">
@@ -86,8 +87,8 @@ export const purchaseInvoiceEnglish = `<!DOCTYPE html>
          </div>
 
          <div class="header-row-2">
-           <div class="billed-from">
-             <h3 style="font-weight: 600; margin-bottom: 8px;">Billed From:</h3>
+            <div class="billed-from">
+              <h3 style="font-weight: 600; color: #6b7280; margin-bottom: 8px;">Billed From:</h3>
              <p style="font-weight: 500;">{{supplierName}}</p>
              {{#supplierNameAr}}
              <p style="font-size: 1rem;">{{supplierNameAr}}</p>
@@ -96,8 +97,8 @@ export const purchaseInvoiceEnglish = `<!DOCTYPE html>
              <p>{{supplierEmail}}</p>
              {{#supplierVat}}<p>VAT: {{supplierVat}}</p>{{/supplierVat}}
            </div>
-           <div class="bill-to">
-             <h3 style="font-weight: 600; margin-bottom: 8px;">Billed To:</h3>
+            <div class="bill-to">
+              <h3 style="font-weight: 600; color: #6b7280; margin-bottom: 8px;">Billed To:</h3>
              <h2 style="font-size: 1.25rem; font-weight: 600;">{{companyName}}</h2>
              {{#companyNameAr}}
              <p style="font-size: 1.125rem;">{{companyNameAr}}</p>

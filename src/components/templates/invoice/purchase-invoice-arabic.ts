@@ -35,7 +35,7 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
       .company-info, .billed-from { text-align: left; }
      .billed-from p, .bill-to p, .dates-grid p { padding: 4px 0; }
     .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
-     .bill-to, .billed-from { border: 1px solid #d1d5db; padding: 10px; border-radius: 8px; background: #f9fafb; margin-bottom: 8px; }
+      .bill-to, .billed-from, .invoice-details { border: 1px solid #d1d5db; padding: 10px; border-radius: 8px; background: #f3f4f6; margin-bottom: 8px; }
     .customer-logo, .supplier-logo { position: relative; width: 128px; height: 64px; margin-bottom: 8px; }
      .dates-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
      .table { width: 100%; margin-bottom: 12px; border-collapse: collapse; border: 1px solid #d1d5db; }
@@ -76,7 +76,7 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
      <!-- Header -->
      <div class="header">
        <div class="header-row-1">
-         <div class="invoice-info">
+          <div class="invoice-info invoice-details">
            <h1 class="invoice-title">Purchase Invoice / فاتورة مشتريات</h1>
            <p class="invoice-number">Invoice # (رقم الفاتورة) <br/> {{invoiceId}}</p>
             <div class="dates-grid">
@@ -104,7 +104,7 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
        </div>
 <div class="header-row-2">
             <div class="billed-from">
-              <h3 style="font-weight: 600; margin-bottom: 8px;">Billed From (من):</h3>
+              <h3 style="font-weight: 600; color: #6b7280; margin-bottom: 8px;">Billed From (من):</h3>
               {{#supplierLogo}}
               <div style="margin-bottom: 8px;">
                 <img src="{{supplierLogo}}" alt="شعار المورد" style="width: 128px; height: 64px; object-fit: contain;" />
@@ -119,7 +119,7 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
               {{#supplierVat}}<p>🏢 VAT: {{supplierVat}}</p>{{/supplierVat}}
            </div>
             <div class="bill-to">
-              <h3 style="font-weight: 600; margin-bottom: 8px;">Billed To (إلى):</h3>
+              <h3 style="font-weight: 600; color: #6b7280; margin-bottom: 8px;">Billed To (إلى):</h3>
               {{#companyLogo}}
               <div style="margin-bottom: 8px;">
                 <img src="{{companyLogo}}" alt="شعار الشركة" style="width: 128px; height: 64px; object-fit: contain;" />
