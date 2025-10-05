@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Payment, Organization, InvoiceTemplate, Customer, Supplier, DocumentPrintSettings, SalesInvoice, PurchaseInvoice, InvoiceType, PaymentType } from '@/types';
-import { Printer, Eye, MoreHorizontal, Trash2, Mail, Edit } from 'lucide-react';
+import { Printer, Eye, MoreHorizontal, Trash2, Mail } from 'lucide-react';
 import { InvoiceActionsDialog } from './InvoiceActionsDialog';
 import { InvoicePrintDialog } from './InvoicePrintDialog';
 
@@ -99,14 +99,14 @@ export function InvoiceActions({
            previewMode={true}
            onEmail={onEmail}
          >
-           <Button
-             variant="ghost"
-             size="sm"
-             onClick={(e) => e.stopPropagation()}
-             title="Preview Invoice"
-           >
-             <Edit className="h-4 w-4" />
-           </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => e.stopPropagation()}
+              title="Send Email"
+            >
+              <Mail className="h-4 w-4" />
+            </Button>
          </InvoicePrintDialog>
 
          <InvoicePrintDialog
