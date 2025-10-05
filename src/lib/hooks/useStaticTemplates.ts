@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { InvoiceTemplate } from '@/types';
+import { InvoiceTemplate, ReceiptTemplate } from '@/types';
+import { InvoiceTemplateType, ReceiptTemplateType } from '@/types/enums';
 
 // Import static templates
 import { salesInvoiceEnglish } from '@/components/templates/invoice/sales-invoice-english';
@@ -19,21 +20,87 @@ import { invoiceReportA4 } from '@/components/templates/reports/invoice-report-a
 import { shortInvoiceReportThermal } from '@/components/templates/reports/short-invoice-report-thermal';
 import { shortInvoiceReportA4 } from '@/components/templates/reports/short-invoice-report-a4';
 
-const staticTemplates: Omit<InvoiceTemplate, 'organizationId' | 'createdAt' | 'updatedAt'>[] = [
+const staticInvoiceTemplates: Omit<InvoiceTemplate, 'organizationId' | 'createdAt' | 'updatedAt'>[] = [
   // Sales Invoices
-  { id: 'sales-invoice-english', name: 'Default Sales Invoice (English)', type: 'sales-invoice-english', content: salesInvoiceEnglish },
-  { id: 'sales-invoice-arabic', name: 'Default Sales Invoice (Arabic)', type: 'sales-invoice-arabic', content: salesInvoiceArabic },
+  {
+    id: 'sales-invoice-english',
+    name: 'Default Sales Invoice (English)',
+    type: InvoiceTemplateType.ENGLISH,
+    content: salesInvoiceEnglish,
+    fields: [],
+    style: {
+      primaryColor: "#000000",
+      secondaryColor: "#666666",
+      backgroundColor: "#ffffff",
+      textColor: "#000000",
+      fontFamily: "Arial",
+      fontSize: 12,
+      showLogo: true,
+      showWatermark: false,
+    }
+  },
+  {
+    id: 'sales-invoice-arabic',
+    name: 'Default Sales Invoice (Arabic)',
+    type: InvoiceTemplateType.ARABIC,
+    content: salesInvoiceArabic,
+    fields: [],
+    style: {
+      primaryColor: "#000000",
+      secondaryColor: "#666666",
+      backgroundColor: "#ffffff",
+      textColor: "#000000",
+      fontFamily: "Arial",
+      fontSize: 12,
+      showLogo: true,
+      showWatermark: false,
+    }
+  },
+  {
+    id: 'purchase-invoice-english',
+    name: 'Default Purchase Invoice (English)',
+    type: InvoiceTemplateType.ENGLISH,
+    content: purchaseInvoiceEnglish,
+    fields: [],
+    style: {
+      primaryColor: "#000000",
+      secondaryColor: "#666666",
+      backgroundColor: "#ffffff",
+      textColor: "#000000",
+      fontFamily: "Arial",
+      fontSize: 12,
+      showLogo: true,
+      showWatermark: false,
+    }
+  },
+  {
+    id: 'purchase-invoice-arabic',
+    name: 'Default Purchase Invoice (Arabic)',
+    type: InvoiceTemplateType.ARABIC,
+    content: purchaseInvoiceArabic,
+    fields: [],
+    style: {
+      primaryColor: "#000000",
+      secondaryColor: "#666666",
+      backgroundColor: "#ffffff",
+      textColor: "#000000",
+      fontFamily: "Arial",
+      fontSize: 12,
+      showLogo: true,
+      showWatermark: false,
+    }
+  },
+];
 
-  // Purchase Invoices
-  { id: 'purchase-invoice-english', name: 'Default Purchase Invoice (English)', type: 'purchase-invoice-english', content: purchaseInvoiceEnglish },
-  { id: 'purchase-invoice-arabic', name: 'Default Purchase Invoice (Arabic)', type: 'purchase-invoice-arabic', content: purchaseInvoiceArabic },
-
+const staticReceiptTemplates: Omit<ReceiptTemplate, 'organizationId' | 'createdAt' | 'updatedAt'>[] = [
   // Receipts
-  { id: 'default-receipt-thermal-english', name: 'Default Thermal Receipt (English)', type: 'receipt-english', content: defaultEnglishReceiptTemplate },
-  { id: 'default-receipt-thermal-arabic', name: 'Default Thermal Receipt (Arabic)', type: 'receipt-arabic', content: defaultArabicReceiptTemplate },
-  { id: 'default-receipt-a4-english', name: 'Default A4 Receipt (English)', type: 'receipt-english', content: defaultReceiptA4Template },
-  { id: 'default-receipt-a4-arabic', name: 'Default A4 Receipt (Arabic)', type: 'receipt-arabic', content: defaultArabicReceiptA4Template },
+  { id: 'default-receipt-thermal-english', name: 'Default Thermal Receipt (English)', type: ReceiptTemplateType.ENGLISH_THERMAL, content: defaultEnglishReceiptTemplate },
+  { id: 'default-receipt-thermal-arabic', name: 'Default Thermal Receipt (Arabic)', type: ReceiptTemplateType.ARABIC_THERMAL, content: defaultArabicReceiptTemplate },
+  { id: 'default-receipt-a4-english', name: 'Default A4 Receipt (English)', type: ReceiptTemplateType.ENGLISH_A4, content: defaultReceiptA4Template },
+  { id: 'default-receipt-a4-arabic', name: 'Default A4 Receipt (Arabic)', type: ReceiptTemplateType.ARABIC_A4, content: defaultArabicReceiptA4Template },
+];
 
+const staticReportTemplates = [
   // Reports
   { id: 'pos-report-thermal', name: 'POS Report (Thermal)', type: 'report', content: posReportThermal },
   { id: 'pos-report-a4', name: 'POS Report (A4)', type: 'report', content: posReportA4 },
@@ -46,8 +113,8 @@ const staticTemplates: Omit<InvoiceTemplate, 'organizationId' | 'createdAt' | 'u
 ];
 
 export function useStaticTemplates() {
-  const templates = useMemo(() => {
-    return staticTemplates.map(t => ({
+  const invoiceTemplates = useMemo(() => {
+    return staticInvoiceTemplates.map(t => ({
       ...t,
       organizationId: 'static',
       createdAt: new Date(),
@@ -55,12 +122,19 @@ export function useStaticTemplates() {
     })) as InvoiceTemplate[];
   }, []);
 
-  const invoiceTemplates = useMemo(() => templates.filter(t => t.type.includes('invoice')), [templates]);
-  const receiptTemplates = useMemo(() => templates.filter(t => t.type.includes('receipt')), [templates]);
-  const reportTemplates = useMemo(() => templates.filter(t => t.type.includes('report')), [templates]);
+  const receiptTemplates = useMemo(() => {
+    return staticReceiptTemplates.map(t => ({
+      ...t,
+      organizationId: 'static',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })) as ReceiptTemplate[];
+  }, []);
+
+  const reportTemplates = useMemo(() => staticReportTemplates, []);
 
   return {
-    allTemplates: templates,
+    allTemplates: [...invoiceTemplates, ...receiptTemplates, ...reportTemplates],
     invoiceTemplates,
     receiptTemplates,
     reportTemplates,

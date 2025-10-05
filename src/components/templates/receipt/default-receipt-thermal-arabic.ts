@@ -46,14 +46,14 @@ export const defaultArabicReceiptTemplate = `<!DOCTYPE html>
           {{/companyNameAr}}
         </div>
        <div class="bilingual">
-         <p><strong>Address</strong>           <span style="color: #666; font-weight: bold;">(العنوان)</span>: {{companyAddress}}</p>
+         <p><strong>Address</strong>           <span style="font-weight: bold;">(العنوان)</span>: {{companyAddress}}</p>
        </div>
        <div class="bilingual">
-         <p><strong>Tel</strong>           <span style="color: #666; font-weight: bold;">(الهاتف)</span>: {{companyPhone}}</p>
+         <p><strong>Tel</strong>           <span style="font-weight: bold;">(الهاتف)</span>: {{companyPhone}}</p>
        </div>
        {{#companyVat}}
        <div class="bilingual">
-         <p><strong>VAT Number</strong>           <span style="color: #666; font-weight: bold;">(الرقم الضريبي)</span>: {{companyVat}}</p>
+         <p><strong>VAT Number</strong>           <span style="font-weight: bold;">(الرقم الضريبي)</span>: {{companyVat}}</p>
        </div>
        {{/companyVat}}
        <hr>
@@ -64,24 +64,24 @@ export const defaultArabicReceiptTemplate = `<!DOCTYPE html>
           <hr>
        {{/customHeader}}
        <div class="bilingual">
-         <p><strong>Order #</strong>           <span style="color: #666; font-weight: bold;">(طلب #)</span>: {{orderNumber}}</p>
-         {{#queueNumber}}<p><strong>Queue #</strong>           <span style="color: #666; font-weight: bold;">(رقم الدور)</span>: {{queueNumber}}</p>{{/queueNumber}}
-         <p><strong>Type</strong>           <span style="color: #666; font-weight: bold;">(النوع)</span>: {{orderType}}</p>
-         <p><strong>Date</strong>           <span style="color: #666; font-weight: bold;">(التاريخ)</span>: {{formattedDate}}</p>
+         <p><strong>Order #</strong>           <span style="font-weight: bold;">(طلب #)</span>: {{orderNumber}}</p>
+         {{#queueNumber}}<p><strong>Queue #</strong>           <span style="font-weight: bold;">(رقم الدور)</span>: {{queueNumber}}</p>{{/queueNumber}}
+         <p><strong>Type</strong>           <span style="font-weight: bold;">(النوع)</span>: {{orderType}}</p>
+         <p><strong>Date</strong>           <span style="font-weight: bold;">(التاريخ)</span>: {{formattedDate}}</p>
        </div>
        {{#tableName}}
        <div class="bilingual">
-         <p><strong>Table</strong>           <span style="color: #666; font-weight: bold;">(الطاولة)</span>: {{tableName}}</p>
+         <p><strong>Table</strong>           <span style="font-weight: bold;">(الطاولة)</span>: {{tableName}}</p>
        </div>
        {{/tableName}}
        {{#customerName}}
        <div class="bilingual">
-         <p><strong>Customer</strong>           <span style="color: #666; font-weight: bold;">(العميل)</span>: {{customerName}}</p>
+         <p><strong>Customer</strong>           <span style="font-weight: bold;">(العميل)</span>: {{customerName}}</p>
        </div>
        {{/customerName}}
        {{#createdByName}}
        <div class="bilingual">
-         <p><strong>Served by</strong>           <span style="color: #666; font-weight: bold;">(خدم من قبل)</span>: {{createdByName}}</p>
+         <p><strong>Served by</strong>           <span style="font-weight: bold;">(خدم من قبل)</span>: {{createdByName}}</p>
        </div>
        {{/createdByName}}
       <hr>
@@ -91,15 +91,15 @@ export const defaultArabicReceiptTemplate = `<!DOCTYPE html>
       <table>
          <thead>
            <tr>
-             <th class="item-col">
-               <strong>Item</strong><br>                <span style="color: #666; font-size: 11px; font-weight: bold;">(الصنف)</span>
-             </th>
-             <th class="qty-col">
-               <strong>Qty</strong><br>                <span style="color: #666; font-size: 11px; font-weight: bold;">(الكمية)</span>
-             </th>
-             <th class="amount-col">
-               <strong>Amount</strong><br><span style="color: #666; font-size: 11px; font-weight: bold;">(المبلغ)</span>
-             </th>
+              <th class="item-col">
+                <strong>Item</strong><br>                <span style="font-size: 11px; font-weight: bold;">(الصنف)</span>
+              </th>
+              <th class="qty-col">
+                <strong>Qty</strong><br>                <span style="font-size: 11px; font-weight: bold;">(الكمية)</span>
+              </th>
+              <th class="amount-col">
+                <strong>Amount</strong><br><span style="font-size: 11px; font-weight: bold;">(المبلغ)</span>
+              </th>
            </tr>
          </thead>
         <tbody>
@@ -116,27 +116,27 @@ export const defaultArabicReceiptTemplate = `<!DOCTYPE html>
 
      <div class="total">
         <div class="bilingual">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span><strong>Qty</strong>              <span style="color: #666; font-weight: bold;">(إجمالي الكمية)</span></span>
-          </div>
+           <div style="display: flex; justify-content: space-between; align-items: center;">
+             <span><strong>Qty</strong>              <span style="font-weight: bold;">(إجمالي الكمية)</span></span>
+           </div>
           <div style="text-align: right; font-weight: bold;">{{totalQty}}</div>
         </div>
          <div class="bilingual">
-           <div style="display: flex; justify-content: space-between; align-items: center;">
-             <span><strong>Subtotal</strong>               <span style="color: #666; font-weight: bold;">(المجموع الفرعي)</span></span>
-           </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span><strong>Subtotal</strong>               <span style="font-weight: bold;">(المجموع الفرعي)</span></span>
+            </div>
            <div style="text-align: right; font-weight: bold;">{{subtotal}}</div>
          </div>
          <div class="bilingual">
-           <div style="display: flex; justify-content: space-between; align-items: center;">
-             <span><strong>VAT ({{vatRate}}%)</strong>               <span style="color: #666; font-weight: bold;">(ضريبة)</span></span>
-           </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span><strong>VAT ({{vatRate}}%)</strong>               <span style="font-weight: bold;">(ضريبة)</span></span>
+            </div>
            <div style="text-align: right; font-weight: bold;">{{vatAmount}}</div>
          </div>
  <div class="bilingual total-amount">
-           <div style="display: flex; justify-content: space-between; align-items: center;">
-             <span><strong>TOTAL</strong>               <span style="color: #666; font-weight: bold;">(المبلغ الإجمالي)</span></span>
-           </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span><strong>TOTAL</strong>               <span style="font-weight: bold;">(المبلغ الإجمالي)</span></span>
+            </div>
            <div style="text-align: right; font-weight: bold; font-size: 16px;">{{total}}</div>
          </div>
      </div>
@@ -146,12 +146,12 @@ export const defaultArabicReceiptTemplate = `<!DOCTYPE html>
       <table style="width: 100%; border-collapse: collapse;">
          <thead>
            <tr>
-              <th style="text-align: right; border-bottom: 1px solid #000; padding: 2px 10px;">
-                <strong>Payment</strong><br>                 <span style="color: #666; font-size: 11px; font-weight: bold;">(نوع الدفع)</span>
-              </th>
-              <th style="text-align: right; border-bottom: 1px solid #000; padding: 2px 10px;">
-                <strong>Amount</strong><br><span style="color: #666; font-size: 11px; font-weight: bold;">(المبلغ)</span>
-              </th>
+               <th style="text-align: right; border-bottom: 1px solid #000; padding: 2px 10px;">
+                 <strong>Payment</strong><br>                 <span style="font-size: 11px; font-weight: bold;">(نوع الدفع)</span>
+               </th>
+               <th style="text-align: right; border-bottom: 1px solid #000; padding: 2px 10px;">
+                 <strong>Amount</strong><br><span style="font-size: 11px; font-weight: bold;">(المبلغ)</span>
+               </th>
            </tr>
          </thead>
         <tbody>
@@ -177,12 +177,12 @@ export const defaultArabicReceiptTemplate = `<!DOCTYPE html>
 
      <div class="footer">
        {{#includeQR}}
-      <div style="text-align: center; margin-top: 15px; padding-top: 10px; border-top: 1px dashed #000;">
-        <div style="display: inline-block; padding: 5px; background: white; border: 1px solid #ddd;">
-          <img src="{{qrCodeUrl}}" alt="رمز QR متوافق مع زاتكا" style="max-width: 90%; padding: 2%;" />
-        </div>
-      </div>
-         <p style="font-size: 0.75rem; color: #666; margin-bottom: 5px;">Powered by Dijitize.com</p>
+       <div style="text-align: center; margin-top: 15px; padding-top: 10px; border-top: 1px dashed #000;">
+         <div style="display: inline-block; padding: 5px; background: white; border: 1px solid #ddd;">
+           <img src="{{qrCodeUrl}}" alt="رمز QR متوافق مع زاتكا" style="width: 100%; height: auto;" />
+         </div>
+       </div>
+          <p style="font-size: 0.75rem; margin-bottom: 5px;">Powered by Dijitize.com</p>
 
       {{/includeQR}}
     </div>

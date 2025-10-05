@@ -265,7 +265,7 @@ export function useSeparatedTemplates(): SeparatedTemplatesState {
   }, [
     staticInvoiceTemplates,
     customInvoiceTemplates,
-    printerSettings?.invoices?.defaultTemplateId,
+    printerSettings?.invoices?.defaultSalesTemplateId,
   ]);
 
 
