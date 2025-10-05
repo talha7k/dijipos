@@ -35,7 +35,7 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
       .company-info, .billed-from { text-align: left; }
      .billed-from p, .bill-to p, .dates-grid p { padding: 4px 0; }
     .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
-     .bill-to, .billed-from { border: 1px solid #d1d5db; padding: 15px; border-radius: 8px; background: #f9fafb; margin-bottom: 8px; }
+     .bill-to, .billed-from { border: 1px solid #d1d5db; padding: 10px; border-radius: 8px; background: #f9fafb; margin-bottom: 8px; }
     .customer-logo, .supplier-logo { position: relative; width: 128px; height: 64px; margin-bottom: 8px; }
      .dates-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
      .table { width: 100%; margin-bottom: 12px; border-collapse: collapse; border: 1px solid #d1d5db; }
@@ -44,7 +44,7 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
      .totals-stamp-container { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
     .totals { flex: 1; }
       .totals div { width: 288px; }
-     .total-line { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; }
+     .total-line { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; }
     .total-bold { font-weight: bold; font-size: 1.125rem; border-top: 1px solid #d1d5db; padding-top: 6px; }
      .stamp { flex: 0 0 auto; margin-right: 30px; display: flex; justify-content: center; align-items: center; }
      .stamp div { text-align: center; }
