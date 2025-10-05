@@ -148,23 +148,9 @@ export function InvoicePrintDialog({
   onEmail,
 }: InvoicePrintDialogProps) {
   const [open, setOpen] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState<string>("");
   const [renderedHtml, setRenderedHtml] = useState("");
   const [direction, setDirection] = useState<"ltr" | "rtl">("ltr");
-  const [pageSize, setPageSize] = useState("210mm"); // A4 default
   const [isGenerating, setIsGenerating] = useState(false);
-  const [margins, setMargins] = useState({
-    top: 10,
-    right: 10,
-    bottom: 10,
-    left: 10,
-  });
-  const [paddings, setPaddings] = useState({
-    top: 15,
-    right: 15,
-    bottom: 15,
-    left: 15,
-  });
 
   // Filter templates based on invoice type
   const filteredTemplates = useMemo(() => {
@@ -178,39 +164,64 @@ export function InvoicePrintDialog({
     }) || [];
   }, [invoiceTemplates, invoice.type]);
 
-  // Effect to initialize all settings when the dialog opens and templates are loaded
+  // Initialize states with default values from settings
+  const [selectedTemplate, setSelectedTemplate] = useState<string>("");
+  const [pageSize, setPageSize] = useState("210mm");
+  const [margins, setMargins] = useState({
+    top: 10,
+    right: 10,
+    bottom: 10,
+    left: 10,
+  });
+  const [paddings, setPaddings] = useState({
+    top: 15,
+    right: 15,
+    bottom: 15,
+    left: 15,
+  });
+
+  // Effect to update settings when props change (similar to ReceiptPrintDialog)
   useEffect(() => {
-    if (open && filteredTemplates.length > 0) {
-      // 1. Set default template
-      const defaultTemplateId = settings?.defaultTemplateId;
-      const isValidDefault =
-        defaultTemplateId &&
-        filteredTemplates.some((t) => t.id === defaultTemplateId);
+    // 1. Set default template
+    const defaultTemplateId = settings?.defaultTemplateId;
+    const isValidDefault =
+      defaultTemplateId &&
+      filteredTemplates.some((t) => t.id === defaultTemplateId);
+    const newSelectedTemplate = isValidDefault
+      ? defaultTemplateId
+      : filteredTemplates[0]?.id || "";
+    setSelectedTemplate(newSelectedTemplate);
 
-      setSelectedTemplate(
-        isValidDefault ? defaultTemplateId : filteredTemplates[0]?.id || "",
-      );
+    // 2. Set paper size (independent of template change)
+    const newPageSize = settings?.paperWidth
+      ? `${settings.paperWidth}mm`
+      : "210mm";
+    setPageSize(newPageSize);
 
-      // 2. Set paper size
-      setPageSize(settings?.paperWidth ? `${settings.paperWidth}mm` : "210mm");
+    // 3. Set margins and paddings
+    const newMargins = {
+      top: settings?.marginTop ?? 10,
+      right: settings?.marginRight ?? 10,
+      bottom: settings?.marginBottom ?? 10,
+      left: settings?.marginLeft ?? 10,
+    };
+    const newPaddings = {
+      top: settings?.paddingTop ?? 15,
+      right: settings?.paddingRight ?? 15,
+      bottom: settings?.paddingBottom ?? 15,
+      left: settings?.paddingLeft ?? 15,
+    };
 
-      // 3. Set margins and paddings
-      setMargins({
-        top: settings?.marginTop ?? 10,
-        right: settings?.marginRight ?? 10,
-        bottom: settings?.marginBottom ?? 10,
-        left: settings?.marginLeft ?? 10,
-      });
-      setPaddings({
-        top: settings?.paddingTop ?? 15,
-        right: settings?.paddingRight ?? 15,
-        bottom: settings?.paddingBottom ?? 15,
-        left: settings?.paddingLeft ?? 15,
-      });
-    } else if (!open) {
+    setMargins(newMargins);
+    setPaddings(newPaddings);
+  }, [settings, filteredTemplates]);
+
+  // Effect to clear preview when dialog closes
+  useEffect(() => {
+    if (!open) {
       setRenderedHtml(""); // Clear preview on close
     }
-  }, [open, settings, filteredTemplates]);
+  }, [open]);
 
   // Effect to render the preview when settings change
   useEffect(() => {

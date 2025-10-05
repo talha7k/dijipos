@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -18,6 +18,7 @@ import { InvoiceStatus, PurchaseInvoiceStatus } from '@/types/enums';
 import { CreditCard, Printer, Eye, Plus, Edit } from 'lucide-react';
 import { AddInvoicePaymentDialog } from './AddInvoicePaymentDialog';
 import { EditCustomerDialog } from './EditCustomerDialog';
+import { getInvoicePayments } from '@/lib/firebase/firestore/invoices';
 
 // Type guard to check if invoice is a PurchaseInvoice
 function isPurchaseInvoice(invoice: SalesInvoice | PurchaseInvoice): invoice is PurchaseInvoice {
@@ -61,6 +62,44 @@ export function InvoiceDetailsDialog({
 }: InvoiceDetailsDialogProps) {
   const [showAddPaymentDialog, setShowAddPaymentDialog] = useState(false);
   const [showEditCustomerDialog, setShowEditCustomerDialog] = useState(false);
+  const [invoicePayments, setInvoicePayments] = useState<Payment[]>([]);
+  const [paymentsLoading, setPaymentsLoading] = useState(false);
+
+  // Fetch payments when the dialog opens and invoice changes
+  useEffect(() => {
+    if (open && invoice) {
+      fetchPayments();
+    }
+  }, [open, invoice?.id]);
+
+  const fetchPayments = async () => {
+    if (!invoice) return;
+    
+    try {
+      setPaymentsLoading(true);
+      const payments = await getInvoicePayments(invoice.id);
+      setInvoicePayments(payments);
+    } catch (error) {
+      console.error('Error fetching invoice payments:', error);
+    } finally {
+      setPaymentsLoading(false);
+    }
+  };
+
+  // Refresh payments after adding a new one
+  const handleAddPayment = async (paymentData: {
+    amount: number;
+    paymentMethod: string;
+    paymentDate: Date;
+    reference?: string;
+    notes?: string;
+  }) => {
+    if (onAddPayment && invoice) {
+      await onAddPayment(invoice.id, paymentData);
+      // Refresh payments after adding
+      await fetchPayments();
+    }
+  };
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-6xl max-h-[80vh] overflow-y-auto">
@@ -313,57 +352,61 @@ export function InvoiceDetailsDialog({
                       )}
                     </div>
 
-                   {payments[invoice.id] && payments[invoice.id].length > 0 ? (
-                     <div className="space-y-4">
-                       <Table>
-                         <TableHeader>
-                           <TableRow>
-                             <TableHead>Payment Method</TableHead>
-                             <TableHead>Date</TableHead>
-                             <TableHead>Reference</TableHead>
-                             <TableHead className="text-right">Amount</TableHead>
-                           </TableRow>
-                         </TableHeader>
-                         <TableBody>
-                           {payments[invoice.id].map((payment, index) => (
-                             <TableRow key={index}>
-                               <TableCell>
-                                 <div>
-                                   <p className="font-medium">{payment.paymentMethod}</p>
-                                    {payment.notes && (
-                                      <p className="text-sm text-muted-foreground">{payment.notes}</p>
-                                    )}
-                                 </div>
-                               </TableCell>
-                                <TableCell>{new Date(payment.paymentDate).toLocaleDateString()}</TableCell>
-                               <TableCell>{payment.reference || '-'}</TableCell>
-                               <TableCell className="text-right font-medium">${payment.amount.toFixed(2)}</TableCell>
-                             </TableRow>
-                           ))}
-                         </TableBody>
-                       </Table>
-
-                       <div className="flex justify-between items-center pt-4 border-t">
-                         <div className="space-y-1">
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">Total Paid:</span>
-                              <span className="font-medium">${payments[invoice.id].reduce((sum, p) => sum + p.amount, 0).toFixed(2)}</span>
-                            </div>
-                            {payments[invoice.id].reduce((sum, p) => sum + p.amount, 0) < invoice.total && (
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">Remaining Balance:</span>
-                                <span className="font-medium text-destructive">${(invoice.total - payments[invoice.id].reduce((sum, p) => sum + p.amount, 0)).toFixed(2)}</span>
-                              </div>
-                            )}
-                         </div>
-                       </div>
-                     </div>
-                    ) : (
-                       <div className="text-center py-8 text-muted-foreground">
-                         <CreditCard className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                         <p className="text-sm">No payments recorded for this invoice</p>
+                   {paymentsLoading ? (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <p className="text-sm">Loading payments...</p>
                       </div>
-                   )}
+                   ) : invoicePayments.length > 0 ? (
+                      <div className="space-y-4">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Payment Method</TableHead>
+                              <TableHead>Date</TableHead>
+                              <TableHead>Reference</TableHead>
+                              <TableHead className="text-right">Amount</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {invoicePayments.map((payment) => (
+                              <TableRow key={payment.id}>
+                                <TableCell>
+                                  <div>
+                                    <p className="font-medium">{payment.paymentMethod}</p>
+                                     {payment.notes && (
+                                       <p className="text-sm text-muted-foreground">{payment.notes}</p>
+                                     )}
+                                  </div>
+                                </TableCell>
+                                 <TableCell>{new Date(payment.paymentDate).toLocaleDateString()}</TableCell>
+                                <TableCell>{payment.reference || '-'}</TableCell>
+                                <TableCell className="text-right font-medium">${payment.amount.toFixed(2)}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+
+                        <div className="flex justify-between items-center pt-4 border-t">
+                          <div className="space-y-1">
+                             <div className="flex justify-between">
+                               <span className="text-muted-foreground">Total Paid:</span>
+                               <span className="font-medium">${invoicePayments.reduce((sum, p) => sum + p.amount, 0).toFixed(2)}</span>
+                             </div>
+                             {invoicePayments.reduce((sum, p) => sum + p.amount, 0) < invoice.total && (
+                               <div className="flex justify-between">
+                                 <span className="text-muted-foreground">Remaining Balance:</span>
+                                 <span className="font-medium text-destructive">${(invoice.total - invoicePayments.reduce((sum, p) => sum + p.amount, 0)).toFixed(2)}</span>
+                               </div>
+                             )}
+                          </div>
+                        </div>
+                      </div>
+                     ) : (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <CreditCard className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                          <p className="text-sm">No payments recorded for this invoice</p>
+                       </div>
+                    )}
                  </div>
                </div>
             </div>
@@ -379,9 +422,9 @@ export function InvoiceDetailsDialog({
           <AddInvoicePaymentDialog
             open={showAddPaymentDialog}
             onOpenChange={setShowAddPaymentDialog}
-            onAddPayment={(paymentData) => onAddPayment(invoice.id, paymentData)}
+            onAddPayment={handleAddPayment}
             paymentTypes={paymentTypes}
-            remainingAmount={invoice.total - (payments[invoice.id]?.reduce((sum, p) => sum + p.amount, 0) || 0)}
+            remainingAmount={invoice.total - invoicePayments.reduce((sum, p) => sum + p.amount, 0)}
             invoiceId={invoice.id}
           />
         )}
