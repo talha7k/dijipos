@@ -1,5 +1,5 @@
 export const defaultArabicReceiptTemplate = `<!DOCTYPE html>
-<html dir="rtl">
+<html dir="ltr">
 <head>
   <meta charset="utf-8">
   <title>إيصال</title>
@@ -17,17 +17,17 @@ export const defaultArabicReceiptTemplate = `<!DOCTYPE html>
     .footer { text-align: center; margin-top: 10px; }
     .custom-footer { text-align: center; margin-bottom: 10px; font-style: italic; font-family: var(--heading-font), 'Amiri', serif; }
     .line { display: flex; justify-content: space-between; }
-    .total { font-weight: bold; border-top: 1px solid #000; padding-top: 5px; margin-top: 10px; text-align: right; }
+    .total { font-weight: bold; border-top: 1px solid #000; padding-top: 5px; margin-top: 10px; text-align: left; }
     .total-amount { font-weight: bold; font-size: 14px; border-top: 2px solid #000; padding-top: 5px; margin-top: 5px; }
     table { width: 100%; border-collapse: collapse; margin-bottom: 10px; table-layout: fixed; }
-    th, td { text-align: right; padding: 2px 10px; }
+    th, td { text-align: left; padding: 2px 10px; }
     th { font-weight: bold; border-bottom: 1px solid #000; font-family: var(--heading-font), 'Amiri', serif; }
-    .amount-col { text-align: right; width: 70px; }
+    .amount-col { text-align: left; width: 70px; }
     .qty-col { text-align: center; width: 50px; }
     .item-col { width: auto; flex: 1; }
-    .bilingual { margin-bottom: 2px; text-align: right; }
+    .bilingual { margin-bottom: 2px; text-align: left; }
      .english { text-align: center; direction: ltr; margin-bottom: 1px; }
-    .arabic { text-align: right; direction: rtl; }
+    .arabic { text-align: left; direction: ltr; }
   </style>
 </head>
 <body>

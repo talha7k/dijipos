@@ -1,5 +1,5 @@
 export const defaultArabicReceiptA4Template = `<!DOCTYPE html>
-<html dir="rtl">
+<html dir="ltr">
 <head>
   <meta charset="utf-8">
   <title>إيصال</title>
@@ -66,17 +66,17 @@ export const defaultArabicReceiptA4Template = `<!DOCTYPE html>
       background: #f3f4f6;
       border: 1px solid #e5e7eb;
       padding: 12px;
-      text-align: right;
+      text-align: left;
       font-weight: 600;
       color: #374151;
     }
     .items-table td {
       border: 1px solid #e5e7eb;
       padding: 12px;
-      text-align: right;
+      text-align: left;
     }
     .items-table td:first-child {
-      text-align: right;
+      text-align: left;
       font-weight: 500;
     }
     .totals {
