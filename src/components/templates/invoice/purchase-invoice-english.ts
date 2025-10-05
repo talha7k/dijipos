@@ -8,8 +8,9 @@ export const purchaseInvoiceEnglish = `<!DOCTYPE html>
       --heading-font: {{headingFont}};
       --body-font: {{bodyFont}};
     }
-    .invoice-template { font-family: var(--body-font), system-ui, sans-serif; margin: 0; padding: 0; background: white; color: #000000; }
-    .invoice-template .container { max-width: 100%; margin: 0; padding: 0; }
+    .invoice-template { font-family: var(--body-font), system-ui, sans-serif; margin: 0; padding: 20px; background: white; color: #000000; }
+     .invoice-template .container { max-width: 100%; margin: 0; padding: 0; }
+     @page { margin: 20mm; }
     .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; }
     .qr-section { margin-bottom: 20px; }
     .logo-section { position: relative; width: 192px; height: 80px; margin-left: auto; }
@@ -31,7 +32,11 @@ export const purchaseInvoiceEnglish = `<!DOCTYPE html>
     .stamp { display: flex; justify-content: flex-end; margin-top: 40px; }
     .stamp div { text-align: center; }
      .stamp img { width: 96px; height: 96px; object-fit: contain; }
-  </style>
+     @media print {
+       .invoice-template { padding: 0; }
+       .table th, .table td { padding: 8px; }
+     }
+   </style>
 </head>
 <body>
   <div class="invoice-template">

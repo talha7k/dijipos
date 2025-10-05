@@ -9,8 +9,9 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
        --heading-font: {{headingFont}};
        --body-font: {{bodyFont}};
      }
-    .invoice-template { font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--body-font), 'sans-serif'; margin: 0; padding: 0; background: white; color: #000000; unicode-bidi: embed; }
-    .invoice-template .container { max-width: 100%; margin: 0; padding: 0; }
+     .invoice-template { font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--body-font), 'sans-serif'; margin: 0; padding: 20px; background: white; color: #000000; unicode-bidi: embed; }
+     .invoice-template .container { max-width: 100%; margin: 0; padding: 0; }
+     @page { margin: 20mm; }
 
     /* Compact paragraph spacing */
     .company-info p,
@@ -44,26 +45,28 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
      .english { flex: 1; text-align: left; }
      .arabic { flex: 1; text-align: right; direction: rtl; }
 
-     /* PDF-specific spacing adjustments */
-     @media print {
-       .table th, .table td {
-         padding: 1px 3px;
-         line-height: 1.0;
-       }
-       .company-info p,
-       .bill-to p,
-       .dates-grid p {
-         margin: 1px 0;
-       }
-     }
+      /* PDF-specific spacing adjustments */
+      @media print {
+        .invoice-template { padding: 0; }
+        .table th, .table td {
+          padding: 1px 3px;
+          line-height: 1.0;
+        }
+        .company-info p,
+        .bill-to p,
+        .dates-grid p {
+          margin: 1px 0;
+        }
+      }
 
-     /* PDF-specific spacing adjustments */
-     @media print {
-       .table th, .table td {
-         padding: 3px 5px;
-         line-height: 1.2;
-       }
-     }
+      /* PDF-specific spacing adjustments */
+      @media print {
+        .invoice-template { padding: 0; }
+        .table th, .table td {
+          padding: 3px 5px;
+          line-height: 1.2;
+        }
+      }
   </style>
 </head>
 <body>
@@ -77,11 +80,10 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
           <div style="display: inline-block; padding: 8px; background: white; border: 1px solid #d1d5db; border-radius: 4px;">
             <img src="{{qrCodeUrl}}" alt="رمز QR متوافق مع زاتكا" style="width: 120px; height: 120px;" />
           </div>
-          <p style="font-size: 0.875rem; color: #6b7280; margin-top: 8px;">رمز QR متوافق مع زاتكا</p>
         </div>
         {{/includeQR}}
-        <h1 class="invoice-title">فاتورة مشتريات</h1>
-        <p class="invoice-number">رقم الفاتورة #{{invoiceId}}</p>
+        <h1 class="invoice-title">Purchase Invoice<br>فاتورة مشتريات</h1>
+        <p class="invoice-number">Invoice # (رقم الفاتورة) {{invoiceId}}</p>
       </div>
       <div class="company-info">
         {{#companyLogo}}
@@ -125,7 +127,7 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
         {{#companyVat}}<p>VAT Number (الرقم الضريبي): {{companyVat}}</p>{{/companyVat}}
       </div>
     </div>
-    
+
     <!-- Dates Section -->
     <div style="margin-bottom: 30px;">
       <div class="dates-grid">
