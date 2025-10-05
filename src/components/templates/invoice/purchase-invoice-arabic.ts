@@ -44,7 +44,7 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
      .totals-stamp-container { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
     .totals { flex: 1; }
       .totals div { width: 288px; }
-    .total-line { display: flex; justify-content: space-between; padding: 6px 0; }
+     .total-line { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; }
     .total-bold { font-weight: bold; font-size: 1.125rem; border-top: 1px solid #d1d5db; padding-top: 6px; }
      .stamp { flex: 0 0 auto; margin-right: 30px; display: flex; justify-content: center; align-items: center; }
      .stamp div { text-align: center; }
@@ -181,10 +181,10 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
              <span>Tax (الضريبة) ({{taxRate}}%):</span>
              <span>{{taxAmount}} ريال</span>
            </div>
-           <div class="total-line total-bold">
-             <span>TOTAL (المجموع الكلي):</span>
-             <span>{{total}} ريال</span>
-           </div>
+            <div class="total-line total-bold">
+            <span>TOTAL<br/> المجموع الكلي</span>
+              <span>{{total}} ريال</span>
+            </div>
         </div>
       </div>
 
