@@ -132,7 +132,7 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
              <p>📍 {{companyAddress}}</p>
              <p>📧 {{companyEmail}}</p>
              {{#companyPhone}}<p>📞 {{companyPhone}}</p>{{/companyPhone}}
-              {{#companyVat}}<p>🏢 VAT Number (الرقم الضريبي) <br/> {{companyVat}}</p>{{/companyVat}}
+              {{#companyVat}}<p>🏢 VAT (الرقم الضريبي) <br/> {{companyVat}}</p>{{/companyVat}}
            </div>
          </div>
        </div>

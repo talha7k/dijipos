@@ -112,7 +112,7 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
              {{/customerNameAr}}
               <p>📍 {{clientAddress}}</p>
               <p>📧 {{clientEmail}}</p>
-              {{#clientVat}}<p>🏢 VAT Number (الرقم الضريبي) <br/> {{clientVat}}</p>{{/clientVat}}
+              {{#clientVat}}<p>🏢 VAT (الرقم الضريبي) <br/> {{clientVat}}</p>{{/clientVat}}
           </div>
             <div class="billed-from">
               <h3 style="font-weight: 600; margin-bottom: 8px;">Billed From (من):</h3>
@@ -128,7 +128,7 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
              <p>📍 {{companyAddress}}</p>
              <p>📧 {{companyEmail}}</p>
              {{#companyPhone}}<p>📞 {{companyPhone}}</p>{{/companyPhone}}
-              {{#companyVat}}<p>🏢 VAT Number (الرقم الضريبي) <br/> {{companyVat}}</p>{{/companyVat}}
+              {{#companyVat}}<p>🏢 VAT (الرقم الضريبي) <br/> {{companyVat}}</p>{{/companyVat}}
            </div>
          </div>
      </div>
