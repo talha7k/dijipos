@@ -1,18 +1,13 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useAtom, useSetAtom } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { auth } from "@/lib/firebase/config";
 import { onAuthStateChanged } from "firebase/auth";
 
 import { useOrganizationManager } from "@/lib/hooks/useOrganization";
 import {
-  selectedOrganizationAtom,
-  userOrganizationsAtom,
   organizationLoadingAtom,
-  organizationErrorAtom,
-  selectedOrganizationIdAtom,
-  organizationUserRoleAtom,
   logoutAtom,
 } from "@/atoms";
 import { ReactNode } from "react";
@@ -23,24 +18,7 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [selectedOrganization, setSelectedOrganization] = useAtom(
-    selectedOrganizationAtom,
-  );
-  const [userOrganizations, setUserOrganizations] = useAtom(
-    userOrganizationsAtom,
-  );
-  const [organizationLoading, setOrganizationLoading] = useAtom(
-    organizationLoadingAtom,
-  );
-  const [organizationError, setOrganizationError] = useAtom(
-    organizationErrorAtom,
-  );
-  const [organizationId, setOrganizationId] = useAtom(
-    selectedOrganizationIdAtom,
-  );
-  const [organizationUserRole, setOrganizationUserRole] = useAtom(
-    organizationUserRoleAtom,
-  );
+  const organizationLoading = useAtomValue(organizationLoadingAtom);
   const logout = useSetAtom(logoutAtom);
 
   // Initialize organization management - only once in the app lifecycle

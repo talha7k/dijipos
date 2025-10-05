@@ -17,7 +17,7 @@ import {
   updateUserStatus,
 } from "@/lib/firebase/firestore/organizations";
 
-import { useAtom } from "jotai";
+import { useSetAtom } from "jotai";
 import { selectedOrganizationIdAtom } from "@/atoms";
 import { OrganizationUser } from "@/types";
 import { UserRole } from "@/types/enums";
@@ -51,9 +51,7 @@ function CompanyContent() {
   const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const organizationUsers = useAtomValue(organizationUsersAtom);
   const orgLoading = useAtomValue(organizationLoadingAtom);
-  const [selectedOrganizationId, setSelectedOrganizationId] = useAtom(
-    selectedOrganizationIdAtom,
-  );
+  const setSelectedOrganizationId = useSetAtom(selectedOrganizationIdAtom);
 
   const organizationId = selectedOrganization?.id;
   const organization = selectedOrganization;

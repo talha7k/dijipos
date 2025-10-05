@@ -1,9 +1,5 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { format } from "date-fns";
 import { useInvoices } from "@/lib/hooks/useInvoices";
 import { PosReportTab } from "./PosReportTab";
 import { InvoiceReportTab } from "./InvoiceReportTab";
@@ -97,6 +93,8 @@ export function ReportsTabs() {
 
   const [printDialogOpen, setPrintDialogOpen] = useState(false);
   const [invoicePrintDialogOpen, setInvoicePrintDialogOpen] = useState(false);
+
+
 
   const filteredInvoices = useMemo(() => {
     return salesInvoices.filter((invoice) => {

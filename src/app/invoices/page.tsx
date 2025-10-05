@@ -81,7 +81,7 @@ const [filters, setFilters] = useState({});
   } = useInvoices();
   const { customers, loading: customersLoading } = useCustomers();
   const { suppliers, loading: suppliersLoading } = useSuppliers();
-  const { getPaymentsForInvoice: getInvoicePayments } = useInvoices();
+
 
   const { invoiceTemplates, loading: templatesLoading } = useStaticTemplates();
   const { storeSettings } = useStoreSettings();
@@ -261,9 +261,7 @@ const [filters, setFilters] = useState({});
     return filteredInvoices;
   };
 
-  const getPaymentsForInvoice = (invoiceId: string) => {
-    return getInvoicePayments(invoiceId);
-  };
+
 
   const handleDeleteInvoice = async (invoice: SalesInvoice | PurchaseInvoice) => {
     try {
@@ -414,12 +412,11 @@ const [filters, setFilters] = useState({});
 
       {/* Invoice Details Dialog */}
       {selectedInvoice && (
-        <InvoiceDetailsDialog
-          invoice={selectedInvoice}
-          customers={customers}
-          suppliers={suppliers}
-          payments={groupedPayments}
-          paymentTypes={storeSettings?.paymentTypes || []}
+          <InvoiceDetailsDialog
+            invoice={selectedInvoice}
+            customers={customers}
+            suppliers={suppliers}
+            paymentTypes={storeSettings?.paymentTypes || []}
           open={showDetails}
           onOpenChange={setShowDetails}
           onEdit={() => handleEditInvoice(selectedInvoice!)}

@@ -19,8 +19,6 @@ import { InvoiceTemplateType } from '@/types/enums';
 import { Plus, Edit, Trash2, Copy, Eye } from 'lucide-react';
 import { salesInvoiceEnglish } from '@/components/templates/invoice/sales-invoice-english';
 import { salesInvoiceArabic } from '@/components/templates/invoice/sales-invoice-arabic';
-import { purchaseInvoiceEnglish } from '@/components/templates/invoice/purchase-invoice-english';
-import { purchaseInvoiceArabic } from '@/components/templates/invoice/purchase-invoice-arabic';
 import { Loader } from '@/components/ui/loader';
 
 const defaultFields: TemplateField[] = [

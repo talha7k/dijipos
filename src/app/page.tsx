@@ -1,8 +1,6 @@
 'use client';
 
 import { useAuth } from '@/lib/hooks/useAuth';
-import { useAtom } from 'jotai';
-import { selectedOrganizationAtom } from '@/atoms';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,7 +13,6 @@ import { Loader } from '@/components/ui/loader';
 
 function HomeContent() {
   const { loading: authLoading, user } = useAuth();
-  const [selectedOrganization] = useAtom(selectedOrganizationAtom);
 
   const router = useRouter();
   const searchParams = useSearchParams();

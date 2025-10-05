@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { SalesInvoice, PurchaseInvoice, Payment, Organization, Customer, Supplier, PaymentType } from '@/types';
+import { SalesInvoice, PurchaseInvoice, Payment, Customer, Supplier, PaymentType } from '@/types';
 import { InvoiceStatus, PurchaseInvoiceStatus } from '@/types/enums';
 import { CreditCard, Printer, Eye, Plus, Edit, Trash2 } from 'lucide-react';
 import { AddInvoicePaymentDialog } from './AddInvoicePaymentDialog';
@@ -33,7 +33,6 @@ interface InvoiceDetailsDialogProps {
   invoice: SalesInvoice | PurchaseInvoice | null;
   customers: Customer[];
   suppliers: Supplier[];
-  payments: { [invoiceId: string]: Payment[] };
   paymentTypes: PaymentType[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -61,7 +60,6 @@ export function InvoiceDetailsDialog({
   invoice,
   customers,
   suppliers,
-  payments,
   paymentTypes,
   open,
   onOpenChange,
@@ -79,14 +77,7 @@ export function InvoiceDetailsDialog({
   const [invoicePayments, setInvoicePayments] = useState<Payment[]>([]);
   const [paymentsLoading, setPaymentsLoading] = useState(false);
 
-  // Fetch payments when the dialog opens and invoice changes
-  useEffect(() => {
-    if (open && invoice) {
-      fetchPayments();
-    }
-  }, [open, invoice?.id]);
-
-  const fetchPayments = async () => {
+  const fetchPayments = useCallback(async () => {
     if (!invoice) return;
 
     try {
@@ -98,7 +89,14 @@ export function InvoiceDetailsDialog({
     } finally {
       setPaymentsLoading(false);
     }
-  };
+  }, [invoice]);
+
+  // Fetch payments when the dialog opens and invoice changes
+  useEffect(() => {
+    if (open && invoice) {
+      fetchPayments();
+    }
+  }, [open, invoice?.id, fetchPayments]);
 
   // Refresh payments after adding a new one
   const handleAddPayment = async (paymentData: {
