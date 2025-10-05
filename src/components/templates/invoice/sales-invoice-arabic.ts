@@ -27,7 +27,7 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
     .customer-logo, .supplier-logo { position: relative; width: 128px; height: 64px; margin-bottom: 8px; }
     .dates-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
      .table { width: 100%; margin-bottom: 12px; border-collapse: collapse; border: 1px solid #d1d5db; }
-       .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 4px 6px; text-align: right; font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--heading-font), 'sans-serif'; line-height: 1.3; vertical-align: middle; min-height: 1.1em; }
+        .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 4px 6px; text-align: right; font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--heading-font), 'sans-serif'; line-height: 1.3; vertical-align: middle; min-height: 1.1em; }
       .table td { border: 1px solid #d1d5db; padding: 4px 6px; text-align: right; line-height: 1.3; vertical-align: middle; min-height: 1.1em; }
      .totals-stamp-container { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
     .totals { flex: 1; }
@@ -92,9 +92,9 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
             {{#companyNameAr}}
             <p style="font-size: 1.125rem; font-weight: 600;">{{companyNameAr}}</p>
             {{/companyNameAr}}
-            <p>Address (العنوان): {{companyAddress}}</p>
-            <p>Email (البريد الإلكتروني): {{companyEmail}}</p>
-            {{#companyPhone}}<p>Tel (الهاتف): {{companyPhone}}</p>{{/companyPhone}}
+            <p>📍{{companyAddress}}</p>
+            <p>📧 {{companyEmail}}</p>
+            {{#companyPhone}}<p>📞 {{companyPhone}}</p>{{/companyPhone}}
            {{#companyVat}}<p>VAT Number (الرقم الضريبي): {{companyVat}}</p>{{/companyVat}}
       </div>
     </div>
@@ -135,12 +135,12 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
     <!-- Items Table -->
     <table class="table">
       <thead>
-         <tr>
-            <th>Description<br>(الوصف)</th>
-            <th>Quantity<br>(الكمية)</th>
-            <th>Unit Price<br>(سعر الوحدة)</th>
-            <th>Total<br>(المجموع)</th>
-         </tr>
+          <tr>
+             <th>Description<br>(الوصف)</th>
+             <th>Quantity<br>(الكمية)</th>
+             <th>Unit Price<br>(سعر الوحدة)</th>
+             <th>Total<br>(المجموع)</th>
+          </tr>
       </thead>
       <tbody>
         {{#each items}}

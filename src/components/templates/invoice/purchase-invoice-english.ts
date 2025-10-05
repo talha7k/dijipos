@@ -21,7 +21,7 @@ export const purchaseInvoiceEnglish = `<!DOCTYPE html>
     .customer-logo, .supplier-logo { position: relative; width: 128px; height: 64px; margin-bottom: 10px; }
     .dates-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
     .table { width: 100%; margin-bottom: 40px; border-collapse: collapse; border: 1px solid #d1d5db; }
-    .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 12px; text-align: left; font-family: var(--heading-font), system-ui, sans-serif; }
+     .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 16px; text-align: left; font-family: var(--heading-font), system-ui, sans-serif; }
     .table td { border: 1px solid #d1d5db; padding: 12px; }
     .totals { display: flex; justify-content: flex-end; margin-bottom: 40px; }
     .totals div { width: 256px; }
@@ -60,9 +60,9 @@ export const purchaseInvoiceEnglish = `<!DOCTYPE html>
         {{#companyNameAr}}
         <p style="font-size: 1.125rem;">{{companyNameAr}}</p>
         {{/companyNameAr}}
-        <p>{{companyAddress}}</p>
-        <p>{{companyEmail}}</p>
-        <p>{{companyPhone}}</p>
+        <p>📍 {{companyAddress}}</p>
+        <p>📧 {{companyEmail}}</p>
+        <p>📞 {{companyPhone}}</p>
         {{#companyVat}}<p>VAT: {{companyVat}}</p>{{/companyVat}}
       </div>
     </div>
@@ -102,12 +102,12 @@ export const purchaseInvoiceEnglish = `<!DOCTYPE html>
     <!-- Items Table -->
     <table class="table">
       <thead>
-        <tr>
-          <th>Description</th>
-          <th>Qty</th>
-          <th>Unit Price</th>
-          <th>Total</th>
-        </tr>
+          <tr>
+            <th>Description</th>
+            <th>Qty</th>
+            <th>Unit Price</th>
+            <th>Total</th>
+          </tr>
       </thead>
       <tbody>
         {{#each items}}

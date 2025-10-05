@@ -178,21 +178,18 @@ export function InvoicePrintDialog({
     }) || [];
   }, [invoiceTemplates, invoice.type]);
 
-  // Effect to initialize all settings when the dialog opens
+  // Effect to initialize all settings when the dialog opens and templates are loaded
   useEffect(() => {
-    if (open) {
-      // 1. Set default template - ensure filteredTemplates is available first
+    if (open && filteredTemplates.length > 0) {
+      // 1. Set default template
       const defaultTemplateId = settings?.defaultTemplateId;
       const isValidDefault =
         defaultTemplateId &&
-        filteredTemplates?.some((t) => t.id === defaultTemplateId);
-      
-      // Use a small delay to ensure filteredTemplates is populated
-      setTimeout(() => {
-        setSelectedTemplate(
-          isValidDefault ? defaultTemplateId : filteredTemplates?.[0]?.id || "",
-        );
-      }, 100);
+        filteredTemplates.some((t) => t.id === defaultTemplateId);
+
+      setSelectedTemplate(
+        isValidDefault ? defaultTemplateId : filteredTemplates[0]?.id || "",
+      );
 
       // 2. Set paper size
       setPageSize(settings?.paperWidth ? `${settings.paperWidth}mm` : "210mm");
@@ -210,7 +207,7 @@ export function InvoicePrintDialog({
         bottom: settings?.paddingBottom ?? 15,
         left: settings?.paddingLeft ?? 15,
       });
-    } else {
+    } else if (!open) {
       setRenderedHtml(""); // Clear preview on close
     }
   }, [open, settings, filteredTemplates]);
@@ -235,7 +232,7 @@ export function InvoicePrintDialog({
       }
     };
 
-    if (open) {
+    if (open && filteredTemplates.length > 0) {
       document.addEventListener('keydown', handleKeyDown);
     }
 
