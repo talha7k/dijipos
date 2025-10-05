@@ -120,14 +120,14 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
 
     <!-- Items Table -->
     <table class="table">
-      <thead>
-         <tr>
-           <th>Description (الوصف)</th>
-           <th>Quantity (الكمية)</th>
-           <th>Unit Price (سعر الوحدة)</th>
-           <th>Total (المجموع)</th>
-         </tr>
-      </thead>
+       <thead>
+          <tr>
+            <th>Description<br>(الوصف)</th>
+            <th>Quantity<br>(الكمية)</th>
+            <th>Unit Price<br>(سعر الوحدة)</th>
+            <th>Total<br>(المجموع)</th>
+          </tr>
+       </thead>
       <tbody>
         {{#each items}}
         <tr>

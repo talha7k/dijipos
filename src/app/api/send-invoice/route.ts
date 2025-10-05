@@ -328,7 +328,7 @@ async function generatePDF(htmlContent: string): Promise<Buffer> {
           unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF;
           font-display: swap;
         }
-        body, .invoice-template, .arabic-text {
+        body, .invoice-template, .arabic-text, .table th {
           font-family: 'ArabicFont', 'Noto Sans Arabic', 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Geeza Pro', 'Arial', sans-serif !important;
         }
       </style>`)
@@ -349,7 +349,7 @@ async function generatePDF(htmlContent: string): Promise<Buffer> {
           unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF;
           font-display: swap;
         }
-        body {
+        body, .table th {
           font-family: 'ArabicFont', 'Noto Sans Arabic', 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Geeza Pro', 'Arial', sans-serif;
           direction: rtl;
           text-align: right;
