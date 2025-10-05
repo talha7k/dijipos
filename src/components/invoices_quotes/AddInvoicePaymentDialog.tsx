@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
@@ -72,11 +72,15 @@ export function AddInvoicePaymentDialog({
       return;
     }
 
+    // Get the payment method name from the selected ID
+    const selectedPaymentType = paymentTypes.find(type => type.id === paymentMethod);
+    const paymentMethodName = selectedPaymentType?.name || paymentMethod;
+
     setIsSubmitting(true);
     try {
       await onAddPayment({
         amount: paymentAmount,
-        paymentMethod,
+        paymentMethod: paymentMethodName,
         paymentDate: new Date(paymentDate),
         reference: reference || undefined,
         notes: notes || undefined,
@@ -116,6 +120,9 @@ export function AddInvoicePaymentDialog({
             <CreditCard className="h-5 w-5" />
             Add Payment to Invoice
           </DialogTitle>
+          <DialogDescription>
+            Add a new payment to this invoice. Fill in the required fields below.
+          </DialogDescription>
         </DialogHeader>
 
         {/* Payment Summary */}
@@ -206,13 +213,13 @@ export function AddInvoicePaymentDialog({
               <SelectTrigger>
                 <SelectValue placeholder="Select payment method" />
               </SelectTrigger>
-              <SelectContent>
-                {paymentTypes.map((type, index) => (
-                  <SelectItem key={`${type.id}-${index}`} value={type.name}>
-                    {type.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
+               <SelectContent>
+                 {paymentTypes.map((type) => (
+                   <SelectItem key={type.id} value={type.id}>
+                     {type.name}
+                   </SelectItem>
+                 ))}
+               </SelectContent>
             </Select>
           </div>
 

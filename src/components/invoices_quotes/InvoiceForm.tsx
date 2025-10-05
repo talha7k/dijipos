@@ -1,16 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 
 import { Combobox } from "@/components/ui/combobox";
 import ItemList from "@/components/pos/ItemList";
@@ -126,6 +120,44 @@ export default function InvoiceForm({
     return date.toISOString().split("T")[0];
   });
 
+
+
+  // Update form state when invoice prop changes
+  React.useEffect(() => {
+    if (invoice) {
+      setInvoiceType((invoice.type === InvoiceType.SALES ? "sales" : invoice.type) || "sales");
+      setSelectedCustomerId("");
+      setClientName(invoice.type === InvoiceType.SALES ? (invoice as SalesInvoice).clientName : "");
+      setClientEmail(invoice.type === InvoiceType.SALES ? (invoice as SalesInvoice).clientEmail : "");
+      setClientAddress(invoice.type === InvoiceType.SALES ? (invoice as SalesInvoice).clientAddress || "" : "");
+      setClientVAT("");
+      setSelectedSupplierId("");
+      setSupplierName(invoice.type === InvoiceType.PURCHASE ? (invoice as PurchaseInvoice).supplierName : "");
+      setSupplierEmail(invoice.type === InvoiceType.PURCHASE ? (invoice as PurchaseInvoice).supplierEmail : "");
+      setSupplierAddress(invoice.type === InvoiceType.PURCHASE ? (invoice as PurchaseInvoice).supplierAddress || "" : "");
+      setSupplierVAT(invoice.type === InvoiceType.PURCHASE ? (invoice as PurchaseInvoice).supplierVAT || "" : "");
+      setInvoiceNumber(invoice.type === InvoiceType.PURCHASE ? (invoice as PurchaseInvoice).invoiceNumber || "" : "");
+      setInvoiceDate(() => {
+        if (invoice.type === "purchase" && (invoice as PurchaseInvoice).invoiceDate && !isNaN(new Date((invoice as PurchaseInvoice).invoiceDate).getTime())) {
+          return new Date((invoice as PurchaseInvoice).invoiceDate).toISOString().split("T")[0];
+        }
+        const date = new Date();
+        return date.toISOString().split("T")[0];
+      });
+      setInvoiceItems(invoice.items || []);
+      setTaxRate(invoice.taxRate || storeSettings?.vatSettings?.rate || 15);
+      setNotes(invoice.notes || "");
+       setDueDate(() => {
+         if (invoice.dueDate && !isNaN(new Date(invoice.dueDate).getTime())) {
+           return new Date(invoice.dueDate).toISOString().split("T")[0];
+         }
+         const date = new Date();
+         date.setDate(date.getDate() + 30);
+         return date.toISOString().split("T")[0];
+       });
+    }
+  }, [invoice, storeSettings?.vatSettings?.rate]);
+
   const addItem = () => {
     setInvoiceItems([
       ...invoiceItems,
@@ -198,7 +230,7 @@ export default function InvoiceForm({
       taxRate,
       taxAmount,
       total,
-      status: "draft" as const,
+      status: invoice ? invoice.status : "draft",
       dueDate: new Date(dueDate),
       notes,
       template: InvoiceTemplateType.ENGLISH,
@@ -252,6 +284,10 @@ export default function InvoiceForm({
             </Button>
           </div>
         </div>
+
+
+
+
 
         {invoiceType === InvoiceType.SALES ? (
           <>

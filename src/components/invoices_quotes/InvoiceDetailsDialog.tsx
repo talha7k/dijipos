@@ -6,7 +6,15 @@ import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { SalesInvoice, PurchaseInvoice, Payment, Organization, Customer, Supplier, PaymentType } from '@/types';
+import { InvoiceStatus, PurchaseInvoiceStatus } from '@/types/enums';
 import { CreditCard, Printer, Eye, Plus, Edit } from 'lucide-react';
 import { AddInvoicePaymentDialog } from './AddInvoicePaymentDialog';
 import { EditCustomerDialog } from './EditCustomerDialog';
@@ -28,6 +36,7 @@ interface InvoiceDetailsDialogProps {
   onOpenChange: (open: boolean) => void;
   onPrint?: () => void;
   onEdit?: () => void;
+  onStatusChange?: (invoiceId: string, newStatus: string) => Promise<void>;
   onAddPayment?: (invoiceId: string, paymentData: {
     amount: number;
     paymentMethod: string;
@@ -47,6 +56,7 @@ export function InvoiceDetailsDialog({
   onOpenChange,
   onPrint,
   onEdit,
+  onStatusChange,
   onAddPayment
 }: InvoiceDetailsDialogProps) {
   const [showAddPaymentDialog, setShowAddPaymentDialog] = useState(false);
@@ -59,90 +69,100 @@ export function InvoiceDetailsDialog({
             <DialogHeader>
               <DialogTitle>Invoice Details</DialogTitle>
             </DialogHeader>
-            {/* Dialog Header with Print Button */}
-             <div className="flex justify-between items-center border-b pb-4">
-              <div>
-                <p className="text-gray-600">Invoice #{invoice.id.slice(-8)}</p>
-              </div>
-               <div className="flex gap-2">
-                 {onAddPayment && (
-                   <Button
-                     variant="default"
-                     size="sm"
-                     onClick={() => setShowAddPaymentDialog(true)}
-                     className="flex items-center gap-2"
-                   >
-                     <Plus className="h-4 w-4" />
-                     Add Payment
-                   </Button>
-                 )}
-                 <Button
-                   variant="outline"
-                   size="sm"
-                   onClick={() => {
-                     // Show payments section
-                     const paymentsSection = document.getElementById('payments-section');
-                     if (paymentsSection) {
-                       paymentsSection.scrollIntoView({ behavior: 'smooth' });
-                     }
-                   }}
-                   className="flex items-center gap-2"
-                 >
-                   <Eye className="h-4 w-4" />
-                   View Payments
-                  </Button>
-                  {onEdit && (
-                    <Button
-                      variant="outline"
-                      onClick={onEdit}
-                      size="sm"
-                      className="flex items-center gap-2"
-                    >
-                      <Edit className="h-4 w-4" />
-                      Edit Invoice
-                    </Button>
-                  )}
-                  {onPrint && (
-                    <Button
-                      onClick={onPrint}
-                      size="sm"
-                      className="flex items-center gap-2"
-                    >
-                      <Printer className="h-4 w-4" />
-                      Print PDF
-                    </Button>
-                  )}
+             {/* Dialog Header with Print Button */}
+              <div className="flex justify-between items-center border-b pb-4">
+               <div>
+                 <p className="text-muted-foreground">Invoice #{invoice.id.slice(-8)}</p>
                </div>
-             </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      // Show payments section
+                      const paymentsSection = document.getElementById('payments-section');
+                      if (paymentsSection) {
+                        paymentsSection.scrollIntoView({ behavior: 'smooth' });
+                      }
+                    }}
+                    className="flex items-center gap-2"
+                  >
+                    <Eye className="h-4 w-4" />
+                    View Payments
+                   </Button>
+                   {onEdit && (
+                     <Button
+                       variant="outline"
+                       onClick={onEdit}
+                       size="sm"
+                       className="flex items-center gap-2"
+                     >
+                       <Edit className="h-4 w-4" />
+                       Edit Invoice
+                     </Button>
+                   )}
+                   {onPrint && (
+                     <Button
+                       onClick={onPrint}
+                       size="sm"
+                       className="flex items-center gap-2"
+                     >
+                       <Printer className="h-4 w-4" />
+                       Print PDF
+                     </Button>
+                   )}
+                </div>
+              </div>
 
             {/* Invoice Header Information */}
             <div className="grid grid-cols-2 gap-4">
-              <div>
+              <div className="border border-border rounded-lg p-4 bg-card">
                 <h3 className="font-semibold mb-2">Invoice Information</h3>
-                <div className="space-y-1 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Status:</span>
-                    <Badge variant={
-                      invoice.status === 'paid' ? 'default' :
-                      invoice.status === 'overdue' ? 'destructive' :
-                      'secondary'
-                    } className="capitalize">
-                      {invoice.status}
-                    </Badge>
-                  </div>
+                 <div className="space-y-1 text-sm">
                    <div className="flex justify-between">
-                     <span className="text-gray-600">Invoice Date:</span>
-                     <span>{new Date(invoice.createdAt).toLocaleDateString()}</span>
+                     <span className="text-muted-foreground">Status:</span>
+                     {onStatusChange ? (
+                       <Select
+                         value={invoice.status}
+                         onValueChange={(value) => onStatusChange(invoice.id, value)}
+                       >
+                         <SelectTrigger className="w-32 h-6 text-xs">
+                           <SelectValue />
+                         </SelectTrigger>
+                         <SelectContent>
+                           {(isPurchaseInvoice(invoice)
+                             ? Object.values(PurchaseInvoiceStatus)
+                             : Object.values(InvoiceStatus)
+                           ).map((status) => (
+                             <SelectItem key={status} value={status}>
+                               {status.replace('_', ' ').toUpperCase()}
+                             </SelectItem>
+                           ))}
+                         </SelectContent>
+                       </Select>
+                     ) : (
+                       <Badge variant={
+                         invoice.status === 'paid' ? 'default' :
+                         invoice.status === 'overdue' ? 'destructive' :
+                         'secondary'
+                       } className="capitalize">
+                         {invoice.status}
+                       </Badge>
+                     )}
                    </div>
-                   <div className="flex justify-between">
-                     <span className="text-gray-600">Due Date:</span>
-                     <span>{invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : 'N/A'}</span>
-                   </div>
-                </div>
-              </div>
-               <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold">Client Information</h3>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Invoice Date:</span>
+                      <span>{new Date(invoice.createdAt).toLocaleDateString()}</span>
+                    </div>
+                     <div className="flex justify-between">
+                       <span className="text-muted-foreground">Due Date:</span>
+                       <span>{invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : 'N/A'}</span>
+                     </div>
+                 </div>
+               </div>
+                <div className="border border-border rounded-lg p-4 bg-card">
+                   <div className="flex items-center justify-between mb-2">
+                     <h3 className="font-semibold">Client Information</h3>
                     <Button
                       variant="outline"
                       size="sm"
@@ -160,28 +180,28 @@ export function InvoiceDetailsDialog({
                       const supplier = suppliers.find(s => s.id === (invoice as PurchaseInvoice).supplierId);
                       return supplier ? (
                         <>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Supplier:</span>
-                            <span>{supplier.name}</span>
-                          </div>
-                          {supplier.email && (
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Email:</span>
-                              <span>{supplier.email}</span>
-                            </div>
-                          )}
-                          {supplier.address && (
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Address:</span>
-                              <span>{supplier.address}</span>
-                            </div>
-                          )}
+                           <div className="flex justify-between">
+                             <span className="text-muted-foreground">Supplier:</span>
+                             <span>{supplier.name}</span>
+                           </div>
+                           {supplier.email && (
+                             <div className="flex justify-between">
+                               <span className="text-muted-foreground">Email:</span>
+                               <span>{supplier.email}</span>
+                             </div>
+                           )}
+                           {supplier.address && (
+                             <div className="flex justify-between">
+                               <span className="text-muted-foreground">Address:</span>
+                               <span>{supplier.address}</span>
+                             </div>
+                           )}
                         </>
                       ) : (
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Supplier:</span>
-                          <span>Supplier not found</span>
-                        </div>
+                         <div className="flex justify-between">
+                           <span className="text-muted-foreground">Supplier:</span>
+                           <span>Supplier not found</span>
+                         </div>
                       );
                     })()
                   ) : (
@@ -189,28 +209,28 @@ export function InvoiceDetailsDialog({
                       const customer = customers.find(c => c.name === (invoice as SalesInvoice).clientName);
                       return customer ? (
                         <>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Customer:</span>
-                            <span>{customer.name}</span>
-                          </div>
-                          {customer.email && (
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Email:</span>
-                              <span>{customer.email}</span>
-                            </div>
-                          )}
-                          {customer.address && (
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Address:</span>
-                              <span>{customer.address}</span>
-                            </div>
-                          )}
+                           <div className="flex justify-between">
+                             <span className="text-muted-foreground">Customer:</span>
+                             <span>{customer.name}</span>
+                           </div>
+                           {customer.email && (
+                             <div className="flex justify-between">
+                               <span className="text-muted-foreground">Email:</span>
+                               <span>{customer.email}</span>
+                             </div>
+                           )}
+                           {customer.address && (
+                             <div className="flex justify-between">
+                               <span className="text-muted-foreground">Address:</span>
+                               <span>{customer.address}</span>
+                             </div>
+                           )}
                         </>
                       ) : (
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Customer:</span>
-                          <span>Customer not found</span>
-                        </div>
+                         <div className="flex justify-between">
+                           <span className="text-muted-foreground">Customer:</span>
+                           <span>Customer not found</span>
+                         </div>
                       );
                     })()
                   )}
@@ -252,46 +272,46 @@ export function InvoiceDetailsDialog({
 
             {/* Invoice Summary */}
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h3 className="font-semibold mb-3">Invoice Summary</h3>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Subtotal:</span>
-                    <span>${invoice.subtotal.toFixed(2)}</span>
-                  </div>
-                  {invoice.taxAmount > 0 && (
-                    <div className="flex justify-between">
-                      <span>Tax ({invoice.taxRate}%):</span>
-                      <span>${invoice.taxAmount.toFixed(2)}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between font-bold text-lg border-t pt-2">
-                    <span>Total:</span>
-                    <span>${invoice.total.toFixed(2)}</span>
-                  </div>
-                </div>
-              </div>
-
-               {/* Payment Information */}
-               <div id="payments-section">
-                 <div className="space-y-3">
-                   <div className="flex items-center justify-between">
-                     <h3 className="font-semibold flex items-center gap-2">
-                       <CreditCard className="h-4 w-4" />
-                       Payments Made
-                     </h3>
-                     {onAddPayment && (
-                       <Button
-                         variant="outline"
-                         size="sm"
-                         onClick={() => setShowAddPaymentDialog(true)}
-                         className="flex items-center gap-2"
-                       >
-                         <Plus className="h-4 w-4" />
-                         Add Payment
-                       </Button>
-                     )}
+               <div className="border border-border rounded-lg p-4 bg-card">
+                 <h3 className="font-semibold mb-3">Invoice Summary</h3>
+                 <div className="space-y-2">
+                   <div className="flex justify-between">
+                     <span>Subtotal:</span>
+                     <span>${invoice.subtotal.toFixed(2)}</span>
                    </div>
+                   {invoice.taxAmount > 0 && (
+                     <div className="flex justify-between">
+                       <span>Tax ({invoice.taxRate}%):</span>
+                       <span>${invoice.taxAmount.toFixed(2)}</span>
+                     </div>
+                   )}
+                   <div className="flex justify-between font-bold text-lg border-t pt-2">
+                     <span>Total:</span>
+                     <span>${invoice.total.toFixed(2)}</span>
+                   </div>
+                 </div>
+               </div>
+
+                {/* Payment Information */}
+                <div id="payments-section" className="border border-border rounded-lg p-4 bg-card">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold flex items-center gap-2">
+                        <CreditCard className="h-4 w-4" />
+                        Payments Made
+                      </h3>
+                      {onAddPayment && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowAddPaymentDialog(true)}
+                          className="flex items-center gap-2"
+                        >
+                          <Plus className="h-4 w-4" />
+                          Add Payment
+                        </Button>
+                      )}
+                    </div>
 
                    {payments[invoice.id] && payments[invoice.id].length > 0 ? (
                      <div className="space-y-4">
@@ -310,9 +330,9 @@ export function InvoiceDetailsDialog({
                                <TableCell>
                                  <div>
                                    <p className="font-medium">{payment.paymentMethod}</p>
-                                   {payment.notes && (
-                                     <p className="text-sm text-gray-600">{payment.notes}</p>
-                                   )}
+                                    {payment.notes && (
+                                      <p className="text-sm text-muted-foreground">{payment.notes}</p>
+                                    )}
                                  </div>
                                </TableCell>
                                 <TableCell>{new Date(payment.paymentDate).toLocaleDateString()}</TableCell>
@@ -325,35 +345,24 @@ export function InvoiceDetailsDialog({
 
                        <div className="flex justify-between items-center pt-4 border-t">
                          <div className="space-y-1">
-                           <div className="flex justify-between">
-                             <span className="text-gray-600">Total Paid:</span>
-                             <span className="font-medium">${payments[invoice.id].reduce((sum, p) => sum + p.amount, 0).toFixed(2)}</span>
-                           </div>
-                           {payments[invoice.id].reduce((sum, p) => sum + p.amount, 0) < invoice.total && (
-                             <div className="flex justify-between">
-                               <span className="text-gray-600">Remaining Balance:</span>
-                               <span className="font-medium text-orange-600">${(invoice.total - payments[invoice.id].reduce((sum, p) => sum + p.amount, 0)).toFixed(2)}</span>
-                             </div>
-                           )}
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Total Paid:</span>
+                              <span className="font-medium">${payments[invoice.id].reduce((sum, p) => sum + p.amount, 0).toFixed(2)}</span>
+                            </div>
+                            {payments[invoice.id].reduce((sum, p) => sum + p.amount, 0) < invoice.total && (
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Remaining Balance:</span>
+                                <span className="font-medium text-destructive">${(invoice.total - payments[invoice.id].reduce((sum, p) => sum + p.amount, 0)).toFixed(2)}</span>
+                              </div>
+                            )}
                          </div>
                        </div>
                      </div>
-                   ) : (
-                     <div className="text-center py-8 text-gray-500">
-                       <CreditCard className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                       <p className="text-sm">No payments recorded for this invoice</p>
-                       {onAddPayment && (
-                         <Button
-                           variant="outline"
-                           size="sm"
-                           onClick={() => setShowAddPaymentDialog(true)}
-                           className="mt-4 flex items-center gap-2"
-                         >
-                           <Plus className="h-4 w-4" />
-                           Add First Payment
-                         </Button>
-                       )}
-                     </div>
+                    ) : (
+                       <div className="text-center py-8 text-muted-foreground">
+                         <CreditCard className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                         <p className="text-sm">No payments recorded for this invoice</p>
+                      </div>
                    )}
                  </div>
                </div>

@@ -47,6 +47,7 @@ export default function InvoicesPage() {
     const [filters, setFilters] = useState({});
     const [showEditCustomerDialog, setShowEditCustomerDialog] = useState(false);
     const [invoiceToEditCustomer, setInvoiceToEditCustomer] = useState<SalesInvoice | PurchaseInvoice | null>(null);
+    const [isOpeningChildDialog, setIsOpeningChildDialog] = useState(false);
 
   const columns = [
     {
@@ -113,6 +114,10 @@ export default function InvoicesPage() {
   ) => {
     try {
       await updateExistingInvoice(invoiceId, { status: newStatus });
+      // Update the selected invoice state to reflect the change immediately
+      if (selectedInvoice && selectedInvoice.id === invoiceId) {
+        setSelectedInvoice({ ...selectedInvoice, status: newStatus } as SalesInvoice | PurchaseInvoice);
+      }
     } catch (error) {
       console.error("Error updating invoice status:", error);
     }
@@ -325,9 +330,12 @@ export default function InvoicesPage() {
 
       {/* Create/Edit Invoice Dialog */}
       <Dialog open={showForm} onOpenChange={(open) => {
-        setShowForm(open);
-        if (!open) {
-          setEditingInvoice(null);
+        // Don't close the dialog if we're opening a child dialog
+        if (!open && !isOpeningChildDialog) {
+          setShowForm(open);
+          if (!open) {
+            setEditingInvoice(null);
+          }
         }
       }}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -337,10 +345,13 @@ export default function InvoicesPage() {
           <InvoiceForm
             invoice={editingInvoice}
             defaultType={transactionTypeFilter === "purchase" ? "purchase" : "sales"}
-            onEditCustomer={(invoice) => {
-              setInvoiceToEditCustomer(invoice);
-              setShowEditCustomerDialog(true);
-            }}
+             onEditCustomer={(invoice) => {
+               setIsOpeningChildDialog(true);
+               setInvoiceToEditCustomer(invoice);
+               setShowEditCustomerDialog(true);
+               // Reset the flag after a short delay
+               setTimeout(() => setIsOpeningChildDialog(false), 100);
+             }}
             onSubmit={async (invoiceData) => {
               try {
                 if (editingInvoice) {
@@ -376,6 +387,7 @@ export default function InvoicesPage() {
           open={showDetails}
           onOpenChange={setShowDetails}
           onEdit={() => handleEditInvoice(selectedInvoice!)}
+          onStatusChange={(invoiceId, newStatus) => handleStatusChange(invoiceId, newStatus as (SalesInvoice | PurchaseInvoice)["status"])}
           onAddPayment={handleAddPayment}
         />
       )}
