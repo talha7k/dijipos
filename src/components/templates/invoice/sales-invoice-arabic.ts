@@ -30,8 +30,8 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
     .customer-logo, .supplier-logo { position: relative; width: 128px; height: 64px; margin-bottom: 8px; }
     .dates-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
      .table { width: 100%; margin-bottom: 12px; border-collapse: collapse; border: 1px solid #d1d5db; }
-          .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 4px 6px; text-align: left; font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--heading-font), 'sans-serif'; font-size: 11px; line-height: 1.3; vertical-align: middle; min-height: 1.1em; }
-        .table td { border: 1px solid #d1d5db; padding: 4px 6px; text-align: left; line-height: 1.3; vertical-align: middle; min-height: 1.1em; }
+          .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 12px 8px; text-align: center; font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--heading-font), 'sans-serif'; font-size: 11px; line-height: 1.3; vertical-align: middle; min-height: 1.1em; }
+        .table td { border: 1px solid #d1d5db; padding: 12px 8px; text-align: center; line-height: 1.3; vertical-align: middle; min-height: 1.1em; }
      .totals-stamp-container { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
     .totals { flex: 1; }
       .totals div { width: 288px; }

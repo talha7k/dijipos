@@ -25,7 +25,7 @@ export const purchaseInvoiceEnglish = `<!DOCTYPE html>
      .dates-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
       .bill-to, .billed-from, .invoice-details { border: 1px solid #d1d5db; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
     .table { width: 100%; margin-bottom: 20px; border-collapse: collapse; border: 1px solid #d1d5db; }
-     .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 16px; text-align: left; font-family: var(--heading-font), system-ui, sans-serif; }
+     .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 20px; text-align: center; font-family: var(--heading-font), system-ui, sans-serif; }
     .table td { border: 1px solid #d1d5db; padding: 12px; }
     .totals { display: flex; justify-content: flex-end; margin-bottom: 20px; }
      .totals div { width: 320px; }
