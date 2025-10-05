@@ -103,18 +103,18 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
          {{/includeQR}}
        </div>
          <!-- Logo Row -->
-         {{#companyLogo}}
-         {{#supplierLogo}}
          <div class="logo-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 20px;">
            <div class="customer-logo">
+             {{#companyLogo}}
              <img src="{{companyLogo}}" alt="شعار الشركة" style="width: 128px; height: 64px; object-fit: contain;" />
+             {{/companyLogo}}
            </div>
            <div class="supplier-logo" style="text-align: left;">
+             {{#supplierLogo}}
              <img src="{{supplierLogo}}" alt="شعار المورد" style="width: 128px; height: 64px; object-fit: contain;" />
+             {{/supplierLogo}}
            </div>
          </div>
-         {{/supplierLogo}}
-         {{/companyLogo}}
         
         <div class="header-row-2">
           <div class="bill-to">

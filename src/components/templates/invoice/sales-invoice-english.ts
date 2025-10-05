@@ -75,18 +75,18 @@ export const salesInvoiceEnglish = `<!DOCTYPE html>
          {{/includeQR}}
        </div>
          <!-- Logo Row -->
-         {{#companyLogo}}
-         {{#customerLogo}}
          <div class="logo-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 20px;">
            <div class="supplier-logo">
+             {{#companyLogo}}
              <img src="{{companyLogo}}" alt="Company Logo" style="width: 128px; height: 64px; object-fit: contain;" />
+             {{/companyLogo}}
            </div>
            <div class="customer-logo" style="text-align: right;">
+             {{#customerLogo}}
              <img src="{{customerLogo}}" alt="Customer Logo" style="width: 128px; height: 64px; object-fit: contain;" />
+             {{/customerLogo}}
            </div>
          </div>
-         {{/customerLogo}}
-         {{/companyLogo}}
         
         <div class="header-row-2">
           <div class="billed-from">
