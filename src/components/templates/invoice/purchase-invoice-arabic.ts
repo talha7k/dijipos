@@ -35,11 +35,11 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
       .company-info, .billed-from { text-align: left; }
      .billed-from p, .bill-to p, .dates-grid p { padding: 4px 0; }
     .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
-     .bill-to, .supplier { margin-bottom: 8px; }
+     .bill-to, .billed-from { border: 1px solid #d1d5db; padding: 15px; border-radius: 8px; background: #f9fafb; margin-bottom: 8px; }
     .customer-logo, .supplier-logo { position: relative; width: 128px; height: 64px; margin-bottom: 8px; }
      .dates-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
      .table { width: 100%; margin-bottom: 12px; border-collapse: collapse; border: 1px solid #d1d5db; }
-         .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 8px 12px; text-align: left; font-family: 'ArabicFont', 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--heading-font), 'sans-serif'; line-height: 1.3; vertical-align: middle; min-height: 1.1em; }
+         .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 8px 12px; text-align: left; font-family: 'ArabicFont', 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--heading-font), 'sans-serif'; font-size: 11px; line-height: 1.3; vertical-align: middle; min-height: 1.1em; }
        .table td { border: 1px solid #d1d5db; padding: 4px 6px; text-align: left; line-height: 1.3; vertical-align: middle; min-height: 1.1em; }
      .totals-stamp-container { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
     .totals { flex: 1; }

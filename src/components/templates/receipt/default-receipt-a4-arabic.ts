@@ -69,6 +69,7 @@ export const defaultArabicReceiptA4Template = `<!DOCTYPE html>
       text-align: left;
       font-weight: 600;
       color: #374151;
+      font-size: 11px;
     }
     .items-table td {
       border: 1px solid #e5e7eb;

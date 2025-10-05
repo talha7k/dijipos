@@ -21,7 +21,7 @@ export const defaultArabicReceiptTemplate = `<!DOCTYPE html>
     .total-amount { font-weight: bold; font-size: 14px; border-top: 2px solid #000; padding-top: 5px; margin-top: 5px; }
     table { width: 100%; border-collapse: collapse; margin-bottom: 10px; table-layout: fixed; }
     th, td { text-align: left; padding: 2px 10px; }
-    th { font-weight: bold; border-bottom: 1px solid #000; font-family: var(--heading-font), 'Amiri', serif; }
+    th { font-weight: bold; border-bottom: 1px solid #000; font-family: var(--heading-font), 'Amiri', serif; font-size: 11px; }
     .amount-col { text-align: left; width: 70px; }
     .qty-col { text-align: center; width: 50px; }
     .item-col { width: auto; flex: 1; }
