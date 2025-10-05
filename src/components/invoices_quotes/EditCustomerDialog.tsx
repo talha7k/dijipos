@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -13,7 +13,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { SalesInvoice, PurchaseInvoice, Customer, Supplier, InvoiceType } from '@/types';
+import { SalesInvoice, PurchaseInvoice, InvoiceType } from '@/types';
 import { useCustomers } from '@/lib/hooks/useCustomers';
 import { useSuppliers } from '@/lib/hooks/useSuppliers';
 import { ImageUpload } from '@/components/ui/image-upload';

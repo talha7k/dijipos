@@ -23,16 +23,47 @@ interface EditableTableRowProps {
   index: number;
   onRemove: (index: number) => void;
   onEdit?: (index: number) => void;
+  onUpdateQuantity?: (index: number, quantity: number) => void;
 }
 
-function EditableTableRow({ item, index, onRemove, onEdit }: EditableTableRowProps) {
+function EditableTableRow({ item, index, onRemove, onEdit, onUpdateQuantity }: EditableTableRowProps) {
   const { formatCurrency } = useCurrency();
+  const quantity = 'quantity' in item ? item.quantity : 0;
+
+  const handleQuantityChange = (newQuantity: number) => {
+    if (newQuantity >= 1 && onUpdateQuantity) {
+      onUpdateQuantity(index, newQuantity);
+    }
+  };
 
   return (
     <TableRow>
       <TableCell className="font-medium" title={item.name}>{truncateTextByType(item.name, 'medium')}</TableCell>
       <TableCell className="text-muted-foreground" title={item.description}>{truncateTextByType(item.description, 'medium')}</TableCell>
-      <TableCell className="text-center">{'quantity' in item ? item.quantity : 0}</TableCell>
+      <TableCell className="text-center">
+        <div className="flex items-center justify-center gap-1">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => handleQuantityChange(quantity - 1)}
+            disabled={quantity <= 1}
+            className="h-6 w-6 p-0"
+          >
+            -
+          </Button>
+          <span className="w-8 text-center">{quantity}</span>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => handleQuantityChange(quantity + 1)}
+            className="h-6 w-6 p-0"
+          >
+            +
+          </Button>
+        </div>
+      </TableCell>
       <TableCell className="text-right">{formatCurrency('unitPrice' in item ? item.unitPrice : 0)}</TableCell>
       <TableCell className="text-right font-medium">{formatCurrency('total' in item ? item.total : 0)}</TableCell>
       <TableCell className="text-muted-foreground" title={'notes' in item ? item.notes : ''}>{truncateTextByType('notes' in item ? item.notes : '', 'medium')}</TableCell>
@@ -104,9 +135,10 @@ interface ItemListProps {
   mode: 'editable' | 'readonly';
   onRemove?: (index: number) => void;
   onEdit?: (index: number) => void;
+  onUpdateQuantity?: (index: number, quantity: number) => void;
 }
 
-export default function ItemList({ items, mode, onRemove, onEdit }: ItemListProps) {
+export default function ItemList({ items, mode, onRemove, onEdit, onUpdateQuantity }: ItemListProps) {
   return (
     <Table>
       <TableHeader>
@@ -130,6 +162,7 @@ export default function ItemList({ items, mode, onRemove, onEdit }: ItemListProp
                 index={index}
                 onRemove={onRemove || (() => {})}
                 onEdit={onEdit}
+                onUpdateQuantity={onUpdateQuantity}
               />
             );
           }

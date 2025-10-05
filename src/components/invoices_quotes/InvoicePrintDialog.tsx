@@ -58,6 +58,7 @@ async function renderInvoice(
     taxAmount: (invoice.taxAmount || 0).toFixed(2),
     total: (invoice.total || 0).toFixed(2),
     notes: invoice.notes || "",
+    includeQR: false,
     items: (invoice.items || []).map((item) => ({
       name: item.name,
       description: item.description || "",
@@ -65,12 +66,6 @@ async function renderInvoice(
       unitPrice: item.unitPrice.toFixed(2),
       total: item.total.toFixed(2),
     })),
-    includeQR: true,
-    qrCodeUrl: qrCodeBase64,
-    // Add missing template variables
-    headingFont: "Arial, sans-serif",
-    bodyFont: "Arial, sans-serif",
-    marginTop: 10,
     marginBottom: 10,
     paddingTop: 15,
     paddingBottom: 15,
@@ -225,6 +220,17 @@ export function InvoicePrintDialog({
     setPaddings(newPaddings);
   }, [settings, filteredTemplates, invoice.type]);
 
+  const renderPreview = async (template: InvoiceTemplate) => {
+    const content = await renderInvoice(
+      template,
+      invoice,
+      organization,
+      customer,
+      supplier,
+    );
+    setRenderedHtml(content);
+  };
+
   // Effect to clear preview when dialog closes
   useEffect(() => {
     if (!open) {
@@ -241,7 +247,7 @@ export function InvoicePrintDialog({
         renderPreview(template);
       }
     }
-  }, [open, selectedTemplate, invoice, organization, customer, supplier, filteredTemplates]);
+  }, [open, selectedTemplate, invoice, organization, customer, supplier, filteredTemplates, renderPreview]);
 
   // Effect to handle keyboard shortcuts
   useEffect(() => {
@@ -260,17 +266,6 @@ export function InvoicePrintDialog({
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [open, selectedTemplate, renderedHtml, pageSize, margins, paddings, filteredTemplates, invoice]);
-
-  const renderPreview = async (template: InvoiceTemplate) => {
-    const content = await renderInvoice(
-      template,
-      invoice,
-      organization,
-      customer,
-      supplier,
-    );
-    setRenderedHtml(content);
-  };
 
   const handlePrint = async () => {
     setIsGenerating(true);

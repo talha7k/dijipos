@@ -1,8 +1,7 @@
 'use client';
 
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Payment, Organization, InvoiceTemplate, Customer, Supplier, DocumentPrintSettings, SalesInvoice, PurchaseInvoice, InvoiceType, PaymentType } from '@/types';
+import { Payment, Organization, InvoiceTemplate, Customer, Supplier, DocumentPrintSettings, SalesInvoice, PurchaseInvoice, InvoiceType, } from '@/types';
 import { Printer, Eye, Trash2, Mail } from 'lucide-react';
 
 import { InvoicePrintDialog } from './InvoicePrintDialog';
@@ -46,7 +45,6 @@ export function InvoiceActions({
   const supplier = invoice.type === 'purchase' ? suppliers.find(s => s.id === (invoice as PurchaseInvoice).supplierId) : undefined;
 
   const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
-  const remainingAmount = invoice.total - totalPaid;
 
   return (
     <>

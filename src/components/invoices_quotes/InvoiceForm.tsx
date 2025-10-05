@@ -14,16 +14,13 @@ import FormSummary from "@/components/invoices_quotes/FormSummary";
 import {
   SalesInvoice,
   PurchaseInvoice,
-  Item as ItemTypeType,
-  Item,
   ItemType,
   InvoiceType,
-  InvoiceItem,
   ProductTransactionType,
 } from "@/types";
+import { InvoiceItem } from "@/types/product-service";
 import { InvoiceTemplateType } from "@/types/enums";
 import { useCustomers } from "@/lib/hooks/useCustomers";
-import { useSuppliers } from "@/lib/hooks/useSuppliers";
 import { useItems } from "@/lib/hooks/useItems";
 import { useCategories } from "@/lib/hooks/useCategories";
 import { useStoreSettings } from "@/lib/hooks/useStoreSettings";
@@ -54,9 +51,8 @@ export default function InvoiceForm({
   );
 
   // Real data hooks
-  const { customers, createCustomer } = useCustomers();
-  const { suppliers } = useSuppliers();
-  const { items, createItem } = useItems();
+   const { customers } = useCustomers();
+   const { items, createItem } = useItems();
   const { categories } = useCategories();
   const { storeSettings } = useStoreSettings();
 
@@ -194,18 +190,16 @@ export default function InvoiceForm({
     }
   };
 
-  const updateItem = (index: number, field: keyof Item | keyof InvoiceItem, value: string | number) => {
-    const newItems = [...invoiceItems];
-    newItems[index] = { ...newItems[index], [field]: value };
-    if (field === "quantity" || field === "unitPrice") {
-      newItems[index].total =
-        newItems[index].quantity * newItems[index].unitPrice;
-    }
-    setInvoiceItems(newItems);
-  };
+
 
   const removeItem = (index: number) => {
     setInvoiceItems(invoiceItems.filter((_, i) => i !== index));
+  };
+
+  const handleQuantityUpdate = (index: number, quantity: number) => {
+    const newItems = [...invoiceItems];
+    newItems[index] = { ...newItems[index], quantity, total: quantity * newItems[index].unitPrice };
+    setInvoiceItems(newItems);
   };
 
   const editItem = (index: number) => {
@@ -452,6 +446,7 @@ export default function InvoiceForm({
             mode="editable"
             onRemove={removeItem}
             onEdit={editItem}
+            onUpdateQuantity={handleQuantityUpdate}
           />
           <Button
             type="button"
