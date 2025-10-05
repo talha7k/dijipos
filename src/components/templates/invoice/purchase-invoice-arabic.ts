@@ -102,41 +102,37 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
          </div>
          {{/includeQR}}
        </div>
-          <!-- Logo Row -->
-          <div class="logo-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 20px;">
-            <div class="supplier-logo">
+<div class="header-row-2">
+            <div class="billed-from">
+              <h3 style="font-weight: 600; margin-bottom: 8px;">Billed From (من):</h3>
               {{#supplierLogo}}
-              <img src="{{supplierLogo}}" alt="شعار المورد" style="width: 128px; height: 64px; object-fit: contain;" />
+              <div style="margin-bottom: 8px;">
+                <img src="{{supplierLogo}}" alt="شعار المورد" style="width: 128px; height: 64px; object-fit: contain;" />
+              </div>
               {{/supplierLogo}}
-            </div>
-             <div class="customer-logo" style="text-align: right;">
-              {{#companyLogo}}
-              <img src="{{companyLogo}}" alt="شعار الشركة" style="width: 128px; height: 64px; object-fit: contain;" />
-              {{/companyLogo}}
-            </div>
-          </div>
-
-         <div class="header-row-2">
-           <div class="billed-from">
-             <h3 style="font-weight: 600; margin-bottom: 8px;">Billed From (من):</h3>
-             <p style="font-weight: 500;">{{supplierNameAr}}</p>
+              <p style="font-weight: 500;">{{supplierNameAr}}</p>
              {{#supplierName}}
              <p style="font-size: 1rem;">{{supplierName}}</p>
              {{/supplierName}}
-             <p>{{supplierAddress}}</p>
-             <p>{{supplierEmail}}</p>
-             {{#supplierVat}}<p>VAT: {{supplierVat}}</p>{{/supplierVat}}
+              <p>📍 {{supplierAddress}}</p>
+              <p>📧 {{supplierEmail}}</p>
+              {{#supplierVat}}<p>🏢 VAT: {{supplierVat}}</p>{{/supplierVat}}
            </div>
-           <div class="bill-to">
-             <h3 style="font-weight: 600; margin-bottom: 8px;">Bill To (إلى):</h3>
-             <h2 style="font-size: 1.25rem; font-weight: 600;">{{companyNameAr}}</h2>
+            <div class="bill-to">
+              <h3 style="font-weight: 600; margin-bottom: 8px;">Bill To (إلى):</h3>
+              {{#companyLogo}}
+              <div style="margin-bottom: 8px;">
+                <img src="{{companyLogo}}" alt="شعار الشركة" style="width: 128px; height: 64px; object-fit: contain;" />
+              </div>
+              {{/companyLogo}}
+              <h2 style="font-size: 1.25rem; font-weight: 600;">{{companyNameAr}}</h2>
              {{#companyName}}
              <p style="font-size: 1.125rem;">{{companyName}}</p>
              {{/companyName}}
              <p>📍 {{companyAddress}}</p>
              <p>📧 {{companyEmail}}</p>
              {{#companyPhone}}<p>📞 {{companyPhone}}</p>{{/companyPhone}}
-             {{#companyVat}}<p>VAT Number (الرقم الضريبي) <br/> {{companyVat}}</p>{{/companyVat}}
+              {{#companyVat}}<p>🏢 VAT Number (الرقم الضريبي) <br/> {{companyVat}}</p>{{/companyVat}}
            </div>
          </div>
        </div>
