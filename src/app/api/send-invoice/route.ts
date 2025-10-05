@@ -328,9 +328,9 @@ async function generatePDF(htmlContent: string): Promise<Buffer> {
           unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF;
           font-display: swap;
         }
-        body, .invoice-template, .arabic-text, .table th {
-          font-family: 'ArabicFont', 'Noto Sans Arabic', 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Geeza Pro', 'Arial', sans-serif !important;
-        }
+         body, .invoice-template, .arabic-text, .table th, .invoice-title, .invoice-number, h1, h2, h3, p {
+           font-family: 'ArabicFont', 'Noto Sans Arabic', 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Geeza Pro', 'Arial', sans-serif !important;
+         }
       </style>`)
       : `
     <!DOCTYPE html>
@@ -349,13 +349,13 @@ async function generatePDF(htmlContent: string): Promise<Buffer> {
           unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF;
           font-display: swap;
         }
-        body, .table th {
-          font-family: 'ArabicFont', 'Noto Sans Arabic', 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Geeza Pro', 'Arial', sans-serif;
-          direction: rtl;
-          text-align: right;
-          margin: 0;
-          padding: 20px;
-        }
+         body, .table th, .invoice-title, .invoice-number, h1, h2, h3, p {
+           font-family: 'ArabicFont', 'Noto Sans Arabic', 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Geeza Pro', 'Arial', sans-serif;
+           direction: rtl;
+           text-align: right;
+           margin: 0;
+           padding: 20px;
+         }
         .arabic-text {
           font-family: 'ArabicFont', 'Noto Sans Arabic', 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Geeza Pro', 'Arial', sans-serif !important;
           direction: rtl !important;

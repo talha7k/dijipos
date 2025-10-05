@@ -26,9 +26,9 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
     .bill-to, .supplier { margin-bottom: 15px; }
     .customer-logo, .supplier-logo { position: relative; width: 128px; height: 64px; margin-bottom: 8px; }
     .dates-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-    .table { width: 100%; margin-bottom: 30px; border-collapse: collapse; border: 1px solid #d1d5db; }
-      .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 2px; text-align: right; font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--heading-font), 'sans-serif'; }
-     .table td { border: 1px solid #d1d5db; padding: 2px; text-align: right; }
+     .table { width: 100%; margin-bottom: 30px; border-collapse: collapse; border: 1px solid #d1d5db; }
+       .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 8px; text-align: right; font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--heading-font), 'sans-serif'; }
+      .table td { border: 1px solid #d1d5db; padding: 8px; text-align: right; }
     .totals-stamp-container { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; }
     .totals { flex: 1; }
     .totals div { width: 256px; }
@@ -57,8 +57,8 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
           <p style="font-size: 0.875rem; color: #6b7280; margin-top: 8px;">رمز QR متوافق مع زاتكا</p>
         </div>
         {{/includeQR}}
-          <h1 class="invoice-title" style="text-align: right; font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', sans-serif;">فاتورة مبيعات</h1>
-          <p class="invoice-number" style="text-align: right; font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', sans-serif;">رقم الفاتورة #{{invoiceId}}</p>
+           <h1 class="invoice-title" style="text-align: right;">فاتورة مبيعات</h1>
+           <p class="invoice-number" style="text-align: right;">رقم الفاتورة #{{invoiceId}}</p>
       </div>
       <div class="company-info">
          {{#companyLogo}}
@@ -72,9 +72,9 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
            {{#companyNameAr}}
            <p style="font-size: 1.125rem; font-weight: 600; font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', sans-serif;">{{companyNameAr}}</p>
            {{/companyNameAr}}
-           <p>Address (العنوان): {{companyAddress}}</p>
-           <p>Email (البريد الإلكتروني): {{companyEmail}}</p>
-           {{companyPhone}}<p>Tel (الهاتف): {{companyPhone}}</p> {{/companyPhone}}
+            <p>Address (العنوان): {{companyAddress}}</p>
+            <p>Email (البريد الإلكتروني): {{companyEmail}}</p>
+            {{#companyPhone}}<p>Tel (الهاتف): {{companyPhone}}</p>{{/companyPhone}}
            {{#companyVat}}<p>VAT Number (الرقم الضريبي): {{companyVat}}</p>{{/companyVat}}
       </div>
     </div>
