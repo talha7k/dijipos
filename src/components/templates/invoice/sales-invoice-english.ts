@@ -24,13 +24,13 @@ export const salesInvoiceEnglish = `<!DOCTYPE html>
      .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 12px; text-align: left; font-family: var(--heading-font), system-ui, sans-serif; }
     .table td { border: 1px solid #d1d5db; padding: 12px; }
     .totals { display: flex; justify-content: flex-end; margin-bottom: 40px; }
-    .totals div { width: 256px; }
+     .totals div { width: 320px; }
     .total-line { display: flex; justify-content: space-between; padding: 8px 0; }
     .total-bold { font-weight: bold; font-size: 1.125rem; border-top: 1px solid #d1d5db; padding-top: 8px; }
     .notes { margin-bottom: 40px; }
     .stamp { display: flex; justify-content: flex-end; margin-top: 40px; }
     .stamp div { text-align: center; }
-    .stamp img { width: 128px; height: 128px; object-fit: contain; }
+     .stamp img { width: 96px; height: 96px; object-fit: contain; }
   </style>
 </head>
 <body>

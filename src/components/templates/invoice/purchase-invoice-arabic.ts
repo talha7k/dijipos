@@ -33,12 +33,12 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
       .table td { border: 1px solid #d1d5db; padding: 4px 6px; text-align: right; line-height: 1.3; vertical-align: middle; min-height: 1.1em; }
      .totals-stamp-container { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
     .totals { flex: 1; }
-    .totals div { width: 256px; }
+     .totals div { width: 320px; }
     .total-line { display: flex; justify-content: space-between; padding: 6px 0; }
     .total-bold { font-weight: bold; font-size: 1.125rem; border-top: 1px solid #d1d5db; padding-top: 6px; }
     .stamp { flex: 0 0 auto; margin-right: 30px; display: flex; justify-content: center; align-items: center; }
     .stamp div { text-align: center; }
-    .stamp img { width: 96px; height: 96px; object-fit: contain; }
+     .stamp img { width: 80px; height: 80px; object-fit: contain; }
     .notes { margin-bottom: 30px; text-align: right; }
      .bilingual { display: flex; justify-content: space-between; align-items: center; }
      .english { flex: 1; text-align: left; }
