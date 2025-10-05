@@ -522,7 +522,7 @@ For questions, please contact the sender.
 
 export async function POST(request: NextRequest) {
   try {
-    const { invoiceId, recipientEmail, subject, message, organizationId, templateId } = await request.json();
+    const { invoiceId, recipientEmail, subject, message, organizationId, templateId, fromEmail, fromName } = await request.json();
 
     if (!invoiceId || !recipientEmail || !subject || !message) {
       return NextResponse.json(
@@ -671,10 +671,11 @@ export async function POST(request: NextRequest) {
     const transporter = createTransporter();
 
     const mailOptions = {
-      from: smtpConfig.auth.user,
+      from: `"${fromName || organization.name}" <${smtpConfig.auth.user}>`,
       to: recipientEmail,
       subject,
       text: message,
+      replyTo: fromEmail,
       attachments: [
         {
           filename: invoiceContent.filename,

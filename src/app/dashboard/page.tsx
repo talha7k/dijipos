@@ -436,38 +436,43 @@ function DashboardContent() {
                 <CardDescription>Breakdown by status</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-3">
                   {Object.entries(salesInvoicesByStatus).map(
                     ([status, count]) => {
                       const statusConfig = {
                         draft: {
                           icon: FileText,
-                          color: "text-gray-500",
-                          bgColor: "bg-gray-100",
+                          color: "text-gray-600",
+                          bgColor: "bg-gray-50",
+                          borderColor: "border-gray-200",
                           label: "Draft",
                         },
                         sent: {
                           icon: FileDown,
-                          color: "text-blue-500",
-                          bgColor: "bg-blue-100",
+                          color: "text-blue-600",
+                          bgColor: "bg-blue-50",
+                          borderColor: "border-blue-200",
                           label: "Sent",
                         },
                         paid: {
                           icon: CheckCircle2,
-                          color: "text-green-500",
-                          bgColor: "bg-green-100",
+                          color: "text-green-600",
+                          bgColor: "bg-green-50",
+                          borderColor: "border-green-200",
                           label: "Paid",
                         },
                         overdue: {
                           icon: AlertCircle,
-                          color: "text-red-500",
-                          bgColor: "bg-red-100",
+                          color: "text-red-600",
+                          bgColor: "bg-red-50",
+                          borderColor: "border-red-200",
                           label: "Overdue",
                         },
                         cancelled: {
                           icon: XCircle,
-                          color: "text-orange-500",
-                          bgColor: "bg-orange-100",
+                          color: "text-orange-600",
+                          bgColor: "bg-orange-50",
+                          borderColor: "border-orange-200",
                           label: "Cancelled",
                         },
                       };
@@ -475,8 +480,9 @@ function DashboardContent() {
                         status as keyof typeof statusConfig
                       ] || {
                         icon: FileText,
-                        color: "text-gray-500",
-                        bgColor: "bg-gray-100",
+                        color: "text-gray-600",
+                        bgColor: "bg-gray-50",
+                        borderColor: "border-gray-200",
                         label: status,
                       };
                       const Icon = config.icon;
@@ -484,15 +490,24 @@ function DashboardContent() {
                       return (
                         <div
                           key={status}
-                          className="flex items-center justify-between p-3 rounded-lg border"
+                          className={`flex items-center justify-between p-4 rounded-lg border ${config.borderColor} ${config.bgColor} hover:shadow-sm transition-shadow`}
                         >
                           <div className="flex items-center gap-3">
-                            <div className={`p-2 rounded-full ${config.bgColor}`}>
-                              <Icon className={`h-4 w-4 ${config.color}`} />
+                            <div className={`p-2.5 rounded-full ${config.bgColor} border ${config.borderColor}`}>
+                              <Icon className={`h-5 w-5 ${config.color}`} />
                             </div>
-                            <span className="font-medium">{config.label}</span>
+                            <div>
+                              <span className="font-medium text-sm">{config.label}</span>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                {count === 1 ? '1 invoice' : `${count} invoices`}
+                              </p>
+                            </div>
                           </div>
-                          <Badge variant="outline">{count}</Badge>
+                          <div className="text-right">
+                            <Badge variant="secondary" className="font-semibold">
+                              {count}
+                            </Badge>
+                          </div>
                         </div>
                       );
                     },
@@ -511,44 +526,50 @@ function DashboardContent() {
                 <CardDescription>Breakdown by status</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-3">
                   {Object.entries(purchaseInvoicesByStatus).map(
                     ([status, count]) => {
                       const statusConfig = {
                         draft: {
                           icon: FileText,
-                          color: "text-gray-500",
-                          bgColor: "bg-gray-100",
+                          color: "text-gray-600",
+                          bgColor: "bg-gray-50",
+                          borderColor: "border-gray-200",
                           label: "Draft",
                         },
                         sent: {
                           icon: FileUp,
-                          color: "text-blue-500",
-                          bgColor: "bg-blue-100",
+                          color: "text-blue-600",
+                          bgColor: "bg-blue-50",
+                          borderColor: "border-blue-200",
                           label: "Sent",
                         },
                         received: {
                           icon: Timer,
-                          color: "text-yellow-500",
-                          bgColor: "bg-yellow-100",
+                          color: "text-yellow-600",
+                          bgColor: "bg-yellow-50",
+                          borderColor: "border-yellow-200",
                           label: "Received",
                         },
                         partially_paid: {
                           icon: CircleDollarSign,
-                          color: "text-orange-500",
-                          bgColor: "bg-orange-100",
+                          color: "text-orange-600",
+                          bgColor: "bg-orange-50",
+                          borderColor: "border-orange-200",
                           label: "Partially Paid",
                         },
                         paid: {
                           icon: CheckCircle2,
-                          color: "text-green-500",
-                          bgColor: "bg-green-100",
+                          color: "text-green-600",
+                          bgColor: "bg-green-50",
+                          borderColor: "border-green-200",
                           label: "Paid",
                         },
                         cancelled: {
                           icon: XCircle,
-                          color: "text-red-500",
-                          bgColor: "bg-red-100",
+                          color: "text-red-600",
+                          bgColor: "bg-red-50",
+                          borderColor: "border-red-200",
                           label: "Cancelled",
                         },
                       };
@@ -556,8 +577,9 @@ function DashboardContent() {
                         status as keyof typeof statusConfig
                       ] || {
                         icon: FileText,
-                        color: "text-gray-500",
-                        bgColor: "bg-gray-100",
+                        color: "text-gray-600",
+                        bgColor: "bg-gray-50",
+                        borderColor: "border-gray-200",
                         label: status,
                       };
                       const Icon = config.icon;
@@ -565,15 +587,24 @@ function DashboardContent() {
                       return (
                         <div
                           key={status}
-                          className="flex items-center justify-between p-3 rounded-lg border"
+                          className={`flex items-center justify-between p-4 rounded-lg border ${config.borderColor} ${config.bgColor} hover:shadow-sm transition-shadow`}
                         >
                           <div className="flex items-center gap-3">
-                            <div className={`p-2 rounded-full ${config.bgColor}`}>
-                              <Icon className={`h-4 w-4 ${config.color}`} />
+                            <div className={`p-2.5 rounded-full ${config.bgColor} border ${config.borderColor}`}>
+                              <Icon className={`h-5 w-5 ${config.color}`} />
                             </div>
-                            <span className="font-medium">{config.label}</span>
+                            <div>
+                              <span className="font-medium text-sm">{config.label}</span>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                {count === 1 ? '1 invoice' : `${count} invoices`}
+                              </p>
+                            </div>
                           </div>
-                          <Badge variant="outline">{count}</Badge>
+                          <div className="text-right">
+                            <Badge variant="secondary" className="font-semibold">
+                              {count}
+                            </Badge>
+                          </div>
                         </div>
                       );
                     },

@@ -9,6 +9,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { SalesInvoice, PurchaseInvoice, Customer, Supplier, Organization } from '@/types';
 import { Mail, Send, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { formatDate } from '@/lib/utils';
+import { useCurrency } from '@/lib/hooks/useCurrency';
 
 interface EmailInvoiceDialogProps {
   invoice: SalesInvoice | PurchaseInvoice | null;
@@ -33,28 +37,64 @@ export function EmailInvoiceDialog({
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [senderEmail, setSenderEmail] = useState('');
+  const { user } = useAuth();
+  const { formatCurrency } = useCurrency();
 
   // Initialize form when invoice changes
   React.useEffect(() => {
     if (invoice && organization) {
-      const recipient = invoice.type === 'sales' 
-        ? customer?.email || ''
-        : supplier?.email || '';
+      const recipient = invoice.type === 'sales' ? customer : supplier;
       
       const invoiceNumber = invoice.type === 'purchase'
         ? (invoice as PurchaseInvoice).invoiceNumber || invoice.id.slice(-8)
         : invoice.id.slice(-8);
 
-      setRecipientEmail(recipient);
+      setRecipientEmail(recipient?.email || '');
       setSubject(`Invoice #${invoiceNumber} from ${organization.name}`);
       
-      const dueDate = invoice.dueDate instanceof Date 
-        ? invoice.dueDate.toLocaleDateString()
-        : new Date(invoice.dueDate).toLocaleDateString();
-        
-      setMessage(`Dear ${invoice.type === 'sales' ? customer?.name || 'Client' : supplier?.name || 'Supplier'},\n\nPlease find attached invoice #${invoiceNumber} for the amount of $${invoice.total.toFixed(2)}.\n\nDue date: ${dueDate}\n\nThank you for your business.\n\nBest regards,\n${organization.name}`);
+      if (organization.email) {
+        setSenderEmail(organization.email);
+      } else if (user?.email) {
+        setSenderEmail(user.email);
+      }
+
+      const dueDate = invoice.dueDate ? formatDate(invoice.dueDate) : 'N/A';
+      
+      const billedFrom = [
+        organization.name,
+        organization.address,
+        organization.email,
+      ].filter(Boolean).join('\n');
+
+      const billedTo = [
+        recipient?.name,
+        recipient?.address,
+        recipient?.email,
+      ].filter(Boolean).join('\n');
+
+      setMessage(
+`Dear ${recipient?.name || 'Client'},
+
+Please find attached invoice #${invoiceNumber}.
+
+SUMMARY:
+Total Amount: ${formatCurrency(invoice.total)}
+Due Date: ${dueDate}
+
+BILLED FROM:
+${billedFrom}
+
+BILLED TO:
+${billedTo}
+
+Thank you for your business.
+
+Best regards,
+${organization.name}`
+      );
     }
-  }, [invoice, customer, supplier, organization]);
+  }, [invoice, customer, supplier, organization, user, formatCurrency]);
 
   const handleSendEmail = async () => {
     if (!invoice || !organization) return;
@@ -84,6 +124,8 @@ export function EmailInvoiceDialog({
           message,
           organizationId: organization.id,
           templateId: selectedTemplateId,
+          fromEmail: senderEmail,
+          fromName: senderEmail === user?.email ? (user.displayName || user.email) : organization.name,
         }),
       });
 
@@ -132,6 +174,19 @@ export function EmailInvoiceDialog({
         </DialogHeader>
 
         <div className="space-y-4">
+          <div>
+            <Label htmlFor="sender-email">From</Label>
+            <Select value={senderEmail} onValueChange={setSenderEmail}>
+              <SelectTrigger id="sender-email">
+                <SelectValue placeholder="Select sender email" />
+              </SelectTrigger>
+              <SelectContent>
+                {organization?.email && <SelectItem value={organization.email}>{`Organization <${organization.email}>`}</SelectItem>}
+                {user?.email && <SelectItem value={user.email}>{`Me <${user.email}>`}</SelectItem>}
+              </SelectContent>
+            </Select>
+          </div>
+
           <div>
             <Label htmlFor="recipient-email">Recipient Email *</Label>
             <Input
