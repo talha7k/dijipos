@@ -78,7 +78,13 @@ export function AddInvoicePaymentDialog({
 
     setIsSubmitting(true);
     try {
-      const paymentData: any = {
+      const paymentData: {
+        amount: number;
+        paymentMethod: string;
+        paymentDate: Date;
+        reference?: string;
+        notes?: string;
+      } = {
         amount: paymentAmount,
         paymentMethod: paymentMethodName,
         paymentDate: new Date(paymentDate),

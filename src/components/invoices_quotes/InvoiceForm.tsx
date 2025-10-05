@@ -291,7 +291,7 @@ export default function InvoiceForm({
 
 
         {invoiceType === InvoiceType.SALES ? (
-          <>
+           <>
              <ClientInfo
                selectedCustomerId={selectedCustomerId}
                clientName={clientName}
@@ -309,27 +309,33 @@ export default function InvoiceForm({
                readOnly={!!invoice}
                 onEditCustomer={() => invoice && onEditCustomer?.(invoice)}
              />
-          </>
-        ) : (
-          <>
-              <SupplierInfo
-                selectedSupplierId={selectedSupplierId}
-                supplierName={supplierName}
-                supplierEmail={supplierEmail}
-                supplierAddress={supplierAddress}
-                supplierVAT={supplierVAT}
-                showVAT={true}
-                onSupplierSelect={setSelectedSupplierId}
-                onSupplierNameChange={setSupplierName}
-                onSupplierEmailChange={setSupplierEmail}
-                onSupplierAddressChange={setSupplierAddress}
-                onSupplierVATChange={setSupplierVAT}
-                onAddSupplier={() => setShowAddSupplierDialog(true)}
-                readOnly={!!invoice}
-                onEditSupplier={() => invoice && onEditCustomer?.(invoice)}
-              />
+           </>
+         ) : (
+           <>
+               <SupplierInfo
+                 selectedSupplierId={selectedSupplierId}
+                 supplierName={supplierName}
+                 supplierEmail={supplierEmail}
+                 supplierAddress={supplierAddress}
+                 supplierVAT={supplierVAT}
+                 showVAT={true}
+                 onSupplierSelect={setSelectedSupplierId}
+                 onSupplierNameChange={setSupplierName}
+                 onSupplierEmailChange={setSupplierEmail}
+                 onSupplierAddressChange={setSupplierAddress}
+                 onSupplierVATChange={setSupplierVAT}
+                 onAddSupplier={() => setShowAddSupplierDialog(true)}
+                 readOnly={!!invoice}
+                 onEditSupplier={() => invoice && onEditCustomer?.(invoice)}
+               />
+           </>
+         )}
 
-            <div className="grid grid-cols-2 gap-4">
+        {/* Invoice Details Section */}
+        <div className="border rounded-lg p-4 bg-gray-50">
+          <h3 className="text-lg font-semibold mb-4">Invoice Details</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {invoiceType === InvoiceType.PURCHASE && (
               <div>
                 <Label htmlFor="invoice-number">Invoice Number</Label>
                 <Input
@@ -339,18 +345,27 @@ export default function InvoiceForm({
                   placeholder="Supplier invoice number"
                 />
               </div>
-              <div>
-                <Label htmlFor="invoice-date">Invoice Date</Label>
-                <Input
-                  id="invoice-date"
-                  type="date"
-                  value={invoiceDate}
-                  onChange={(e) => setInvoiceDate(e.target.value)}
-                />
-              </div>
+            )}
+            <div>
+              <Label htmlFor="invoice-date">Invoice Date</Label>
+              <Input
+                id="invoice-date"
+                type="date"
+                value={invoiceDate}
+                onChange={(e) => setInvoiceDate(e.target.value)}
+              />
             </div>
-          </>
-        )}
+            <div>
+              <Label htmlFor="due-date">Due Date</Label>
+              <Input
+                id="due-date"
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
 
         <div>
           <div className="flex justify-between items-center mb-4">
@@ -441,7 +456,7 @@ export default function InvoiceForm({
           taxAmount={taxAmount}
           total={total}
           dueDate={dueDate}
-          showDueDate={true}
+          showDueDate={false}
           onTaxRateChange={isVatEnabled ? setTaxRate : undefined}
           onDueDateChange={setDueDate}
           mode="invoice"

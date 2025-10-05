@@ -271,7 +271,16 @@ export async function addInvoicePayment(
     const now = Timestamp.now();
     
     // Create a clean object without undefined values
-    const cleanPaymentData: any = {
+    const cleanPaymentData: {
+      organizationId: string;
+      invoiceId: string;
+      amount: number;
+      paymentMethod: string;
+      paymentDate: Date;
+      createdAt: Timestamp;
+      reference?: string;
+      notes?: string;
+    } = {
       organizationId: paymentData.organizationId,
       invoiceId,
       amount: paymentData.amount,
@@ -311,7 +320,14 @@ export async function updateInvoicePayment(
     const paymentDocRef = doc(paymentsRef, paymentId);
     
     // Create a clean updates object without undefined values
-    const cleanUpdates: any = {};
+    const cleanUpdates: {
+      organizationId?: string;
+      amount?: number;
+      paymentMethod?: string;
+      paymentDate?: Date;
+      reference?: string;
+      notes?: string;
+    } = {};
     
     // Only include fields that are defined and not empty
     if (updates.organizationId !== undefined) {
