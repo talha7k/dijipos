@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useAtomValue } from 'jotai';
-import { selectedOrganizationAtom, selectedOrganizationIdAtom } from '@/atoms';
+import { selectedOrganizationIdAtom } from '@/atoms';
 import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
 import { PrinterSettings } from '@/types';
 import { useStaticTemplates } from '@/lib/hooks/useStaticTemplates';
@@ -21,7 +21,6 @@ interface PrinterSettingsTabProps {
 }
 
 export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPrinterSettingsUpdate }: PrinterSettingsTabProps) {
-  const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const organizationId = useAtomValue(selectedOrganizationIdAtom);
   const [selectedTab, setSelectedTab] = useState('general');
 
@@ -126,11 +125,11 @@ export function PrinterSettingsTab({ printerSettings: propPrinterSettings, onPri
       }
 
       // Update or create the printer settings in Firestore
-      const { updatePrinterSettings, createPrinterSettings } = await import('@/lib/firebase/firestore/settings/storeSettings');
+      const { updatePrinterSettings } = await import('@/lib/firebase/firestore/settings/storeSettings');
 
       // The hook should always ensure printer settings exist, so we can always update
       if (printerSettings && printerSettings.id) {
-        const { id, organizationId: _, createdAt, ...updateData } = updatedSettings;
+        const { ...updateData } = updatedSettings;
         console.log('[PrinterSettingsTab] About to update printer settings:', {
           printerSettingsId: printerSettings.id,
           updateData,

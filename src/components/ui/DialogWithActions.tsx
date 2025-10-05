@@ -6,10 +6,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogClose,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { X } from "lucide-react";
 
 interface DialogWithActionsProps {
   open: boolean;

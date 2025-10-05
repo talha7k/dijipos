@@ -19,20 +19,20 @@ export function useCurrency() {
         }).format(amount);
       }
 
-      const { locale, currency } = currencySettings;
+       const { currency } = currencySettings;
 
-      try {
-        // Use English locale for numbers (Western numerals) but get currency symbol from the selected locale
-        const formatter = new Intl.NumberFormat('en-US', {
-          style: 'currency',
-          currency: currency,
-          // These options help ensure consistent formatting
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        });
-        
-        return formatter.format(amount);
-      } catch (error) {
+       try {
+         // Use English locale for numbers (Western numerals) but get currency symbol from the selected locale
+         const formatter = new Intl.NumberFormat('en-US', {
+           style: 'currency',
+           currency: currency,
+           // These options help ensure consistent formatting
+           minimumFractionDigits: 2,
+           maximumFractionDigits: 2,
+         });
+
+         return formatter.format(amount);
+       } catch {
         // Fallback to USD if the currency is not supported with en-US locale
         console.warn(`Currency ${currency} not supported with en-US locale, falling back to USD`);
         return new Intl.NumberFormat('en-US', {
@@ -49,20 +49,20 @@ export function useCurrency() {
         return '$';
       }
 
-      const { locale, currency } = currencySettings;
+       const { currency } = currencySettings;
 
-      try {
-        // Get currency symbol from Intl.NumberFormat
-        const formatter = new Intl.NumberFormat(locale, {
-          style: 'currency',
-          currency: currency,
-        });
+       try {
+         // Get currency symbol from Intl.NumberFormat
+         const formatter = new Intl.NumberFormat('en-US', {
+           style: 'currency',
+           currency: currency,
+         });
 
-        // Extract symbol from a formatted value
-        const parts = formatter.formatToParts(1000);
-        const currencyPart = parts.find(part => part.type === 'currency');
-        return currencyPart?.value || '$';
-      } catch (error) {
+         // Extract symbol from a formatted value
+         const parts = formatter.formatToParts(1000);
+         const currencyPart = parts.find(part => part.type === 'currency');
+         return currencyPart?.value || '$';
+       } catch {
         return '$';
       }
     };

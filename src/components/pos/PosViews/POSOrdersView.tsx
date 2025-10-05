@@ -1,8 +1,8 @@
-import { Order, OrderPayment, OrderStatus, PaymentStatus } from "@/types";
+import { Order, OrderStatus } from "@/types";
 
 import { OrderDetailView } from "./OrderDetailView";
 import { useOrders } from "@/lib/hooks/useOrders";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { ArrowLeft, Clock, Loader2 } from "lucide-react";
@@ -10,22 +10,18 @@ import { OrderSummaryCard } from "@/components/pos/OrderSummaryCard";
 
 interface POSOrderGridProps {
   orders: Order[];
-  onOrderSelect: (order: Order) => void;
   onReopenOrder: (order: Order) => void;
-  onPayOrder: (order: Order) => void;
   onBack: () => void;
   onOrderUpdate?: () => void;
 }
 
 export function POSOrderGrid({
   orders,
-  onOrderSelect,
   onReopenOrder,
-  onPayOrder,
   onBack,
   onOrderUpdate,
 }: POSOrderGridProps) {
-  const { loading, updateExistingOrder, getPaymentsForOrder } = useOrders();
+  const { loading, updateExistingOrder } = useOrders();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [filterStatus, setFilterStatus] = useState<
     "all" | "open" | "completed" | "preparing" | "cancelled" | "on_hold"
@@ -42,29 +38,7 @@ export function POSOrderGrid({
     setSelectedOrder(null);
   };
 
-  const markOrderAsPaid = async (orderId: string) => {
-    try {
-      await updateExistingOrder(orderId, {
-        paymentStatus: PaymentStatus.PAID,
-      });
-      onOrderUpdate?.();
-      return true;
-    } catch (error) {
-      console.error("Error marking order as paid:", error);
-      return false;
-    }
-  };
 
-  const completeOrder = async (order: Order) => {
-    try {
-      await updateExistingOrder(order.id, { status: OrderStatus.COMPLETED });
-      onOrderUpdate?.();
-      return true;
-    } catch (error) {
-      console.error("Error completing order:", error);
-      return false;
-    }
-  };
 
   const updateOrderStatus = async (orderId: string, newStatus: OrderStatus) => {
     try {
@@ -77,22 +51,7 @@ export function POSOrderGrid({
     }
   };
 
-  const handleMarkAsPaid = async (orderId: string) => {
-    const success = await markOrderAsPaid(orderId);
-    if (success) {
-      onOrderUpdate?.();
-      clearSelection();
-    }
-  };
 
-  const handleCompleteOrder = async () => {
-    if (!selectedOrder) return;
-    const success = await completeOrder(selectedOrder);
-    if (success) {
-      onOrderUpdate?.();
-      clearSelection();
-    }
-  };
 
   const handleUpdateOrderStatus = async (
     order: Order,
@@ -105,13 +64,7 @@ export function POSOrderGrid({
     }
   };
 
-  const wrapMarkAsPaid = (orderId: string) => {
-    return handleMarkAsPaid(orderId);
-  };
 
-  const wrapCompleteOrder = () => {
-    return handleCompleteOrder();
-  };
 
   const wrapUpdateStatus = (orderId: string, status: OrderStatus) => {
     const order = orders.find((o) => o.id === orderId);
@@ -131,10 +84,6 @@ export function POSOrderGrid({
 
   const handleReopenOrder = (order: Order) => {
     onReopenOrder(order);
-  };
-
-  const handlePayOrder = (order: Order) => {
-    onPayOrder(order);
   };
 
   const filteredOrders = orders.filter((order) => {

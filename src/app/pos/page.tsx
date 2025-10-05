@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState, useCallback, useMemo } from "react";
-import { usePathname, useRouter } from "next/navigation";
-import { format } from "date-fns";
+import { usePathname } from "next/navigation";
 import { selectedOrganizationAtom } from "@/atoms";
 import {
   CartItem,
@@ -64,7 +63,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
 import { PaymentSuccessDialog } from "@/components/PaymentSuccessDialog";
 import { CartItemModal } from "@/components/pos/CartItemModal";
 import { BusinessDaySelectionDialog } from "@/components/pos/BusinessDaySelectionDialog";
@@ -74,7 +72,6 @@ import { Loader } from "@/components/ui/loader";
 
 export default function SimplifiedPOSPage() {
   const pathname = usePathname();
-  const router = useRouter();
   const [selectedOrganization] = useAtom(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
 
@@ -92,7 +89,6 @@ export default function SimplifiedPOSPage() {
     createNewOrder,
     updateExistingOrder,
     addPaymentToOrder,
-    getPaymentsForOrder,
   } = useOrders();
   const { storeSettings, loading: storeSettingsLoading } = useStoreSettings();
   const orderTypes = useMemo(
@@ -138,11 +134,7 @@ export default function SimplifiedPOSPage() {
 
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // State for order payments
-  const [orderPayments, setOrderPayments] = useState<{
-    [orderId: string]: OrderPayment[];
-  }>({});
-  const [orderPaymentsLoading, setOrderPaymentsLoading] = useState(false);
+
 
   // Get auth context
   const { user } = useAuth();
@@ -502,10 +494,10 @@ export default function SimplifiedPOSPage() {
     vatSettings?.isEnabled,
     vatSettings?.isVatInclusive,
     vatSettings?.rate,
-    calculateCartTotals,
     setIsProcessing,
     isSavedOrderLoaded,
     isSavedOrderModified,
+    selectedDate,
   ]);
 
   const handlePaymentProcessed = useCallback(
@@ -819,10 +811,11 @@ export default function SimplifiedPOSPage() {
     setNextQueueNumber,
     setSelectedOrder,
     setCurrentView,
-    calculateCartTotals,
     setIsProcessing,
     isSavedOrderLoaded,
     setIsSavedOrderModified,
+    isSavedOrderModified,
+    selectedDate,
   ]);
 
   const updateCartItem = useCallback(
@@ -940,16 +933,12 @@ export default function SimplifiedPOSPage() {
             paymentTypes={paymentTypes}
             selectedOrder={selectedOrder}
             categoryPath={categoryPath}
-            organizationId={organizationId || undefined}
             onCategoryClick={handleCategoryClick}
-            onNavigateToRoot={handleNavigateToRoot}
             onNavigateToPath={handleNavigateToPath}
             onItemClick={handleAddToCart}
             onTableSelect={handleTableSelected}
             onCustomerSelect={handleCustomerSelected}
-            onOrderSelect={handleViewOrderDetail}
             onReopenOrder={handleOrderReopen}
-            onPayOrder={() => {}}
             onBackToItems={handleBackToItemsPreserveCart}
             onPaymentProcessed={async (payments) => {
               await handlePaymentProcessed(payments);
