@@ -10,21 +10,28 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
        --body-font: {{bodyFont}};
      }
     .invoice-template { font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--body-font), 'sans-serif'; margin: 0; padding: 0; background: white; color: #000000; unicode-bidi: embed; }
-   .invoice-template .container { max-width: 100%; margin: 0; padding: 0; }
-    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; }
+    .invoice-template .container { max-width: 100%; margin: 0; padding: 0; }
+
+    /* Compact paragraph spacing */
+    .company-info p,
+    .bill-to p,
+    .dates-grid p {
+      margin: 1px 0;
+    }
+     .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
     .qr-section { margin-bottom: 15px; }
     .logo-section { position: relative; width: 192px; height: 80px; margin-left: auto; }
      .invoice-title { font-size: 1.5rem; font-weight: bold; color: #1f2937; font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--heading-font), 'sans-serif'; }
     .invoice-number { color: #6b7280; }
     .company-info { text-align: left; }
     .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
-    .bill-to, .supplier { margin-bottom: 15px; }
+     .bill-to, .supplier { margin-bottom: 8px; }
     .customer-logo, .supplier-logo { position: relative; width: 128px; height: 64px; margin-bottom: 8px; }
-    .dates-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-     .table { width: 100%; margin-bottom: 30px; border-collapse: collapse; border: 1px solid #d1d5db; }
+     .dates-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+     .table { width: 100%; margin-bottom: 12px; border-collapse: collapse; border: 1px solid #d1d5db; }
       .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 4px 6px; text-align: right; font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--heading-font), 'sans-serif'; line-height: 1.3; vertical-align: middle; min-height: 1.1em; }
       .table td { border: 1px solid #d1d5db; padding: 4px 6px; text-align: right; line-height: 1.3; vertical-align: middle; min-height: 1.1em; }
-    .totals-stamp-container { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; }
+     .totals-stamp-container { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
     .totals { flex: 1; }
     .totals div { width: 256px; }
     .total-line { display: flex; justify-content: space-between; padding: 6px 0; }
@@ -36,6 +43,19 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
      .bilingual { display: flex; justify-content: space-between; align-items: center; }
      .english { flex: 1; text-align: left; }
      .arabic { flex: 1; text-align: right; direction: rtl; }
+
+     /* PDF-specific spacing adjustments */
+     @media print {
+       .table th, .table td {
+         padding: 1px 3px;
+         line-height: 1.0;
+       }
+       .company-info p,
+       .bill-to p,
+       .dates-grid p {
+         margin: 1px 0;
+       }
+     }
 
      /* PDF-specific spacing adjustments */
      @media print {

@@ -417,17 +417,18 @@ async function generatePDF(htmlContent: string): Promise<Buffer> {
     // Generate PDF with error handling
     let pdfBuffer;
     try {
-      pdfBuffer = await page.pdf({
-        format: 'A4',
-        printBackground: true,
-        margin: {
-          top: '20px',
-          right: '20px',
-          bottom: '20px',
-          left: '20px'
-        },
-        timeout: 30000,
-        waitForFonts: true
+       pdfBuffer = await page.pdf({
+         format: 'A4',
+         printBackground: true,
+         scale: 0.92,
+         margin: {
+           top: '10px',
+           right: '10px',
+           bottom: '10px',
+           left: '10px'
+         },
+         timeout: 30000,
+         waitForFonts: true
       });
     } catch (pdfError) {
       console.error('Error creating PDF:', pdfError);
