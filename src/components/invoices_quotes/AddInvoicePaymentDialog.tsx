@@ -36,7 +36,6 @@ export function AddInvoicePaymentDialog({
   onAddPayment,
   paymentTypes,
   remainingAmount,
-  invoiceId,
   existingPayments = [],
   totalAmount = 0
 }: AddInvoicePaymentDialogProps) {
@@ -120,7 +119,7 @@ export function AddInvoicePaymentDialog({
         </DialogHeader>
 
         {/* Payment Summary */}
-        <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+        <div className="bg-muted/50 p-4 rounded-lg space-y-2">
           <div className="flex justify-between items-center">
             <span className="font-medium">Total Amount:</span>
             <span className="font-bold">${totalAmount.toFixed(2)}</span>

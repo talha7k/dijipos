@@ -398,7 +398,7 @@ function DashboardContent() {
                         const percentage =
                           total > 0 ? (amount / total) * 100 : 0;
                         return (
-                          <TableRow key={type}>
+                          <TableRow key={`dashboard-order-type-${type}`}>
                             <TableCell className="capitalize">
                               {type.replace("_", " ")}
                             </TableCell>

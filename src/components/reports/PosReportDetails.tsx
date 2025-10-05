@@ -107,7 +107,7 @@ export function PosReportDetails({ data, dateRange, generationDate }: PosReportD
               </TableHeader>
               <TableBody>
                 {Object.entries(data.salesByOrderType).map(([type, amount]) => (
-                  <TableRow key={type}>
+                  <TableRow key={`details-order-type-${type}`}>
                     <TableCell className="capitalize">{type}</TableCell>
                     <TableCell className="text-right">
                       {amount.toFixed(2)}
@@ -135,7 +135,7 @@ export function PosReportDetails({ data, dateRange, generationDate }: PosReportD
             </TableHeader>
             <TableBody>
               {data.topSellingItems.map((item) => (
-                <TableRow key={item.name}>
+                <TableRow key={`top-item-${item.name}`}>
                   <TableCell>{item.name}</TableCell>
                   <TableCell className="text-right">{item.quantity}</TableCell>
                   <TableCell className="text-right">

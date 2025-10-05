@@ -138,8 +138,13 @@ export default function InvoicesPage() {
     } catch (error) {
       console.error('Error adding payment:', error);
       toast.error('Failed to add payment');
-      throw error;
     }
+  };
+
+  const handleEditInvoice = (invoice: SalesInvoice | PurchaseInvoice) => {
+    setEditingInvoice(invoice);
+    setShowForm(true);
+    setShowDetails(false);
   };
 
   const handleInvoiceClick = (invoice: SalesInvoice | PurchaseInvoice) => {
@@ -325,15 +330,13 @@ export default function InvoicesPage() {
             // Handle PDF download
             console.log("Download PDF for invoice:", invoice.id);
           }}
-         onDelete={(invoice) => {
-           setInvoiceToDelete(invoice);
-         }}
-         onAddPayment={handleAddPayment}
-         organization={selectedOrganization}
-         invoiceTemplates={invoiceTemplates}
-         settings={printerSettings?.invoices}
-         paymentTypes={storeSettings?.paymentTypes || []}
-         transactionType={transactionTypeFilter}
+          onDelete={(invoice) => {
+            setInvoiceToDelete(invoice);
+          }}
+          organization={selectedOrganization}
+          invoiceTemplates={invoiceTemplates}
+          settings={printerSettings?.invoices}
+          transactionType={transactionTypeFilter}
        />
 
       {/* Create/Edit Invoice Dialog */}
@@ -384,6 +387,7 @@ export default function InvoicesPage() {
           paymentTypes={storeSettings?.paymentTypes || []}
           open={showDetails}
           onOpenChange={setShowDetails}
+          onEdit={() => handleEditInvoice(selectedInvoice!)}
           onAddPayment={handleAddPayment}
         />
       )}

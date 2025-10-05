@@ -27,41 +27,31 @@ interface InvoiceListProps {
    onEmail?: (invoice: SalesInvoice | PurchaseInvoice, templateId: string) => void;
    onDownloadPDF?: (invoice: SalesInvoice | PurchaseInvoice) => void;
    onDelete?: (invoice: SalesInvoice | PurchaseInvoice) => void;
-   onAddPayment?: (invoiceId: string, paymentData: {
-     amount: number;
-     paymentMethod: string;
-     paymentDate: Date;
-     reference?: string;
-     notes?: string;
-   }) => Promise<void>;
-   organization: Organization | null;
-   invoiceTemplates: InvoiceTemplate[];
-   settings?: DocumentPrintSettings | null;
-   paymentTypes: PaymentType[];
+    organization: Organization | null;
+    invoiceTemplates: InvoiceTemplate[];
+    settings?: DocumentPrintSettings | null;
    transactionType?: "sales" | "purchase" | "all";
  }
 
 export function InvoiceList({
-   invoices,
-   customers,
-   suppliers,
-   payments,
-   onInvoiceClick,
-   onViewDetails,
-   onStatusChange,
-   onEdit,
-   onDuplicate,
-   onSend,
-   onEmail,
-   onDownloadPDF,
-   onDelete,
-   onAddPayment,
-   organization,
-   invoiceTemplates,
-   settings,
-   paymentTypes,
-   transactionType = "all",
- }: InvoiceListProps) {
+    invoices,
+    customers,
+    suppliers,
+    payments,
+    onInvoiceClick,
+    onViewDetails,
+    onStatusChange,
+    onEdit,
+    onDuplicate,
+    onSend,
+    onEmail,
+    onDownloadPDF,
+    onDelete,
+    organization,
+    invoiceTemplates,
+    settings,
+    transactionType,
+  }: InvoiceListProps) {
   return (
     <div className="overflow-x-auto">
       <Table>
@@ -130,13 +120,11 @@ export function InvoiceList({
                       onEmail={onEmail}
                       onDownloadPDF={onDownloadPDF}
                       onDelete={onDelete}
-                      onAddPayment={onAddPayment}
                       organization={organization}
                       invoiceTemplates={invoiceTemplates}
                       customers={customers}
                       suppliers={suppliers}
                       settings={settings}
-                      paymentTypes={paymentTypes}
                     />
                 </div>
               </TableCell>

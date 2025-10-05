@@ -7,7 +7,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { SalesInvoice, PurchaseInvoice, Payment, Organization, Customer, Supplier, PaymentType } from '@/types';
-import { CreditCard, Printer, Eye, Plus } from 'lucide-react';
+import { CreditCard, Printer, Eye, Plus, Edit } from 'lucide-react';
 import { AddInvoicePaymentDialog } from './AddInvoicePaymentDialog';
 
 // Type guard to check if invoice is a PurchaseInvoice
@@ -26,6 +26,7 @@ interface InvoiceDetailsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onPrint?: () => void;
+  onEdit?: () => void;
   onAddPayment?: (invoiceId: string, paymentData: {
     amount: number;
     paymentMethod: string;
@@ -44,6 +45,7 @@ export function InvoiceDetailsDialog({
   open,
   onOpenChange,
   onPrint,
+  onEdit,
   onAddPayment
 }: InvoiceDetailsDialogProps) {
   const [showAddPaymentDialog, setShowAddPaymentDialog] = useState(false);
@@ -86,17 +88,28 @@ export function InvoiceDetailsDialog({
                  >
                    <Eye className="h-4 w-4" />
                    View Payments
-                 </Button>
-                 {onPrint && (
-                   <Button
-                     onClick={onPrint}
-                     size="sm"
-                     className="flex items-center gap-2"
-                   >
-                     <Printer className="h-4 w-4" />
-                     Print PDF
-                   </Button>
-                 )}
+                  </Button>
+                  {onEdit && (
+                    <Button
+                      variant="outline"
+                      onClick={onEdit}
+                      size="sm"
+                      className="flex items-center gap-2"
+                    >
+                      <Edit className="h-4 w-4" />
+                      Edit Invoice
+                    </Button>
+                  )}
+                  {onPrint && (
+                    <Button
+                      onClick={onPrint}
+                      size="sm"
+                      className="flex items-center gap-2"
+                    >
+                      <Printer className="h-4 w-4" />
+                      Print PDF
+                    </Button>
+                  )}
                </div>
              </div>
 

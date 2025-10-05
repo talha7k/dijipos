@@ -173,12 +173,12 @@ export function PosReportTab({
                    </TableRow>
                  </TableHeader>
                  <TableBody>
-                   {Object.entries(data.salesByPaymentType).map(([type, amount]) => (
-                     <TableRow key={type}>
-                       <TableCell className="capitalize">{type}</TableCell>
-                       <TableCell className="text-right">{formatCurrency(amount)}</TableCell>
-                     </TableRow>
-                   ))}
+                    {Object.entries(data.salesByPaymentType).map(([type, amount]) => (
+                      <TableRow key={`payment-type-${type}`}>
+                        <TableCell className="capitalize">{type}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(amount)}</TableCell>
+                      </TableRow>
+                    ))}
                  </TableBody>
                </Table>
              </div>
@@ -193,12 +193,12 @@ export function PosReportTab({
                    </TableRow>
                  </TableHeader>
                  <TableBody>
-                   {Object.entries(data.salesByOrderType).map(([type, amount]) => (
-                     <TableRow key={type}>
-                       <TableCell className="capitalize">{type}</TableCell>
-                       <TableCell className="text-right">{formatCurrency(amount)}</TableCell>
-                     </TableRow>
-                   ))}
+                    {Object.entries(data.salesByOrderType).map(([type, amount]) => (
+                      <TableRow key={`order-type-${type}`}>
+                        <TableCell className="capitalize">{type}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(amount)}</TableCell>
+                      </TableRow>
+                    ))}
                  </TableBody>
                </Table>
              </div>
