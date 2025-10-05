@@ -28,6 +28,14 @@ interface AddInvoicePaymentDialogProps {
   invoiceId: string;
   existingPayments?: Payment[];
   totalAmount?: number;
+  editingPayment?: Payment | null;
+  onUpdatePayment?: (paymentData: {
+    amount: number;
+    paymentMethod: string;
+    paymentDate: Date;
+    reference?: string;
+    notes?: string;
+  }) => Promise<void>;
 }
 
 export function AddInvoicePaymentDialog({
@@ -37,7 +45,9 @@ export function AddInvoicePaymentDialog({
   paymentTypes,
   remainingAmount,
   existingPayments = [],
-  totalAmount = 0
+  totalAmount = 0,
+  editingPayment,
+  onUpdatePayment
 }: AddInvoicePaymentDialogProps) {
   const [amount, setAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
@@ -48,10 +58,29 @@ export function AddInvoicePaymentDialog({
 
   // Auto-fill amount with remaining amount when payment method is selected
   useEffect(() => {
-    if (paymentMethod && remainingAmount > 0 && !amount) {
+    if (paymentMethod && remainingAmount > 0 && !amount && !editingPayment) {
       setAmount(remainingAmount.toFixed(2));
     }
-  }, [paymentMethod, remainingAmount, amount]);
+  }, [paymentMethod, remainingAmount, amount, editingPayment]);
+
+  // Populate form when editing payment changes
+  useEffect(() => {
+    if (editingPayment) {
+      setAmount(editingPayment.amount.toFixed(2));
+      const paymentType = paymentTypes.find(type => type.name === editingPayment.paymentMethod);
+      setPaymentMethod(paymentType ? paymentType.id : '');
+      setPaymentDate(new Date(editingPayment.paymentDate).toISOString().split('T')[0]);
+      setReference(editingPayment.reference || '');
+      setNotes(editingPayment.notes || '');
+    } else {
+      // Reset form when not editing
+      setAmount('');
+      setPaymentMethod('');
+      setPaymentDate(new Date().toISOString().split('T')[0]);
+      setReference('');
+      setNotes('');
+    }
+  }, [editingPayment, paymentTypes]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,7 +129,13 @@ export function AddInvoicePaymentDialog({
         paymentData.notes = notes.trim();
       }
 
-      await onAddPayment(paymentData);
+      if (editingPayment && onUpdatePayment) {
+        await onUpdatePayment(paymentData);
+        toast.success('Payment updated successfully');
+      } else {
+        await onAddPayment(paymentData);
+        toast.success('Payment added successfully');
+      }
 
       // Reset form
       setAmount('');
@@ -110,8 +145,8 @@ export function AddInvoicePaymentDialog({
       setNotes('');
       onOpenChange(false);
     } catch (error) {
-      console.error('Error adding payment:', error);
-      toast.error('Failed to add payment');
+      console.error('Error saving payment:', error);
+      toast.error(`Failed to ${editingPayment ? 'update' : 'add'} payment`);
     } finally {
       setIsSubmitting(false);
     }
@@ -134,10 +169,13 @@ export function AddInvoicePaymentDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CreditCard className="h-5 w-5" />
-            Add Payment to Invoice
+            {editingPayment ? 'Edit Payment' : 'Add Payment to Invoice'}
           </DialogTitle>
           <DialogDescription>
-            Add a new payment to this invoice. Fill in the required fields below.
+            {editingPayment 
+              ? 'Edit the payment details below.' 
+              : 'Add a new payment to this invoice. Fill in the required fields below.'
+            }
           </DialogDescription>
         </DialogHeader>
 
@@ -296,7 +334,7 @@ export function AddInvoicePaymentDialog({
                   className="flex items-center gap-2"
                 >
                   <DollarSign className="h-4 w-4" />
-                  {isSubmitting ? 'Adding...' : 'Add Payment'}
+                  {isSubmitting ? (editingPayment ? 'Updating...' : 'Adding...') : (editingPayment ? 'Update Payment' : 'Add Payment')}
                 </Button>
               </DialogFooter>
             </form>

@@ -77,6 +77,8 @@ const [filters, setFilters] = useState({});
     createPurchaseInvoice,
     deleteExistingInvoice,
     addPaymentToInvoice,
+    updatePaymentInInvoice,
+    deletePaymentFromInvoice,
   } = useInvoices();
   const { customers, loading: customersLoading } = useCustomers();
   const { suppliers, loading: suppliersLoading } = useSuppliers();
@@ -148,6 +150,43 @@ const [filters, setFilters] = useState({});
     } catch (error) {
       console.error('Error adding payment:', error);
       toast.error('Failed to add payment');
+    }
+  };
+
+  const handleUpdatePayment = async (
+    invoiceId: string,
+    paymentId: string,
+    paymentData: {
+      amount: number;
+      paymentMethod: string;
+      paymentDate: Date;
+      reference?: string;
+      notes?: string;
+    }
+  ) => {
+    try {
+      await updatePaymentInInvoice(invoiceId, paymentId, {
+        organizationId: selectedOrganization?.id || '',
+        amount: paymentData.amount,
+        paymentMethod: paymentData.paymentMethod,
+        paymentDate: paymentData.paymentDate,
+        reference: paymentData.reference,
+        notes: paymentData.notes,
+      });
+      toast.success('Payment updated successfully');
+    } catch (error) {
+      console.error('Error updating payment:', error);
+      toast.error('Failed to update payment');
+    }
+  };
+
+  const handleDeletePayment = async (invoiceId: string, paymentId: string) => {
+    try {
+      await deletePaymentFromInvoice(invoiceId, paymentId);
+      toast.success('Payment deleted successfully');
+    } catch (error) {
+      console.error('Error deleting payment:', error);
+      toast.error('Failed to delete payment');
     }
   };
 
@@ -388,6 +427,8 @@ const [filters, setFilters] = useState({});
           onEdit={() => handleEditInvoice(selectedInvoice!)}
           onStatusChange={(invoiceId, newStatus) => handleStatusChange(invoiceId, newStatus as (SalesInvoice | PurchaseInvoice)["status"])}
           onAddPayment={handleAddPayment}
+          onUpdatePayment={(invoiceId, paymentId, paymentData) => handleUpdatePayment(invoiceId, paymentId, paymentData)}
+          onDeletePayment={handleDeletePayment}
         />
       )}
 

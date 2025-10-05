@@ -164,20 +164,31 @@ export function InvoicePrintDialog({
     }) || [];
   }, [invoiceTemplates, invoice.type]);
 
-  // Initialize states with default values from settings
-  const [selectedTemplate, setSelectedTemplate] = useState<string>("");
-  const [pageSize, setPageSize] = useState("210mm");
-  const [margins, setMargins] = useState({
-    top: 10,
-    right: 10,
-    bottom: 10,
-    left: 10,
+  // Initialize states with default values from settings (similar to ReceiptPrintDialog)
+  const [selectedTemplate, setSelectedTemplate] = useState<string>(() => {
+    const defaultTemplateId = settings?.defaultTemplateId;
+    // For initialization, we need to check templates, but they might not be filtered yet
+    // We'll use the first available template and let useEffect update it
+    return defaultTemplateId || invoiceTemplates[0]?.id || "";
   });
-  const [paddings, setPaddings] = useState({
-    top: 15,
-    right: 15,
-    bottom: 15,
-    left: 15,
+  const [pageSize, setPageSize] = useState(() => {
+    return settings?.paperWidth ? `${settings.paperWidth}mm` : "210mm";
+  });
+  const [margins, setMargins] = useState(() => {
+    return {
+      top: settings?.marginTop ?? 10,
+      right: settings?.marginRight ?? 10,
+      bottom: settings?.marginBottom ?? 10,
+      left: settings?.marginLeft ?? 10,
+    };
+  });
+  const [paddings, setPaddings] = useState(() => {
+    return {
+      top: settings?.paddingTop ?? 15,
+      right: settings?.paddingRight ?? 15,
+      bottom: settings?.paddingBottom ?? 15,
+      left: settings?.paddingLeft ?? 15,
+    };
   });
 
   // Effect to update settings when props change (similar to ReceiptPrintDialog)
