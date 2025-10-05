@@ -19,6 +19,7 @@ import { CreditCard, Printer, Eye, Plus, Edit, Trash2 } from 'lucide-react';
 import { AddInvoicePaymentDialog } from './AddInvoicePaymentDialog';
 import { EditCustomerDialog } from './EditCustomerDialog';
 import { getInvoicePayments } from '@/lib/firebase/firestore/invoices';
+import { formatDate } from '@/lib/utils';
 import { useCurrency } from '@/lib/hooks/useCurrency';
 
 // Type guard to check if invoice is a PurchaseInvoice
@@ -198,30 +199,185 @@ export function InvoiceDetailsDialog({
               </div>
 
             {/* Invoice Header Information */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-              {/* Invoice Summary - 1/3 width on desktop, full width on mobile */}
-              <div className="lg:col-span-4 border border-border rounded-lg p-4 bg-card">
-                  <h3 className="font-semibold mb-3">Invoice Summary</h3>
-                 <div className="space-y-2">
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+              <div className="lg:col-span-2 border border-border rounded-lg p-4 bg-card">
+                <h3 className="font-semibold mb-2">Invoice Information</h3>
+                 <div className="space-y-1 text-sm">
+                   <div className="flex justify-between">
+                     <span className="text-muted-foreground">Status:</span>
+                     {onStatusChange ? (
+                       <Select
+                         value={invoice.status}
+                         onValueChange={(value) => onStatusChange(invoice.id, value)}
+                       >
+                         <SelectTrigger className="w-32 h-6 text-xs">
+                           <SelectValue />
+                         </SelectTrigger>
+                         <SelectContent>
+                           {(isPurchaseInvoice(invoice)
+                             ? Object.values(PurchaseInvoiceStatus)
+                             : Object.values(InvoiceStatus)
+                           ).map((status) => (
+                             <SelectItem key={status} value={status}>
+                               {status.replace('_', ' ').toUpperCase()}
+                             </SelectItem>
+                           ))}
+                         </SelectContent>
+                       </Select>
+                     ) : (
+                       <Badge variant={
+                         invoice.status === 'paid' ? 'default' :
+                         invoice.status === 'overdue' ? 'destructive' :
+                         'secondary'
+                       } className="capitalize">
+                         {invoice.status}
+                       </Badge>
+                     )}
+                   </div>
                     <div className="flex justify-between">
-                      <span>Subtotal:</span>
-                      <span>{formatCurrency(invoice.subtotal)}</span>
+                      <span className="text-muted-foreground">Invoice Date:</span>
+                      <span>{formatDate(invoice.createdAt)}</span>
                     </div>
-                    {invoice.taxAmount > 0 && (
-                      <div className="flex justify-between">
-                        <span>Tax ({invoice.taxRate}%):</span>
-                        <span>{formatCurrency(invoice.taxAmount)}</span>
-                      </div>
-                    )}
-                    <div className="flex justify-between font-bold text-lg border-t pt-2">
-                      <span>Total:</span>
-                      <span>{formatCurrency(invoice.total)}</span>
-                    </div>
+                     <div className="flex justify-between">
+                       <span className="text-muted-foreground">Due Date:</span>
+                       <span>{invoice.dueDate ? formatDate(invoice.dueDate) : 'N/A'}</span>
+                     </div>
+                 </div>
+               </div>
+                <div className="lg:col-span-3 border border-border rounded-lg p-4 bg-card">
+                   <div className="flex items-center justify-between mb-2">
+                     <h3 className="font-semibold">Client Information</h3>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowEditCustomerDialog(true)}
+                      className="flex items-center gap-2"
+                      title="Edit customer/supplier information"
+                    >
+                      <Edit className="h-4 w-4" />
+                      Edit
+                    </Button>
+                  </div>
+                <div className="space-y-1 text-sm">
+                  {isPurchaseInvoice(invoice) ? (
+                    (() => {
+                      const supplier = suppliers.find(s => s.id === (invoice as PurchaseInvoice).supplierId);
+                      return supplier ? (
+                        <>
+                           <div className="flex justify-between">
+                             <span className="text-muted-foreground">Supplier:</span>
+                             <span>{supplier.name}</span>
+                           </div>
+                           {supplier.email && (
+                             <div className="flex justify-between">
+                               <span className="text-muted-foreground">Email:</span>
+                               <span>{supplier.email}</span>
+                             </div>
+                           )}
+                           {supplier.address && (
+                             <div className="flex justify-between">
+                               <span className="text-muted-foreground">Address:</span>
+                               <span>{supplier.address}</span>
+                             </div>
+                           )}
+                        </>
+                      ) : (
+                         <div className="flex justify-between">
+                           <span className="text-muted-foreground">Supplier:</span>
+                           <span>Supplier not found</span>
+                         </div>
+                      );
+                    })()
+                  ) : (
+                    (() => {
+                      const customer = customers.find(c => c.name === (invoice as SalesInvoice).clientName);
+                      return customer ? (
+                        <>
+                           <div className="flex justify-between">
+                             <span className="text-muted-foreground">Customer:</span>
+                             <span>{customer.name}</span>
+                           </div>
+                           {customer.email && (
+                             <div className="flex justify-between">
+                               <span className="text-muted-foreground">Email:</span>
+                               <span>{customer.email}</span>
+                             </div>
+                           )}
+                           {customer.address && (
+                             <div className="flex justify-between">
+                               <span className="text-muted-foreground">Address:</span>
+                               <span>{customer.address}</span>
+                             </div>
+                           )}
+                        </>
+                      ) : (
+                         <div className="flex justify-between">
+                           <span className="text-muted-foreground">Customer:</span>
+                           <span>Customer not found</span>
+                         </div>
+                      );
+                    })()
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Invoice Items Table */}
+            <div>
+              <h3 className="font-semibold mb-3">Invoice Items</h3>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Item</TableHead>
+                    <TableHead className="text-right">Qty</TableHead>
+                    <TableHead className="text-right">Unit Price</TableHead>
+                    <TableHead className="text-right">Total</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {invoice.items.map((item, index) => (
+                    <TableRow key={index}>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">{item.name}</p>
+                          {item.description && (
+                            <p className="text-sm text-gray-600">{item.description}</p>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">{item.quantity}</TableCell>
+                      <TableCell className="text-right">{formatCurrency(item.unitPrice)}</TableCell>
+                      <TableCell className="text-right font-medium">{formatCurrency(item.total)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Invoice Summary */}
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+               <div className="lg:col-span-2 border border-border rounded-lg p-4 bg-card">
+                 <h3 className="font-semibold mb-3">Invoice Summary</h3>
+                 <div className="space-y-2">
+                   <div className="flex justify-between">
+                     <span>Subtotal:</span>
+                     <span>{formatCurrency(invoice.subtotal)}</span>
+                   </div>
+                   {invoice.taxAmount > 0 && (
+                     <div className="flex justify-between">
+                       <span>Tax ({invoice.taxRate}%):</span>
+                       <span>{formatCurrency(invoice.taxAmount)}</span>
+                     </div>
+                   )}
+                   <div className="flex justify-between font-bold text-lg border-t pt-2">
+                     <span>Total:</span>
+                     <span>{formatCurrency(invoice.total)}</span>
+                   </div>
                  </div>
                </div>
 
-                  {/* Payment Information */}
-                  <div id="payments-section" className="lg:col-span-8 border border-border rounded-lg p-4 bg-card">
+                {/* Payment Information */}
+                <div id="payments-section" className="lg:col-span-3 border border-border rounded-lg p-4 bg-card">
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <h3 className="font-semibold flex items-center gap-2">
@@ -268,7 +424,7 @@ export function InvoiceDetailsDialog({
                                      )}
                                   </div>
                                 </TableCell>
-                                 <TableCell>{new Date(payment.paymentDate).toLocaleDateString()}</TableCell>
+                                 <TableCell>{formatDate(payment.paymentDate)}</TableCell>
                                  <TableCell>{payment.reference || '-'}</TableCell>
                                  <TableCell className="text-right font-medium">{formatCurrency(payment.amount)}</TableCell>
                                  <TableCell className="text-right">
@@ -300,16 +456,16 @@ export function InvoiceDetailsDialog({
 
                         <div className="flex justify-between items-center pt-4 border-t">
                           <div className="space-y-1">
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">Total Paid:</span>
-                                <span className="font-medium">{formatCurrency(invoicePayments.reduce((sum, p) => sum + p.amount, 0))}</span>
-                              </div>
-                              {invoicePayments.reduce((sum, p) => sum + p.amount, 0) < invoice.total && (
-                                <div className="flex justify-between">
-                                  <span className="text-muted-foreground">Remaining Balance:</span>
-                                  <span className="font-medium text-destructive">{formatCurrency(invoice.total - invoicePayments.reduce((sum, p) => sum + p.amount, 0))}</span>
-                                </div>
-                              )}
+                             <div className="flex justify-between">
+                               <span className="text-muted-foreground">Total Paid:</span>
+                               <span className="font-medium">{formatCurrency(invoicePayments.reduce((sum, p) => sum + p.amount, 0))}</span>
+                             </div>
+                             {invoicePayments.reduce((sum, p) => sum + p.amount, 0) < invoice.total && (
+                               <div className="flex justify-between">
+                                 <span className="text-muted-foreground">Remaining Balance:</span>
+                                 <span className="font-medium text-destructive">{formatCurrency(invoice.total - invoicePayments.reduce((sum, p) => sum + p.amount, 0))}</span>
+                               </div>
+                             )}
                           </div>
                         </div>
                       </div>

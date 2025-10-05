@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { CreditCard, DollarSign, History } from 'lucide-react';
 import { PaymentType, Payment } from '@/types';
+import { formatDate } from '@/lib/utils';
 import { toast } from 'sonner';
 
 interface AddInvoicePaymentDialogProps {
@@ -224,7 +225,7 @@ export function AddInvoicePaymentDialog({
                       {existingPayments.map((payment, index) => (
                         <TableRow key={index}>
                           <TableCell>
-                            {new Date(payment.paymentDate).toLocaleDateString()}
+                            {formatDate(payment.paymentDate)}
                           </TableCell>
                           <TableCell>
                             <Badge variant="outline">{payment.paymentMethod}</Badge>
