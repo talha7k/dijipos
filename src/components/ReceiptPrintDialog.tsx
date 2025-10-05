@@ -1,7 +1,7 @@
 import React, {
   useState,
   useEffect,
-  ReactNode,
+
   useCallback,
   useMemo,
   useRef,
@@ -151,6 +151,7 @@ export function ReceiptPrintDialog({
     },
     [onOpenChange],
   );
+
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [renderedHtml, setRenderedHtml] = useState("");

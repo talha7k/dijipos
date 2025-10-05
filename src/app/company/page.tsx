@@ -1,8 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
-import { useSearchParams } from "next/navigation";
 
 import { useAtomValue } from "jotai";
 import { useAuth } from "@/lib/hooks/useAuth";
@@ -18,9 +16,7 @@ import {
   updateOrganizationUser,
   updateUserStatus,
 } from "@/lib/firebase/firestore/organizations";
-import { updateUser } from "@/lib/firebase/firestore/users";
-import { updateProfile } from "firebase/auth";
-import { auth } from "@/lib/firebase/config";
+
 import { useAtom } from "jotai";
 import { selectedOrganizationIdAtom } from "@/atoms";
 import { OrganizationUser } from "@/types";
@@ -28,64 +24,26 @@ import { UserRole } from "@/types/enums";
 import { Loader } from "@/components/ui/loader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Building2,
   CreditCard,
-  X,
-  Users,
-  Plus,
-  Edit,
-  Trash2,
-  Shield,
-  Settings,
-  Copy,
-  Link,
 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { ImageUpload } from "@/components/ui/image-upload";
+
+
+
+
+
+
 import { toast } from "sonner";
-import { DatePicker } from "@/components/ui/date-picker";
+
 import { CompanyInfoTab } from "@/components/company/CompanyInfoTab";
 import { BrandingTab } from "@/components/company/BrandingTab";
 import { TeamTab } from "@/components/company/TeamTab";
-import { AccountTab } from "@/components/company/AccountTab";
+
 import { AdminOnlyGuard } from "@/components/layout/RoleGuard";
 
 function CompanyContent() {
@@ -96,6 +54,7 @@ function CompanyContent() {
   const [selectedOrganizationId, setSelectedOrganizationId] = useAtom(
     selectedOrganizationIdAtom,
   );
+
   const organizationId = selectedOrganization?.id;
   const organization = selectedOrganization;
   const {
@@ -336,31 +295,7 @@ function CompanyContent() {
     setDialogOpen(true);
   };
 
-  const getRoleBadgeColor = (role: OrganizationUser["role"]) => {
-    switch (role) {
-      case "admin":
-        return "default";
-      case "manager":
-        return "secondary";
-      case "waiter":
-        return "outline";
-      case "cashier":
-        return "outline";
-      default:
-        return "outline";
-    }
-  };
 
-  const getRoleIcon = (role: OrganizationUser["role"]) => {
-    switch (role) {
-      case "admin":
-        return Shield;
-      case "manager":
-        return Settings;
-      default:
-        return Users;
-    }
-  };
 
   if (!user) return <div>Please log in</div>;
   if (loading) {

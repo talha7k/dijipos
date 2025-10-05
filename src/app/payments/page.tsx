@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useOrders } from '@/lib/hooks/useOrders';
 import { useOrganization } from '@/lib/hooks/useOrganization';
-import { Order, OrderPayment } from '@/types';
+import { OrderPayment } from '@/types';
 
 
 import { Button } from '@/components/ui/button';

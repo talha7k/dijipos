@@ -8,10 +8,10 @@ import { Payment, SalesInvoice, PurchaseInvoice, InvoiceType } from "@/types";
 import { InvoiceList } from "@/components/invoices_quotes/InvoiceList";
 import InvoiceForm from "@/components/invoices_quotes/InvoiceForm";
 import { InvoiceDetailsDialog } from "@/components/invoices_quotes/InvoiceDetailsDialog";
-import { InvoicePrintDialog } from "@/components/invoices_quotes/InvoicePrintDialog";
+
 import { EditCustomerDialog } from "@/components/invoices_quotes/EditCustomerDialog";
 import { Button } from "@/components/ui/button";
-import { Plus, Printer, Receipt, Edit, Mail, Trash2 } from "lucide-react";
+import { Plus, Receipt } from "lucide-react";
 import { EmailInvoiceDialog } from "@/components/invoices_quotes/EmailInvoiceDialog";
 import { useStaticTemplates } from "@/lib/hooks/useStaticTemplates";
 import { useStoreSettings } from "@/lib/hooks/useStoreSettings";
@@ -34,7 +34,6 @@ import { TableFilter } from "@/components/shared/TableFilter";
 
 export default function InvoicesPage() {
   const [selectedOrganization] = useAtom(selectedOrganizationAtom);
-  const organizationId = selectedOrganization?.id;
   const [selectedInvoice, setSelectedInvoice] = useState<SalesInvoice | PurchaseInvoice | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
@@ -83,9 +82,9 @@ const [filters, setFilters] = useState({});
   const { customers, loading: customersLoading } = useCustomers();
   const { suppliers, loading: suppliersLoading } = useSuppliers();
   const { getPaymentsForInvoice: getInvoicePayments } = useInvoices();
+
   const { invoiceTemplates, loading: templatesLoading } = useStaticTemplates();
   const { storeSettings } = useStoreSettings();
-  const printerSettings = storeSettings?.printerSettings;
 
   const invoices = useMemo(() => {
     const allInvoices = [...salesInvoices, ...purchaseInvoices];

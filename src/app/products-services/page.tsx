@@ -7,16 +7,6 @@ import { useOrganization } from "@/lib/hooks/useOrganization";
 import { Item, CategoryType, ProductTransactionType, ItemType } from "@/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,7 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Package, Wrench, Search, Database, BarChart3 } from "lucide-react";
+import { Package, Wrench, Database, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 import { AddProductDialog } from "@/components/products_services/AddProductDialog";
 import { AddServiceDialog } from "@/components/products_services/AddServiceDialog";
@@ -48,7 +38,6 @@ export default function ProductsServicesPage() {
     createItemBulk,
     updateItem,
     deleteItem,
-    refreshItems,
   } = useItems();
   const {
     categories,
@@ -56,7 +45,6 @@ export default function ProductsServicesPage() {
     createCategory,
     createCategoryBulk,
     deleteCategory,
-    refreshCategories,
   } = useCategories();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
