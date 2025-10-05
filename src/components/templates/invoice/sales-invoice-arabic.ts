@@ -57,24 +57,22 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
       .english { flex: 1; text-align: left; }
        .arabic { flex: 1; text-align: left; direction: ltr; }
 
-       /* PDF-specific spacing adjustments */
-       @media print {
-         .invoice-template { padding: 0; }
-         .table th {
-           padding: 12px 8px;
-           text-align: center;
+        /* PDF-specific spacing adjustments */
+        @media print {
+          .invoice-template { padding: 0; }
+          .table th {
+            background: #f3f4f6; border: 1px solid #d1d5db; padding: 16px; text-align: center; font-family: var(--heading-font), system-ui, sans-serif;
+          }
+          .table td {
+            border: 1px solid #d1d5db; padding: 2px 16px; line-height: 1.0;
+          }
+          .company-info p,
+          .bill-to p,
+          .billed-from p,
+          .dates-grid p {
+            margin: 1px 0;
+          }
          }
-         .table td {
-           padding: 1px 3px;
-           line-height: 1.0;
-         }
-         .company-info p,
-         .bill-to p,
-         .billed-from p,
-         .dates-grid p {
-           margin: 1px 0;
-         }
-        }
       @media print {
         .table td { line-height: var(--line-spacing); }
       }
