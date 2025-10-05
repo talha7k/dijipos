@@ -158,14 +158,14 @@ export default function ClientInfo({
         </div>
       )}
 
-      {(selectedCustomerId || readOnly) && (
+      {readOnly ? (
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead colSpan={4} className="bg-muted font-semibold">
                 <div className="flex items-center justify-between">
                   <span>Client Information</span>
-                  {readOnly && onEditCustomer && (
+                  {onEditCustomer && (
                     <Button
                       variant="outline"
                       size="sm"
@@ -199,9 +199,7 @@ export default function ClientInfo({
             </TableRow>
           </TableBody>
         </Table>
-      )}
-
-      {selectedCustomerId && !readOnly && (
+      ) : selectedCustomerId ? (
         <Table>
           <TableHeader>
             <TableRow>
@@ -247,7 +245,7 @@ export default function ClientInfo({
             </TableRow>
           </TableBody>
         </Table>
-      )}
+      ) : null}
     </>
   );
 }

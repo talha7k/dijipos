@@ -65,6 +65,7 @@ export default function InvoiceForm({
   const [showAddServiceDialog, setShowAddServiceDialog] = useState(false);
   const [showAddCustomerDialog, setShowAddCustomerDialog] = useState(false);
   const [showAddSupplierDialog, setShowAddSupplierDialog] = useState(false);
+  const [editingItemIndex, setEditingItemIndex] = useState<number | null>(null);
 
   // Client fields (for sales invoices)
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>("");
@@ -207,6 +208,17 @@ export default function InvoiceForm({
     setInvoiceItems(invoiceItems.filter((_, i) => i !== index));
   };
 
+  const editItem = (index: number) => {
+    setEditingItemIndex(index);
+    // Open the appropriate dialog based on item type
+    const item = invoiceItems[index];
+    if (item.itemType === ItemType.PRODUCT) {
+      setShowAddProductDialog(true);
+    } else {
+      setShowAddServiceDialog(true);
+    }
+  };
+
   const subtotal = invoiceItems.reduce((sum, item) => sum + item.total, 0);
   const isVatInclusive = storeSettings?.vatSettings?.isVatInclusive ?? false;
   const isVatEnabled = storeSettings?.vatSettings?.isEnabled ?? true;
@@ -332,7 +344,7 @@ export default function InvoiceForm({
          )}
 
         {/* Invoice Details Section */}
-        <div className="border rounded-lg p-4 bg-gray-50">
+        <div className="border rounded-lg p-4 bg-card">
           <h3 className="text-lg font-semibold mb-4">Invoice Details</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {invoiceType === InvoiceType.PURCHASE && (
@@ -438,8 +450,8 @@ export default function InvoiceForm({
           <ItemList
             items={invoiceItems}
             mode="editable"
-            onUpdate={updateItem}
             onRemove={removeItem}
+            onEdit={editItem}
           />
           <Button
             type="button"
@@ -481,17 +493,46 @@ export default function InvoiceForm({
       {/* Add Product Dialog */}
       <AddProductDialog
         open={showAddProductDialog}
-        onOpenChange={setShowAddProductDialog}
+        onOpenChange={(open) => {
+          setShowAddProductDialog(open);
+          if (!open) setEditingItemIndex(null);
+        }}
         onAddProduct={async (productData) => {
           try {
-            await createItem(productData);
+            if (editingItemIndex !== null) {
+              // Update existing item
+              const updatedItems = [...invoiceItems];
+              updatedItems[editingItemIndex] = {
+                ...updatedItems[editingItemIndex],
+                name: productData.name,
+                description: productData.description || '',
+                unitPrice: productData.price,
+                total: updatedItems[editingItemIndex].quantity * productData.price,
+              };
+              setInvoiceItems(updatedItems);
+            } else {
+              // Add new item to catalog
+              await createItem(productData);
+            }
             setShowAddProductDialog(false);
+            setEditingItemIndex(null);
           } catch (error) {
             console.error("Error creating product:", error);
           }
         }}
         onUpdateProduct={() => {}}
-        productToEdit={null}
+        productToEdit={editingItemIndex !== null ? {
+          id: invoiceItems[editingItemIndex].itemId || '',
+          name: invoiceItems[editingItemIndex].name,
+          description: invoiceItems[editingItemIndex].description,
+          price: invoiceItems[editingItemIndex].unitPrice,
+          categoryId: '',
+          itemType: ItemType.PRODUCT,
+          transactionType: invoiceType === 'sales' ? ProductTransactionType.SALES : ProductTransactionType.PURCHASE,
+          organizationId: '',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } : null}
         categories={categories}
         defaultTransactionType={invoiceType === 'sales' ? ProductTransactionType.SALES : ProductTransactionType.PURCHASE}
       />
@@ -499,17 +540,46 @@ export default function InvoiceForm({
       {/* Add Service Dialog */}
       <AddServiceDialog
         open={showAddServiceDialog}
-        onOpenChange={setShowAddServiceDialog}
+        onOpenChange={(open) => {
+          setShowAddServiceDialog(open);
+          if (!open) setEditingItemIndex(null);
+        }}
         onAddService={async (serviceData) => {
           try {
-            await createItem(serviceData);
+            if (editingItemIndex !== null) {
+              // Update existing item
+              const updatedItems = [...invoiceItems];
+              updatedItems[editingItemIndex] = {
+                ...updatedItems[editingItemIndex],
+                name: serviceData.name,
+                description: serviceData.description || '',
+                unitPrice: serviceData.price,
+                total: updatedItems[editingItemIndex].quantity * serviceData.price,
+              };
+              setInvoiceItems(updatedItems);
+            } else {
+              // Add new item to catalog
+              await createItem(serviceData);
+            }
             setShowAddServiceDialog(false);
+            setEditingItemIndex(null);
           } catch (error) {
             console.error("Error creating service:", error);
           }
         }}
         onUpdateService={() => {}}
-        serviceToEdit={null}
+        serviceToEdit={editingItemIndex !== null ? {
+          id: invoiceItems[editingItemIndex].itemId || '',
+          name: invoiceItems[editingItemIndex].name,
+          description: invoiceItems[editingItemIndex].description,
+          price: invoiceItems[editingItemIndex].unitPrice,
+          categoryId: '',
+          itemType: ItemType.SERVICE,
+          transactionType: invoiceType === 'sales' ? ProductTransactionType.SALES : ProductTransactionType.PURCHASE,
+          organizationId: '',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } : null}
         categories={categories}
         defaultTransactionType={invoiceType === 'sales' ? ProductTransactionType.SALES : ProductTransactionType.PURCHASE}
       />

@@ -1,11 +1,10 @@
 'use client';
 
-import { useState } from 'react';
 import { Item, InvoiceItem } from '@/types';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Edit } from 'lucide-react';
 import { truncateTextByType } from '@/lib/utils';
+import { useCurrency } from '@/lib/hooks/useCurrency';
 import {
   Table,
   TableBody,
@@ -15,137 +14,51 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
-interface EditableTableCellProps {
-  value: string | number;
-  type?: 'text' | 'number';
-  step?: string;
-  min?: string;
-  onSave: (value: string | number) => void;
-  className?: string;
-}
 
-function EditableTableCell({ value, type = 'text', step, min, onSave, className }: EditableTableCellProps) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [editValue, setEditValue] = useState(value.toString());
 
-  const handleDoubleClick = () => {
-    setIsEditing(true);
-    setEditValue(value.toString());
-  };
 
-  const handleSave = () => {
-    const newValue = type === 'number' ? (step === '0.01' ? parseFloat(editValue) || 0 : parseInt(editValue) || 0) : editValue;
-    onSave(newValue);
-    setIsEditing(false);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSave();
-    } else if (e.key === 'Escape') {
-      setEditValue(value.toString());
-      setIsEditing(false);
-    }
-  };
-
-  const handleBlur = () => {
-    handleSave();
-  };
-
-  const displayValue = type === 'number' && step === '0.01' ? `$${value}` : value;
-
-  if (isEditing) {
-    return (
-      <TableCell className={`${className} p-0`}>
-        <Input
-          value={editValue}
-          onChange={(e) => setEditValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          onBlur={handleBlur}
-          type={type}
-          step={step}
-          min={min}
-          autoFocus
-          className="h-8 border-2 border-primary bg-background px-2 py-1 shadow-sm focus-visible:ring-1"
-        />
-      </TableCell>
-    );
-  }
-
-  return (
-    <TableCell
-      className={`${className} cursor-pointer hover:bg-accent transition-colors group relative`}
-      onDoubleClick={handleDoubleClick}
-    >
-      <div className="flex items-center justify-between">
-        <span className={!displayValue ? "text-muted-foreground italic" : ""}>
-          {displayValue || "Double-click to edit"}
-        </span>
-        <div className="opacity-0 group-hover:opacity-70 transition-opacity text-xs text-muted-foreground">
-          ✏️
-        </div>
-      </div>
-    </TableCell>
-  );
-}
 
 interface EditableTableRowProps {
   item: Item | InvoiceItem;
   index: number;
-  onUpdate: (index: number, field: keyof Item | keyof InvoiceItem, value: string | number) => void;
   onRemove: (index: number) => void;
+  onEdit?: (index: number) => void;
 }
 
-function EditableTableRow({ item, index, onUpdate, onRemove }: EditableTableRowProps) {
-  const handleUpdate = (field: keyof Item | keyof InvoiceItem, value: string | number) => {
-    onUpdate(index, field, value);
-  };
+function EditableTableRow({ item, index, onRemove, onEdit }: EditableTableRowProps) {
+  const { formatCurrency } = useCurrency();
 
   return (
     <TableRow>
-      <EditableTableCell
-        value={truncateTextByType(item.name, 'medium')}
-        onSave={(value) => handleUpdate('name', value)}
-        className="font-medium"
-      />
-      <EditableTableCell
-        value={truncateTextByType(item.description, 'medium')}
-        onSave={(value) => handleUpdate('description', value)}
-        className="text-muted-foreground"
-      />
-      <EditableTableCell
-        value={'quantity' in item ? item.quantity : 0}
-        type="number"
-        min="1"
-        onSave={(value) => handleUpdate('quantity', value)}
-        className="text-center"
-      />
-      <EditableTableCell
-        value={'unitPrice' in item ? item.unitPrice : 0}
-        type="number"
-        step="0.01"
-        min="0"
-        onSave={(value) => handleUpdate('unitPrice', value)}
-        className="text-right"
-      />
-      <TableCell className="text-right font-medium">
-        ${'total' in item ? item.total.toFixed(2) : '0.00'}
-      </TableCell>
-      <EditableTableCell
-        value={truncateTextByType('notes' in item ? item.notes : '', 'medium')}
-        onSave={(value) => handleUpdate('notes', value)}
-        className="text-muted-foreground"
-      />
+      <TableCell className="font-medium" title={item.name}>{truncateTextByType(item.name, 'medium')}</TableCell>
+      <TableCell className="text-muted-foreground" title={item.description}>{truncateTextByType(item.description, 'medium')}</TableCell>
+      <TableCell className="text-center">{'quantity' in item ? item.quantity : 0}</TableCell>
+      <TableCell className="text-right">{formatCurrency('unitPrice' in item ? item.unitPrice : 0)}</TableCell>
+      <TableCell className="text-right font-medium">{formatCurrency('total' in item ? item.total : 0)}</TableCell>
+      <TableCell className="text-muted-foreground" title={'notes' in item ? item.notes : ''}>{truncateTextByType('notes' in item ? item.notes : '', 'medium')}</TableCell>
       <TableCell className="text-center">
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={() => onRemove(index)}
-          className="text-destructive hover:text-destructive hover:bg-destructive/10"
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        <div className="flex gap-1 justify-center">
+          {onEdit && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => onEdit(index)}
+              className="text-primary hover:text-primary hover:bg-primary/10"
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+          )}
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => onRemove(index)}
+            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
       </TableCell>
     </TableRow>
   );
@@ -159,13 +72,15 @@ interface ReadOnlyTableRowProps {
 }
 
 function ReadOnlyTableRow({ item, index, onRemove, showDelete = false }: ReadOnlyTableRowProps) {
+  const { formatCurrency } = useCurrency();
+
   return (
     <TableRow>
       <TableCell className="font-medium" title={item.name}>{truncateTextByType(item.name, 'medium')}</TableCell>
       <TableCell className="text-muted-foreground" title={item.description}>{truncateTextByType(item.description, 'medium')}</TableCell>
       <TableCell className="text-center">{'quantity' in item ? item.quantity : 0}</TableCell>
-      <TableCell className="text-right">${'unitPrice' in item ? item.unitPrice.toFixed(2) : '0.00'}</TableCell>
-      <TableCell className="text-right font-medium">${'total' in item ? item.total.toFixed(2) : '0.00'}</TableCell>
+      <TableCell className="text-right">{formatCurrency('unitPrice' in item ? item.unitPrice : 0)}</TableCell>
+      <TableCell className="text-right font-medium">{formatCurrency('total' in item ? item.total : 0)}</TableCell>
       <TableCell className="text-muted-foreground" title={'notes' in item ? item.notes : ''}>{truncateTextByType('notes' in item ? item.notes : '', 'medium')}</TableCell>
       {showDelete && (
         <TableCell className="text-center">
@@ -187,11 +102,11 @@ function ReadOnlyTableRow({ item, index, onRemove, showDelete = false }: ReadOnl
 interface ItemListProps {
   items: Item[] | InvoiceItem[];
   mode: 'editable' | 'readonly';
-  onUpdate?: (index: number, field: keyof Item | keyof InvoiceItem, value: string | number) => void;
   onRemove?: (index: number) => void;
+  onEdit?: (index: number) => void;
 }
 
-export default function ItemList({ items, mode, onUpdate, onRemove }: ItemListProps) {
+export default function ItemList({ items, mode, onRemove, onEdit }: ItemListProps) {
   return (
     <Table>
       <TableHeader>
@@ -213,8 +128,8 @@ export default function ItemList({ items, mode, onUpdate, onRemove }: ItemListPr
                 key={item.id}
                 item={item}
                 index={index}
-                onUpdate={onUpdate || (() => {})}
                 onRemove={onRemove || (() => {})}
+                onEdit={onEdit}
               />
             );
           }

@@ -11,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { useCurrency } from '@/lib/hooks/useCurrency';
 
 interface EditableTableCellProps {
   value: string | number;
@@ -115,6 +116,7 @@ export default function FormSummary({
   isVatEnabled = true,
   isVatInclusive = false,
 }: FormSummaryProps) {
+  const { formatCurrency } = useCurrency();
   const title = mode === 'invoice' ? 'Invoice Summary' : 'Quote Summary';
 
   return (
@@ -130,7 +132,7 @@ export default function FormSummary({
         <TableBody>
           <TableRow>
             <TableCell>Subtotal</TableCell>
-            <TableCell className="text-right font-medium">${subtotal.toFixed(2)}</TableCell>
+            <TableCell className="text-right font-medium">{formatCurrency(subtotal)}</TableCell>
           </TableRow>
           {isVatEnabled && (
             <TableRow>
@@ -142,7 +144,7 @@ export default function FormSummary({
                 onSave={onTaxRateChange ? (value) => onTaxRateChange(typeof value === 'number' ? value : parseFloat(value.toString()) || 0) : undefined}
                 className="font-medium"
               />
-              <TableCell className="text-right">${taxAmount.toFixed(2)}</TableCell>
+              <TableCell className="text-right">{formatCurrency(taxAmount)}</TableCell>
             </TableRow>
           )}
           {showDueDate && onDueDateChange && (
@@ -158,7 +160,7 @@ export default function FormSummary({
           )}
           <TableRow className="border-t-2">
             <TableCell className="font-bold text-lg">Total</TableCell>
-            <TableCell className="text-right font-bold text-lg">${total.toFixed(2)}</TableCell>
+            <TableCell className="text-right font-bold text-lg">{formatCurrency(total)}</TableCell>
           </TableRow>
         </TableBody>
       </Table>
