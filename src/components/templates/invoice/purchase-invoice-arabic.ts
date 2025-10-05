@@ -4,33 +4,42 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
    <meta charset="utf-8">
    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
    <title>فاتورة مشتريات</title>
-    <style>
-     :root {
-       --heading-font: {{headingFont}};
-       --body-font: {{bodyFont}};
-     }
-     .invoice-template { font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--body-font), 'sans-serif'; margin: 0; padding: 20px; background: white; color: #000000; unicode-bidi: embed; }
+     <style>
+      @font-face {
+        font-family: 'ArabicFont';
+        src: local('Tahoma'), local('Arial Unicode MS'), local('DejaVu Sans');
+        unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF;
+      }
+      :root {
+        --heading-font: {{headingFont}};
+        --body-font: {{bodyFont}};
+      }
+      .invoice-template { font-family: 'ArabicFont', 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--body-font), 'sans-serif'; margin: 0; padding: 10px; background: white; color: #000000; unicode-bidi: embed; }
      .invoice-template .container { max-width: 100%; margin: 0; padding: 0; }
-     @page { margin: 20mm; }
+     @page { margin: 10mm; }
 
-    /* Compact paragraph spacing */
-    .company-info p,
-    .bill-to p,
-    .dates-grid p {
-      margin: 1px 0;
-    }
+     /* Compact paragraph spacing */
+     .company-info p,
+     .bill-to p,
+     .billed-from p,
+     .dates-grid p {
+       margin: 1px 0;
+     }
+     .header-row-1 { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+     .header-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
      .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
     .qr-section { margin-bottom: 15px; }
     .logo-section { position: relative; width: 192px; height: 80px; margin-left: auto; }
-     .invoice-title { font-size: 1.5rem; font-weight: bold; color: #1f2937; font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--heading-font), 'sans-serif'; }
-    .invoice-number { color: #6b7280; }
-    .company-info { text-align: left; }
+      .invoice-title { font-size: 1.5rem; font-weight: bold; color: #1f2937; font-family: 'ArabicFont', 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--heading-font), 'sans-serif'; }
+     .invoice-number { color: #374151; }
+     .company-info, .billed-from { text-align: right; }
+     .billed-from p, .bill-to p, .dates-grid p { padding: 4px 0; }
     .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
      .bill-to, .supplier { margin-bottom: 8px; }
     .customer-logo, .supplier-logo { position: relative; width: 128px; height: 64px; margin-bottom: 8px; }
      .dates-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
      .table { width: 100%; margin-bottom: 12px; border-collapse: collapse; border: 1px solid #d1d5db; }
-       .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 8px 12px; text-align: right; font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--heading-font), 'sans-serif'; line-height: 1.3; vertical-align: middle; min-height: 1.1em; }
+        .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 8px 12px; text-align: right; font-family: 'ArabicFont', 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--heading-font), 'sans-serif'; line-height: 1.3; vertical-align: middle; min-height: 1.1em; }
       .table td { border: 1px solid #d1d5db; padding: 4px 6px; text-align: right; line-height: 1.3; vertical-align: middle; min-height: 1.1em; }
      .totals-stamp-container { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
     .totals { flex: 1; }
@@ -45,108 +54,93 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
      .english { flex: 1; text-align: left; }
      .arabic { flex: 1; text-align: right; direction: rtl; }
 
-      /* PDF-specific spacing adjustments */
-      @media print {
-        .invoice-template { padding: 0; }
-        .table th, .table td {
-          padding: 1px 3px;
-          line-height: 1.0;
-        }
-        .company-info p,
-        .bill-to p,
-        .dates-grid p {
-          margin: 1px 0;
-        }
-      }
-
-      /* PDF-specific spacing adjustments */
-      @media print {
-        .invoice-template { padding: 0; }
-        .table th, .table td {
-          padding: 3px 5px;
-          line-height: 1.2;
-        }
-      }
+       /* PDF-specific spacing adjustments */
+       @media print {
+         .invoice-template { padding: 0; }
+         .table th, .table td {
+           padding: 1px 3px;
+           line-height: 1.0;
+         }
+         .company-info p,
+         .bill-to p,
+         .billed-from p,
+         .dates-grid p {
+           margin: 1px 0;
+         }
+       }
   </style>
 </head>
 <body>
   <div class="invoice-template">
     <div class="container">
-    <!-- Header -->
-    <div class="header">
-      <div>
-        {{#includeQR}}
-        <div class="qr-section">
-          <div style="display: inline-block; padding: 8px; background: white; border: 1px solid #d1d5db; border-radius: 4px;">
-            <img src="{{qrCodeUrl}}" alt="رمز QR متوافق مع زاتكا" style="width: 120px; height: 120px;" />
+     <!-- Header -->
+     <div class="header">
+       <div class="header-row-1">
+         <div class="invoice-info">
+           <h1 class="invoice-title">Purchase Invoice / فاتورة مشتريات</h1>
+           <p class="invoice-number">Invoice # (رقم الفاتورة) <br/> {{invoiceId}}</p>
+            <div class="dates-grid">
+              <div>
+                <p style="color: #374151;">Invoice Date:</p>
+                <p style="font-weight: 500;">{{invoiceDate}}</p>
+              </div>
+              <div>
+                <p style="color: #374151;">Due Date:</p>
+                <p style="font-weight: 500;">{{dueDate}}</p>
+              </div>
+              <div>
+                <p style="color: #374151;">Status:</p>
+                <p style="font-weight: 500; text-transform: capitalize;">{{status}}</p>
+              </div>
+            </div>
+         </div>
+         {{#includeQR}}
+         <div class="qr-section">
+           <div style="display: inline-block; padding: 8px; background: white; border: 1px solid #d1d5db; border-radius: 4px;">
+             <img src="{{qrCodeUrl}}" alt="رمز QR متوافق مع زاتكا" style="width: 120px; height: 120px;" />
+           </div>
+         </div>
+         {{/includeQR}}
+       </div>
+         <!-- Logo Row -->
+         {{#companyLogo}}
+         {{#supplierLogo}}
+         <div class="logo-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 20px;">
+           <div class="customer-logo">
+             <img src="{{companyLogo}}" alt="شعار الشركة" style="width: 128px; height: 64px; object-fit: contain;" />
+           </div>
+           <div class="supplier-logo" style="text-align: left;">
+             <img src="{{supplierLogo}}" alt="شعار المورد" style="width: 128px; height: 64px; object-fit: contain;" />
+           </div>
+         </div>
+         {{/supplierLogo}}
+         {{/companyLogo}}
+        
+        <div class="header-row-2">
+          <div class="bill-to">
+            <h3 style="font-weight: 600; margin-bottom: 8px;">Bill To (إلى):</h3>
+            <h2 style="font-size: 1.25rem; font-weight: 600;">{{companyNameAr}}</h2>
+            {{#companyName}}
+            <p style="font-size: 1.125rem;">{{companyName}}</p>
+            {{/companyName}}
+            <p>📍 {{companyAddress}}</p>
+            <p>📧 {{companyEmail}}</p>
+            {{#companyPhone}}<p>📞 {{companyPhone}}</p>{{/companyPhone}}
+            {{#companyVat}}<p>VAT Number (الرقم الضريبي) <br/> {{companyVat}}</p>{{/companyVat}}
+          </div>
+          <div class="billed-from">
+            <h3 style="font-weight: 600; margin-bottom: 8px;">Billed From (من):</h3>
+            <p style="font-weight: 500;">{{supplierNameAr}}</p>
+            {{#supplierName}}
+            <p style="font-size: 1rem;">{{supplierName}}</p>
+            {{/supplierName}}
+            <p>{{supplierAddress}}</p>
+            <p>{{supplierEmail}}</p>
+            {{#supplierVat}}<p>VAT: {{supplierVat}}</p>{{/supplierVat}}
           </div>
         </div>
-        {{/includeQR}}
-        <h1 class="invoice-title">Purchase Invoice<br>فاتورة مشتريات</h1>
-        <p class="invoice-number">Invoice # (رقم الفاتورة) {{invoiceId}}</p>
-      </div>
-      <div class="company-info">
-        {{#companyLogo}}
-        <div class="logo-section">
-          <img src="{{companyLogo}}" alt="شعار الشركة" style="width: 100%; height: 100%; object-fit: contain;" />
-        </div>
-        {{/companyLogo}}
-         <h2 style="font-size: 1.125rem; font-weight: 600;">{{companyNameAr}}</h2>
-         {{#companyName}}
-         <p style="font-size: 1.125rem;">{{companyName}}</p>
-         {{/companyName}}
-          <p>📍 {{companyAddress}}</p>
-          <p>📧  {{companyEmail}}</p>
-          {{#companyPhone}}<p>📞  {{companyPhone}}</p>{{/companyPhone}}
-         {{#companyVat}}<p>VAT Number (الرقم الضريبي): {{companyVat}}</p>{{/companyVat}}
-      </div>
-    </div>
-
-    <!-- Invoice Details -->
-    <div class="details-grid">
-      <div>
-         <h3 style="font-weight: 600; margin-bottom: 8px;">From (من):</h3>
-        {{#supplierLogo}}
-        <div class="supplier-logo">
-          <img src="{{supplierLogo}}" alt="شعار المورد" style="width: 100%; height: 100%; object-fit: contain;" />
-        </div>
-        {{/supplierLogo}}
-        <p style="font-weight: 500;">{{supplierNameAr}} {{#supplierName}}({{supplierName}}){{/supplierName}}</p>
-        <p>{{supplierAddress}}</p>
-        <p>{{supplierEmail}}</p>
-         {{#supplierVat}}<p>VAT Number (الرقم الضريبي): {{supplierVat}}</p>{{/supplierVat}}
-      </div>
-      <div style="text-align: left;">
-        <h3 style="font-weight: 600; margin-bottom: 8px;">Bill To (إلى):</h3>
-        <p style="font-weight: 500;">{{companyNameAr}}</p>
-        {{#companyName}}
-        <p style="font-size: 1rem;">{{companyName}}</p>
-        {{/companyName}}
-        <p>{{companyAddress}}</p>
-        <p>{{companyEmail}}</p>
-        {{#companyVat}}<p>VAT Number (الرقم الضريبي): {{companyVat}}</p>{{/companyVat}}
-      </div>
-    </div>
-
-    <!-- Dates Section -->
-    <div style="margin-bottom: 30px;">
-      <div class="dates-grid">
-        <div>
-           <p style="color: #6b7280;">Invoice Date (تاريخ الفاتورة):</p>
-           <p style="font-weight: 500;">{{invoiceDate}}</p>
-         </div>
-         {{#dueDate}}
-         <div>
-           <p style="color: #6b7280;">Due Date (تاريخ الاستحقاق):</p>
-           <p style="font-weight: 500;">{{dueDate}}</p>
-         </div>
-         {{/dueDate}}
-         <div>
-           <p style="color: #6b7280;">Status (الحالة):</p>
-           <p style="font-weight: 500; text-transform: capitalize;">{{status}}</p>
-         </div>
-      </div>
-    </div>
+       </div>
+     </div>
 
     <!-- Items Table -->
     <table class="table">
