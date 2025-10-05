@@ -3,7 +3,7 @@
 import { Badge } from '@/components/ui/badge';
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { SalesInvoice, PurchaseInvoice, Customer, Supplier, Payment, Organization, InvoiceTemplate, DocumentPrintSettings } from '@/types';
+import { SalesInvoice, PurchaseInvoice, Customer, Supplier, Payment, Organization, InvoiceTemplate, DocumentPrintSettings, PaymentType } from '@/types';
 import { Receipt } from 'lucide-react';
 
 import { InvoiceActions } from './InvoiceActions';
@@ -27,9 +27,17 @@ interface InvoiceListProps {
    onEmail?: (invoice: SalesInvoice | PurchaseInvoice, templateId: string) => void;
    onDownloadPDF?: (invoice: SalesInvoice | PurchaseInvoice) => void;
    onDelete?: (invoice: SalesInvoice | PurchaseInvoice) => void;
+   onAddPayment?: (invoiceId: string, paymentData: {
+     amount: number;
+     paymentMethod: string;
+     paymentDate: Date;
+     reference?: string;
+     notes?: string;
+   }) => Promise<void>;
    organization: Organization | null;
    invoiceTemplates: InvoiceTemplate[];
    settings?: DocumentPrintSettings | null;
+   paymentTypes: PaymentType[];
    transactionType?: "sales" | "purchase" | "all";
  }
 
@@ -47,9 +55,11 @@ export function InvoiceList({
    onEmail,
    onDownloadPDF,
    onDelete,
+   onAddPayment,
    organization,
    invoiceTemplates,
    settings,
+   paymentTypes,
    transactionType = "all",
  }: InvoiceListProps) {
   return (
@@ -120,11 +130,13 @@ export function InvoiceList({
                       onEmail={onEmail}
                       onDownloadPDF={onDownloadPDF}
                       onDelete={onDelete}
+                      onAddPayment={onAddPayment}
                       organization={organization}
                       invoiceTemplates={invoiceTemplates}
                       customers={customers}
                       suppliers={suppliers}
                       settings={settings}
+                      paymentTypes={paymentTypes}
                     />
                 </div>
               </TableCell>

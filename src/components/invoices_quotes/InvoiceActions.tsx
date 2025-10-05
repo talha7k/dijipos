@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Payment, Organization, InvoiceTemplate, Customer, Supplier, DocumentPrintSettings, SalesInvoice, PurchaseInvoice, InvoiceType } from '@/types';
-import { Printer, Eye, MoreHorizontal, Trash2, Mail, Edit } from 'lucide-react';
+import { Payment, Organization, InvoiceTemplate, Customer, Supplier, DocumentPrintSettings, SalesInvoice, PurchaseInvoice, InvoiceType, PaymentType } from '@/types';
+import { Printer, Eye, MoreHorizontal, Trash2, Mail, Edit, CreditCard } from 'lucide-react';
 import { InvoiceActionsDialog } from './InvoiceActionsDialog';
 import { InvoicePrintDialog } from './InvoicePrintDialog';
+import { AddInvoicePaymentDialog } from './AddInvoicePaymentDialog';
 
 interface InvoiceActionsProps {
    invoice: SalesInvoice | PurchaseInvoice;
@@ -18,11 +19,19 @@ interface InvoiceActionsProps {
    onEmail?: (invoice: SalesInvoice | PurchaseInvoice, templateId: string) => void;
    onDownloadPDF?: (invoice: SalesInvoice | PurchaseInvoice) => void;
    onDelete?: (invoice: SalesInvoice | PurchaseInvoice) => void;
+   onAddPayment?: (invoiceId: string, paymentData: {
+     amount: number;
+     paymentMethod: string;
+     paymentDate: Date;
+     reference?: string;
+     notes?: string;
+   }) => Promise<void>;
    organization: Organization | null;
    invoiceTemplates: InvoiceTemplate[];
    customers: Customer[];
    suppliers: Supplier[];
    settings?: DocumentPrintSettings | null;
+   paymentTypes: PaymentType[];
  }
 
 export function InvoiceActions({
@@ -36,13 +45,16 @@ export function InvoiceActions({
    onEmail,
    onDownloadPDF,
    onDelete,
+   onAddPayment,
    organization,
    invoiceTemplates,
    customers,
    suppliers,
    settings,
+   paymentTypes,
   }: InvoiceActionsProps) {
   const [showActionsDialog, setShowActionsDialog] = useState(false);
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
 
   const handleViewDetails = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -63,6 +75,9 @@ export function InvoiceActions({
 
   const customer = invoice.type === InvoiceType.SALES ? customers.find(c => c.name === (invoice as SalesInvoice).clientName) : undefined;
   const supplier = invoice.type === 'purchase' ? suppliers.find(s => s.id === (invoice as PurchaseInvoice).supplierId) : undefined;
+
+  const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
+  const remainingAmount = invoice.total - totalPaid;
 
   return (
     <>
@@ -118,6 +133,20 @@ export function InvoiceActions({
         <Button
           variant="ghost"
           size="sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowPaymentDialog(true);
+          }}
+          title="Add Payment"
+          disabled={remainingAmount <= 0}
+          className={remainingAmount <= 0 ? "opacity-50 cursor-not-allowed" : ""}
+        >
+          <CreditCard className="h-4 w-4" />
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={handleViewDetails}
           title="View Details"
         >
@@ -147,6 +176,19 @@ export function InvoiceActions({
 
         onDownloadPDF={() => onDownloadPDF?.(invoice)}
       />
+
+      {onAddPayment && (
+        <AddInvoicePaymentDialog
+          open={showPaymentDialog}
+          onOpenChange={setShowPaymentDialog}
+          onAddPayment={(paymentData) => onAddPayment(invoice.id, paymentData)}
+          paymentTypes={paymentTypes}
+          remainingAmount={remainingAmount}
+          invoiceId={invoice.id}
+          existingPayments={payments}
+          totalAmount={invoice.total}
+        />
+      )}
     </>
   );
 }

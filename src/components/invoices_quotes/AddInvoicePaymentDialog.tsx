@@ -6,9 +6,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { CreditCard, DollarSign } from 'lucide-react';
-import { PaymentType } from '@/types';
+import { CreditCard, DollarSign, History } from 'lucide-react';
+import { PaymentType, Payment } from '@/types';
 import { toast } from 'sonner';
 
 interface AddInvoicePaymentDialogProps {
@@ -24,6 +26,8 @@ interface AddInvoicePaymentDialogProps {
   paymentTypes: PaymentType[];
   remainingAmount: number;
   invoiceId: string;
+  existingPayments?: Payment[];
+  totalAmount?: number;
 }
 
 export function AddInvoicePaymentDialog({
@@ -32,7 +36,9 @@ export function AddInvoicePaymentDialog({
   onAddPayment,
   paymentTypes,
   remainingAmount,
-  invoiceId
+  invoiceId,
+  existingPayments = [],
+  totalAmount = 0
 }: AddInvoicePaymentDialogProps) {
   const [amount, setAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
@@ -105,13 +111,71 @@ export function AddInvoicePaymentDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CreditCard className="h-5 w-5" />
             Add Payment to Invoice
           </DialogTitle>
         </DialogHeader>
+
+        {/* Payment Summary */}
+        <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+          <div className="flex justify-between items-center">
+            <span className="font-medium">Total Amount:</span>
+            <span className="font-bold">${totalAmount.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="font-medium">Paid Amount:</span>
+            <span className="text-green-600 font-medium">
+              ${existingPayments.reduce((sum, payment) => sum + payment.amount, 0).toFixed(2)}
+            </span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="font-medium">Remaining Balance:</span>
+            <span className={`font-bold ${remainingAmount > 0 ? 'text-orange-600' : 'text-green-600'}`}>
+              ${remainingAmount.toFixed(2)}
+            </span>
+          </div>
+        </div>
+
+        {/* Existing Payments */}
+        {existingPayments.length > 0 && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <History className="h-4 w-4" />
+              <h3 className="font-medium">Payment History</h3>
+            </div>
+            <div className="border rounded-lg">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Method</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead>Reference</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {existingPayments.map((payment, index) => (
+                    <TableRow key={index}>
+                      <TableCell>
+                        {new Date(payment.paymentDate).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{payment.paymentMethod}</Badge>
+                      </TableCell>
+                      <TableCell className="font-medium">${payment.amount.toFixed(2)}</TableCell>
+                      <TableCell className="text-sm text-gray-600">
+                        {payment.reference || '-'}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -144,8 +208,8 @@ export function AddInvoicePaymentDialog({
                 <SelectValue placeholder="Select payment method" />
               </SelectTrigger>
               <SelectContent>
-                {paymentTypes.map((type) => (
-                  <SelectItem key={type.id} value={type.name}>
+                {paymentTypes.map((type, index) => (
+                  <SelectItem key={`${type.id}-${index}`} value={type.name}>
                     {type.name}
                   </SelectItem>
                 ))}

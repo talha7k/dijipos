@@ -328,9 +328,11 @@ export default function InvoicesPage() {
          onDelete={(invoice) => {
            setInvoiceToDelete(invoice);
          }}
+         onAddPayment={handleAddPayment}
          organization={selectedOrganization}
          invoiceTemplates={invoiceTemplates}
          settings={printerSettings?.invoices}
+         paymentTypes={storeSettings?.paymentTypes || []}
          transactionType={transactionTypeFilter}
        />
 
