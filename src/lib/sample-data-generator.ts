@@ -422,6 +422,7 @@ const generateInvoices = (count: number, customers: Omit<Customer, 'organization
                 status: getRandomElement([PurchaseInvoiceStatus.DRAFT, PurchaseInvoiceStatus.SENT, PurchaseInvoiceStatus.RECEIVED, PurchaseInvoiceStatus.PAID]),
                 invoiceDate: new Date(),
                 includeQR: Math.random() > 0.5,
+                payments: [],
             };
             allInvoices.push(invoice);
         }

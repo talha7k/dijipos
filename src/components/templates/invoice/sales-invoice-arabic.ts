@@ -79,12 +79,12 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
              <p class="invoice-number" style="text-align: right;">Invoice # (فاتورة رقم)<br/> {{invoiceId}}</p>
            <div class="dates-grid">
               <div>
-                  <p style="color: #374151;">Invoice Date (تاريخ الفاتورة):</p>
+                  <p style="color: #374151;">Invoice Date </br> (تاريخ الفاتورة)</p>
                <p style="font-weight: 500;">{{invoiceDate}}</p>
              </div>
               {{#dueDate}}
               <div>
-                  <p style="color: #374151;">Due Date (تاريخ الاستحقاق):</p>
+                  <p style="color: #374151;">Due Date <br/> (تاريخ الاستحقاق)</p>
                 <p style="font-weight: 500;">{{dueDate}}</p>
               </div>
               {{/dueDate}}
@@ -111,7 +111,7 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
              {{/customerLogo}}
            </div>
          </div>
-        
+
         <div class="header-row-2">
           <div class="billed-from">
             <h3 style="font-weight: 600; margin-bottom: 8px;">Billed From (من):</h3>

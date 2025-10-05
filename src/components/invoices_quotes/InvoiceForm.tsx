@@ -256,6 +256,7 @@ export default function InvoiceForm({
         supplierVAT,
         invoiceNumber,
         invoiceDate: new Date(invoiceDate),
+        payments: [],
       } as Omit<PurchaseInvoice, "id" | "organizationId" | "createdAt" | "updatedAt">);
     }
   };

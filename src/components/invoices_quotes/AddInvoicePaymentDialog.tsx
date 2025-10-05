@@ -78,13 +78,23 @@ export function AddInvoicePaymentDialog({
 
     setIsSubmitting(true);
     try {
-      await onAddPayment({
+      const paymentData: any = {
         amount: paymentAmount,
         paymentMethod: paymentMethodName,
         paymentDate: new Date(paymentDate),
-        reference: reference || undefined,
-        notes: notes || undefined,
-      });
+      };
+      
+      // Only include reference if it's not empty
+      if (reference && reference.trim() !== '') {
+        paymentData.reference = reference.trim();
+      }
+      
+      // Only include notes if it's not empty
+      if (notes && notes.trim() !== '') {
+        paymentData.notes = notes.trim();
+      }
+
+      await onAddPayment(paymentData);
 
       // Reset form
       setAmount('');

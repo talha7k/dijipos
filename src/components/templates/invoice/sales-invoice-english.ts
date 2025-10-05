@@ -59,10 +59,7 @@ export const salesInvoiceEnglish = `<!DOCTYPE html>
                <p style="color: #6b7280;">Due Date:</p>
                <p style="font-weight: 500;">{{dueDate}}</p>
              </div>
-             <div>
-               <p style="color: #6b7280;">Status:</p>
-               <p style="font-weight: 500; text-transform: capitalize;">{{status}}</p>
-             </div>
+
            </div>
          </div>
          {{#includeQR}}
@@ -87,7 +84,7 @@ export const salesInvoiceEnglish = `<!DOCTYPE html>
              {{/customerLogo}}
            </div>
          </div>
-        
+
         <div class="header-row-2">
           <div class="billed-from">
             <h3 style="font-weight: 600; margin-bottom: 8px;">Billed From:</h3>

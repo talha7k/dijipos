@@ -28,7 +28,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useInvoices } from "@/lib/hooks/useInvoices";
 import { useCustomers } from "@/lib/hooks/useCustomers";
 import { useSuppliers } from "@/lib/hooks/useSuppliers";
-import { useRealtimeCollection } from "@/lib/hooks/useRealtimeCollection";
+
 import { toast } from "sonner";
 import { TableFilter } from "@/components/shared/TableFilter";
 
@@ -80,8 +80,7 @@ const [filters, setFilters] = useState({});
   } = useInvoices();
   const { customers, loading: customersLoading } = useCustomers();
   const { suppliers, loading: suppliersLoading } = useSuppliers();
-  const { data: payments, loading: paymentsLoading } =
-    useRealtimeCollection<Payment>("payments", organizationId || null);
+  const { getPaymentsForInvoice: getInvoicePayments } = useInvoices();
   const { allInvoiceTemplates: invoiceTemplates, loading: templatesLoading } =
     useSeparatedTemplates();
   const { storeSettings } = useStoreSettings();
@@ -99,21 +98,17 @@ const [filters, setFilters] = useState({});
     invoicesLoading ||
     customersLoading ||
     suppliersLoading ||
-    paymentsLoading ||
     templatesLoading;
 
+  // Create grouped payments object for components that still expect it
+  // Use payments already included in invoice data
   const groupedPayments = useMemo(() => {
-    return payments.reduce(
-      (acc, payment) => {
-        if (!acc[payment.invoiceId]) {
-          acc[payment.invoiceId] = [];
-        }
-        acc[payment.invoiceId].push(payment);
-        return acc;
-      },
-      {} as { [invoiceId: string]: Payment[] },
-    );
-  }, [payments]);
+    const paymentsMap: { [invoiceId: string]: Payment[] } = {};
+    invoices.forEach(invoice => {
+      paymentsMap[invoice.id] = invoice.payments || [];
+    });
+    return paymentsMap;
+  }, [invoices]);
 
   const handleStatusChange = async (
     invoiceId: string,
@@ -230,7 +225,7 @@ const [filters, setFilters] = useState({});
   };
 
   const getPaymentsForInvoice = (invoiceId: string) => {
-    return groupedPayments[invoiceId] || [];
+    return getInvoicePayments(invoiceId);
   };
 
   const handleDeleteInvoice = async (invoice: SalesInvoice | PurchaseInvoice) => {

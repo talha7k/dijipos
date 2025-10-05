@@ -53,8 +53,9 @@ export interface PurchaseInvoice {
   dueDate: Date;
   notes?: string;
   includeQR: boolean;
-   createdAt: Date;
-   updatedAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  payments: Payment[];
  }
 
 // Type guard functions

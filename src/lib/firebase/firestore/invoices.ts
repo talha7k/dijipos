@@ -269,11 +269,28 @@ export async function addInvoicePayment(
   try {
     const paymentsRef = getInvoicePaymentsRef(invoiceId);
     const now = Timestamp.now();
-    const docRef = await addDoc(paymentsRef, {
-      ...paymentData,
+    
+    // Create a clean object without undefined values
+    const cleanPaymentData: any = {
+      organizationId: paymentData.organizationId,
       invoiceId,
+      amount: paymentData.amount,
+      paymentMethod: paymentData.paymentMethod,
+      paymentDate: paymentData.paymentDate,
       createdAt: now,
-    });
+    };
+    
+    // Only include reference if it's defined and not empty
+    if (paymentData.reference !== undefined && paymentData.reference !== null && paymentData.reference.trim() !== '') {
+      cleanPaymentData.reference = paymentData.reference.trim();
+    }
+    
+    // Only include notes if it's defined and not empty
+    if (paymentData.notes !== undefined && paymentData.notes !== null && paymentData.notes.trim() !== '') {
+      cleanPaymentData.notes = paymentData.notes.trim();
+    }
+    
+    const docRef = await addDoc(paymentsRef, cleanPaymentData);
     return docRef.id;
   } catch (error) {
     console.error('Error adding invoice payment:', error);
@@ -292,7 +309,31 @@ export async function updateInvoicePayment(
   try {
     const paymentsRef = getInvoicePaymentsRef(invoiceId);
     const paymentDocRef = doc(paymentsRef, paymentId);
-    await updateDoc(paymentDocRef, updates);
+    
+    // Create a clean updates object without undefined values
+    const cleanUpdates: any = {};
+    
+    // Only include fields that are defined and not empty
+    if (updates.organizationId !== undefined) {
+      cleanUpdates.organizationId = updates.organizationId;
+    }
+    if (updates.amount !== undefined) {
+      cleanUpdates.amount = updates.amount;
+    }
+    if (updates.paymentMethod !== undefined) {
+      cleanUpdates.paymentMethod = updates.paymentMethod;
+    }
+    if (updates.paymentDate !== undefined) {
+      cleanUpdates.paymentDate = updates.paymentDate;
+    }
+    if (updates.reference !== undefined && updates.reference !== null && updates.reference.trim() !== '') {
+      cleanUpdates.reference = updates.reference.trim();
+    }
+    if (updates.notes !== undefined && updates.notes !== null && updates.notes.trim() !== '') {
+      cleanUpdates.notes = updates.notes.trim();
+    }
+    
+    await updateDoc(paymentDocRef, cleanUpdates);
   } catch (error) {
     console.error('Error updating invoice payment:', error);
     throw error;
