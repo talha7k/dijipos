@@ -30,7 +30,7 @@ async function renderInvoice(
   const data: InvoiceTemplateData = {
     invoiceId: invoice.id,
     invoiceDate: new Date(invoice.createdAt).toLocaleDateString(),
-    dueDate: invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : "",
+    dueDate: invoice.dueDate ? (new Date(invoice.dueDate).toLocaleDateString() !== "Invalid Date" ? new Date(invoice.dueDate).toLocaleDateString() : "N/A") : "N/A",
     status: invoice.status,
     invoiceType: invoice.type,
     companyName: organization?.name || "",
@@ -181,14 +181,18 @@ export function InvoicePrintDialog({
   // Effect to initialize all settings when the dialog opens
   useEffect(() => {
     if (open) {
-      // 1. Set default template
+      // 1. Set default template - ensure filteredTemplates is available first
       const defaultTemplateId = settings?.defaultTemplateId;
       const isValidDefault =
         defaultTemplateId &&
         filteredTemplates?.some((t) => t.id === defaultTemplateId);
-      setSelectedTemplate(
-        isValidDefault ? defaultTemplateId : filteredTemplates?.[0]?.id || "",
-      );
+      
+      // Use a small delay to ensure filteredTemplates is populated
+      setTimeout(() => {
+        setSelectedTemplate(
+          isValidDefault ? defaultTemplateId : filteredTemplates?.[0]?.id || "",
+        );
+      }, 100);
 
       // 2. Set paper size
       setPageSize(settings?.paperWidth ? `${settings.paperWidth}mm` : "210mm");

@@ -1,19 +1,20 @@
 export const purchaseInvoiceArabic = `<!DOCTYPE html>
 <html dir="rtl">
 <head>
-  <meta charset="utf-8">
-  <title>فاتورة مشتريات</title>
-   <style>
-    :root {
-      --heading-font: {{headingFont}};
-      --body-font: {{bodyFont}};
-    }
-   .invoice-template { font-family: var(--body-font), 'Tahoma', 'Arial Unicode MS', 'sans-serif'; margin: 0; padding: 0; background: white; color: #000000; }
+   <meta charset="utf-8">
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+   <title>فاتورة مشتريات</title>
+    <style>
+     :root {
+       --heading-font: {{headingFont}};
+       --body-font: {{bodyFont}};
+     }
+    .invoice-template { font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--body-font), 'sans-serif'; margin: 0; padding: 0; background: white; color: #000000; unicode-bidi: embed; }
    .invoice-template .container { max-width: 100%; margin: 0; padding: 0; }
     .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; }
     .qr-section { margin-bottom: 15px; }
     .logo-section { position: relative; width: 192px; height: 80px; margin-left: auto; }
-    .invoice-title { font-size: 1.5rem; font-weight: bold; color: #1f2937; font-family: var(--heading-font), 'Tahoma', 'Arial Unicode MS', 'sans-serif'; }
+     .invoice-title { font-size: 1.5rem; font-weight: bold; color: #1f2937; font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--heading-font), 'sans-serif'; }
     .invoice-number { color: #6b7280; }
     .company-info { text-align: left; }
     .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
@@ -21,8 +22,8 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
     .customer-logo, .supplier-logo { position: relative; width: 128px; height: 64px; margin-bottom: 8px; }
     .dates-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
     .table { width: 100%; margin-bottom: 30px; border-collapse: collapse; border: 1px solid #d1d5db; }
-    .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 4px; text-align: right; font-family: var(--heading-font), 'Tahoma', 'Arial Unicode MS', 'sans-serif'; }
-    .table td { border: 1px solid #d1d5db; padding: 4px; text-align: right; }
+     .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 2px; text-align: right; font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--heading-font), 'sans-serif'; }
+     .table td { border: 1px solid #d1d5db; padding: 2px; text-align: right; }
     .totals-stamp-container { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; }
     .totals { flex: 1; }
     .totals div { width: 256px; }

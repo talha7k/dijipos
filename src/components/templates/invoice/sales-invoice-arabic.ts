@@ -5,17 +5,16 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
    <title>فاتورة مبيعات</title>
     <style>
-     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;600;700&display=swap');
      :root {
        --heading-font: {{headingFont}};
        --body-font: {{bodyFont}};
      }
-    .invoice-template { font-family: 'Noto Sans Arabic', var(--body-font), 'Tahoma', 'Arial Unicode MS', 'sans-serif'; margin: 0; padding: 0; background: white; color: #000000; unicode-bidi: embed; }
+    .invoice-template { font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--body-font), 'sans-serif'; margin: 0; padding: 0; background: white; color: #000000; unicode-bidi: embed; }
    .invoice-template .container { max-width: 100%; margin: 0; padding: 0; }
     .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; }
     .qr-section { margin-bottom: 15px; }
     .logo-section { position: relative; width: 192px; height: 80px; margin-left: auto; }
-     .invoice-title { font-size: 1.5rem; font-weight: bold; color: #1f2937; font-family: 'Noto Sans Arabic', var(--heading-font), 'Tahoma', 'Arial Unicode MS', 'sans-serif'; }
+     .invoice-title { font-size: 1.5rem; font-weight: bold; color: #1f2937; font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--heading-font), 'sans-serif'; }
     .invoice-number { color: #6b7280; }
     .company-info { text-align: left; }
     .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
@@ -23,7 +22,7 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
     .customer-logo, .supplier-logo { position: relative; width: 128px; height: 64px; margin-bottom: 8px; }
     .dates-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
     .table { width: 100%; margin-bottom: 30px; border-collapse: collapse; border: 1px solid #d1d5db; }
-      .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 2px; text-align: right; font-family: 'Noto Sans Arabic', var(--heading-font), 'Tahoma', 'Arial Unicode MS', 'sans-serif'; }
+      .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 2px; text-align: right; font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--heading-font), 'sans-serif'; }
      .table td { border: 1px solid #d1d5db; padding: 2px; text-align: right; }
     .totals-stamp-container { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; }
     .totals { flex: 1; }
@@ -57,19 +56,21 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
          <p class="invoice-number" style="text-align: right;">رقم الفاتورة #{{invoiceId}}</p>
       </div>
       <div class="company-info">
-        {{#companyLogo}}
-        <div class="logo-section">
-          <img src="{{companyLogo}}" alt="شعار الشركة" style="width: 100%; height: 100%; object-fit: contain;" />
-        </div>
-        {{/companyLogo}}
-         <h2 style="font-size: 1.125rem; font-weight: 600;">{{companyNameAr}}</h2>
-         {{#companyName}}
-         <p style="font-size: 1.125rem;">{{companyName}}</p>
-         {{/companyName}}
-          <p>Address<br>(العنوان): {{companyAddress}}</p>
-          <p>Email<br>(البريد الإلكتروني): {{companyEmail}}</p>
-          <p>Tel<br>(الهاتف): {{companyPhone}}</p>
-          {{#companyVat}}<p>VAT Number<br>(الرقم الضريبي): {{companyVat}}</p>{{/companyVat}}
+         {{#companyLogo}}
+         <div class="logo-section">
+           <img src="{{companyLogo}}" alt="شعار الشركة" style="width: 100%; height: 100%; object-fit: contain;" />
+         </div>
+         {{/companyLogo}}
+          {{#companyName}}
+          <h2 style="font-size: 1.125rem; font-weight: 600;">{{companyName}}</h2>
+          {{/companyName}}
+          {{#companyNameAr}}
+          <p style="font-size: 1.125rem;">{{companyNameAr}}</p>
+          {{/companyNameAr}}
+           <p>Address<br>(العنوان): {{companyAddress}}</p>
+           <p>Email<br>(البريد الإلكتروني): {{companyEmail}}</p>
+           <p>Tel<br>(الهاتف): {{companyPhone}}</p>
+           {{#companyVat}}<p>VAT Number<br>(الرقم الضريبي): {{companyVat}}</p>{{/companyVat}}
       </div>
     </div>
 
@@ -97,16 +98,12 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
             <p style="color: #6b7280;">Invoice Date<br>(تاريخ الفاتورة):</p>
            <p style="font-weight: 500;">{{invoiceDate}}</p>
          </div>
-         {{#dueDate}}
-         <div>
-            <p style="color: #6b7280;">Due Date<br>(تاريخ الاستحقاق):</p>
-           <p style="font-weight: 500;">{{dueDate}}</p>
-         </div>
-         {{/dueDate}}
-         <div>
-            <p style="color: #6b7280;">Status<br>(الحالة):</p>
-           <p style="font-weight: 500; text-transform: capitalize;">{{status}}</p>
-         </div>
+          {{#dueDate}}
+          <div>
+             <p style="color: #6b7280;">Due Date<br>(تاريخ الاستحقاق):</p>
+            <p style="font-weight: 500;">{{dueDate}}</p>
+          </div>
+          {{/dueDate}}
       </div>
     </div>
 

@@ -196,7 +196,7 @@ async function renderInvoiceWithTemplate(
   const data: InvoiceTemplateData = {
     invoiceId: invoice.id,
     invoiceDate: convertDateField(invoice.createdAt)?.toLocaleDateString() || "",
-    dueDate: convertDateField(invoice.dueDate)?.toLocaleDateString() || "",
+    dueDate: convertDateField(invoice.dueDate)?.toLocaleDateString() || "N/A",
     status: invoice.status || "",
     invoiceType: invoice.type === 'sales' ? InvoiceType.SALES : invoice.type === 'purchase' ? InvoiceType.PURCHASE : InvoiceType.SALES,
     companyName: organization?.name || "",
@@ -312,7 +312,7 @@ async function generatePDF(htmlContent: string): Promise<Buffer> {
       '</head>',
       `
       <style>
-        /* Ensure Arabic fonts are available */
+        /* Ensure Arabic fonts are available - use system fonts that work in headless environment */
         body, * {
           font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', sans-serif !important;
         }
@@ -322,6 +322,7 @@ async function generatePDF(htmlContent: string): Promise<Buffer> {
           font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', sans-serif !important;
           direction: rtl;
           text-align: right;
+          unicode-bidi: embed;
         }
         
         /* Ensure proper text rendering */
@@ -329,6 +330,11 @@ async function generatePDF(htmlContent: string): Promise<Buffer> {
           -webkit-font-smoothing: antialiased;
           -moz-osx-font-smoothing: grayscale;
           text-rendering: optimizeLegibility;
+        }
+        
+        /* Force Arabic character rendering */
+        .invoice-template {
+          font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', sans-serif !important;
         }
       </style>
       </head>`
