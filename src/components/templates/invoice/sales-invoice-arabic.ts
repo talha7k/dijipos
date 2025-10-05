@@ -21,7 +21,7 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
     .logo-section { position: relative; width: 192px; height: 80px; margin-left: auto; }
      .invoice-title { font-size: 1.5rem; font-weight: bold; color: #1f2937; font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--heading-font), 'sans-serif'; }
     .invoice-number { color: #6b7280; }
-    .company-info { text-align: left; }
+    .company-info { text-align: right; }
     .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
     .bill-to, .supplier { margin-bottom: 15px; }
     .customer-logo, .supplier-logo { position: relative; width: 128px; height: 64px; margin-bottom: 8px; }
@@ -57,8 +57,8 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
           <p style="font-size: 0.875rem; color: #6b7280; margin-top: 8px;">رمز QR متوافق مع زاتكا</p>
         </div>
         {{/includeQR}}
-         <h1 class="invoice-title" style="text-align: right;">فاتورة مبيعات</h1>
-         <p class="invoice-number" style="text-align: right;">رقم الفاتورة #{{invoiceId}}</p>
+          <h1 class="invoice-title" style="text-align: right; font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', sans-serif;">فاتورة مبيعات</h1>
+          <p class="invoice-number" style="text-align: right; font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', sans-serif;">رقم الفاتورة #{{invoiceId}}</p>
       </div>
       <div class="company-info">
          {{#companyLogo}}
@@ -69,12 +69,12 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
           {{#companyName}}
           <h2 style="font-size: 1.125rem; font-weight: 600;">{{companyName}}</h2>
           {{/companyName}}
-          {{#companyNameAr}}
-          <h2 style="font-size: 1.125rem; font-weight: 600;">{{companyNameAr}}</p>
-          {{/companyNameAr}}
+           {{#companyNameAr}}
+           <p style="font-size: 1.125rem; font-weight: 600; font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', sans-serif;">{{companyNameAr}}</p>
+           {{/companyNameAr}}
            <p>Address (العنوان): {{companyAddress}}</p>
            <p>Email (البريد الإلكتروني): {{companyEmail}}</p>
-           <p>Tel (الهاتف): {{companyPhone}}</p>
+           {{companyPhone}}<p>Tel (الهاتف): {{companyPhone}}</p> {{/companyPhone}}
            {{#companyVat}}<p>VAT Number (الرقم الضريبي): {{companyVat}}</p>{{/companyVat}}
       </div>
     </div>

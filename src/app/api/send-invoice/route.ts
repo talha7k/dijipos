@@ -272,7 +272,10 @@ async function generatePDF(htmlContent: string): Promise<Buffer> {
           ...chromium.args,
           '--font-render-hinting=none',
           '--disable-font-subpixel-positioning',
-          '--force-color-profile=srgb'
+          '--force-color-profile=srgb',
+          '--disable-font-lookup-optimization',
+          '--enable-font-antialiasing',
+          '--disable-gpu'
         ],
         executablePath: await chromium.executablePath(),
       };
@@ -291,7 +294,9 @@ async function generatePDF(htmlContent: string): Promise<Buffer> {
           '--disable-gpu',
           '--font-render-hinting=none',
           '--disable-font-subpixel-positioning',
-          '--force-color-profile=srgb'
+          '--force-color-profile=srgb',
+          '--disable-font-lookup-optimization',
+          '--enable-font-antialiasing'
         ],
         timeout: 30000
       };
@@ -307,45 +312,74 @@ async function generatePDF(htmlContent: string): Promise<Buffer> {
     // Set viewport for better PDF rendering
     await page.setViewport({ width: 1200, height: 800 });
 
-    // Add CSS for better Arabic font rendering before setting content
-    const enhancedHtml = htmlContent.replace(
-      '</head>',
-      `
+    // Create a simplified HTML with embedded Arabic font support
+    const simplifiedHtml = `
+    <!DOCTYPE html>
+    <html dir="rtl">
+    <head>
+      <meta charset="utf-8">
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <title>Invoice</title>
       <style>
-        /* Ensure Arabic fonts are available - use system fonts that work in headless environment */
-        body, * {
-          font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', sans-serif !important;
+        @font-face {
+          font-family: 'ArabicFont';
+          src: local('Tahoma'), local('Arial Unicode MS'), local('DejaVu Sans');
+          unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF;
         }
-        
-        /* Arabic text specific styling */
-        [dir="rtl"], .arabic, .arabic-text {
-          font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', sans-serif !important;
+        body {
+          font-family: 'ArabicFont', 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', sans-serif;
           direction: rtl;
           text-align: right;
-          unicode-bidi: embed;
+          margin: 0;
+          padding: 20px;
         }
-        
-        /* Ensure proper text rendering */
-        * {
-          -webkit-font-smoothing: antialiased;
-          -moz-osx-font-smoothing: grayscale;
-          text-rendering: optimizeLegibility;
-        }
-        
-        /* Force Arabic character rendering */
-        .invoice-template {
-          font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', sans-serif !important;
+        .arabic-text {
+          font-family: 'ArabicFont', 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', sans-serif !important;
+          direction: rtl !important;
+          text-align: right !important;
+          unicode-bidi: embed !important;
         }
       </style>
-      </head>`
-    );
+    </head>
+    <body>
+      ${htmlContent}
+    </body>
+    </html>
+    `;
 
     // Load HTML content with error handling
     try {
-      await page.setContent(enhancedHtml, {
+      await page.setContent(simplifiedHtml, {
         waitUntil: 'networkidle0',
         timeout: 30000
       });
+      
+      // Wait for fonts to load
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      // Test Arabic rendering
+      const arabicTest = await page.evaluate(() => {
+        const elements = document.querySelectorAll('*');
+        const arabicElements: Array<{
+          text: string;
+          fontFamily: string;
+          direction: string;
+        }> = [];
+        elements.forEach((el: Element) => {
+          if (el.textContent && /[\u0600-\u06FF]/.test(el.textContent)) {
+            const computedStyle = window.getComputedStyle(el);
+            arabicElements.push({
+              text: el.textContent,
+              fontFamily: computedStyle.fontFamily,
+              direction: computedStyle.direction
+            });
+          }
+        });
+        return arabicElements;
+      });
+      
+      console.log('Arabic elements found:', arabicTest);
+      
     } catch (contentError) {
       console.error('Error setting page content:', contentError);
       throw new Error('Failed to load HTML content for PDF generation');
