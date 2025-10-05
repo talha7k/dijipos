@@ -31,9 +31,9 @@ export const salesInvoiceEnglish = `<!DOCTYPE html>
     .total-line { display: flex; justify-content: space-between; padding: 8px 0; }
     .total-bold { font-weight: bold; font-size: 1.125rem; border-top: 1px solid #d1d5db; padding-top: 8px; }
     .notes { margin-bottom: 40px; }
-    .stamp { display: flex; justify-content: flex-end; margin-top: 40px; }
-    .stamp div { text-align: center; }
-     .stamp img { width: 96px; height: 96px; object-fit: contain; }
+     .stamp { display: flex; justify-content: flex-end; margin-top: 40px; }
+     .stamp div { text-align: center; }
+      .stamp img { width: 150px; height: 150px; object-fit: contain; }
      @media print {
        .invoice-template { padding: 0; }
        .table th, .table td { padding: 8px; }
@@ -85,29 +85,29 @@ export const salesInvoiceEnglish = `<!DOCTYPE html>
            </div>
          </div>
 
-        <div class="header-row-2">
-          <div class="billed-from">
-            <h3 style="font-weight: 600; margin-bottom: 8px;">Billed From:</h3>
-            <h2 style="font-size: 1.25rem; font-weight: 600;">{{companyName}}</h2>
-            {{#companyNameAr}}
-            <p style="font-size: 1.125rem;">{{companyNameAr}}</p>
-            {{/companyNameAr}}
-            <p>📍 {{companyAddress}}</p>
-            <p>📧 {{companyEmail}}</p>
-            <p>📞 {{companyPhone}}</p>
-            {{#companyVat}}<p>VAT: {{companyVat}}</p>{{/companyVat}}
-          </div>
-          <div class="bill-to">
-            <h3 style="font-weight: 600; margin-bottom: 8px;">Bill To:</h3>
-            <p style="font-weight: 500;">{{clientName}}</p>
-            {{#customerNameAr}}
-            <p style="font-size: 1rem;">{{customerNameAr}}</p>
-            {{/customerNameAr}}
-            <p>{{clientAddress}}</p>
-            <p>{{clientEmail}}</p>
-            {{#clientVat}}<p>VAT: {{clientVat}}</p>{{/clientVat}}
-          </div>
-        </div>
+         <div class="header-row-2">
+           <div class="bill-to">
+             <h3 style="font-weight: 600; margin-bottom: 8px;">Bill To:</h3>
+             <p style="font-weight: 500;">{{clientName}}</p>
+             {{#customerNameAr}}
+             <p style="font-size: 1rem;">{{customerNameAr}}</p>
+             {{/customerNameAr}}
+             <p>{{clientAddress}}</p>
+             <p>{{clientEmail}}</p>
+             {{#clientVat}}<p>VAT: {{clientVat}}</p>{{/clientVat}}
+           </div>
+           <div class="billed-from">
+             <h3 style="font-weight: 600; margin-bottom: 8px;">Billed From:</h3>
+             <h2 style="font-size: 1.25rem; font-weight: 600;">{{companyName}}</h2>
+             {{#companyNameAr}}
+             <p style="font-size: 1.125rem;">{{companyNameAr}}</p>
+             {{/companyNameAr}}
+             <p>📍 {{companyAddress}}</p>
+             <p>📧 {{companyEmail}}</p>
+             <p>📞 {{companyPhone}}</p>
+             {{#companyVat}}<p>VAT: {{companyVat}}</p>{{/companyVat}}
+           </div>
+         </div>
      </div>
 
 
@@ -165,15 +165,14 @@ export const salesInvoiceEnglish = `<!DOCTYPE html>
     </div>
     {{/notes}}
 
-    <!-- Company Stamp -->
-    {{#companyStamp}}
-    <div class="stamp">
-      <div>
-        <img src="{{companyStamp}}" alt="Company Stamp" />
-        <p style="font-size: 0.875rem; color: #6b7280; margin-top: 8px;">Company Stamp</p>
-      </div>
-    </div>
-    {{/companyStamp}}
+     <!-- Company Stamp -->
+     {{#companyStamp}}
+     <div class="stamp">
+       <div>
+         <img src="{{companyStamp}}" alt="Company Stamp" />
+       </div>
+     </div>
+     {{/companyStamp}}
     </div>
   </div>
 </body>

@@ -1,5 +1,5 @@
 export const salesInvoiceArabic = `<!DOCTYPE html>
-<html dir="rtl">
+<html>
 <head>
    <meta charset="utf-8">
    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -21,25 +21,25 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
       .header-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
     .qr-section { margin-bottom: 15px; }
     .logo-section { position: relative; width: 192px; height: 80px; margin-left: auto; }
-     .invoice-title { font-size: 1.5rem; font-weight: bold; color: #1f2937; font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--heading-font), 'sans-serif'; }
-     .invoice-number { color: #374151; }
-     .company-info, .billed-from { text-align: right; }
+      .invoice-title { font-size: 1.5rem; font-weight: bold; color: #1f2937; font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--heading-font), 'sans-serif'; }
+      .invoice-number { color: #374151; }
+       .company-info, .billed-from { text-align: right; }
      .billed-from p, .bill-to p, .dates-grid p { padding: 4px 0; }
     .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
     .bill-to, .supplier { margin-bottom: 15px; }
     .customer-logo, .supplier-logo { position: relative; width: 128px; height: 64px; margin-bottom: 8px; }
     .dates-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
      .table { width: 100%; margin-bottom: 12px; border-collapse: collapse; border: 1px solid #d1d5db; }
-        .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 4px 6px; text-align: right; font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--heading-font), 'sans-serif'; line-height: 1.3; vertical-align: middle; min-height: 1.1em; }
-      .table td { border: 1px solid #d1d5db; padding: 4px 6px; text-align: right; line-height: 1.3; vertical-align: middle; min-height: 1.1em; }
+         .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 4px 6px; text-align: right; font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--heading-font), 'sans-serif'; line-height: 1.3; vertical-align: middle; min-height: 1.1em; }
+       .table td { border: 1px solid #d1d5db; padding: 4px 6px; text-align: right; line-height: 1.3; vertical-align: middle; min-height: 1.1em; }
      .totals-stamp-container { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
     .totals { flex: 1; }
      .totals div { width: 320px; }
     .total-line { display: flex; justify-content: space-between; padding: 6px 0; }
     .total-bold { font-weight: bold; font-size: 1.125rem; border-top: 1px solid #d1d5db; padding-top: 6px; }
-     .stamp { flex: 0 0 auto; margin-left: 30px; display: flex; justify-content: center; align-items: center; }
-    .stamp div { text-align: center; }
-     .stamp img { width: 80px; height: 80px; object-fit: contain; }
+      .stamp { flex: 0 0 auto; margin-right: 30px; display: flex; justify-content: center; align-items: center; }
+     .stamp div { text-align: center; }
+      .stamp img { width: 150px; height: 150px; object-fit: contain; }
      .notes { margin-bottom: 12px; text-align: right; }
 
      /* Compact paragraph spacing */
@@ -48,9 +48,9 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
      .dates-grid p {
        margin: 1px 0;
      }
-     .bilingual { display: flex; justify-content: space-between; align-items: center; }
-     .english { flex: 1; text-align: left; }
-     .arabic { flex: 1; text-align: right; direction: rtl; }
+      .bilingual { display: flex; justify-content: space-between; align-items: center; }
+      .english { flex: 1; text-align: left; }
+      .arabic { flex: 1; text-align: right; direction: rtl; }
 
       /* PDF-specific spacing adjustments */
       @media print {
@@ -75,8 +75,8 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
      <div class="header">
        <div class="header-row-1">
          <div class="invoice-info">
-             <h1 class="invoice-title" style="text-align: right;">Sales Invoice / فاتورة مبيعات</h1>
-             <p class="invoice-number" style="text-align: right;">Invoice # (فاتورة رقم)<br/> {{invoiceId}}</p>
+              <h1 class="invoice-title">Sales Invoice / فاتورة مبيعات</h1>
+              <p class="invoice-number">Invoice # (فاتورة رقم)<br/> {{invoiceId}}</p>
            <div class="dates-grid">
               <div>
                   <p style="color: #374151;">Invoice Date </br> (تاريخ الفاتورة)</p>
@@ -105,36 +105,36 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
              <img src="{{companyLogo}}" alt="شعار الشركة" style="width: 128px; height: 64px; object-fit: contain;" />
              {{/companyLogo}}
            </div>
-           <div class="customer-logo" style="text-align: left;">
+            <div class="customer-logo" style="text-align: right;">
              {{#customerLogo}}
              <img src="{{customerLogo}}" alt="شعار العميل" style="width: 128px; height: 64px; object-fit: contain;" />
              {{/customerLogo}}
            </div>
          </div>
 
-        <div class="header-row-2">
-          <div class="billed-from">
-            <h3 style="font-weight: 600; margin-bottom: 8px;">Billed From (من):</h3>
-            <h2 style="font-size: 1.25rem; font-weight: 600;">{{companyName}}</h2>
-            {{#companyNameAr}}
-            <p style="font-size: 1.125rem;">{{companyNameAr}}</p>
-            {{/companyNameAr}}
-            <p>📍 {{companyAddress}}</p>
-            <p>📧 {{companyEmail}}</p>
-            {{#companyPhone}}<p>📞 {{companyPhone}}</p>{{/companyPhone}}
-            {{#companyVat}}<p>VAT Number (الرقم الضريبي) <br/> {{companyVat}}</p>{{/companyVat}}
+         <div class="header-row-2">
+           <div class="bill-to">
+             <h3 style="font-weight: 600; margin-bottom: 8px;">Bill To (إلى):</h3>
+             <p style="font-weight: 500;">{{clientName}}</p>
+             {{#customerNameAr}}
+             <p style="font-size: 1rem;">{{customerNameAr}}</p>
+             {{/customerNameAr}}
+             <p>{{clientAddress}}</p>
+             <p>{{clientEmail}}</p>
+             {{#clientVat}}<p>VAT Number (الرقم الضريبي) <br/> {{clientVat}}</p>{{/clientVat}}
           </div>
-          <div class="bill-to">
-            <h3 style="font-weight: 600; margin-bottom: 8px;">Bill To (إلى):</h3>
-            <p style="font-weight: 500;">{{clientName}}</p>
-            {{#customerNameAr}}
-            <p style="font-size: 1rem;">{{customerNameAr}}</p>
-            {{/customerNameAr}}
-            <p>{{clientAddress}}</p>
-            <p>{{clientEmail}}</p>
-            {{#clientVat}}<p>VAT Number (الرقم الضريبي) <br/> {{clientVat}}</p>{{/clientVat}}
+           <div class="billed-from">
+             <h3 style="font-weight: 600; margin-bottom: 8px;">Billed From (من):</h3>
+             <h2 style="font-size: 1.25rem; font-weight: 600;">{{companyName}}</h2>
+             {{#companyNameAr}}
+             <p style="font-size: 1.125rem;">{{companyNameAr}}</p>
+             {{/companyNameAr}}
+             <p>📍 {{companyAddress}}</p>
+             <p>📧 {{companyEmail}}</p>
+             {{#companyPhone}}<p>📞 {{companyPhone}}</p>{{/companyPhone}}
+             {{#companyVat}}<p>VAT Number (الرقم الضريبي) <br/> {{companyVat}}</p>{{/companyVat}}
+           </div>
          </div>
-        </div>
      </div>
 
 
@@ -185,15 +185,14 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
         </div>
       </div>
 
-      <!-- Company Stamp -->
-      {{#companyStamp}}
-      <div class="stamp">
-        <div>
-          <img src="{{companyStamp}}" alt="ختم الشركة" />
-          <p style="font-size: 0.75rem; color: #6b7280; margin-top: 6px;">ختم الشركة</p>
-        </div>
-      </div>
-      {{/companyStamp}}
+       <!-- Company Stamp -->
+       {{#companyStamp}}
+       <div class="stamp">
+         <div>
+           <img src="{{companyStamp}}" alt="ختم الشركة" />
+         </div>
+       </div>
+       {{/companyStamp}}
     </div>
 
     <!-- Notes -->

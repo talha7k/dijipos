@@ -3,11 +3,8 @@ import { format } from "date-fns";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { DialogWithActions } from "@/components/ui/DialogWithActions";
-import { cn } from "@/lib/utils";
 import {
   Dialog,
-  DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,

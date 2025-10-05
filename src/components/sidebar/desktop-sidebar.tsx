@@ -8,14 +8,14 @@ import { SidebarNavItem } from "./sidebar-nav-item";
 import { UserProfileWithOrganization } from "../layout/UserProfileWithOrganization";
 import { SidebarProps, NavigationItem } from "./sidebar-types";
 
-import { useOrganization } from "@/lib/hooks/useOrganization";
+
 import { useAtom } from "jotai";
 import { selectedOrganizationIdAtom, organizationUserRoleAtom } from "@/atoms";
 import {
   BarChart3,
   Building2,
   FileMinus,
-  FileText,
+
   Home,
   PieChart,
   Receipt,
@@ -151,7 +151,6 @@ export function DesktopSidebar({
   onExpandSidebar,
   openSections = {},
 }: SidebarProps) {
-  const [organizationId] = useAtom(selectedOrganizationIdAtom);
   const [organizationUserRole] = useAtom(organizationUserRoleAtom);
 
   const userRole = (organizationUserRole?.role as string) || "waiter"; // Default to waiter if no role found

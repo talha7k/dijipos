@@ -8,12 +8,9 @@ interface OrderListProps {
   onOrderSelect: (order: Order) => void;
   onBack: () => void;
   onStatusChange?: (orderId: string, status: OrderStatus) => Promise<void>;
-  onMarkAsPaid?: (orderId: string) => Promise<void>;
-  onCompleteOrder?: (orderId: string) => Promise<void>;
-  getOrderPayments?: (orderId: string) => OrderPayment[];
 }
 
-export function OrderList({ orders, onOrderSelect, onBack, onStatusChange, onMarkAsPaid, onCompleteOrder, getOrderPayments }: OrderListProps) {
+export function OrderList({ orders, onOrderSelect, onBack, onStatusChange }: OrderListProps) {
   return (
     <div className="h-full flex flex-col bg-background">
       <div className="flex items-center gap-4 p-4 border-b">
