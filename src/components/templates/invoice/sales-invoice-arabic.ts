@@ -5,11 +5,16 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
    <title>فاتورة مبيعات</title>
     <style>
+     @font-face {
+       font-family: 'ArabicFont';
+       src: local('Tahoma'), local('Arial Unicode MS'), local('DejaVu Sans');
+       unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF;
+     }
      :root {
        --heading-font: {{headingFont}};
        --body-font: {{bodyFont}};
      }
-    .invoice-template { font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--body-font), 'sans-serif'; margin: 0; padding: 0; background: white; color: #000000; unicode-bidi: embed; }
+    .invoice-template { font-family: 'ArabicFont', 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--body-font), 'sans-serif'; margin: 0; padding: 0; background: white; color: #000000; unicode-bidi: embed; }
    .invoice-template .container { max-width: 100%; margin: 0; padding: 0; }
     .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; }
     .qr-section { margin-bottom: 15px; }
@@ -65,12 +70,12 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
           <h2 style="font-size: 1.125rem; font-weight: 600;">{{companyName}}</h2>
           {{/companyName}}
           {{#companyNameAr}}
-          <p style="font-size: 1.125rem;">{{companyNameAr}}</p>
+          <h2 style="font-size: 1.125rem; font-weight: 600;">{{companyNameAr}}</p>
           {{/companyNameAr}}
-           <p>Address<br>(العنوان): {{companyAddress}}</p>
-           <p>Email<br>(البريد الإلكتروني): {{companyEmail}}</p>
-           <p>Tel<br>(الهاتف): {{companyPhone}}</p>
-           {{#companyVat}}<p>VAT Number<br>(الرقم الضريبي): {{companyVat}}</p>{{/companyVat}}
+           <p>Address (العنوان): {{companyAddress}}</p>
+           <p>Email (البريد الإلكتروني): {{companyEmail}}</p>
+           <p>Tel (الهاتف): {{companyPhone}}</p>
+           {{#companyVat}}<p>VAT Number (الرقم الضريبي): {{companyVat}}</p>{{/companyVat}}
       </div>
     </div>
 
@@ -90,7 +95,7 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
        <p>{{clientEmail}}</p>
         {{#clientVat}}<p>VAT Number<br>(الرقم الضريبي): {{clientVat}}</p>{{/clientVat}}
      </div>
-    
+
     <!-- Dates Section -->
     <div style="margin-bottom: 30px;">
       <div class="dates-grid">
