@@ -14,7 +14,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Customer } from '@/types';
-import { Plus } from 'lucide-react';
+import { Plus, Edit } from 'lucide-react';
 
 interface EditableTableCellProps {
   value: string;
@@ -97,6 +97,8 @@ interface ClientInfoProps {
   onClientAddressChange: (address: string) => void;
   onClientVATChange?: (vat: string) => void;
   onAddCustomer?: () => void;
+  readOnly?: boolean;
+  onEditCustomer?: () => void;
 }
 
 export default function ClientInfo({
@@ -113,6 +115,8 @@ export default function ClientInfo({
   onClientAddressChange,
   onClientVATChange,
   onAddCustomer,
+  readOnly = false,
+  onEditCustomer,
 }: ClientInfoProps) {
   const handleCustomerSelect = (customerId: string) => {
     onCustomerSelect(customerId);
@@ -126,33 +130,78 @@ export default function ClientInfo({
 
   return (
     <>
-      <div>
-        <Label>Select Customer</Label>
-        <div className="flex gap-2">
-          <Combobox
-            options={customers.map(customer => ({ value: customer.id, label: customer.name }))}
-            value={selectedCustomerId}
-            onValueChange={handleCustomerSelect}
-            placeholder="Choose a customer..."
-            searchPlaceholder="Search customers..."
-            emptyMessage="No customers found."
-            buttonWidth="flex-1"
-          />
-          {onAddCustomer && (
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              onClick={onAddCustomer}
-              className="shrink-0"
-            >
-              <Plus className="h-4 w-4" />
-            </Button>
-          )}
+      {!readOnly && (
+        <div>
+          <Label>Select Customer</Label>
+          <div className="flex gap-2">
+            <Combobox
+              options={customers.map(customer => ({ value: customer.id, label: customer.name }))}
+              value={selectedCustomerId}
+              onValueChange={handleCustomerSelect}
+              placeholder="Choose a customer..."
+              searchPlaceholder="Search customers..."
+              emptyMessage="No customers found."
+              buttonWidth="flex-1"
+            />
+            {onAddCustomer && (
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={onAddCustomer}
+                className="shrink-0"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
-      {selectedCustomerId && (
+      {(selectedCustomerId || readOnly) && (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead colSpan={4} className="bg-muted font-semibold">
+                <div className="flex items-center justify-between">
+                  <span>Client Information</span>
+                  {readOnly && onEditCustomer && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={onEditCustomer}
+                      className="flex items-center gap-2"
+                    >
+                      <Edit className="h-4 w-4" />
+                      Edit
+                    </Button>
+                  )}
+                </div>
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow>
+              <TableCell className="bg-muted/50 font-medium w-1/4">Client Name</TableCell>
+              <TableCell className="w-1/4">{clientName}</TableCell>
+              <TableCell className="bg-muted/50 font-medium w-1/4">Client Email</TableCell>
+              <TableCell className="w-1/4">{clientEmail}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="bg-muted/50 font-medium">Client Address</TableCell>
+              <TableCell colSpan={showVAT ? 1 : 3}>{clientAddress}</TableCell>
+              {showVAT && (
+                <>
+                  <TableCell className="bg-muted/50 font-medium">Client VAT Number</TableCell>
+                  <TableCell>{clientVAT}</TableCell>
+                </>
+              )}
+            </TableRow>
+          </TableBody>
+        </Table>
+      )}
+
+      {selectedCustomerId && !readOnly && (
         <Table>
           <TableHeader>
             <TableRow>

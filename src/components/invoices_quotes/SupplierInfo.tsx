@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/table';
 import { Supplier } from '@/types';
 import { useSuppliers } from '@/lib/hooks/useSuppliers';
-import { Plus } from 'lucide-react';
+import { Plus, Edit } from 'lucide-react';
 
 interface EditableTableCellProps {
   value: string;
@@ -110,6 +110,8 @@ interface SupplierInfoProps {
   onSupplierAddressChange: (address: string) => void;
   onSupplierVATChange?: (vat: string) => void;
   onAddSupplier?: () => void;
+  readOnly?: boolean;
+  onEditSupplier?: () => void;
 }
 
 export default function SupplierInfo({
@@ -125,6 +127,8 @@ export default function SupplierInfo({
   onSupplierAddressChange,
   onSupplierVATChange,
   onAddSupplier,
+  readOnly = false,
+  onEditSupplier,
 }: SupplierInfoProps) {
   const { suppliers } = useSuppliers();
 
@@ -140,33 +144,78 @@ export default function SupplierInfo({
 
   return (
     <>
-      <div>
-        <Label>Select Supplier</Label>
-        <div className="flex gap-2">
-          <Combobox
-            options={getSupplierOptions(suppliers)}
-            value={selectedSupplierId}
-            onValueChange={handleSupplierSelect}
-            placeholder="Choose a supplier..."
-            searchPlaceholder="Search suppliers..."
-            emptyMessage="No suppliers found."
-            buttonWidth="flex-1"
-          />
-          {onAddSupplier && (
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              onClick={onAddSupplier}
-              className="shrink-0"
-            >
-              <Plus className="h-4 w-4" />
-            </Button>
-          )}
+      {!readOnly && (
+        <div>
+          <Label>Select Supplier</Label>
+          <div className="flex gap-2">
+            <Combobox
+              options={getSupplierOptions(suppliers)}
+              value={selectedSupplierId}
+              onValueChange={handleSupplierSelect}
+              placeholder="Choose a supplier..."
+              searchPlaceholder="Search suppliers..."
+              emptyMessage="No suppliers found."
+              buttonWidth="flex-1"
+            />
+            {onAddSupplier && (
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={onAddSupplier}
+                className="shrink-0"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
-      {selectedSupplierId && (
+      {(selectedSupplierId || readOnly) && (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead colSpan={4} className="bg-muted font-semibold">
+                <div className="flex items-center justify-between">
+                  <span>Supplier Information</span>
+                  {readOnly && onEditSupplier && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={onEditSupplier}
+                      className="flex items-center gap-2"
+                    >
+                      <Edit className="h-4 w-4" />
+                      Edit
+                    </Button>
+                  )}
+                </div>
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow>
+              <TableCell className="bg-muted/50 font-medium w-1/4">Supplier Name</TableCell>
+              <TableCell className="w-1/4">{supplierName}</TableCell>
+              <TableCell className="bg-muted/50 font-medium w-1/4">Supplier Email</TableCell>
+              <TableCell className="w-1/4">{supplierEmail}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="bg-muted/50 font-medium">Supplier Address</TableCell>
+              <TableCell colSpan={showVAT ? 1 : 3}>{supplierAddress}</TableCell>
+              {showVAT && (
+                <>
+                  <TableCell className="bg-muted/50 font-medium">Supplier VAT Number</TableCell>
+                  <TableCell>{supplierVAT}</TableCell>
+                </>
+              )}
+            </TableRow>
+          </TableBody>
+        </Table>
+      )}
+
+      {selectedSupplierId && !readOnly && (
         <Table>
           <TableHeader>
             <TableRow>

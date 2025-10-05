@@ -20,37 +20,27 @@ interface InvoiceListProps {
    payments: { [invoiceId: string]: Payment[] };
    onInvoiceClick: (invoice: SalesInvoice | PurchaseInvoice) => void;
    onViewDetails: (invoice: SalesInvoice | PurchaseInvoice) => void;
-   onStatusChange: (invoiceId: string, status: (SalesInvoice | PurchaseInvoice)['status']) => void;
-   onEdit?: (invoice: SalesInvoice | PurchaseInvoice) => void;
-   onDuplicate?: (invoice: SalesInvoice | PurchaseInvoice) => void;
-   onSend?: (invoice: SalesInvoice | PurchaseInvoice) => void;
    onEmail?: (invoice: SalesInvoice | PurchaseInvoice, templateId: string) => void;
-   onDownloadPDF?: (invoice: SalesInvoice | PurchaseInvoice) => void;
    onDelete?: (invoice: SalesInvoice | PurchaseInvoice) => void;
     organization: Organization | null;
     invoiceTemplates: InvoiceTemplate[];
-    settings?: DocumentPrintSettings | null;
-   transactionType?: "sales" | "purchase" | "all";
- }
+   settings?: DocumentPrintSettings | null;
+   transactionType: "sales" | "purchase" | "all";
+}
 
 export function InvoiceList({
-    invoices,
-    customers,
-    suppliers,
-    payments,
-    onInvoiceClick,
-    onViewDetails,
-    onStatusChange,
-    onEdit,
-    onDuplicate,
-    onSend,
-    onEmail,
-    onDownloadPDF,
-    onDelete,
-    organization,
-    invoiceTemplates,
-    settings,
-    transactionType,
+   invoices,
+   customers,
+   suppliers,
+   payments,
+   onInvoiceClick,
+   onViewDetails,
+   onEmail,
+   onDelete,
+   organization,
+   invoiceTemplates,
+   settings,
+   transactionType,
   }: InvoiceListProps) {
   return (
     <div className="overflow-x-auto">
@@ -113,12 +103,7 @@ export function InvoiceList({
                       invoice={invoice}
                       payments={payments[invoice.id] || []}
                       onViewDetails={onViewDetails}
-                      onStatusChange={onStatusChange}
-                      onEdit={onEdit}
-                      onDuplicate={onDuplicate}
-                      onSend={onSend}
                       onEmail={onEmail}
-                      onDownloadPDF={onDownloadPDF}
                       onDelete={onDelete}
                       organization={organization}
                       invoiceTemplates={invoiceTemplates}

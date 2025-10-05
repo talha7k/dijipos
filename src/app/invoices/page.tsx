@@ -9,6 +9,7 @@ import { InvoiceList } from "@/components/invoices_quotes/InvoiceList";
 import InvoiceForm from "@/components/invoices_quotes/InvoiceForm";
 import { InvoiceDetailsDialog } from "@/components/invoices_quotes/InvoiceDetailsDialog";
 import { InvoicePrintDialog } from "@/components/invoices_quotes/InvoicePrintDialog";
+import { EditCustomerDialog } from "@/components/invoices_quotes/EditCustomerDialog";
 import { Button } from "@/components/ui/button";
 import { Plus, Printer, Receipt, Edit, Mail, Trash2 } from "lucide-react";
 import { EmailInvoiceDialog } from "@/components/invoices_quotes/EmailInvoiceDialog";
@@ -39,11 +40,13 @@ export default function InvoicesPage() {
   const [showDetails, setShowDetails] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
   const [transactionTypeFilter, setTransactionTypeFilter] = useState<"sales" | "purchase" | "all">("sales");
-  const [editingInvoice, setEditingInvoice] = useState<SalesInvoice | PurchaseInvoice | null>(null);
-   const [showEmailDialog, setShowEmailDialog] = useState(false);
-   const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
-   const [invoiceToDelete, setInvoiceToDelete] = useState<SalesInvoice | PurchaseInvoice | null>(null);
-   const [filters, setFilters] = useState({});
+   const [editingInvoice, setEditingInvoice] = useState<SalesInvoice | PurchaseInvoice | null>(null);
+    const [showEmailDialog, setShowEmailDialog] = useState(false);
+    const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
+    const [invoiceToDelete, setInvoiceToDelete] = useState<SalesInvoice | PurchaseInvoice | null>(null);
+    const [filters, setFilters] = useState({});
+    const [showEditCustomerDialog, setShowEditCustomerDialog] = useState(false);
+    const [invoiceToEditCustomer, setInvoiceToEditCustomer] = useState<SalesInvoice | PurchaseInvoice | null>(null);
 
   const columns = [
     {
@@ -301,43 +304,24 @@ export default function InvoicesPage() {
 
        <TableFilter columns={columns} onFilterChange={setFilters} />
 
-       <InvoiceList
-         invoices={getFilteredInvoices()}
-         customers={customers}
-         suppliers={suppliers}
-         payments={groupedPayments}
-         onInvoiceClick={handleInvoiceClick}
-         onViewDetails={handleInvoiceClick}
-         onStatusChange={handleStatusChange}
-         onEdit={(invoice) => {
-           // Handle edit - could open edit form
-           console.log("Edit invoice:", invoice.id);
-         }}
-         onDuplicate={(invoice) => {
-           // Handle duplicate - could create copy
-           console.log("Duplicate invoice:", invoice.id);
-         }}
-          onSend={(invoice) => {
-            setSelectedInvoice(invoice);
-            setShowEmailDialog(true);
-          }}
+        <InvoiceList
+          invoices={getFilteredInvoices()}
+          customers={customers}
+          suppliers={suppliers}
+          payments={groupedPayments}
+          onInvoiceClick={handleInvoiceClick}
+          onViewDetails={handleInvoiceClick}
           onEmail={(invoice, templateId) => {
             setSelectedInvoice(invoice);
             setSelectedTemplateId(templateId);
             setShowEmailDialog(true);
           }}
-          onDownloadPDF={(invoice) => {
-            // Handle PDF download
-            console.log("Download PDF for invoice:", invoice.id);
-          }}
-          onDelete={(invoice) => {
-            setInvoiceToDelete(invoice);
-          }}
+          onDelete={handleDeleteInvoice}
           organization={selectedOrganization}
           invoiceTemplates={invoiceTemplates}
-          settings={printerSettings?.invoices}
+          settings={storeSettings?.printerSettings?.invoices}
           transactionType={transactionTypeFilter}
-       />
+        />
 
       {/* Create/Edit Invoice Dialog */}
       <Dialog open={showForm} onOpenChange={(open) => {
@@ -353,6 +337,10 @@ export default function InvoicesPage() {
           <InvoiceForm
             invoice={editingInvoice}
             defaultType={transactionTypeFilter === "purchase" ? "purchase" : "sales"}
+            onEditCustomer={(invoice) => {
+              setInvoiceToEditCustomer(invoice);
+              setShowEditCustomerDialog(true);
+            }}
             onSubmit={async (invoiceData) => {
               try {
                 if (editingInvoice) {
@@ -411,6 +399,20 @@ export default function InvoicesPage() {
         onOpenChange={setShowEmailDialog}
         selectedTemplateId={selectedTemplateId}
       />
+
+      {/* Edit Customer Dialog */}
+      {invoiceToEditCustomer && (
+        <EditCustomerDialog
+          invoice={invoiceToEditCustomer}
+          open={showEditCustomerDialog}
+          onOpenChange={setShowEditCustomerDialog}
+          onUpdate={(updatedInvoice) => {
+            // Update the editing invoice state
+            setEditingInvoice(updatedInvoice);
+            setShowEditCustomerDialog(false);
+          }}
+        />
+      )}
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={!!invoiceToDelete} onOpenChange={(open) => !open && setInvoiceToDelete(null)}>

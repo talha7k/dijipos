@@ -46,12 +46,14 @@ interface InvoiceFormProps {
     invoice: Omit<SalesInvoice | PurchaseInvoice, "id" | "organizationId" | "createdAt" | "updatedAt">,
   ) => void;
   defaultType?: "sales" | "purchase";
+  onEditCustomer?: (invoice: SalesInvoice | PurchaseInvoice) => void;
 }
 
 export default function InvoiceForm({
   invoice,
   onSubmit,
   defaultType = "sales",
+  onEditCustomer,
 }: InvoiceFormProps) {
   const [invoiceType, setInvoiceType] = useState<"sales" | "purchase">(
     (invoice?.type === InvoiceType.SALES ? "sales" : invoice?.type) || defaultType,
@@ -267,24 +269,28 @@ export default function InvoiceForm({
                onClientAddressChange={setClientAddress}
                onClientVATChange={setClientVAT}
                onAddCustomer={() => setShowAddCustomerDialog(true)}
+               readOnly={!!invoice}
+                onEditCustomer={() => invoice && onEditCustomer?.(invoice)}
              />
           </>
         ) : (
           <>
-             <SupplierInfo
-               selectedSupplierId={selectedSupplierId}
-               supplierName={supplierName}
-               supplierEmail={supplierEmail}
-               supplierAddress={supplierAddress}
-               supplierVAT={supplierVAT}
-               showVAT={true}
-               onSupplierSelect={setSelectedSupplierId}
-               onSupplierNameChange={setSupplierName}
-               onSupplierEmailChange={setSupplierEmail}
-               onSupplierAddressChange={setSupplierAddress}
-               onSupplierVATChange={setSupplierVAT}
-               onAddSupplier={() => setShowAddSupplierDialog(true)}
-             />
+              <SupplierInfo
+                selectedSupplierId={selectedSupplierId}
+                supplierName={supplierName}
+                supplierEmail={supplierEmail}
+                supplierAddress={supplierAddress}
+                supplierVAT={supplierVAT}
+                showVAT={true}
+                onSupplierSelect={setSelectedSupplierId}
+                onSupplierNameChange={setSupplierName}
+                onSupplierEmailChange={setSupplierEmail}
+                onSupplierAddressChange={setSupplierAddress}
+                onSupplierVATChange={setSupplierVAT}
+                onAddSupplier={() => setShowAddSupplierDialog(true)}
+                readOnly={!!invoice}
+                onEditSupplier={() => invoice && onEditCustomer?.(invoice)}
+              />
 
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -473,6 +479,8 @@ export default function InvoiceForm({
           // Supplier list will be updated automatically via real-time hook
         }}
       />
+
+
     </>
   );
 }
