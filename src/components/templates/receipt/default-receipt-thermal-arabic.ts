@@ -36,7 +36,7 @@ export const defaultArabicReceiptTemplate = `<!DOCTYPE html>
      <div class="header">
        {{#companyLogo}}
        <div style="text-align: center; margin-bottom: 10px;">
-          <img src="{{companyLogo}}" alt="شعار الشركة" style="max-width: 95%; padding: 2%;" />
+           <img src="{{companyLogo}}" alt="شعار الشركة" style="max-width: 95%; max-height: 130px; padding: 2%; margin: auto;" />
        </div>
        {{/companyLogo}}
         <div style="text-align: center; margin-bottom: 10px;">
