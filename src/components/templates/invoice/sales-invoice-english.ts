@@ -16,14 +16,16 @@ export const salesInvoiceEnglish = `<!DOCTYPE html>
     .qr-section { margin-bottom: 20px; }
     .logo-section { position: relative; width: 192px; height: 80px; margin-left: auto; }
     .invoice-title { font-size: 2rem; font-weight: bold; color: #1f2937; font-family: var(--heading-font), system-ui, sans-serif; }
-    .invoice-number { color: #6b7280; }
+     .invoice-label { color: #6b7280; }
+     .invoice-value { font-weight: 500; }
      .company-info, .billed-from { text-align: right; }
      .billed-from p, .bill-to p, .dates-grid p { padding: 4px 0; }
     .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 40px; }
     .bill-to, .supplier { margin-bottom: 20px; }
     .customer-logo, .supplier-logo { position: relative; width: 128px; height: 64px; margin-bottom: 10px; }
      .dates-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-      .bill-to, .billed-from, .invoice-details { border: 1px solid #d1d5db; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+       .bill-to, .billed-from, .invoice-details { border: 1px solid #d1d5db; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+       .invoice-details { width: 350px; }
     .table { width: 100%; margin-bottom: 40px; border-collapse: collapse; border: 1px solid #d1d5db; }
      .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 16px; text-align: center; font-family: var(--heading-font), system-ui, sans-serif; }
     .table td { border: 1px solid #d1d5db; padding: 16px; }
@@ -51,7 +53,7 @@ export const salesInvoiceEnglish = `<!DOCTYPE html>
         <h1 class="invoice-title" style="margin-bottom: 20px;">SALES INVOICE</h1>
         <div class="header-row-1">
            <div class="invoice-info invoice-details">
-            <p class="invoice-number">Invoice #{{invoiceId}}</p>
+             <p><span class="invoice-label">Invoice #</span><span class="invoice-value">{{invoiceId}}</span></p>
             <div class="dates-grid">
               <div>
                 <p style="color: #6b7280;">Invoice Date:</p>
@@ -120,29 +122,31 @@ export const salesInvoiceEnglish = `<!DOCTYPE html>
 
     <!-- Items Table -->
     <table class="table">
-      <thead>
+       <thead>
+          <tr>
+             <th style="width: 20px;">#</th>
+            <th>Description</th>
+            <th>Qty</th>
+            <th>Unit Price</th>
+            <th>Total</th>
+          </tr>
+       </thead>
+       <tbody>
+         {{#each items}}
          <tr>
-           <th>Description</th>
-           <th>Qty</th>
-           <th>Unit Price</th>
-           <th>Total</th>
+            <td style="text-align: center; width: 20px;">{{@index}}</td>
+           <td>
+             <div>
+               <p style="font-weight: 500;">{{name}}</p>
+               {{#description}}<p style="color: #6b7280; font-size: 0.875rem;">{{description}}</p>{{/description}}
+             </div>
+           </td>
+           <td style="text-align: right;">{{quantity}}</td>
+            <td style="text-align: right;">{{unitPrice}}</td>
+            <td style="text-align: right;">{{total}}</td>
          </tr>
-      </thead>
-      <tbody>
-        {{#each items}}
-        <tr>
-          <td>
-            <div>
-              <p style="font-weight: 500;">{{name}}</p>
-              {{#description}}<p style="color: #6b7280; font-size: 0.875rem;">{{description}}</p>{{/description}}
-            </div>
-          </td>
-          <td style="text-align: right;">{{quantity}}</td>
-           <td style="text-align: right;">{{unitPrice}}</td>
-           <td style="text-align: right;">{{total}}</td>
-        </tr>
-        {{/each}}
-      </tbody>
+         {{/each}}
+       </tbody>
     </table>
 
     <!-- Totals -->

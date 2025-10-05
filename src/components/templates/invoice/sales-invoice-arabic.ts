@@ -22,11 +22,13 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
     .qr-section { margin-bottom: 15px; }
     .logo-section { position: relative; width: 192px; height: 80px; margin-left: auto; }
       .invoice-title { font-size: 1.5rem; font-weight: bold; color: #1f2937; font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--heading-font), 'sans-serif'; }
-      .invoice-number { color: #374151; }
+       .invoice-label { color: #374151; }
+       .invoice-value { font-weight: 500; }
         .company-info, .billed-from { text-align: left; }
      .billed-from p, .bill-to p, .dates-grid p { padding: 4px 0; }
     .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 20px; }
      .bill-to, .billed-from, .invoice-details { border: 1px solid #d1d5db; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+     .invoice-details { width: 350px; }
     .customer-logo, .supplier-logo { position: relative; width: 128px; height: 64px; margin-bottom: 8px; }
     .dates-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
      .table { width: 100%; margin-bottom: 12px; border-collapse: collapse; border: 1px solid #d1d5db; }
@@ -80,7 +82,7 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
         <h1 class="invoice-title" style="margin-bottom: 20px;">Sales Invoice / فاتورة مبيعات</h1>
         <div class="header-row-1">
            <div class="invoice-info invoice-details">
-               <p class="invoice-number">Invoice # (فاتورة رقم)<br/> {{invoiceId}}</p>
+                <p><span class="invoice-label">Invoice # (فاتورة رقم)</span><br/><span class="invoice-value">{{invoiceId}}</span></p>
             <div class="dates-grid">
                <div>
                    <p style="color: #374151;">Invoice Date </br> (تاريخ الفاتورة)</p>
@@ -145,29 +147,31 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
 
     <!-- Items Table -->
     <table class="table">
-      <thead>
-          <tr>
-             <th>Description<br>(الوصف)</th>
-             <th>Quantity<br>(الكمية)</th>
-             <th>Unit Price<br>(سعر الوحدة)</th>
-             <th>Total<br>(المجموع)</th>
-          </tr>
-      </thead>
-      <tbody>
-        {{#each items}}
-        <tr>
-          <td>
-            <div>
-              <p style="font-weight: 500;">{{name}}</p>
-              {{#description}}<p style="color: #6b7280; font-size: 0.875rem;">{{description}}</p>{{/description}}
-            </div>
-          </td>
-          <td>{{quantity}}</td>
-          <td>{{unitPrice}} ريال</td>
-          <td>{{total}} ريال</td>
-        </tr>
-        {{/each}}
-      </tbody>
+       <thead>
+           <tr>
+               <th style="width: 20px;">#<br>(رقم)</th>
+              <th>Description<br>(الوصف)</th>
+              <th>Quantity<br>(الكمية)</th>
+              <th>Unit Price<br>(سعر الوحدة)</th>
+              <th>Total<br>(المجموع)</th>
+           </tr>
+       </thead>
+       <tbody>
+         {{#each items}}
+         <tr>
+            <td style="text-align: center; width: 20px;">{{@index}}</td>
+           <td>
+             <div>
+               <p style="font-weight: 500;">{{name}}</p>
+               {{#description}}<p style="color: #6b7280; font-size: 0.875rem;">{{description}}</p>{{/description}}
+             </div>
+           </td>
+           <td>{{quantity}}</td>
+           <td>{{unitPrice}} ريال</td>
+           <td>{{total}} ريال</td>
+         </tr>
+         {{/each}}
+       </tbody>
     </table>
 
     <!-- Totals and Stamp -->

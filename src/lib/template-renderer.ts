@@ -66,10 +66,13 @@ export function renderTemplate(template: string, data: TemplateData): string {
       const items = (data as any).items;
       if (!items || !Array.isArray(items)) return "";
       return items
-        .map((item: Record<string, unknown>) =>
-          itemTemplate.replace(
-            /{{\s*(\w+)\s*}}/g,
-            (itemMatch: string, key: string) => {
+        .map((item: Record<string, unknown>, index: number) =>
+        itemTemplate.replace(
+          /{{\s*([a-zA-Z0-9_@]+)\s*}}/g,
+          (itemMatch: string, key: string) => {
+            if (key === '@index') {
+              return String(index + 1);
+            }
               if (Object.prototype.hasOwnProperty.call(item, key)) {
                 return String(item[key] ?? "");
               }
@@ -105,8 +108,10 @@ export function renderTemplate(template: string, data: TemplateData): string {
       if (!value || typeof value !== 'object') return "";
       if (Array.isArray(value)) {
         return value
-          .map((item: any) =>
-            content.replace(/{{\s*this\.([a-zA-Z_][a-zA-Z0-9_.]*)\s*}}/g, (_match: string, prop: string) => String(item[prop] ?? ""))
+          .map((item: any, index: number) =>
+            content
+              .replace(/{{\s*@index\s*}}/g, String(index))
+              .replace(/{{\s*this\.([a-zA-Z_][a-zA-Z0-9_.]*)\s*}}/g, (_match: string, prop: string) => String(item[prop] ?? ""))
           )
           .join("");
       } else {
