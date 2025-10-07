@@ -39,6 +39,7 @@ interface InvoiceFormProps {
   ) => void;
   defaultType?: "sales" | "purchase";
   onEditCustomer?: (invoice: SalesInvoice | PurchaseInvoice) => void;
+  onEditSupplier?: (invoice: SalesInvoice | PurchaseInvoice) => void;
   onChildDialogChange?: (isOpen: boolean) => void;
 }
 
@@ -47,6 +48,7 @@ export default function InvoiceForm({
   onSubmit,
   defaultType = "sales",
   onEditCustomer,
+  onEditSupplier,
   onChildDialogChange,
 }: InvoiceFormProps) {
   const [invoiceType, setInvoiceType] = useState<"sales" | "purchase">(
@@ -131,12 +133,28 @@ export default function InvoiceForm({
       setClientName(invoice.type === InvoiceType.SALES ? (invoice as SalesInvoice).clientName : "");
       setClientEmail(invoice.type === InvoiceType.SALES ? (invoice as SalesInvoice).clientEmail : "");
       setClientAddress(invoice.type === InvoiceType.SALES ? (invoice as SalesInvoice).clientAddress || "" : "");
-      setClientVAT(invoice.type === InvoiceType.SALES ? (invoice as SalesInvoice).clientVAT || "" : "");
+      const clientVATFromInvoice = invoice.type === InvoiceType.SALES ? (invoice as SalesInvoice).clientVAT || "" : "";
+      setClientVAT(clientVATFromInvoice);
+      // If no VAT from invoice, try to populate from customer record
+      if (invoice.type === InvoiceType.SALES && !clientVATFromInvoice && (invoice as SalesInvoice).clientName) {
+        const customer = customers.find(c => c.name === (invoice as SalesInvoice).clientName);
+        if (customer?.vatNumber) {
+          setClientVAT(customer.vatNumber);
+        }
+      }
       setSelectedSupplierId("");
       setSupplierName(invoice.type === InvoiceType.PURCHASE ? (invoice as PurchaseInvoice).supplierName : "");
       setSupplierEmail(invoice.type === InvoiceType.PURCHASE ? (invoice as PurchaseInvoice).supplierEmail : "");
       setSupplierAddress(invoice.type === InvoiceType.PURCHASE ? (invoice as PurchaseInvoice).supplierAddress || "" : "");
-      setSupplierVAT(invoice.type === InvoiceType.PURCHASE ? (invoice as PurchaseInvoice).supplierVAT || "" : "");
+      const supplierVATFromInvoice = invoice.type === InvoiceType.PURCHASE ? (invoice as PurchaseInvoice).supplierVAT || "" : "";
+      setSupplierVAT(supplierVATFromInvoice);
+      // If no VAT from invoice, try to populate from supplier record
+      if (invoice.type === InvoiceType.PURCHASE && !supplierVATFromInvoice && (invoice as PurchaseInvoice).supplierName) {
+        const supplier = suppliers.find(s => s.name === (invoice as PurchaseInvoice).supplierName);
+        if (supplier?.vatNumber) {
+          setSupplierVAT(supplier.vatNumber);
+        }
+      }
       setInvoiceNumber(invoice.type === InvoiceType.PURCHASE ? (invoice as PurchaseInvoice).invoiceNumber || "" : "");
       setInvoiceDate(() => {
         if (invoice.type === "purchase" && (invoice as PurchaseInvoice).invoiceDate && !isNaN(new Date((invoice as PurchaseInvoice).invoiceDate).getTime())) {
@@ -313,22 +331,24 @@ export default function InvoiceForm({
         <div>
           <Label>Invoice Type</Label>
           <div className="flex gap-2 flex-wrap">
-            <Button
-              type="button"
-              variant={invoiceType === "sales" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setInvoiceType("sales")}
-            >
-              Sales Invoice
-            </Button>
-            <Button
-              type="button"
-              variant={invoiceType === "purchase" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setInvoiceType("purchase")}
-            >
-              Purchase Invoice
-            </Button>
+             <Button
+               type="button"
+               variant={invoiceType === "sales" ? "default" : "outline"}
+               size="sm"
+               onClick={() => setInvoiceType("sales")}
+               disabled={!!invoice}
+             >
+               Sales Invoice
+             </Button>
+             <Button
+               type="button"
+               variant={invoiceType === "purchase" ? "default" : "outline"}
+               size="sm"
+               onClick={() => setInvoiceType("purchase")}
+               disabled={!!invoice}
+             >
+               Purchase Invoice
+             </Button>
           </div>
         </div>
 
@@ -363,27 +383,27 @@ export default function InvoiceForm({
            </>
          ) : (
            <>
-                <SupplierInfo
-                  selectedSupplierId={selectedSupplierId}
-                  supplierName={supplierName}
-                  supplierEmail={supplierEmail}
-                  supplierAddress={supplierAddress}
-                  supplierVAT={supplierVAT}
-                  showVAT={true}
-                  onSupplierSelect={setSelectedSupplierId}
-                  onSupplierNameChange={setSupplierName}
-                  onSupplierEmailChange={setSupplierEmail}
-                  onSupplierAddressChange={setSupplierAddress}
-                  onSupplierVATChange={setSupplierVAT}
-                  onAddSupplier={() => setShowAddSupplierDialog(true)}
-                  readOnly={!!invoice}
-                  onEditSupplier={() => {
-                    onChildDialogChange?.(true);
-                    if (invoice) onEditCustomer?.(invoice);
-                  }}
-                  showAddButtonInReadOnly={true}
-                  onClearSupplier={handleClearSupplier}
-                />
+                 <SupplierInfo
+                   selectedSupplierId={selectedSupplierId}
+                   supplierName={supplierName}
+                   supplierEmail={supplierEmail}
+                   supplierAddress={supplierAddress}
+                   supplierVAT={supplierVAT}
+                   showVAT={true}
+                   onSupplierSelect={setSelectedSupplierId}
+                   onSupplierNameChange={setSupplierName}
+                   onSupplierEmailChange={setSupplierEmail}
+                   onSupplierAddressChange={setSupplierAddress}
+                   onSupplierVATChange={setSupplierVAT}
+                   onAddSupplier={() => setShowAddSupplierDialog(true)}
+                   readOnly={!!invoice}
+                   onEditSupplier={() => {
+                     onChildDialogChange?.(true);
+                     if (invoice) onEditSupplier?.(invoice);
+                   }}
+                   showAddButtonInReadOnly={true}
+                   onClearSupplier={handleClearSupplier}
+                 />
            </>
          )}
 

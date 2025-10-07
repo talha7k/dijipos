@@ -197,7 +197,7 @@ export function EditCustomerDialog({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="grid grid-cols-2 gap-6 py-4 max-h-96 overflow-y-auto">
+        <div className="grid grid-cols-2 gap-6 py-4">
           {isSales ? (
             <>
               <div className="space-y-4">
