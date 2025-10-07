@@ -22,6 +22,7 @@ import { getInvoicePayments } from '@/lib/firebase/firestore/invoices';
 import { formatDate } from '@/lib/utils';
 import { useCurrency } from '@/lib/hooks/useCurrency';
 
+
 // Type guard to check if invoice is a PurchaseInvoice
 function isPurchaseInvoice(invoice: SalesInvoice | PurchaseInvoice): invoice is PurchaseInvoice {
   return invoice.type === 'purchase';
@@ -54,6 +55,8 @@ interface InvoiceDetailsDialogProps {
     notes?: string;
   }) => Promise<void>;
   onDeletePayment?: (invoiceId: string, paymentId: string) => Promise<void>;
+  invoiceFormOpen?: boolean;
+  onChildDialogChange?: (isOpen: boolean) => void;
 }
 
 export function InvoiceDetailsDialog({
@@ -68,14 +71,18 @@ export function InvoiceDetailsDialog({
   onStatusChange,
   onAddPayment,
   onUpdatePayment,
-  onDeletePayment
+  onDeletePayment,
+  invoiceFormOpen = false,
+  onChildDialogChange,
 }: InvoiceDetailsDialogProps) {
   const { formatCurrency } = useCurrency();
   const [showAddPaymentDialog, setShowAddPaymentDialog] = useState(false);
-  const [showEditCustomerDialog, setShowEditCustomerDialog] = useState(false);
   const [editingPayment, setEditingPayment] = useState<Payment | null>(null);
   const [invoicePayments, setInvoicePayments] = useState<Payment[]>([]);
   const [paymentsLoading, setPaymentsLoading] = useState(false);
+  const [childDialogOpen, setChildDialogOpen] = useState(false);
+  const [childDialogOpenFromForm, setChildDialogOpenFromForm] = useState(false);
+  const [editCustomerDialogOpen, setEditCustomerDialogOpen] = useState(false);
 
   const fetchPayments = useCallback(async () => {
     if (!invoice) return;
@@ -144,8 +151,27 @@ export function InvoiceDetailsDialog({
     }
   };
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[80vh] overflow-y-auto">
+    <Dialog open={open} onOpenChange={(open) => {
+      // Don't close the dialog if a child dialog is open
+      if (!open && !childDialogOpen && !childDialogOpenFromForm && !invoiceFormOpen) {
+        onOpenChange(open);
+      }
+    }}>
+      <DialogContent 
+        className="max-w-6xl max-h-[80vh] overflow-y-auto"
+        onPointerDownOutside={(e) => {
+          // Prevent closing if child dialog is open
+          if (childDialogOpen || childDialogOpenFromForm || invoiceFormOpen) {
+            e.preventDefault();
+          }
+        }}
+        onEscapeKeyDown={(e) => {
+          // Prevent closing if child dialog is open
+          if (childDialogOpen || childDialogOpenFromForm || invoiceFormOpen) {
+            e.preventDefault();
+          }
+        }}
+      >
         {invoice ? (
           <div className="space-y-6">
             <DialogHeader>
@@ -172,17 +198,17 @@ export function InvoiceDetailsDialog({
                     <Eye className="h-4 w-4" />
                     View Payments
                    </Button>
-                   {onEdit && (
-                     <Button
-                       variant="outline"
-                       onClick={onEdit}
-                       size="sm"
-                       className="flex items-center gap-2"
-                     >
-                       <Edit className="h-4 w-4" />
-                       Edit Invoice
-                     </Button>
-                   )}
+                    {onEdit && (
+                      <Button
+                        variant="outline"
+                        onClick={onEdit}
+                        size="sm"
+                        className="flex items-center gap-2"
+                      >
+                        <Edit className="h-4 w-4" />
+                        Edit Invoice
+                      </Button>
+                    )}
                    {onPrint && (
                      <Button
                        onClick={onPrint}
@@ -245,16 +271,21 @@ export function InvoiceDetailsDialog({
                 <div className="lg:col-span-3 border border-border rounded-lg p-4 bg-card">
                    <div className="flex items-center justify-between mb-2">
                      <h3 className="font-semibold">Client Information</h3>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowEditCustomerDialog(true)}
-                      className="flex items-center gap-2"
-                      title="Edit customer/supplier information"
-                    >
-                      <Edit className="h-4 w-4" />
-                      Edit
-                    </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                         onClick={() => {
+                           setChildDialogOpen(true);
+                           setChildDialogOpenFromForm(true);
+                           onChildDialogChange?.(true);
+                           setEditCustomerDialogOpen(true);
+                         }}
+                        className="flex items-center gap-2"
+                        title="Edit customer/supplier information"
+                      >
+                        <Edit className="h-4 w-4" />
+                        Edit
+                      </Button>
                   </div>
                 <div className="space-y-1 text-sm">
                   {isPurchaseInvoice(invoice) ? (
@@ -272,12 +303,18 @@ export function InvoiceDetailsDialog({
                                <span>{supplier.email}</span>
                              </div>
                            )}
-                           {supplier.address && (
-                             <div className="flex justify-between">
-                               <span className="text-muted-foreground">Address:</span>
-                               <span>{supplier.address}</span>
-                             </div>
-                           )}
+                            {supplier.address && (
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Address:</span>
+                                <span>{supplier.address}</span>
+                              </div>
+                            )}
+                            {(invoice as PurchaseInvoice).supplierVAT && (
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">VAT Number:</span>
+                                <span>{(invoice as PurchaseInvoice).supplierVAT}</span>
+                              </div>
+                            )}
                         </>
                       ) : (
                          <div className="flex justify-between">
@@ -301,12 +338,18 @@ export function InvoiceDetailsDialog({
                                <span>{customer.email}</span>
                              </div>
                            )}
-                           {customer.address && (
-                             <div className="flex justify-between">
-                               <span className="text-muted-foreground">Address:</span>
-                               <span>{customer.address}</span>
-                             </div>
-                           )}
+                            {customer.address && (
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Address:</span>
+                                <span>{customer.address}</span>
+                              </div>
+                            )}
+                            {customer.vatNumber && (
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">VAT Number:</span>
+                                <span>{customer.vatNumber}</span>
+                              </div>
+                            )}
                         </>
                       ) : (
                          <div className="flex justify-between">
@@ -506,20 +549,31 @@ export function InvoiceDetailsDialog({
           />
         )}
 
-        {/* Edit Customer/Supplier Dialog */}
-        {invoice && (
-          <EditCustomerDialog
-            invoice={invoice}
-            open={showEditCustomerDialog}
-            onOpenChange={setShowEditCustomerDialog}
-            onUpdate={(updatedInvoice) => {
-              // For now, we'll just log the update. In a real implementation,
-              // this would call an update function passed from the parent
-              console.log('Updated invoice:', updatedInvoice);
-              // You might want to call onEdit(updatedInvoice) or a specific update function
-            }}
-          />
-        )}
+         {/* Edit Customer/Supplier Dialog */}
+         {invoice && (
+           <EditCustomerDialog
+             invoice={invoice}
+             open={editCustomerDialogOpen}
+             onOpenChange={(open) => {
+               if (!open) {
+                 setChildDialogOpen(false);
+                 setChildDialogOpenFromForm(false);
+                 onChildDialogChange?.(false);
+               }
+               setEditCustomerDialogOpen(open);
+             }}
+             onUpdate={(updatedInvoice) => {
+               // For now, we'll just log the update. In a real implementation,
+               // this would call an update function passed from the parent
+               console.log('Updated invoice:', updatedInvoice);
+               // You might want to call onEdit(updatedInvoice) or a specific update function
+               setEditCustomerDialogOpen(false);
+               setChildDialogOpen(false);
+               setChildDialogOpenFromForm(false);
+               onChildDialogChange?.(false);
+             }}
+           />
+         )}
       </DialogContent>
     </Dialog>
   );

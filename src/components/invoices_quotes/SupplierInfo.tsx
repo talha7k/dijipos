@@ -1,6 +1,5 @@
 'use client';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { Combobox } from '@/components/ui/combobox';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,7 +12,7 @@ import {
 } from '@/components/ui/table';
 import { Supplier } from '@/types';
 import { useSuppliers } from '@/lib/hooks/useSuppliers';
-import { Plus, Edit } from 'lucide-react';
+import { Plus, Edit, X } from 'lucide-react';
 
 // Utility functions for real supplier data
 const getSupplierOptions = (suppliers: Supplier[]) => {
@@ -43,6 +42,8 @@ interface SupplierInfoProps {
   onAddSupplier?: () => void;
   readOnly?: boolean;
   onEditSupplier?: () => void;
+  showAddButtonInReadOnly?: boolean;
+  onClearSupplier?: () => void;
 }
 
 export default function SupplierInfo({
@@ -60,6 +61,8 @@ export default function SupplierInfo({
   onAddSupplier,
   readOnly = false,
   onEditSupplier,
+  showAddButtonInReadOnly = false,
+  onClearSupplier,
 }: SupplierInfoProps) {
   const { suppliers } = useSuppliers();
 
@@ -70,6 +73,7 @@ export default function SupplierInfo({
       onSupplierNameChange(supplier.name);
       onSupplierEmailChange(supplier.email);
       onSupplierAddressChange(supplier.address || '');
+      onSupplierVATChange?.(supplier.vatNumber || '');
     }
   };
 
@@ -88,7 +92,7 @@ export default function SupplierInfo({
               emptyMessage="No suppliers found."
               buttonWidth="flex-1"
             />
-            {onAddSupplier && (
+            {(!readOnly || showAddButtonInReadOnly) && onAddSupplier && (
               <Button
                 type="button"
                 variant="outline"
@@ -110,17 +114,32 @@ export default function SupplierInfo({
               <TableHead colSpan={4} className="bg-muted font-semibold">
                 <div className="flex items-center justify-between">
                   <span>Supplier Information</span>
-                  {readOnly && onEditSupplier && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={onEditSupplier}
-                      className="flex items-center gap-2"
-                    >
-                      <Edit className="h-4 w-4" />
-                      Edit
-                    </Button>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {onClearSupplier && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={onClearSupplier}
+                        className="shrink-0"
+                        title="Clear supplier"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
+                    {readOnly && onEditSupplier && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={onEditSupplier}
+                        className="flex items-center gap-2"
+                      >
+                        <Edit className="h-4 w-4" />
+                        Edit
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </TableHead>
             </TableRow>

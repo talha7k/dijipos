@@ -20,6 +20,7 @@ export interface SalesInvoice {
   clientName: string;
   clientEmail: string;
   clientAddress?: string;
+  clientVAT?: string;
   items: Item[];
   subtotal: number;
   taxRate: number;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { useAtom } from "jotai";
 import { selectedOrganizationAtom } from "@/atoms";
 import { useMemo } from "react";
@@ -44,16 +44,10 @@ export default function InvoicesPage() {
     const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
     const [invoiceToDelete, setInvoiceToDelete] = useState<SalesInvoice | PurchaseInvoice | null>(null);
 const [filters, setFilters] = useState({});
-     const [showEditCustomerDialog, setShowEditCustomerDialog] = useState(false);
-     const [invoiceToEditCustomer, setInvoiceToEditCustomer] = useState<SalesInvoice | PurchaseInvoice | null>(null);
-     
-     // Ref to track child dialog state more reliably
-     const childDialogOpenRef = useRef(false);
-     
-     // Update ref when child dialog state changes
-     useEffect(() => {
-       childDialogOpenRef.current = showEditCustomerDialog;
-     }, [showEditCustomerDialog]);
+      const [showEditCustomerDialog, setShowEditCustomerDialog] = useState(false);
+      const [invoiceToEditCustomer, setInvoiceToEditCustomer] = useState<SalesInvoice | PurchaseInvoice | null>(null);
+      const [childDialogOpen, setChildDialogOpen] = useState(false);
+  const childDialogRef = useRef(false);
 
   const columns = [
     {
@@ -191,7 +185,7 @@ const [filters, setFilters] = useState({});
   const handleEditInvoice = (invoice: SalesInvoice | PurchaseInvoice) => {
     setEditingInvoice(invoice);
     setShowForm(true);
-    setShowDetails(false);
+    // Don't close the details dialog when opening the form
   };
 
   const handleInvoiceClick = (invoice: SalesInvoice | PurchaseInvoice) => {
@@ -366,19 +360,29 @@ const [filters, setFilters] = useState({});
         />
 
       {/* Create/Edit Invoice Dialog */}
-      <Dialog open={showForm} onOpenChange={(open) => {
-        // Don't close the dialog if a child dialog is open
-        if (!open && !childDialogOpenRef.current) {
-          setShowForm(open);
-          if (!open) {
-            setEditingInvoice(null);
-          }
-        }
-      }}>
+       <Dialog open={showForm} onOpenChange={(open) => {
+         // Don't close the dialog if a child dialog is open
+         if (!open && !childDialogOpen && !childDialogRef.current) {
+           setShowForm(open);
+           if (!open) {
+             setEditingInvoice(null);
+           }
+         }
+       }}>
         <DialogContent
           className="max-w-4xl max-h-[90vh] overflow-y-auto"
-          onPointerDownOutside={(e) => e.preventDefault()}
-          onEscapeKeyDown={(e) => e.preventDefault()}
+          onPointerDownOutside={(e) => {
+            // Prevent closing if child dialog is open
+            if (childDialogOpen || childDialogRef.current) {
+              e.preventDefault();
+            }
+          }}
+          onEscapeKeyDown={(e) => {
+            // Prevent closing if child dialog is open
+            if (childDialogOpen || childDialogRef.current) {
+              e.preventDefault();
+            }
+          }}
         >
           <DialogHeader>
             <DialogTitle>{editingInvoice ? "Edit Invoice" : "Create New Invoice"}</DialogTitle>
@@ -386,9 +390,15 @@ const [filters, setFilters] = useState({});
           <InvoiceForm
             invoice={editingInvoice}
             defaultType={transactionTypeFilter === "purchase" ? "purchase" : "sales"}
-             onEditCustomer={(invoice) => {
-                setInvoiceToEditCustomer(invoice);
-                setShowEditCustomerDialog(true);
+              onEditCustomer={(invoice) => {
+                 childDialogRef.current = true;
+                 setInvoiceToEditCustomer(invoice);
+                 setChildDialogOpen(true);
+                 setShowEditCustomerDialog(true);
+               }}
+              onChildDialogChange={(isOpen) => {
+                setChildDialogOpen(isOpen);
+                childDialogRef.current = isOpen;
               }}
             onSubmit={async (invoiceData) => {
               try {
@@ -422,12 +432,21 @@ const [filters, setFilters] = useState({});
             suppliers={suppliers}
             paymentTypes={storeSettings?.paymentTypes || []}
           open={showDetails}
-          onOpenChange={setShowDetails}
+           onOpenChange={(open) => {
+             // Don't close if invoice form or edit customer dialog is open
+             if (!open && !showForm && !childDialogOpen) {
+               setShowDetails(open);
+             }
+           }}
+           onChildDialogChange={(isOpen) => {
+             setChildDialogOpen(isOpen);
+           }}
           onEdit={() => handleEditInvoice(selectedInvoice!)}
           onStatusChange={(invoiceId, newStatus) => handleStatusChange(invoiceId, newStatus as (SalesInvoice | PurchaseInvoice)["status"])}
           onAddPayment={handleAddPayment}
           onUpdatePayment={(invoiceId, paymentId, paymentData) => handleUpdatePayment(invoiceId, paymentId, paymentData)}
           onDeletePayment={handleDeletePayment}
+          invoiceFormOpen={showForm}
         />
       )}
 
@@ -451,19 +470,27 @@ const [filters, setFilters] = useState({});
         selectedTemplateId={selectedTemplateId}
       />
 
-      {/* Edit Customer Dialog */}
-      {invoiceToEditCustomer && (
-        <EditCustomerDialog
-          invoice={invoiceToEditCustomer}
-          open={showEditCustomerDialog}
-          onOpenChange={setShowEditCustomerDialog}
-          onUpdate={(updatedInvoice) => {
-            // Update the editing invoice state
-            setEditingInvoice(updatedInvoice);
-            setShowEditCustomerDialog(false);
-          }}
-        />
-      )}
+       {/* Edit Customer Dialog */}
+       {invoiceToEditCustomer && (
+         <EditCustomerDialog
+            invoice={invoiceToEditCustomer}
+            open={showEditCustomerDialog}
+            onOpenChange={(open) => {
+              setShowEditCustomerDialog(open);
+              if (!open) {
+                setChildDialogOpen(false);
+                childDialogRef.current = false;
+              }
+            }}
+            onUpdate={(updatedInvoice) => {
+              // Update the editing invoice state
+              setEditingInvoice(updatedInvoice);
+              setShowEditCustomerDialog(false);
+              setChildDialogOpen(false);
+              childDialogRef.current = false;
+            }}
+         />
+       )}
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={!!invoiceToDelete} onOpenChange={(open) => !open && setInvoiceToDelete(null)}>

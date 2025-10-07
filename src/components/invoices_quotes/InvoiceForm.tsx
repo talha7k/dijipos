@@ -21,6 +21,7 @@ import {
 import { InvoiceItem } from "@/types/product-service";
 import { InvoiceTemplateType } from "@/types/enums";
 import { useCustomers } from "@/lib/hooks/useCustomers";
+import { useSuppliers } from "@/lib/hooks/useSuppliers";
 import { useItems } from "@/lib/hooks/useItems";
 import { useCategories } from "@/lib/hooks/useCategories";
 import { useStoreSettings } from "@/lib/hooks/useStoreSettings";
@@ -38,6 +39,7 @@ interface InvoiceFormProps {
   ) => void;
   defaultType?: "sales" | "purchase";
   onEditCustomer?: (invoice: SalesInvoice | PurchaseInvoice) => void;
+  onChildDialogChange?: (isOpen: boolean) => void;
 }
 
 export default function InvoiceForm({
@@ -45,6 +47,7 @@ export default function InvoiceForm({
   onSubmit,
   defaultType = "sales",
   onEditCustomer,
+  onChildDialogChange,
 }: InvoiceFormProps) {
   const [invoiceType, setInvoiceType] = useState<"sales" | "purchase">(
     (invoice?.type === InvoiceType.SALES ? "sales" : invoice?.type) || defaultType,
@@ -52,6 +55,7 @@ export default function InvoiceForm({
 
   // Real data hooks
    const { customers } = useCustomers();
+   const { suppliers } = useSuppliers();
    const { items, createItem } = useItems();
   const { categories } = useCategories();
   const { storeSettings } = useStoreSettings();
@@ -127,7 +131,7 @@ export default function InvoiceForm({
       setClientName(invoice.type === InvoiceType.SALES ? (invoice as SalesInvoice).clientName : "");
       setClientEmail(invoice.type === InvoiceType.SALES ? (invoice as SalesInvoice).clientEmail : "");
       setClientAddress(invoice.type === InvoiceType.SALES ? (invoice as SalesInvoice).clientAddress || "" : "");
-      setClientVAT("");
+      setClientVAT(invoice.type === InvoiceType.SALES ? (invoice as SalesInvoice).clientVAT || "" : "");
       setSelectedSupplierId("");
       setSupplierName(invoice.type === InvoiceType.PURCHASE ? (invoice as PurchaseInvoice).supplierName : "");
       setSupplierEmail(invoice.type === InvoiceType.PURCHASE ? (invoice as PurchaseInvoice).supplierEmail : "");
@@ -154,6 +158,26 @@ export default function InvoiceForm({
        });
     }
   }, [invoice, storeSettings?.vatSettings?.rate]);
+
+  // Update VAT when selected customer changes
+  React.useEffect(() => {
+    if (selectedCustomerId && customers.length > 0) {
+      const customer = customers.find(c => c.id === selectedCustomerId);
+      if (customer && customer.vatNumber) {
+        setClientVAT(customer.vatNumber);
+      }
+    }
+  }, [selectedCustomerId, customers]);
+
+  // Update VAT when selected supplier changes
+  React.useEffect(() => {
+    if (selectedSupplierId && suppliers.length > 0) {
+      const supplier = suppliers.find(s => s.id === selectedSupplierId);
+      if (supplier && supplier.vatNumber) {
+        setSupplierVAT(supplier.vatNumber);
+      }
+    }
+  }, [selectedSupplierId, suppliers]);
 
   const addItem = () => {
     setInvoiceItems([
@@ -227,6 +251,22 @@ export default function InvoiceForm({
   const taxAmount = vatCalculation.vatAmount;
   const total = vatCalculation.total;
 
+  const handleClearCustomer = () => {
+    setSelectedCustomerId("");
+    setClientName("");
+    setClientEmail("");
+    setClientAddress("");
+    setClientVAT("");
+  };
+
+  const handleClearSupplier = () => {
+    setSelectedSupplierId("");
+    setSupplierName("");
+    setSupplierEmail("");
+    setSupplierAddress("");
+    setSupplierVAT("");
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const baseInvoice = {
@@ -298,42 +338,52 @@ export default function InvoiceForm({
 
         {invoiceType === InvoiceType.SALES ? (
            <>
-             <ClientInfo
-               selectedCustomerId={selectedCustomerId}
-               clientName={clientName}
-               clientEmail={clientEmail}
-               clientAddress={clientAddress}
-               clientVAT={clientVAT}
-               showVAT={true}
-               customers={customers}
-               onCustomerSelect={setSelectedCustomerId}
-               onClientNameChange={setClientName}
-               onClientEmailChange={setClientEmail}
-               onClientAddressChange={setClientAddress}
-               onClientVATChange={setClientVAT}
-               onAddCustomer={() => setShowAddCustomerDialog(true)}
-               readOnly={!!invoice}
-                onEditCustomer={() => invoice && onEditCustomer?.(invoice)}
-             />
+              <ClientInfo
+                selectedCustomerId={selectedCustomerId}
+                clientName={clientName}
+                clientEmail={clientEmail}
+                clientAddress={clientAddress}
+                clientVAT={clientVAT}
+                showVAT={true}
+                customers={customers}
+                onCustomerSelect={setSelectedCustomerId}
+                onClientNameChange={setClientName}
+                onClientEmailChange={setClientEmail}
+                onClientAddressChange={setClientAddress}
+                onClientVATChange={setClientVAT}
+                onAddCustomer={() => setShowAddCustomerDialog(true)}
+                readOnly={!!invoice}
+                 onEditCustomer={() => {
+                   onChildDialogChange?.(true);
+                   if (invoice) onEditCustomer?.(invoice);
+                 }}
+                showAddButtonInReadOnly={true}
+                onClearCustomer={handleClearCustomer}
+              />
            </>
          ) : (
            <>
-               <SupplierInfo
-                 selectedSupplierId={selectedSupplierId}
-                 supplierName={supplierName}
-                 supplierEmail={supplierEmail}
-                 supplierAddress={supplierAddress}
-                 supplierVAT={supplierVAT}
-                 showVAT={true}
-                 onSupplierSelect={setSelectedSupplierId}
-                 onSupplierNameChange={setSupplierName}
-                 onSupplierEmailChange={setSupplierEmail}
-                 onSupplierAddressChange={setSupplierAddress}
-                 onSupplierVATChange={setSupplierVAT}
-                 onAddSupplier={() => setShowAddSupplierDialog(true)}
-                 readOnly={!!invoice}
-                 onEditSupplier={() => invoice && onEditCustomer?.(invoice)}
-               />
+                <SupplierInfo
+                  selectedSupplierId={selectedSupplierId}
+                  supplierName={supplierName}
+                  supplierEmail={supplierEmail}
+                  supplierAddress={supplierAddress}
+                  supplierVAT={supplierVAT}
+                  showVAT={true}
+                  onSupplierSelect={setSelectedSupplierId}
+                  onSupplierNameChange={setSupplierName}
+                  onSupplierEmailChange={setSupplierEmail}
+                  onSupplierAddressChange={setSupplierAddress}
+                  onSupplierVATChange={setSupplierVAT}
+                  onAddSupplier={() => setShowAddSupplierDialog(true)}
+                  readOnly={!!invoice}
+                  onEditSupplier={() => {
+                    onChildDialogChange?.(true);
+                    if (invoice) onEditCustomer?.(invoice);
+                  }}
+                  showAddButtonInReadOnly={true}
+                  onClearSupplier={handleClearSupplier}
+                />
            </>
          )}
 
@@ -582,7 +632,12 @@ export default function InvoiceForm({
       {/* Add Customer Dialog */}
       <AddCustomerDialog
         open={showAddCustomerDialog}
-        onOpenChange={setShowAddCustomerDialog}
+        onOpenChange={(open) => {
+          setShowAddCustomerDialog(open);
+          if (!open) {
+            onChildDialogChange?.(false);
+          }
+        }}
         onCustomerAdded={() => {
           // Customer list will be updated automatically via real-time hook
         }}
@@ -591,7 +646,12 @@ export default function InvoiceForm({
       {/* Add Supplier Dialog */}
       <AddSupplierDialog
         open={showAddSupplierDialog}
-        onOpenChange={setShowAddSupplierDialog}
+        onOpenChange={(open) => {
+          setShowAddSupplierDialog(open);
+          if (!open) {
+            onChildDialogChange?.(false);
+          }
+        }}
         onSupplierAdded={() => {
           // Supplier list will be updated automatically via real-time hook
         }}

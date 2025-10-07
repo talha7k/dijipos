@@ -1,6 +1,5 @@
 'use client';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { Combobox } from '@/components/ui/combobox';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,7 +11,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Customer } from '@/types';
-import { Plus, Edit } from 'lucide-react';
+import { Plus, Edit, X } from 'lucide-react';
 
 interface ClientInfoProps {
   selectedCustomerId: string;
@@ -30,6 +29,8 @@ interface ClientInfoProps {
   onAddCustomer?: () => void;
   readOnly?: boolean;
   onEditCustomer?: () => void;
+  showAddButtonInReadOnly?: boolean;
+  onClearCustomer?: () => void;
 }
 
 export default function ClientInfo({
@@ -48,6 +49,8 @@ export default function ClientInfo({
   onAddCustomer,
   readOnly = false,
   onEditCustomer,
+  showAddButtonInReadOnly = false,
+  onClearCustomer,
 }: ClientInfoProps) {
   const handleCustomerSelect = (customerId: string) => {
     onCustomerSelect(customerId);
@@ -56,6 +59,7 @@ export default function ClientInfo({
       onClientNameChange(customer.name);
       onClientEmailChange(customer.email);
       onClientAddressChange(customer.address || '');
+      onClientVATChange?.(customer.vatNumber || '');
     }
   };
 
@@ -74,7 +78,7 @@ export default function ClientInfo({
               emptyMessage="No customers found."
               buttonWidth="flex-1"
             />
-            {onAddCustomer && (
+            {(!readOnly || showAddButtonInReadOnly) && onAddCustomer && (
               <Button
                 type="button"
                 variant="outline"
@@ -96,17 +100,32 @@ export default function ClientInfo({
               <TableHead colSpan={4} className="bg-muted font-semibold">
                 <div className="flex items-center justify-between">
                   <span>Client Information</span>
-                  {onEditCustomer && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={onEditCustomer}
-                      className="flex items-center gap-2"
-                    >
-                      <Edit className="h-4 w-4" />
-                      Edit
-                    </Button>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {onClearCustomer && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={onClearCustomer}
+                        className="shrink-0"
+                        title="Clear customer"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
+                    {onEditCustomer && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={onEditCustomer}
+                        className="flex items-center gap-2"
+                      >
+                        <Edit className="h-4 w-4" />
+                        Edit
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </TableHead>
             </TableRow>
