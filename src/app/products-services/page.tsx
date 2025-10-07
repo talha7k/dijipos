@@ -236,11 +236,7 @@ export default function ProductsServicesPage() {
                 </CardHeader>
                 <CardContent>
                   <CategoryTree
-                    categories={categories.filter(
-                      (c) =>
-                        c.type === CategoryType.PRODUCT &&
-                        c.transactionType === ProductTransactionType.SALES,
-                    )}
+                    categories={categories}
                     products={items.filter(
                       (item) => item.itemType === ItemType.PRODUCT,
                     )}
@@ -249,6 +245,7 @@ export default function ProductsServicesPage() {
                     onCategorySelect={setSelectedCategory}
                     onCategoryDelete={handleDeleteCategory}
                     type={CategoryType.PRODUCT}
+                    transactionType={ProductTransactionType.SALES}
                   />
                 </CardContent>
               </Card>
@@ -309,11 +306,7 @@ export default function ProductsServicesPage() {
                 </CardHeader>
                 <CardContent>
                   <CategoryTree
-                    categories={categories.filter(
-                      (c) =>
-                        c.type === CategoryType.SERVICE &&
-                        c.transactionType === ProductTransactionType.SALES,
-                    )}
+                    categories={categories}
                     products={[]}
                     services={items.filter(
                       (item) => item.itemType === ItemType.SERVICE,
@@ -322,6 +315,7 @@ export default function ProductsServicesPage() {
                     onCategorySelect={setSelectedCategory}
                     onCategoryDelete={handleDeleteCategory}
                     type={CategoryType.SERVICE}
+                    transactionType={ProductTransactionType.SALES}
                   />
                 </CardContent>
               </Card>
@@ -382,11 +376,7 @@ export default function ProductsServicesPage() {
                 </CardHeader>
                 <CardContent>
                    <CategoryTree
-                     categories={categories.filter(
-                       (c) =>
-                         c.type === CategoryType.PRODUCT &&
-                         c.transactionType === ProductTransactionType.PURCHASE,
-                     )}
+                     categories={categories}
                      products={items.filter(
                        (item) =>
                          item.itemType === ItemType.PRODUCT &&
@@ -397,6 +387,7 @@ export default function ProductsServicesPage() {
                      onCategorySelect={setSelectedCategory}
                      onCategoryDelete={handleDeleteCategory}
                      type={CategoryType.PRODUCT}
+                     transactionType={ProductTransactionType.PURCHASE}
                    />
                 </CardContent>
               </Card>
@@ -458,11 +449,7 @@ export default function ProductsServicesPage() {
                 </CardHeader>
                 <CardContent>
                    <CategoryTree
-                     categories={categories.filter(
-                       (c) =>
-                         c.type === CategoryType.SERVICE &&
-                         c.transactionType === ProductTransactionType.PURCHASE,
-                     )}
+                     categories={categories}
                      products={[]}
                      services={items.filter(
                        (item) =>
@@ -473,6 +460,7 @@ export default function ProductsServicesPage() {
                      onCategorySelect={setSelectedCategory}
                      onCategoryDelete={handleDeleteCategory}
                      type={CategoryType.SERVICE}
+                     transactionType={ProductTransactionType.PURCHASE}
                    />
                 </CardContent>
               </Card>
@@ -568,6 +556,7 @@ export default function ProductsServicesPage() {
               : ProductTransactionType.PURCHASE
             : ProductTransactionType.SALES
         }
+        onAddCategory={handleAddCategory}
       />
 
       <AddServiceDialog
@@ -585,6 +574,7 @@ export default function ProductsServicesPage() {
               : ProductTransactionType.PURCHASE
             : ProductTransactionType.SALES
         }
+        onAddCategory={handleAddCategory}
       />
     </div>
   );

@@ -6,7 +6,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,7 +20,6 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FolderPlus } from "lucide-react";
 import { Category, CategoryType, ProductTransactionType } from "@/types";
 import { CategoryTree } from "./CategoryTree";
 
@@ -39,6 +37,7 @@ interface AddCategoryDialogProps {
   defaultType?: CategoryType;
   defaultTransactionType?: ProductTransactionType;
   selectedParentId?: string | null;
+  allowTransactionTypeChange?: boolean;
 }
 
 export function AddCategoryDialog({
@@ -49,6 +48,7 @@ export function AddCategoryDialog({
   defaultType = CategoryType.PRODUCT,
   defaultTransactionType = ProductTransactionType.SALES,
   selectedParentId: propSelectedParentId,
+  allowTransactionTypeChange = true,
 }: AddCategoryDialogProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -91,16 +91,10 @@ export function AddCategoryDialog({
     onOpenChange(false);
   };
 
-  const filteredCategories = categories.filter((c) => c.type === type);
+  const filteredCategories = categories.filter((c) => c.type === type && c.transactionType === transactionType);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
-        <Button size="sm">
-          <FolderPlus className="mr-1 h-4 w-4" />
-          Add
-        </Button>
-      </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Category</DialogTitle>
@@ -140,16 +134,17 @@ export function AddCategoryDialog({
                     </Badge>
                   </Button>
 
-                   <CategoryTree
-                     categories={filteredCategories}
-                     products={[]}
-                     services={[]}
-                     selectedCategory={selectedParentId}
-                     onCategorySelect={setSelectedParentId}
-                     onCategoryDelete={() => {}} // No delete functionality in this context
-                     type={type}
-                     showAllOption={false}
-                   />
+                    <CategoryTree
+                      categories={filteredCategories}
+                      products={[]}
+                      services={[]}
+                      selectedCategory={selectedParentId}
+                      onCategorySelect={setSelectedParentId}
+                      onCategoryDelete={() => {}} // No delete functionality in this context
+                      type={type}
+                      transactionType={transactionType}
+                      showAllOption={false}
+                    />
                 </CardContent>
               </Card>
             </div>
@@ -203,8 +198,9 @@ export function AddCategoryDialog({
                   <Select
                     value={transactionType}
                     onValueChange={(value) =>
-                      setTransactionType(value as ProductTransactionType)
+                      allowTransactionTypeChange && setTransactionType(value as ProductTransactionType)
                     }
+                    disabled={!allowTransactionTypeChange}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select transaction type" />

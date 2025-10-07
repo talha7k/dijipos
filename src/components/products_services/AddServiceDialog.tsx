@@ -7,11 +7,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2, GripVertical } from 'lucide-react';
+import { Plus, Trash2, GripVertical, FolderPlus } from 'lucide-react';
 import { Service, Category, CategoryType, ProductTransactionType, ItemType, ProductVariation } from '@/types';
 import { useAtomValue } from 'jotai';
 import { vatSettingsAtom } from '@/atoms/posAtoms';
 import { getVATIndicationText } from '@/lib/vat-calculator';
+import { AddCategoryDialog } from './AddCategoryDialog';
 
 interface AddServiceDialogProps {
   open: boolean;
@@ -22,6 +23,14 @@ interface AddServiceDialogProps {
   categories: Category[];
   selectedCategory?: string | null;
   defaultTransactionType?: ProductTransactionType;
+  allowTransactionTypeChange?: boolean;
+  onAddCategory?: (category: {
+    name: string;
+    description: string;
+    type: CategoryType;
+    parentId: string | null;
+    transactionType: ProductTransactionType;
+  }) => void;
 }
 
 export function AddServiceDialog({
@@ -32,7 +41,9 @@ export function AddServiceDialog({
   serviceToEdit,
   categories,
   selectedCategory,
-  defaultTransactionType = ProductTransactionType.SALES
+  defaultTransactionType = ProductTransactionType.SALES,
+  allowTransactionTypeChange = true,
+  onAddCategory
 }: AddServiceDialogProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -41,6 +52,7 @@ export function AddServiceDialog({
   const [transactionType, setTransactionType] = useState<ProductTransactionType>(defaultTransactionType);
   const [variations, setVariations] = useState<ProductVariation[]>([]);
   const [newVariation, setNewVariation] = useState({ name: '', description: '', price: '' });
+  const [showAddCategoryDialog, setShowAddCategoryDialog] = useState(false);
   const vatSettings = useAtomValue(vatSettingsAtom);
 
   const isEditMode = serviceToEdit !== null;
@@ -174,7 +186,11 @@ export function AddServiceDialog({
             <div className="space-y-4">
               <div>
                 <Label htmlFor="transactionType">Transaction Type</Label>
-                <Select value={transactionType} onValueChange={(value) => setTransactionType(value as ProductTransactionType)}>
+                <Select
+                  value={transactionType}
+                  onValueChange={(value) => allowTransactionTypeChange && setTransactionType(value as ProductTransactionType)}
+                  disabled={!allowTransactionTypeChange}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select transaction type" />
                   </SelectTrigger>
@@ -184,17 +200,28 @@ export function AddServiceDialog({
                   </SelectContent>
                 </Select>
               </div>
-              <div>
-                <Label htmlFor="serviceCategory">Category</Label>
-                <Select value={categoryId} onValueChange={setCategoryId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {renderCategoryOptions()}
-                  </SelectContent>
-                </Select>
-              </div>
+               <div>
+                 <Label htmlFor="serviceCategory">Category</Label>
+                 <div className="flex gap-2">
+                   <Select value={categoryId} onValueChange={setCategoryId}>
+                     <SelectTrigger className="flex-1">
+                       <SelectValue placeholder="Select a category" />
+                     </SelectTrigger>
+                     <SelectContent>
+                       {renderCategoryOptions()}
+                     </SelectContent>
+                   </Select>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setShowAddCategoryDialog(true)}
+                      title="Add new category"
+                    >
+                      <FolderPlus className="h-4 w-4" />
+                    </Button>
+                 </div>
+               </div>
             </div>
           </div>
           
@@ -268,6 +295,17 @@ export function AddServiceDialog({
             <Button type="submit">{isEditMode ? 'Update Service' : 'Add Service'}</Button>
           </div>
         </form>
+        {onAddCategory && (
+          <AddCategoryDialog
+            open={showAddCategoryDialog}
+            onOpenChange={setShowAddCategoryDialog}
+            onAddCategory={onAddCategory}
+            categories={categories}
+            defaultType={CategoryType.SERVICE}
+            defaultTransactionType={transactionType}
+            allowTransactionTypeChange={false}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );

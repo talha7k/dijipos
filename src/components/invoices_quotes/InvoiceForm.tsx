@@ -17,6 +17,7 @@ import {
   ItemType,
   InvoiceType,
   ProductTransactionType,
+  CategoryType,
 } from "@/types";
 import { InvoiceItem } from "@/types/product-service";
 import { InvoiceTemplateType } from "@/types/enums";
@@ -59,7 +60,7 @@ export default function InvoiceForm({
    const { customers } = useCustomers();
    const { suppliers } = useSuppliers();
    const { items, createItem } = useItems();
-  const { categories } = useCategories();
+  const { categories, createCategory } = useCategories();
   const { storeSettings } = useStoreSettings();
 
   // Dialog states
@@ -252,6 +253,24 @@ export default function InvoiceForm({
       setShowAddProductDialog(true);
     } else {
       setShowAddServiceDialog(true);
+    }
+  };
+
+  const handleAddCategory = async (category: {
+    name: string;
+    description: string;
+    type: "product" | "service";
+    parentId: string | null;
+    transactionType: ProductTransactionType;
+  }) => {
+    try {
+      await createCategory({
+        ...category,
+        type: category.type as CategoryType,
+        parentId: category.parentId || undefined,
+      });
+    } catch (error) {
+      console.error("Error creating category:", error);
     }
   };
 
@@ -597,9 +616,11 @@ export default function InvoiceForm({
           organizationId: '',
           createdAt: new Date(),
           updatedAt: new Date(),
-        } : null}
+          } : null}
         categories={categories}
         defaultTransactionType={invoiceType === 'sales' ? ProductTransactionType.SALES : ProductTransactionType.PURCHASE}
+        allowTransactionTypeChange={false}
+        onAddCategory={handleAddCategory}
       />
 
       {/* Add Service Dialog */}
@@ -647,6 +668,8 @@ export default function InvoiceForm({
         } : null}
         categories={categories}
         defaultTransactionType={invoiceType === 'sales' ? ProductTransactionType.SALES : ProductTransactionType.PURCHASE}
+        allowTransactionTypeChange={false}
+        onAddCategory={handleAddCategory}
       />
 
       {/* Add Customer Dialog */}
