@@ -65,7 +65,7 @@ export default function ClientInfo({
 
   return (
     <>
-      {!readOnly && (
+      {(!readOnly || !selectedCustomerId) && (
         <div>
           <Label>Select Customer</Label>
           <div className="flex gap-2">

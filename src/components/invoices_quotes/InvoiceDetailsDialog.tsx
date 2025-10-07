@@ -159,18 +159,6 @@ export function InvoiceDetailsDialog({
     }}>
       <DialogContent 
         className="max-w-6xl max-h-[80vh] overflow-y-auto"
-        onPointerDownOutside={(e) => {
-          // Prevent closing if child dialog is open
-          if (childDialogOpen || childDialogOpenFromForm || invoiceFormOpen) {
-            e.preventDefault();
-          }
-        }}
-        onEscapeKeyDown={(e) => {
-          // Prevent closing if child dialog is open
-          if (childDialogOpen || childDialogOpenFromForm || invoiceFormOpen) {
-            e.preventDefault();
-          }
-        }}
       >
         {invoice ? (
           <div className="space-y-6">
@@ -572,6 +560,7 @@ export function InvoiceDetailsDialog({
                setChildDialogOpenFromForm(false);
                onChildDialogChange?.(false);
              }}
+             onChildDialogChange={onChildDialogChange}
            />
          )}
       </DialogContent>

@@ -79,7 +79,7 @@ export default function SupplierInfo({
 
   return (
     <>
-      {!readOnly && (
+      {(!readOnly || !selectedSupplierId) && (
         <div>
           <Label>Select Supplier</Label>
           <div className="flex gap-2">

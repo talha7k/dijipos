@@ -371,18 +371,6 @@ const [filters, setFilters] = useState({});
        }}>
         <DialogContent
           className="max-w-4xl max-h-[90vh] overflow-y-auto"
-          onPointerDownOutside={(e) => {
-            // Prevent closing if child dialog is open
-            if (childDialogOpen || childDialogRef.current) {
-              e.preventDefault();
-            }
-          }}
-          onEscapeKeyDown={(e) => {
-            // Prevent closing if child dialog is open
-            if (childDialogOpen || childDialogRef.current) {
-              e.preventDefault();
-            }
-          }}
         >
           <DialogHeader>
             <DialogTitle>{editingInvoice ? "Edit Invoice" : "Create New Invoice"}</DialogTitle>
@@ -488,6 +476,10 @@ const [filters, setFilters] = useState({});
               setShowEditCustomerDialog(false);
               setChildDialogOpen(false);
               childDialogRef.current = false;
+            }}
+            onChildDialogChange={(isOpen) => {
+              setChildDialogOpen(isOpen);
+              childDialogRef.current = isOpen;
             }}
          />
        )}

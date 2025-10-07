@@ -25,6 +25,7 @@ interface EditCustomerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onUpdate: (updatedInvoice: SalesInvoice | PurchaseInvoice) => void;
+  onChildDialogChange?: (isOpen: boolean) => void;
 }
 
 export function EditCustomerDialog({
@@ -32,6 +33,7 @@ export function EditCustomerDialog({
   open,
   onOpenChange,
   onUpdate,
+  onChildDialogChange,
 }: EditCustomerDialogProps) {
   const [selectedOrganization] = useAtom(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
@@ -56,6 +58,12 @@ export function EditCustomerDialog({
   const [supplierVAT, setSupplierVAT] = useState('');
   const [supplierContactPerson, setSupplierContactPerson] = useState('');
   const [supplierLogoUrl, setSupplierLogoUrl] = useState('');
+
+  useEffect(() => {
+    if (open) {
+      onChildDialogChange?.(true);
+    }
+  }, [open, onChildDialogChange]);
 
   useEffect(() => {
     if (invoice && open) {
@@ -174,7 +182,12 @@ export function EditCustomerDialog({
   const isSales = invoice.type === InvoiceType.SALES;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(open) => {
+      if (!open) {
+        onChildDialogChange?.(false);
+      }
+      onOpenChange(open);
+    }}>
       <DialogContent 
         className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto"
       >
