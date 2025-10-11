@@ -132,6 +132,7 @@ export enum SubscriptionStatus {
   ACTIVE = "active",
   INACTIVE = "inactive",
   TRIAL = "trial",
+  EXPIRED = "expired",
 }
 // Currency and Locale enums for settings
 export enum Currency {

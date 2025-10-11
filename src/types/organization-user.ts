@@ -44,4 +44,10 @@ export interface Organization {
   createdAt: Date;
   updatedAt: Date;
   subscriptionStatus: SubscriptionStatus;
+  subscriptionExpiresAt?: Date;
+  createdBy?: {
+    userId: string;
+    name: string;
+    email: string;
+  };
 }

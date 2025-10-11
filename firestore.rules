@@ -51,11 +51,6 @@ service cloud.firestore {
       allow read, write: if isAuthenticated();
     }
 
-    // Organization creation codes collection - super-admins can read/write
-    match /organization-creation-codes/{document=**} {
-      allow read: if isAuthenticated();
-      allow write: if isAuthenticated();
-    }
 
     // Business data collections - authenticated users can access organization-scoped data
     match /{collectionName}/{document=**} {

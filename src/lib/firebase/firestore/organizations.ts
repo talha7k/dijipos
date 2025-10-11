@@ -78,6 +78,7 @@ export async function getOrganization(organizationId: string): Promise<Organizat
       ...data,
       createdAt: data.createdAt?.toDate() || new Date(),
       updatedAt: data.updatedAt?.toDate() || new Date(),
+      subscriptionExpiresAt: data.subscriptionExpiresAt?.toDate(),
     } as Organization;
   } catch (error) {
     console.error('Error fetching organization:', error);

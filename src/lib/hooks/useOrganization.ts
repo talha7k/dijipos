@@ -17,6 +17,7 @@ import { useRealtimeCollection } from './useRealtimeCollection';
 import { OrganizationUser } from '@/types';
 import { collection, query, where, getDocs, addDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase/config';
+import { toast } from 'sonner';
 
 /**
  * Helper function to add timeout to promises
@@ -166,8 +167,17 @@ export function useOrganizationManager() {
         // Add timeout to prevent indefinite loading
         const organization = await withTimeout(getOrganization(selectedOrgId), 10000); // 10 second timeout
         console.log('Fetched organization:', organization);
-        console.log('Fetched organization:', organization);
         setSelectedOrganization(organization);
+
+        // Check for expired subscription
+        if (organization) {
+          const now = new Date();
+          const expiresAt = organization.subscriptionExpiresAt;
+
+          if (organization.subscriptionStatus === 'expired' || (expiresAt && expiresAt < now)) {
+            toast.warning("Your subscription has expired. Please contact support to renew.");
+          }
+        }
 
         // Also fetch and set the user's role for this organization
         if (user?.uid) {
@@ -337,54 +347,39 @@ export function useOrganizationActions() {
     }
   };
 
-  const createOrganization = async (name: string, email: string, organizationCreationCode: string) => {
-    if (!name || !email || !user || !organizationCreationCode) {
-      throw new Error('Organization name, email, creation code, and user authentication required');
+  const createOrganization = async (name: string, email: string) => {
+    if (!name || !email || !user) {
+      throw new Error("Organization name, email, and user authentication required");
     }
 
     try {
-      // Find the creation code
-      const codesQuery = query(
-        collection(db, 'organization-creation-codes'),
-        where('code', '==', organizationCreationCode),
-        where('used', '==', false)
-      );
-      const codesSnapshot = await getDocs(codesQuery);
-
-      if (codesSnapshot.empty) {
-        throw new Error('Invalid or already used organization creation code');
-      }
-
-      const codeId = codesSnapshot.docs[0].id;
+      // Calculate trial expiration date (3 months from now)
+      const trialExpiresAt = new Date();
+      trialExpiresAt.setMonth(trialExpiresAt.getMonth() + 3);
 
       // Create new organization
-      const organizationRef = await addDoc(collection(db, 'organizations'), {
+      const organizationRef = await addDoc(collection(db, "organizations"), {
         name,
         email,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-        subscriptionStatus: 'trial',
+        subscriptionStatus: "trial",
+        subscriptionExpiresAt: trialExpiresAt,
+        createdBy: {
+          userId: user.uid,
+          name: user.displayName || "No Name",
+          email: user.email || "No Email",
+        },
       });
 
       // Add creator as admin
-      await addDoc(collection(db, 'organizationUsers'), {
+      await addDoc(collection(db, "organizationUsers"), {
         userId: user.uid,
         organizationId: organizationRef.id,
-        role: 'admin',
+        role: "admin",
         isActive: true,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-      });
-
-      // Mark creation code as used
-      const codeDocRef = doc(db, 'organization-creation-codes', codeId);
-      await updateDoc(codeDocRef, {
-        used: true,
-        usedBy: user.uid,
-        userName: user.displayName || null,
-        userEmail: user.email || null,
-        usedAt: serverTimestamp(),
-        organizationId: organizationRef.id,
       });
 
       // Refresh organizations and switch to the new one
@@ -393,7 +388,7 @@ export function useOrganizationActions() {
 
       return { success: true, organizationId: organizationRef.id };
     } catch (error) {
-      console.error('Error creating organization:', error);
+      console.error("Error creating organization:", error);
       throw error;
     }
   };
