@@ -20,8 +20,8 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
       .invoice-template { font-family: 'ArabicFont', 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--body-font), 'sans-serif'; margin: 0; padding: 10px; background: white; color: #000000; unicode-bidi: embed; direction: ltr; }
     .invoice-template .container { max-width: 100%; margin: 0; padding: 0; }
     @page { margin: 10mm; }
-       .header-row-1 { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
-       .header-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .header-row-1 { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .header-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 12px; }
     .qr-section { margin-bottom: 15px; }
     .logo-section { position: relative; width: 192px; height: 80px; margin-left: auto; }
       .invoice-title { font-size: 1.5rem; font-weight: bold; color: #1f2937; font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--heading-font), 'sans-serif'; }
@@ -30,14 +30,14 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
         .company-info, .billed-from { text-align: left; }
      .billed-from p, .bill-to p, .dates-grid p { padding: 2px 0; }
     .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 20px; }
-     .bill-to, .billed-from, .invoice-details { border: 1px solid #d1d5db; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+      .bill-to, .billed-from, .invoice-details { border: 1px solid #d1d5db; padding: 12px; border-radius: 8px; margin-bottom: 8px; }
      .invoice-details { width: 350px; }
-    .customer-logo, .supplier-logo { position: relative; width: 128px; height: 64px; margin-bottom: 8px; }
+     .customer-logo, .supplier-logo { position: relative; width: 128px; height: 64px; margin-bottom: 4px; }
     .dates-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-     .table { width: 100%; margin-bottom: 12px; border-collapse: collapse; border: 1px solid #d1d5db; }
+     .table { width: 100%; margin-bottom: 8px; border-collapse: collapse; border: 1px solid #d1d5db; }
           .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 12px 8px; text-align: center; font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--heading-font), 'sans-serif'; font-size: 11px; line-height: var(--line-spacing); vertical-align: middle; min-height: 1.1em; }
         .table td { border: 1px solid #d1d5db; padding: 2px 8px; text-align: center; line-height: var(--line-spacing); vertical-align: middle; min-height: 1.1em; }
-     .totals-stamp-container { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+      .totals-stamp-container { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
     .totals { flex: 1; }
       .totals div { width: 288px; }
      .total-line { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; }
@@ -45,7 +45,7 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
       .stamp { flex: 0 0 auto; margin-right: 30px; display: flex; justify-content: center; align-items: center; }
      .stamp div { text-align: center; }
       .stamp img { width: 150px; height: 150px; object-fit: contain; }
-      .notes { margin-bottom: 12px; text-align: left; }
+       .notes { margin-bottom: 8px; text-align: left; }
 
      /* Compact paragraph spacing */
      .company-info p,
@@ -83,7 +83,7 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
     <div class="container">
       <!-- Header -->
       <div class="header">
-        <h1 class="invoice-title" style="margin-bottom: 20px;">Sales Invoice / فاتورة مبيعات</h1>
+        <h1 class="invoice-title" style="margin-bottom: 8px;">Sales Invoice / فاتورة مبيعات</h1>
         <div class="header-row-1">
            <div class="invoice-info invoice-details">
                 <p><span class="invoice-label">Invoice # (فاتورة رقم)</span><br/><span class="invoice-value">{{invoiceId}}</span></p>
@@ -110,12 +110,12 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
        </div>
  <div class="header-row-2">
              <div>
-               <h3 style="font-weight: 600; color: #6b7280; margin-bottom: 8px;">Billed To (إلى):</h3>
+                <h3 style="font-weight: 600; color: #6b7280; margin-bottom: 4px;">Billed To (إلى):</h3>
                <div class="bill-to">
                  {{#customerLogo}}
-                 <div style="margin-bottom: 8px;">
-                   <img src="{{customerLogo}}" alt="شعار العميل" style="width: 128px; height: 64px; object-fit: contain;" />
-                 </div>
+                  <div style="margin-bottom: 4px;">
+                    <img src="{{customerLogo}}" alt="شعار العميل" style="width: 128px; height: 64px; object-fit: contain;" />
+                  </div>
                  {{/customerLogo}}
                  <p style="font-weight: 500;">{{clientName}}</p>
                 {{#customerNameAr}}
@@ -127,12 +127,12 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
                </div>
              </div>
              <div>
-               <h3 style="font-weight: 600; color: #6b7280; margin-bottom: 8px;">Billed From (من):</h3>
+                <h3 style="font-weight: 600; color: #6b7280; margin-bottom: 4px;">Billed From (من):</h3>
                <div class="billed-from">
                  {{#companyLogo}}
-                 <div style="margin-bottom: 8px;">
-                   <img src="{{companyLogo}}" alt="شعار الشركة" style="width: 128px; height: 64px; object-fit: contain;" />
-                 </div>
+                  <div style="margin-bottom: 4px;">
+                    <img src="{{companyLogo}}" alt="شعار الشركة" style="width: 128px; height: 64px; object-fit: contain;" />
+                  </div>
                  {{/companyLogo}}
                  <h2 style="font-size: 1.25rem; font-weight: 600;">{{companyName}}</h2>
                 {{#companyNameAr}}

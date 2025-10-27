@@ -28,25 +28,25 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
       .dates-grid p {
         padding: 2px 0;
       }
-      .header-row-1 { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
-      .header-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+       .header-row-1 { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+       .header-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 12px; }
      .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-    .qr-section { margin-bottom: 15px; }
+     .qr-section { margin-bottom: 8px; }
     .logo-section { position: relative; width: 192px; height: 80px; margin-left: auto; }
       .invoice-title { font-size: 1.5rem; font-weight: bold; color: #1f2937; font-family: 'ArabicFont', 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--heading-font), 'sans-serif'; }
        .invoice-label { color: #374151; }
        .invoice-value { font-weight: 500; }
       .company-info, .billed-from { text-align: left; }
      .billed-from p, .bill-to p, .dates-grid p { padding: 4px 0; }
-    .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 20px; }
-        .bill-to, .billed-from, .invoice-details { border: 1px solid #d1d5db; padding: 15px; border-radius: 8px; margin-bottom: 8px; }
+     .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 12px; }
+         .bill-to, .billed-from, .invoice-details { border: 1px solid #d1d5db; padding: 12px; border-radius: 8px; margin-bottom: 6px; }
         .invoice-details { width: 350px; }
-    .customer-logo, .supplier-logo { position: relative; width: 128px; height: 64px; margin-bottom: 8px; }
+     .customer-logo, .supplier-logo { position: relative; width: 128px; height: 64px; margin-bottom: 4px; }
      .dates-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-     .table { width: 100%; margin-bottom: 12px; border-collapse: collapse; border: 1px solid #d1d5db; }
+      .table { width: 100%; margin-bottom: 8px; border-collapse: collapse; border: 1px solid #d1d5db; }
           .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 16px 12px; text-align: center; font-family: 'ArabicFont', 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--heading-font), 'sans-serif'; font-size: 11px; line-height: var(--line-spacing); vertical-align: middle; min-height: 1.1em; }
         .table td { border: 1px solid #d1d5db; padding: 2px 8px; text-align: center; line-height: var(--line-spacing); vertical-align: middle; min-height: 1.1em; }
-     .totals-stamp-container { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+      .totals-stamp-container { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
     .totals { flex: 1; }
       .totals div { width: 288px; }
      .total-line { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; }
@@ -54,7 +54,7 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
      .stamp { flex: 0 0 auto; margin-right: 30px; display: flex; justify-content: center; align-items: center; }
      .stamp div { text-align: center; }
       .stamp img { width: 150px; height: 150px; object-fit: contain; }
-     .notes { margin-bottom: 20px; text-align: left; }
+      .notes { margin-bottom: 8px; text-align: left; }
       .bilingual { display: flex; justify-content: space-between; align-items: center; }
       .english { flex: 1; text-align: left; }
       .arabic { flex: 1; text-align: left; direction: ltr; }
@@ -85,7 +85,7 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
     <div class="container">
       <!-- Header -->
       <div class="header">
-        <h1 class="invoice-title" style="margin-bottom: 20px;">Purchase Invoice / فاتورة مشتريات</h1>
+         <h1 class="invoice-title" style="margin-bottom: 8px;">Purchase Invoice / فاتورة مشتريات</h1>
         <div class="header-row-1">
            <div class="invoice-info invoice-details">
              <p><span class="invoice-label">Invoice # (رقم الفاتورة)</span><br/><span class="invoice-value">{{invoiceId}}</span></p>
@@ -114,12 +114,12 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
        </div>
  <div class="header-row-2">
              <div>
-               <h3 style="font-weight: 600; color: #6b7280; margin-bottom: 8px;">Billed From (من):</h3>
+                <h3 style="font-weight: 600; color: #6b7280; margin-bottom: 4px;">Billed From (من):</h3>
                <div class="billed-from">
                  {{#supplierLogo}}
-                 <div style="margin-bottom: 8px;">
-                   <img src="{{supplierLogo}}" alt="شعار المورد" style="width: 128px; height: 64px; object-fit: contain;" />
-                 </div>
+                  <div style="margin-bottom: 4px;">
+                    <img src="{{supplierLogo}}" alt="شعار المورد" style="width: 128px; height: 64px; object-fit: contain;" />
+                  </div>
                  {{/supplierLogo}}
                  <p style="font-weight: 500;">{{supplierNameAr}}</p>
                 {{#supplierName}}
@@ -131,12 +131,12 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
                </div>
              </div>
              <div>
-               <h3 style="font-weight: 600; color: #6b7280; margin-bottom: 8px;">Billed To (إلى):</h3>
+                <h3 style="font-weight: 600; color: #6b7280; margin-bottom: 4px;">Billed To (إلى):</h3>
                <div class="bill-to">
                  {{#companyLogo}}
-                 <div style="margin-bottom: 8px;">
-                   <img src="{{companyLogo}}" alt="شعار الشركة" style="width: 128px; height: 64px; object-fit: contain;" />
-                 </div>
+                  <div style="margin-bottom: 4px;">
+                    <img src="{{customerLogo}}" alt="شعار العميل" style="width: 128px; height: 64px; object-fit: contain;" />
+                  </div>
                  {{/companyLogo}}
                  <h2 style="font-size: 1.25rem; font-weight: 600;">{{companyNameAr}}</h2>
                 {{#companyName}}
@@ -213,7 +213,7 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
     <!-- Notes -->
     {{#notes}}
     <div class="notes">
-       <h3 style="font-weight: 600; margin-bottom: 6px;">Notes (ملاحظات):</h3>
+        <h3 style="font-weight: 600; margin-bottom: 4px;">Notes (ملاحظات):</h3>
       <p style="color: #6b7280;">{{notes}}</p>
     </div>
     {{/notes}}
