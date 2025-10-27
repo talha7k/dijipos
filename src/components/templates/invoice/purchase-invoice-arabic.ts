@@ -173,9 +173,9 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
                {{#description}}<p style="color: #6b7280; font-size: 0.875rem;">{{description}}</p>{{/description}}
              </div>
            </td>
-           <td>{{quantity}}</td>
-           <td>{{unitPrice}} ريال</td>
-           <td>{{total}} ريال</td>
+            <td>{{quantity}}</td>
+            <td>{{unitPrice}} ريال</td>
+            <td>{{itemTotal}} ريال</td>
          </tr>
          {{/each}}
        </tbody>

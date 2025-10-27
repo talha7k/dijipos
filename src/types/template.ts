@@ -197,13 +197,13 @@ export interface InvoiceTemplateData {
    headingFont?: string; // Font family for headings
    bodyFont?: string; // Font family for body text
    lineSpacing?: number; // Line spacing (invoices only)
-   items: Array<{
-    name: string;
-    description: string;
-    quantity: number;
-    unitPrice: string;
-    total: string;
-  }>;
+    items: Array<{
+     name: string;
+     description: string;
+     quantity: number;
+     unitPrice: string;
+     itemTotal: string;
+   }>;
 }
 
 

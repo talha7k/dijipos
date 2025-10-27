@@ -63,16 +63,14 @@ async function renderInvoice(
     lineSpacing: lineSpacing ?? 1.1,
     includeQR: true,
     qrCodeUrl: qrCodeBase64,
-    items: (invoice.items || []).map((item) => {
+     items: (invoice.items || []).map((item) => {
       const calculatedTotal = item.quantity * item.unitPrice;
-      const itemTotal = item.total || calculatedTotal;
-      console.log(`Item "${item.name}": quantity=${item.quantity}, unitPrice=${item.unitPrice}, storedTotal=${item.total}, calculatedTotal=${calculatedTotal}, using=${itemTotal}`);
       return {
         name: item.name,
         description: item.description || "",
         quantity: item.quantity,
         unitPrice: item.unitPrice.toFixed(2),
-        total: itemTotal.toFixed(2),
+        itemTotal: calculatedTotal.toFixed(2),
       };
     }),
     marginBottom: 10,
@@ -97,10 +95,7 @@ async function renderInvoice(
       : (isPurchaseInvoice ? purchaseInvoiceEnglish : salesInvoiceEnglish);
   }
 
-  console.log('Template content preview:', templateContent.substring(0, 200));
-  console.log('Template data:', data);
   const result = renderTemplate(templateContent, data);
-  console.log('Rendered result preview:', result.substring(0, 200));
   return result;
 }
 
@@ -258,41 +253,40 @@ export function InvoicePrintDialog({
       const template = filteredTemplates?.find((t) => t.id === selectedTemplate);
       if (template) {
         setDirection(template.type?.includes("arabic") ? "rtl" : "ltr");
+        // Clear cached HTML to force fresh render
+        setRenderedHtml("");
         renderPreview(template);
       }
     }
-  }, [open, selectedTemplate, invoice, organization, customer, supplier, filteredTemplates, renderPreview]);
+  }, [open, selectedTemplate, invoice, organization, customer, supplier, filteredTemplates, renderPreview, lineSpacing]);
 
   const handlePrint = useCallback(async () => {
     setIsGenerating(true);
-    try {
-      console.log("Print button clicked", { selectedTemplate, hasRenderedHtml: !!renderedHtml });
-      
-      if (!selectedTemplate) {
-        toast.error("No template selected");
-        return;
-      }
+     try {
+       if (!selectedTemplate) {
+         toast.error("No template selected");
+         return;
+       }
 
-      // Get the selected template
-      const template = filteredTemplates?.find((t) => t.id === selectedTemplate);
-      if (!template) {
-        toast.error("Template not found");
-        return;
-      }
+       // Get the selected template
+       const template = filteredTemplates?.find((t) => t.id === selectedTemplate);
+       if (!template) {
+         toast.error("Template not found");
+         return;
+       }
 
-      const direction = template?.type?.includes("arabic") ? "rtl" : "ltr";
+       const direction = template?.type?.includes("arabic") ? "rtl" : "ltr";
 
-      // Fresh render for print to ensure correct calculations
-      console.log("Rendering fresh invoice for print window...");
-      const freshRenderedHtml = await renderInvoice(
-        template,
-        invoice,
-        organization,
-        customer,
-        supplier,
-        settings,
-        lineSpacing,
-      );
+        // Fresh render for print to ensure correct calculations
+        const freshRenderedHtml = await renderInvoice(
+          template,
+          invoice,
+          organization,
+          customer,
+          supplier,
+          settings,
+          lineSpacing,
+        );
 
       // Create the print HTML with proper styling
       const printHtml = `
@@ -386,12 +380,11 @@ export function InvoicePrintDialog({
         return;
       }
 
-      // Write the HTML to the new window
-      printWindow.document.write(printHtml);
-      printWindow.document.close();
+       // Write the HTML to the new window
+       printWindow.document.write(printHtml);
+       printWindow.document.close();
 
-      console.log("Print window opened successfully");
-      toast.success("Print dialog opened");
+       toast.success("Print dialog opened");
     } catch (error) {
       console.error("Error printing invoice:", error);
       toast.error("Failed to print invoice");

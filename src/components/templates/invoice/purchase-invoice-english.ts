@@ -144,9 +144,9 @@ export const purchaseInvoiceEnglish = `<!DOCTYPE html>
                {{#description}}<p style="color: #6b7280; font-size: 0.875rem;">{{description}}</p>{{/description}}
              </div>
            </td>
-           <td style="text-align: right;">{{quantity}}</td>
-            <td style="text-align: right;">{{unitPrice}}</td>
-            <td style="text-align: right;">{{total}}</td>
+            <td style="text-align: right;">{{quantity}}</td>
+             <td style="text-align: right;">{{unitPrice}}</td>
+             <td style="text-align: right;">{{itemTotal}}</td>
          </tr>
          {{/each}}
        </tbody>
