@@ -268,14 +268,31 @@ export function InvoicePrintDialog({
     try {
       console.log("Print button clicked", { selectedTemplate, hasRenderedHtml: !!renderedHtml });
       
-      if (!selectedTemplate || !renderedHtml) {
-        toast.error("No template selected or preview not ready");
+      if (!selectedTemplate) {
+        toast.error("No template selected");
         return;
       }
 
-      // Get the selected template to determine direction
+      // Get the selected template
       const template = filteredTemplates?.find((t) => t.id === selectedTemplate);
+      if (!template) {
+        toast.error("Template not found");
+        return;
+      }
+
       const direction = template?.type?.includes("arabic") ? "rtl" : "ltr";
+
+      // Fresh render for print to ensure correct calculations
+      console.log("Rendering fresh invoice for print window...");
+      const freshRenderedHtml = await renderInvoice(
+        template,
+        invoice,
+        organization,
+        customer,
+        supplier,
+        settings,
+        lineSpacing,
+      );
 
       // Create the print HTML with proper styling
       const printHtml = `
@@ -325,7 +342,7 @@ export function InvoicePrintDialog({
         </head>
         <body>
           <div class="print-container">
-            ${renderedHtml}
+            ${freshRenderedHtml}
           </div>
           <script>
             // Auto-trigger print dialog when page loads
@@ -381,7 +398,7 @@ export function InvoicePrintDialog({
     } finally {
       setIsGenerating(false);
     }
-  }, [selectedTemplate, renderedHtml, filteredTemplates, pageSize, margins, paddings, lineSpacing, invoice]);
+  }, [selectedTemplate, renderedHtml, filteredTemplates, pageSize, margins, paddings, lineSpacing, invoice, customer, organization, settings, supplier]);
 
   // Effect to handle keyboard shortcuts
   useEffect(() => {
