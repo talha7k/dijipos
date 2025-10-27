@@ -2,6 +2,7 @@
 
 import { Item, InvoiceItem } from '@/types';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Trash2, Edit } from 'lucide-react';
 import { truncateTextByType } from '@/lib/utils';
 import { useCurrency } from '@/lib/hooks/useCurrency';
@@ -52,7 +53,18 @@ function EditableTableRow({ item, index, onRemove, onEdit, onUpdateQuantity }: E
           >
             -
           </Button>
-          <span className="w-8 text-center">{quantity}</span>
+          <Input
+            type="number"
+            min="1"
+            value={quantity}
+            onChange={(e) => {
+              const newQuantity = parseInt(e.target.value) || 1;
+              if (newQuantity >= 1) {
+                handleQuantityChange(newQuantity);
+              }
+            }}
+            className="w-16 h-6 text-center text-sm"
+          />
           <Button
             type="button"
             variant="outline"
