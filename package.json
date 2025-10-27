@@ -6,7 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "type-check": "tsc --noEmit",
+    "check": "bun run lint && bun run type-check && bun run build"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
