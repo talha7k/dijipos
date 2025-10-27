@@ -63,13 +63,18 @@ async function renderInvoice(
     lineSpacing: lineSpacing ?? 1.1,
     includeQR: true,
     qrCodeUrl: qrCodeBase64,
-    items: (invoice.items || []).map((item) => ({
-      name: item.name,
-      description: item.description || "",
-      quantity: item.quantity,
-      unitPrice: item.unitPrice.toFixed(2),
-      total: item.total.toFixed(2),
-    })),
+    items: (invoice.items || []).map((item) => {
+      const calculatedTotal = item.quantity * item.unitPrice;
+      const itemTotal = item.total || calculatedTotal;
+      console.log(`Item "${item.name}": quantity=${item.quantity}, unitPrice=${item.unitPrice}, storedTotal=${item.total}, calculatedTotal=${calculatedTotal}, using=${itemTotal}`);
+      return {
+        name: item.name,
+        description: item.description || "",
+        quantity: item.quantity,
+        unitPrice: item.unitPrice.toFixed(2),
+        total: itemTotal.toFixed(2),
+      };
+    }),
     marginBottom: 10,
     paddingTop: 15,
     paddingBottom: 15,
