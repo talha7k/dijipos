@@ -164,12 +164,12 @@ export async function getUserOrganizations(userId: string): Promise<(Organizatio
 
     const organizationUsers = snapshot.docs.map(doc => {
       const data = doc.data() as OrganizationUser;
-      const { id, ...dataWithoutId } = data;
+      const { createdAt, updatedAt, ...dataWithoutDates } = data; // Exclude the original id field
       return {
+        ...dataWithoutDates,
         id: doc.id,
-        ...dataWithoutId,
-        createdAt: data.createdAt instanceof Date ? data.createdAt : new Date(),
-        updatedAt: data.updatedAt instanceof Date ? data.updatedAt : new Date(),
+        createdAt: createdAt instanceof Date ? createdAt : new Date(),
+        updatedAt: updatedAt instanceof Date ? updatedAt : new Date(),
       };
     });
 

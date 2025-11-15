@@ -205,7 +205,7 @@ export function useItemsByType(itemType: ItemType): ItemsState & ItemsActions {
   }, [loadItems]);
 
   // Reuse the same actions as the main hook
-  const { createItem, createItemBulk, updateItem, deleteItem, getItemById, refreshItems } = useItems();
+  const { createItem, createItemBulk, updateItem, deleteItem, getItemById } = useItems();
 
   return {
     items,
@@ -255,7 +255,7 @@ export function useItemsByTransactionType(transactionType: ProductTransactionTyp
   }, [loadItems]);
 
   // Reuse the same actions as the main hook
-  const { createItem, createItemBulk, updateItem, deleteItem, getItemById, refreshItems } = useItems();
+  const { createItem, createItemBulk, updateItem, deleteItem, getItemById } = useItems();
 
   return {
     items,

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useState, useEffect, useRef } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -58,15 +58,29 @@ export function AddProductDialog({
 
   const isEditMode = productToEdit !== null;
 
+  // Custom hook to track previous values
+  function usePrevious<T>(value: T): T | undefined {
+    const ref = useRef<T | undefined>(undefined);
+    useEffect(() => {
+      ref.current = value;
+    }, [value]);
+    return ref.current;
+  }
+
+  const prevIsEditMode = usePrevious(isEditMode);
+  const prevProductToEdit = usePrevious(productToEdit);
+  const prevSelectedCategory = usePrevious(selectedCategory);
+  const prevDefaultTransactionType = usePrevious(defaultTransactionType);
+
   useEffect(() => {
-    if (isEditMode) {
+    if (isEditMode && (!prevProductToEdit || prevProductToEdit.id !== productToEdit?.id)) {
       setName(productToEdit.name);
       setDescription(productToEdit.description || '');
       setPrice(productToEdit.price.toString());
       setCategoryId(productToEdit.categoryId || '');
       setTransactionType(productToEdit.transactionType);
       setVariations(productToEdit.variations || []);
-    } else {
+    } else if (!isEditMode && prevIsEditMode !== isEditMode) {
       // Reset form for adding new product
       setName('');
       setDescription('');
@@ -75,8 +89,11 @@ export function AddProductDialog({
       setTransactionType(defaultTransactionType);
       setVariations([]);
     }
-    setNewVariation({ name: '', description: '', price: '' });
-  }, [productToEdit, isEditMode, selectedCategory, defaultTransactionType]);
+    // Only reset new variation when changing between edit/new mode
+    if (prevIsEditMode !== isEditMode) {
+      setNewVariation({ name: '', description: '', price: '' });
+    }
+  }, [isEditMode, prevIsEditMode, productToEdit, prevProductToEdit, selectedCategory, prevSelectedCategory, defaultTransactionType, prevDefaultTransactionType]);
 
   const addVariation = () => {
     if (newVariation.name && newVariation.price) {
@@ -235,7 +252,7 @@ export function AddProductDialog({
                <AccordionContent>
                  <div className="space-y-3">
                    {/* Existing Variations */}
-                   {variations.map((variation, index) => (
+                    {variations.map((variation) => (
                      <div key={variation.id} className="flex items-center gap-2 p-3 border rounded-md bg-muted/50">
                        <GripVertical className="h-4 w-4 text-muted-foreground" />
                        <div className="flex-1">

@@ -391,7 +391,7 @@ export function InvoicePrintDialog({
     } finally {
       setIsGenerating(false);
     }
-  }, [selectedTemplate, renderedHtml, filteredTemplates, pageSize, margins, paddings, lineSpacing, invoice, customer, organization, settings, supplier]);
+   }, [selectedTemplate, filteredTemplates, pageSize, margins, paddings, lineSpacing, invoice, customer, organization, settings, supplier]);
 
   // Effect to handle keyboard shortcuts
   useEffect(() => {

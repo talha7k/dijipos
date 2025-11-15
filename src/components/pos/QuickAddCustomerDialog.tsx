@@ -46,7 +46,7 @@ export function QuickAddCustomerDialog({ open, onOpenChange, onCustomerAdded }: 
       onOpenChange(false);
       setFormData({ name: '', nameAr: '', phone: '', address: '' });
       onCustomerAdded?.();
-    } catch (error) {
+    } catch {
       toast.error('Failed to add customer');
     } finally {
       setLoading(false);

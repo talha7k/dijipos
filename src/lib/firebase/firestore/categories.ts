@@ -98,7 +98,7 @@ export async function createCategory(data: Omit<Category, 'id' | 'createdAt' | '
 
     // Filter out undefined values to prevent Firestore errors
     const filteredData = Object.fromEntries(
-      Object.entries(data).filter(([_, value]) => value !== undefined)
+      Object.entries(data).filter(([, value]) => value !== undefined)
     );
 
     const docRef = await addDoc(categoriesRef, {

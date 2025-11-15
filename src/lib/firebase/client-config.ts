@@ -6,7 +6,6 @@ import {
 import {
   getFirestore,
   enableIndexedDbPersistence,
-  CACHE_SIZE_UNLIMITED,
 } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+
 import { Button } from "@/components/ui/button";
 import { Moon, Sun, ChevronLeft, ChevronRight } from "lucide-react";
 import { SidebarProps } from "./sidebar-types";
@@ -11,7 +11,6 @@ export function SidebarHeader({
   onToggleCollapse,
   onThemeToggle,
   theme = "light",
-  className,
 }: Partial<SidebarProps>) {
   return (
     <div className="flex items-center justify-between p-4 border-b">

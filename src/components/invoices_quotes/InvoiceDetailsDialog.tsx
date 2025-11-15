@@ -103,7 +103,7 @@ export function InvoiceDetailsDialog({
     if (open && invoice) {
       fetchPayments();
     }
-  }, [open, invoice?.id, fetchPayments]);
+   }, [open, invoice, fetchPayments]);
 
   // Refresh payments after adding a new one
   const handleAddPayment = async (paymentData: {

@@ -1,7 +1,7 @@
 // components/layout/AuthGuard.jsx
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/hooks/useAuth";
 import FullPageLoader from "@/components/ui/FullPageLoader";
@@ -9,7 +9,7 @@ import FullPageLoader from "@/components/ui/FullPageLoader";
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [isRedirecting, setIsRedirecting] = useState(false);
+
 
   const { user, loading: authLoading } = useAuth();
 
@@ -18,18 +18,18 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       pathname,
     ) || (pathname && pathname.startsWith("/auth"));
 
+  // Derive redirect state
+  const shouldRedirect = !authLoading && !isPublicRoute && !user;
+  
   // Handle redirects in useEffect to avoid setState during render
   useEffect(() => {
-    if (!authLoading && !isPublicRoute && !user) {
-      setIsRedirecting(true);
+    if (shouldRedirect) {
       router.replace("/login");
-    } else {
-      setIsRedirecting(false);
     }
-  }, [authLoading, isPublicRoute, user, router]);
+  }, [shouldRedirect, router]);
 
   // 1. Show a loader during initial auth check or while redirecting
-  if (authLoading || isRedirecting) {
+  if (authLoading || shouldRedirect) {
     return <FullPageLoader />;
   }
 

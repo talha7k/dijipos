@@ -19,9 +19,8 @@ import { SidebarProps, NavigationItem } from "./sidebar-types";
 import {
   BarChart3,
   Building2,
-  FileMinus,
-  FileText,
-  Home,
+   FileMinus,
+   Home,
   PieChart,
   Receipt,
   Settings,

@@ -154,7 +154,7 @@ export function ReceiptPrintDialog({
   );
 
 
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [isGenerating] = useState(false);
   const [renderedHtml, setRenderedHtml] = useState("");
   const [direction, setDirection] = useState<"ltr" | "rtl">("ltr");
   const [payments, setPayments] = useState<OrderPayment[]>(initialPayments);

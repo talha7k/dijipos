@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,12 +38,7 @@ export function CartItemModal({
   const [quantity, setQuantity] = useState(item?.quantity || 1);
   const [selectedVariationId, setSelectedVariationId] = useState(item?.selectedVariationId || '');
 
-  useEffect(() => {
-    if (item) {
-      setQuantity(item.quantity);
-      setSelectedVariationId(item.selectedVariationId || '');
-    }
-  }, [item]);
+
 
   const handleQuantityChange = (newQuantity: number) => {
     if (newQuantity >= 1) {

@@ -4,7 +4,6 @@ import {
   InvoiceTemplateType,
   ReceiptTemplateType,
   TemplateFieldType,
-  PrinterFormat,
   FontSize,
   InvoiceType
 } from "./enums";

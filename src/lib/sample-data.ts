@@ -22,7 +22,6 @@ import {
   InvoiceType,
   ProductTransactionType,
 } from "@/types";
-import { InvoiceTemplateType } from "@/types/enums";
 
 // Sample categories
 export const sampleCategories: Omit<Category, "organizationId">[] = [

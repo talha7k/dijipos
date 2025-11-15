@@ -3,11 +3,10 @@
 import { useState, useMemo } from 'react';
 import { InvoiceTemplate } from '@/types/template';
 import { InvoiceTemplateType } from '@/types/enums';
-
 import { salesInvoiceEnglish } from '@/components/templates/invoice/sales-invoice-english';
 import { salesInvoiceArabic } from '@/components/templates/invoice/sales-invoice-arabic';
-import { purchaseInvoiceEnglish } from '@/components/templates/invoice/purchase-invoice-english';
-import { purchaseInvoiceArabic } from '@/components/templates/invoice/purchase-invoice-arabic';
+
+
 
 export function useInvoicesTemplatesData(organizationId: string | undefined) {
   const [templates, setTemplates] = useState<InvoiceTemplate[]>([]);
@@ -73,16 +72,16 @@ export function useInvoicesTemplatesData(organizationId: string | undefined) {
       templatesCount: staticTemplates.length,
       templates: staticTemplates.map(t => ({ id: t.id, name: t.name }))
     });
-    setTemplates(staticTemplates);
-  }, [staticTemplates]);
+  }, [staticTemplates, organizationId]);
 
   // Mock mutations that update local state
   const addTemplate = async (template: Omit<InvoiceTemplate, 'id' | 'createdAt' | 'updatedAt'>) => {
     if (!organizationId) throw new Error('No organization selected');
 
+    const newTemplateId = `custom-${Date.now()}`; // Generate ID outside of object
     const newTemplate = {
       ...template,
-      id: `custom-${Date.now()}`, // Generate a simple ID for new templates
+      id: newTemplateId,
       createdAt: new Date(),
       updatedAt: new Date(),
     };

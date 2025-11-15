@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useAtomValue } from 'jotai';
 import { selectedOrganizationAtom } from '@/atoms';
 import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
-import { PaymentType } from '@/types';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,11 +15,7 @@ import { CreditCard, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Loader } from '@/components/ui/loader';
 
-interface PaymentTypesTabProps {
-  paymentTypes?: PaymentType[];
-}
-
-export function PaymentTypesTab({ paymentTypes: propPaymentTypes = [] }: PaymentTypesTabProps) {
+export function PaymentTypesTab() {
   const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
   const { storeSettings, createNewPaymentType, deleteExistingPaymentType, loading } = useStoreSettings();

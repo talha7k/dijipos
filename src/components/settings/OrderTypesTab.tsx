@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useAtomValue } from 'jotai';
 import { selectedOrganizationAtom } from '@/atoms';
 import { useStoreSettings } from '@/lib/hooks/useStoreSettings';
-import { OrderType } from '@/types';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,11 +15,7 @@ import { UtensilsCrossed, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Loader } from '@/components/ui/loader';
 
-interface OrderTypesTabProps {
-  orderTypes: OrderType[];
-}
-
-export function OrderTypesTab({ orderTypes: propOrderTypes }: OrderTypesTabProps) {
+export function OrderTypesTab() {
   const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
   const { storeSettings, createNewOrderType, deleteExistingOrderType, loading } = useStoreSettings();

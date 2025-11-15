@@ -1,0 +1,314 @@
+[debug] [2025-11-15T11:04:22.304Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T11:04:22.305Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T11:04:22.307Z] Checked if tokens are valid: true, expires at: 1763207794171
+[debug] [2025-11-15T11:04:22.307Z] Checked if tokens are valid: true, expires at: 1763207794171
+[debug] [2025-11-15T11:04:22.309Z] Checked if tokens are valid: true, expires at: 1763207794171
+[debug] [2025-11-15T11:04:22.309Z] Checked if tokens are valid: true, expires at: 1763207794171
+[debug] [2025-11-15T11:04:22.309Z] Checked if tokens are valid: true, expires at: 1763207794171
+[debug] [2025-11-15T11:04:22.309Z] Checked if tokens are valid: true, expires at: 1763207794171
+[debug] [2025-11-15T11:04:22.309Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T11:04:22.309Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T11:04:22.310Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com [none]
+[debug] [2025-11-15T11:04:22.310Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com x-goog-quota-user=projects/dijipos-27e3a
+[debug] [2025-11-15T11:04:22.310Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com [none]
+[debug] [2025-11-15T11:04:22.310Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com x-goog-quota-user=projects/dijipos-27e3a
+[debug] [2025-11-15T11:04:22.311Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com [none]
+[debug] [2025-11-15T11:04:22.311Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com x-goog-quota-user=projects/dijipos-27e3a
+[debug] [2025-11-15T11:04:22.311Z] Checked if tokens are valid: true, expires at: 1763207794171
+[debug] [2025-11-15T11:04:22.311Z] Checked if tokens are valid: true, expires at: 1763207794171
+[debug] [2025-11-15T11:04:22.311Z] Checked if tokens are valid: true, expires at: 1763207794171
+[debug] [2025-11-15T11:04:22.312Z] Checked if tokens are valid: true, expires at: 1763207794171
+[debug] [2025-11-15T11:04:22.312Z] Checked if tokens are valid: true, expires at: 1763207794171
+[debug] [2025-11-15T11:04:22.312Z] Checked if tokens are valid: true, expires at: 1763207794171
+[debug] [2025-11-15T11:04:22.312Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com [none]
+[debug] [2025-11-15T11:04:22.312Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com x-goog-quota-user=projects/dijipos-27e3a
+[debug] [2025-11-15T11:04:22.312Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com [none]
+[debug] [2025-11-15T11:04:22.312Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com x-goog-quota-user=projects/dijipos-27e3a
+[debug] [2025-11-15T11:04:22.312Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com [none]
+[debug] [2025-11-15T11:04:22.312Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com x-goog-quota-user=projects/dijipos-27e3a
+[debug] [2025-11-15T11:04:23.309Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com 403
+[debug] [2025-11-15T11:04:23.309Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com [omitted]
+[debug] [2025-11-15T11:04:23.360Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com 403
+[debug] [2025-11-15T11:04:23.360Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com [omitted]
+[debug] [2025-11-15T11:04:23.447Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com 200
+[debug] [2025-11-15T11:04:23.447Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com [omitted]
+[debug] [2025-11-15T11:04:23.449Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com 200
+[debug] [2025-11-15T11:04:23.449Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com [omitted]
+[debug] [2025-11-15T11:04:23.480Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com 200
+[debug] [2025-11-15T11:04:23.480Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com [omitted]
+[debug] [2025-11-15T11:04:23.485Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com 200
+[debug] [2025-11-15T11:04:23.486Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com [omitted]
+[debug] [2025-11-15T11:04:23.577Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T11:04:23.577Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T11:04:23.578Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T11:04:23.579Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T11:04:27.924Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T11:04:27.924Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T11:04:27.925Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T11:04:27.925Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T11:07:36.459Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T11:07:36.459Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T11:07:36.460Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T11:07:36.460Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T11:08:38.648Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T11:08:38.649Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T11:08:38.651Z] Checked if tokens are valid: true, expires at: 1763207794171
+[debug] [2025-11-15T11:08:38.651Z] Checked if tokens are valid: true, expires at: 1763207794171
+[debug] [2025-11-15T11:08:38.653Z] Checked if tokens are valid: true, expires at: 1763207794171
+[debug] [2025-11-15T11:08:38.653Z] Checked if tokens are valid: true, expires at: 1763207794171
+[debug] [2025-11-15T11:08:38.653Z] Checked if tokens are valid: true, expires at: 1763207794171
+[debug] [2025-11-15T11:08:38.653Z] Checked if tokens are valid: true, expires at: 1763207794171
+[debug] [2025-11-15T11:08:38.653Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T11:08:38.653Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T11:08:38.654Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com [none]
+[debug] [2025-11-15T11:08:38.654Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com x-goog-quota-user=projects/dijipos-27e3a
+[debug] [2025-11-15T11:08:38.654Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com [none]
+[debug] [2025-11-15T11:08:38.654Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com x-goog-quota-user=projects/dijipos-27e3a
+[debug] [2025-11-15T11:08:38.655Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com [none]
+[debug] [2025-11-15T11:08:38.655Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com x-goog-quota-user=projects/dijipos-27e3a
+[debug] [2025-11-15T11:08:38.655Z] Checked if tokens are valid: true, expires at: 1763207794171
+[debug] [2025-11-15T11:08:38.655Z] Checked if tokens are valid: true, expires at: 1763207794171
+[debug] [2025-11-15T11:08:38.656Z] Checked if tokens are valid: true, expires at: 1763207794171
+[debug] [2025-11-15T11:08:38.656Z] Checked if tokens are valid: true, expires at: 1763207794171
+[debug] [2025-11-15T11:08:38.656Z] Checked if tokens are valid: true, expires at: 1763207794171
+[debug] [2025-11-15T11:08:38.656Z] Checked if tokens are valid: true, expires at: 1763207794171
+[debug] [2025-11-15T11:08:38.656Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com [none]
+[debug] [2025-11-15T11:08:38.656Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com x-goog-quota-user=projects/dijipos-27e3a
+[debug] [2025-11-15T11:08:38.656Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com [none]
+[debug] [2025-11-15T11:08:38.656Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com x-goog-quota-user=projects/dijipos-27e3a
+[debug] [2025-11-15T11:08:38.656Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com [none]
+[debug] [2025-11-15T11:08:38.656Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com x-goog-quota-user=projects/dijipos-27e3a
+[debug] [2025-11-15T11:08:39.089Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com 403
+[debug] [2025-11-15T11:08:39.089Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com [omitted]
+[debug] [2025-11-15T11:08:39.571Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com 403
+[debug] [2025-11-15T11:08:39.571Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com [omitted]
+[debug] [2025-11-15T11:08:39.668Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com 200
+[debug] [2025-11-15T11:08:39.668Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com [omitted]
+[debug] [2025-11-15T11:08:39.677Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com 200
+[debug] [2025-11-15T11:08:39.677Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com [omitted]
+[debug] [2025-11-15T11:08:39.725Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com 200
+[debug] [2025-11-15T11:08:39.725Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com [omitted]
+[debug] [2025-11-15T11:08:39.760Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com 200
+[debug] [2025-11-15T11:08:39.760Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com [omitted]
+[debug] [2025-11-15T11:08:39.821Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T11:08:39.821Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T11:08:39.822Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T11:08:39.823Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T11:08:54.755Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T11:08:54.755Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T11:08:54.755Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T11:08:54.755Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T11:13:11.271Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T11:13:11.271Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T11:13:11.272Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T11:13:11.272Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T11:13:29.095Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T11:13:29.095Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T11:13:29.096Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T11:13:29.096Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T11:15:53.331Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T11:15:53.332Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T11:15:53.335Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T11:15:53.335Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T11:18:05.765Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T11:18:05.765Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T11:18:05.766Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T11:18:05.766Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T11:26:18.479Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T11:26:18.480Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T11:26:18.481Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T11:26:18.481Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T12:09:09.518Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T12:09:09.520Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T12:09:09.521Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T12:09:09.521Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T12:22:10.074Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T12:22:10.075Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T12:22:10.076Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T12:22:10.076Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T12:46:53.637Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T12:46:53.638Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T12:46:53.640Z] Checked if tokens are valid: false, expires at: 1763207794171
+[debug] [2025-11-15T12:46:53.640Z] Checked if tokens are valid: false, expires at: 1763207794171
+[debug] [2025-11-15T12:46:53.640Z] > refreshing access token with scopes: []
+[debug] [2025-11-15T12:46:53.641Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-11-15T12:46:53.641Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-15T12:46:53.644Z] Checked if tokens are valid: false, expires at: 1763207794171
+[debug] [2025-11-15T12:46:53.645Z] Checked if tokens are valid: false, expires at: 1763207794171
+[debug] [2025-11-15T12:46:53.645Z] > refreshing access token with scopes: []
+[debug] [2025-11-15T12:46:53.645Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-11-15T12:46:53.645Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-15T12:46:53.645Z] Checked if tokens are valid: false, expires at: 1763207794171
+[debug] [2025-11-15T12:46:53.645Z] Checked if tokens are valid: false, expires at: 1763207794171
+[debug] [2025-11-15T12:46:53.645Z] > refreshing access token with scopes: []
+[debug] [2025-11-15T12:46:53.645Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-11-15T12:46:53.645Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-15T12:46:53.646Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T12:46:53.646Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T12:46:53.646Z] Checked if tokens are valid: false, expires at: 1763207794171
+[debug] [2025-11-15T12:46:53.646Z] Checked if tokens are valid: false, expires at: 1763207794171
+[debug] [2025-11-15T12:46:53.646Z] > refreshing access token with scopes: []
+[debug] [2025-11-15T12:46:53.646Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-11-15T12:46:53.646Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-15T12:46:53.646Z] Checked if tokens are valid: false, expires at: 1763207794171
+[debug] [2025-11-15T12:46:53.646Z] Checked if tokens are valid: false, expires at: 1763207794171
+[debug] [2025-11-15T12:46:53.646Z] > refreshing access token with scopes: []
+[debug] [2025-11-15T12:46:53.646Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-11-15T12:46:53.647Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-15T12:46:53.647Z] Checked if tokens are valid: false, expires at: 1763207794171
+[debug] [2025-11-15T12:46:53.647Z] Checked if tokens are valid: false, expires at: 1763207794171
+[debug] [2025-11-15T12:46:53.647Z] > refreshing access token with scopes: []
+[debug] [2025-11-15T12:46:53.647Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-11-15T12:46:53.647Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-15T12:46:53.922Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-11-15T12:46:53.922Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-15T12:46:53.941Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com [none]
+[debug] [2025-11-15T12:46:53.941Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com x-goog-quota-user=projects/dijipos-27e3a
+[debug] [2025-11-15T12:46:53.942Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-11-15T12:46:53.942Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-15T12:46:53.953Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com [none]
+[debug] [2025-11-15T12:46:53.953Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com x-goog-quota-user=projects/dijipos-27e3a
+[debug] [2025-11-15T12:46:53.954Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-11-15T12:46:53.954Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-15T12:46:53.960Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com [none]
+[debug] [2025-11-15T12:46:53.960Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com x-goog-quota-user=projects/dijipos-27e3a
+[debug] [2025-11-15T12:46:53.960Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-11-15T12:46:53.960Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-15T12:46:53.968Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com [none]
+[debug] [2025-11-15T12:46:53.968Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com x-goog-quota-user=projects/dijipos-27e3a
+[debug] [2025-11-15T12:46:53.968Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-11-15T12:46:53.968Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-15T12:46:53.975Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com [none]
+[debug] [2025-11-15T12:46:53.975Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com x-goog-quota-user=projects/dijipos-27e3a
+[debug] [2025-11-15T12:46:53.975Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-11-15T12:46:53.975Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-15T12:46:53.983Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com [none]
+[debug] [2025-11-15T12:46:53.983Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com x-goog-quota-user=projects/dijipos-27e3a
+[debug] [2025-11-15T12:46:54.936Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com 403
+[debug] [2025-11-15T12:46:54.936Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com [omitted]
+[debug] [2025-11-15T12:46:54.977Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com 403
+[debug] [2025-11-15T12:46:54.977Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com [omitted]
+[debug] [2025-11-15T12:46:55.081Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com 200
+[debug] [2025-11-15T12:46:55.081Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com [omitted]
+[debug] [2025-11-15T12:46:55.084Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com 200
+[debug] [2025-11-15T12:46:55.084Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com [omitted]
+[debug] [2025-11-15T12:46:55.090Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com 200
+[debug] [2025-11-15T12:46:55.090Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com [omitted]
+[debug] [2025-11-15T12:46:55.099Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com 200
+[debug] [2025-11-15T12:46:55.099Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com [omitted]
+[debug] [2025-11-15T12:46:55.194Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T12:46:55.195Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T12:46:55.195Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T12:46:55.195Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T12:46:55.303Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T12:46:55.303Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T12:46:55.303Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T12:46:55.303Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T12:47:10.257Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T12:47:10.258Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T12:47:10.259Z] Checked if tokens are valid: true, expires at: 1763214412975
+[debug] [2025-11-15T12:47:10.259Z] Checked if tokens are valid: true, expires at: 1763214412975
+[debug] [2025-11-15T12:47:10.262Z] Checked if tokens are valid: true, expires at: 1763214412975
+[debug] [2025-11-15T12:47:10.262Z] Checked if tokens are valid: true, expires at: 1763214412975
+[debug] [2025-11-15T12:47:10.262Z] Checked if tokens are valid: true, expires at: 1763214412975
+[debug] [2025-11-15T12:47:10.262Z] Checked if tokens are valid: true, expires at: 1763214412975
+[debug] [2025-11-15T12:47:10.262Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T12:47:10.262Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T12:47:10.263Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com [none]
+[debug] [2025-11-15T12:47:10.263Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com x-goog-quota-user=projects/dijipos-27e3a
+[debug] [2025-11-15T12:47:10.263Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com [none]
+[debug] [2025-11-15T12:47:10.263Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com x-goog-quota-user=projects/dijipos-27e3a
+[debug] [2025-11-15T12:47:10.264Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com [none]
+[debug] [2025-11-15T12:47:10.264Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com x-goog-quota-user=projects/dijipos-27e3a
+[debug] [2025-11-15T12:47:10.266Z] Checked if tokens are valid: true, expires at: 1763214412975
+[debug] [2025-11-15T12:47:10.266Z] Checked if tokens are valid: true, expires at: 1763214412975
+[debug] [2025-11-15T12:47:10.268Z] Checked if tokens are valid: true, expires at: 1763214412975
+[debug] [2025-11-15T12:47:10.268Z] Checked if tokens are valid: true, expires at: 1763214412975
+[debug] [2025-11-15T12:47:10.268Z] Checked if tokens are valid: true, expires at: 1763214412975
+[debug] [2025-11-15T12:47:10.268Z] Checked if tokens are valid: true, expires at: 1763214412975
+[debug] [2025-11-15T12:47:10.269Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com [none]
+[debug] [2025-11-15T12:47:10.269Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com x-goog-quota-user=projects/dijipos-27e3a
+[debug] [2025-11-15T12:47:10.270Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com [none]
+[debug] [2025-11-15T12:47:10.270Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com x-goog-quota-user=projects/dijipos-27e3a
+[debug] [2025-11-15T12:47:10.270Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com [none]
+[debug] [2025-11-15T12:47:10.270Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com x-goog-quota-user=projects/dijipos-27e3a
+[debug] [2025-11-15T12:47:11.171Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com 403
+[debug] [2025-11-15T12:47:11.171Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com [omitted]
+[debug] [2025-11-15T12:47:11.218Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com 403
+[debug] [2025-11-15T12:47:11.218Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com [omitted]
+[debug] [2025-11-15T12:47:11.463Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com 200
+[debug] [2025-11-15T12:47:11.463Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com [omitted]
+[debug] [2025-11-15T12:47:11.475Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com 200
+[debug] [2025-11-15T12:47:11.475Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com [omitted]
+[debug] [2025-11-15T12:47:11.484Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com 200
+[debug] [2025-11-15T12:47:11.484Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com [omitted]
+[debug] [2025-11-15T12:47:11.486Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com 200
+[debug] [2025-11-15T12:47:11.486Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com [omitted]
+[debug] [2025-11-15T12:47:11.582Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T12:47:11.582Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T12:47:11.582Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T12:47:11.582Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T12:47:11.677Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T12:47:11.677Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T12:47:11.677Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T12:47:11.677Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T12:49:38.862Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T12:49:38.862Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T12:49:38.864Z] Checked if tokens are valid: true, expires at: 1763214412975
+[debug] [2025-11-15T12:49:38.864Z] Checked if tokens are valid: true, expires at: 1763214412975
+[debug] [2025-11-15T12:49:38.867Z] Checked if tokens are valid: true, expires at: 1763214412975
+[debug] [2025-11-15T12:49:38.867Z] Checked if tokens are valid: true, expires at: 1763214412975
+[debug] [2025-11-15T12:49:38.867Z] Checked if tokens are valid: true, expires at: 1763214412975
+[debug] [2025-11-15T12:49:38.867Z] Checked if tokens are valid: true, expires at: 1763214412975
+[debug] [2025-11-15T12:49:38.867Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T12:49:38.867Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T12:49:38.867Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com [none]
+[debug] [2025-11-15T12:49:38.867Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com x-goog-quota-user=projects/dijipos-27e3a
+[debug] [2025-11-15T12:49:38.868Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com [none]
+[debug] [2025-11-15T12:49:38.868Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com x-goog-quota-user=projects/dijipos-27e3a
+[debug] [2025-11-15T12:49:38.868Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com [none]
+[debug] [2025-11-15T12:49:38.868Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com x-goog-quota-user=projects/dijipos-27e3a
+[debug] [2025-11-15T12:49:38.869Z] Checked if tokens are valid: true, expires at: 1763214412975
+[debug] [2025-11-15T12:49:38.869Z] Checked if tokens are valid: true, expires at: 1763214412975
+[debug] [2025-11-15T12:49:38.869Z] Checked if tokens are valid: true, expires at: 1763214412975
+[debug] [2025-11-15T12:49:38.869Z] Checked if tokens are valid: true, expires at: 1763214412975
+[debug] [2025-11-15T12:49:38.869Z] Checked if tokens are valid: true, expires at: 1763214412975
+[debug] [2025-11-15T12:49:38.869Z] Checked if tokens are valid: true, expires at: 1763214412975
+[debug] [2025-11-15T12:49:38.869Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com [none]
+[debug] [2025-11-15T12:49:38.869Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com x-goog-quota-user=projects/dijipos-27e3a
+[debug] [2025-11-15T12:49:38.870Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com [none]
+[debug] [2025-11-15T12:49:38.870Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com x-goog-quota-user=projects/dijipos-27e3a
+[debug] [2025-11-15T12:49:38.870Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com [none]
+[debug] [2025-11-15T12:49:38.870Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com x-goog-quota-user=projects/dijipos-27e3a
+[debug] [2025-11-15T12:49:39.779Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com 403
+[debug] [2025-11-15T12:49:39.779Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com [omitted]
+[debug] [2025-11-15T12:49:39.794Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com 403
+[debug] [2025-11-15T12:49:39.795Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseio.com [omitted]
+[debug] [2025-11-15T12:49:39.896Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com 200
+[debug] [2025-11-15T12:49:39.896Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com [omitted]
+[debug] [2025-11-15T12:49:39.900Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com 200
+[debug] [2025-11-15T12:49:39.900Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebaseapphosting.googleapis.com [omitted]
+[debug] [2025-11-15T12:49:39.904Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com 200
+[debug] [2025-11-15T12:49:39.904Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com [omitted]
+[debug] [2025-11-15T12:49:39.945Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com 200
+[debug] [2025-11-15T12:49:39.945Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/dijipos-27e3a/services/firebasedataconnect.googleapis.com [omitted]
+[debug] [2025-11-15T12:49:40.004Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T12:49:40.004Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T12:49:40.005Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T12:49:40.005Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T12:49:40.450Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T12:49:40.451Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T12:49:40.451Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T12:49:40.451Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T12:53:50.971Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T12:53:50.972Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T12:53:50.973Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T12:53:50.973Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T12:55:07.672Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T12:55:07.673Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T12:55:07.674Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T12:55:07.674Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T14:20:17.604Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T14:20:17.605Z] > authorizing via signed-in user (dijitize.com@gmail.com)
+[debug] [2025-11-15T14:20:17.606Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-15T14:20:17.606Z] > authorizing via signed-in user (dijitize.com@gmail.com)

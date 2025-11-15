@@ -35,12 +35,6 @@ function SettingsContent() {
     loading: settingsLoading
   } = useStoreSettings();
 
-  // Extract data from storeSettings
-  const orderTypes = storeSettings?.orderTypes || [];
-  const paymentTypes = storeSettings?.paymentTypes || [];
-
-  
-
 
   // Debug logging
   console.log('SettingsPage Debug:', {
@@ -75,15 +69,11 @@ function SettingsContent() {
         </TabsList>
 
         <TabsContent value="order-types" className="space-y-4">
-          <OrderTypesTab
-            orderTypes={orderTypes || []}
-          />
+          <OrderTypesTab />
         </TabsContent>
 
         <TabsContent value="payment-types" className="space-y-4">
-          <PaymentTypesTab
-            paymentTypes={paymentTypes || []}
-          />
+          <PaymentTypesTab />
         </TabsContent>
 
         <TabsContent value="tables" className="space-y-4">

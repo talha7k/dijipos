@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Clock } from "lucide-react";
-import { Order, OrderStatus, OrderPayment } from "@/types";
+import { Order, OrderStatus } from "@/types";
 import { OrderSummaryCard } from "./OrderSummaryCard";
 
 interface OrderListProps {

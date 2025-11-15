@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { EditableSetting } from '@/components/ui/editable-setting';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Percent, FileText, DollarSign, Database } from 'lucide-react';
+import { Percent, DollarSign, Database } from 'lucide-react';
 import { toast } from 'sonner';
 import { Loader } from '@/components/ui/loader';
 import { updateVATSettings, updateCurrencySettings, createVATSettings, createCurrencySettings } from '@/lib/firebase/firestore/settings/storeSettings';

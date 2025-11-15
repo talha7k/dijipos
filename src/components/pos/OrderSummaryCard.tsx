@@ -16,7 +16,7 @@ import {
   FileText,
   CreditCard,
 } from "lucide-react";
-import { Order, OrderStatus, PaymentStatus, OrderPayment } from "@/types";
+import { Order, OrderStatus, PaymentStatus } from "@/types";
 import { getOrderStatusColor } from "@/types/enums";
 import { OrderActionsDialog } from "./OrderStatusActionsDialog";
 import { OrderStatusBadge } from "./OrderStatusBadge";
@@ -65,7 +65,6 @@ export function OrderSummaryCard({
   const { formatCurrency } = useCurrency();
 
   const paymentStatus = order.paymentStatus || PaymentStatus.UNPAID;
-  const isActuallyPaid = paymentStatus === PaymentStatus.PAID;
 
   // Get background color class for badges
   const getStatusBgColor = (status: OrderStatus) => {

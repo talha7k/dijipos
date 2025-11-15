@@ -100,7 +100,7 @@ export function AddSupplierDialog({ open, onOpenChange, onSupplierAdded, editing
 
       onOpenChange(false);
       onSupplierAdded?.();
-    } catch (error) {
+    } catch {
       toast.error(`Failed to ${editingSupplier ? 'update' : 'add'} supplier`);
     } finally {
       setLoading(false);

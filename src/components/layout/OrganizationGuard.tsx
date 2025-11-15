@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAtomValue } from "jotai";
 import { selectedOrganizationIdAtom, selectedOrganizationAtom, organizationLoadingAtom } from "@/atoms";
@@ -10,7 +10,7 @@ import FullPageLoader from "@/components/ui/FullPageLoader";
 export function OrganizationGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [isRedirecting, setIsRedirecting] = useState(false);
+
 
    const { user } = useAuth();
    const selectedOrgId = useAtomValue(selectedOrganizationIdAtom);
@@ -29,21 +29,19 @@ export function OrganizationGuard({ children }: { children: React.ReactNode }) {
     pathname && pathname.startsWith("/auth") ? [pathname] : []
   );
 
+   // Derive redirect state
+   const shouldRedirect = user && !orgLoading && !organizationOptionalRoutes.includes(pathname || "") &&
+     (!selectedOrgId || (selectedOrgId && !selectedOrganization));
+
    // Handle redirects in useEffect to avoid setState during render
    useEffect(() => {
-     const shouldRedirect = user && !orgLoading && !organizationOptionalRoutes.includes(pathname || "") &&
-       (!selectedOrgId || (selectedOrgId && !selectedOrganization));
-
      if (shouldRedirect) {
-       setIsRedirecting(true);
        router.replace("/select-organization");
-     } else {
-       setIsRedirecting(false);
      }
-   }, [user, selectedOrgId, selectedOrganization, orgLoading, pathname, router, organizationOptionalRoutes]);
+   }, [shouldRedirect, router]);
 
    // Show loader while checking organization or redirecting
-   if (user && orgLoading || isRedirecting) {
+   if (user && orgLoading || shouldRedirect) {
      return <FullPageLoader />;
    }
 

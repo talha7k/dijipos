@@ -71,47 +71,55 @@ export function EditCustomerDialog({
         // Find the customer record
         const customer = customers.find(c => c.name === (invoice as SalesInvoice).clientName);
         if (customer) {
-          setClientName(customer.name || '');
-          setClientNameAr(customer.nameAr || '');
-          setClientEmail(customer.email || '');
-          setClientAddress(customer.address || '');
-          setClientPhone(customer.phone || '');
-          setClientVAT(customer.vatNumber || '');
-          setClientLogoUrl(customer.logoUrl || '');
+          Promise.resolve().then(() => {
+            setClientName(customer.name || '');
+            setClientNameAr(customer.nameAr || '');
+            setClientEmail(customer.email || '');
+            setClientAddress(customer.address || '');
+            setClientPhone(customer.phone || '');
+            setClientVAT(customer.vatNumber || '');
+            setClientLogoUrl(customer.logoUrl || '');
+          });
         } else {
           // Fallback to invoice data if customer not found
           const salesInvoice = invoice as SalesInvoice;
-          setClientName(salesInvoice.clientName || '');
-          setClientEmail(salesInvoice.clientEmail || '');
-          setClientAddress(salesInvoice.clientAddress || '');
-          setClientNameAr('');
-          setClientPhone('');
-          setClientVAT('');
-          setClientLogoUrl('');
+          Promise.resolve().then(() => {
+            setClientName(salesInvoice.clientName || '');
+            setClientEmail(salesInvoice.clientEmail || '');
+            setClientAddress(salesInvoice.clientAddress || '');
+            setClientNameAr('');
+            setClientPhone('');
+            setClientVAT('');
+            setClientLogoUrl('');
+          });
         }
       } else {
         // Find the supplier record
         const purchaseInvoice = invoice as PurchaseInvoice;
         const supplier = suppliers.find(s => s.id === purchaseInvoice.supplierId);
         if (supplier) {
-          setSupplierName(supplier.name || '');
-          setSupplierNameAr(supplier.nameAr || '');
-          setSupplierEmail(supplier.email || '');
-          setSupplierAddress(supplier.address || '');
-          setSupplierPhone(supplier.phone || '');
-          setSupplierVAT(supplier.vatNumber || '');
-          setSupplierContactPerson(supplier.contactPerson || '');
-          setSupplierLogoUrl(supplier.logoUrl || '');
+          Promise.resolve().then(() => {
+            setSupplierName(supplier.name || '');
+            setSupplierNameAr(supplier.nameAr || '');
+            setSupplierEmail(supplier.email || '');
+            setSupplierAddress(supplier.address || '');
+            setSupplierPhone(supplier.phone || '');
+            setSupplierVAT(supplier.vatNumber || '');
+            setSupplierContactPerson(supplier.contactPerson || '');
+            setSupplierLogoUrl(supplier.logoUrl || '');
+          });
         } else {
           // Fallback to invoice data if supplier not found
-          setSupplierName(purchaseInvoice.supplierName || '');
-          setSupplierEmail(purchaseInvoice.supplierEmail || '');
-          setSupplierAddress(purchaseInvoice.supplierAddress || '');
-          setSupplierVAT(purchaseInvoice.supplierVAT || '');
-          setSupplierNameAr('');
-          setSupplierPhone('');
-          setSupplierContactPerson('');
-          setSupplierLogoUrl('');
+          Promise.resolve().then(() => {
+            setSupplierName(purchaseInvoice.supplierName || '');
+            setSupplierEmail(purchaseInvoice.supplierEmail || '');
+            setSupplierAddress(purchaseInvoice.supplierAddress || '');
+            setSupplierVAT(purchaseInvoice.supplierVAT || '');
+            setSupplierNameAr('');
+            setSupplierPhone('');
+            setSupplierContactPerson('');
+            setSupplierLogoUrl('');
+          });
         }
       }
     }

@@ -31,6 +31,9 @@ export function ReportsTabs() {
     Record<string, Array<{ paymentMethod: string; amount: number }>>
   >({});
 
+  const [, setPrintDialogOpen] = useState(false);
+  const [, setInvoicePrintDialogOpen] = useState(false);
+
   const filteredOrders = useMemo(() => {
     return orders.filter((order) => {
       const dateToCompare =
@@ -91,8 +94,7 @@ export function ReportsTabs() {
     setPosReportDateRange(dateRange);
   };
 
-  const [printDialogOpen, setPrintDialogOpen] = useState(false);
-  const [invoicePrintDialogOpen, setInvoicePrintDialogOpen] = useState(false);
+
 
 
 

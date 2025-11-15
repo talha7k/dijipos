@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -59,17 +59,24 @@ export function AddCategoryDialog({
     propSelectedParentId || null,
   );
 
-  useEffect(() => {
-    setType(defaultType);
-    setTransactionType(defaultTransactionType);
-  }, [defaultType, defaultTransactionType]);
+  // Custom hook to track previous values
+  function usePrevious<T>(value: T): T | undefined {
+    const ref = useRef<T | undefined>(undefined);
+    useEffect(() => {
+      ref.current = value;
+    }, [value]);
+    return ref.current;
+  }
 
-  // Update selectedParentId when prop changes
+  const prevDefaultType = usePrevious(defaultType);
+  const prevDefaultTransactionType = usePrevious(defaultTransactionType);
+  const prevPropSelectedParentId = usePrevious(propSelectedParentId);
+
   useEffect(() => {
-    if (propSelectedParentId) {
-      setSelectedParentId(propSelectedParentId);
-    }
-  }, [propSelectedParentId]);
+    if (prevDefaultType !== defaultType) setType(defaultType);
+    if (prevDefaultTransactionType !== defaultTransactionType) setTransactionType(defaultTransactionType);
+    if (prevPropSelectedParentId !== propSelectedParentId) setSelectedParentId(propSelectedParentId || null);
+  }, [defaultType, defaultTransactionType, propSelectedParentId, prevDefaultType, prevDefaultTransactionType, prevPropSelectedParentId]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

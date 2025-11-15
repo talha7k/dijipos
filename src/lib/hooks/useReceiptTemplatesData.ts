@@ -1,16 +1,12 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { ReceiptTemplate } from "@/types/template";
 import { ReceiptTemplateType } from "@/types/enums";
 import { defaultEnglishReceiptTemplate } from "@/components/templates/receipt/default-receipt-thermal-english";
 import { defaultArabicReceiptTemplate } from "@/components/templates/receipt/default-receipt-thermal-arabic";
 import { defaultReceiptA4Template } from "@/components/templates/receipt/default-receipt-a4-english";
 import { defaultArabicReceiptA4Template } from "@/components/templates/receipt/default-receipt-a4-arabic";
-import {
-  STATIC_RECEIPT_TEMPLATE_IDS,
-  STATIC_INVOICE_TEMPLATE_IDS,
-} from "@/types";
 export function useReceiptTemplatesData(organizationId: string | undefined) {
   const [receiptTemplates, setReceiptTemplates] = useState<ReceiptTemplate[]>(
     [],
@@ -65,14 +61,16 @@ export function useReceiptTemplatesData(organizationId: string | undefined) {
   }, [organizationId]);
 
   // Update state with static templates
-  useMemo(() => {
+  useEffect(() => {
     console.log(`[useReceiptTemplatesData] Setting templates:`, {
       organizationId,
       templatesCount: staticTemplates.length,
       templates: staticTemplates.map((t) => ({ id: t.id, name: t.name })),
     });
-    setReceiptTemplates(staticTemplates);
-  }, [staticTemplates]);
+    Promise.resolve().then(() => {
+      setReceiptTemplates(staticTemplates);
+    });
+  }, [staticTemplates, organizationId]);
 
   // Mock mutations that update local state
   const addTemplate = async (

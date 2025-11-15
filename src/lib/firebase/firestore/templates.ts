@@ -1,7 +1,6 @@
 import {
   collection,
   doc,
-  getDoc,
   getDocs,
   addDoc,
   updateDoc,
@@ -73,13 +72,13 @@ export async function createReceiptTemplate(
  * Update a receipt template
  */
 export async function updateReceiptTemplate(
-  templateId: string,
+  templateId: string, // This can be any templateId, including static ones
   updates: Partial<Omit<ReceiptTemplate, "id" | "createdAt">>,
 ): Promise<void> {
   try {
     // Static templates don't exist in Firestore, so we don't need to update anything
     // Template defaults are now managed through printer settings, not template.isDefault flags
-    if (STATIC_RECEIPT_TEMPLATE_IDS.includes(templateId)) {
+    if ((STATIC_RECEIPT_TEMPLATE_IDS as readonly string[]).includes(templateId)) {
       console.log(`Skipping update for static template: ${templateId}`);
       return;
     }
@@ -101,7 +100,7 @@ export async function updateReceiptTemplate(
 export async function deleteReceiptTemplate(templateId: string): Promise<void> {
   try {
     // Skip delete for static templates
-    if (STATIC_RECEIPT_TEMPLATE_IDS.includes(templateId)) {
+    if ((STATIC_RECEIPT_TEMPLATE_IDS as readonly string[]).includes(templateId)) {
       console.log(`Skipping delete for static template: ${templateId}`);
       return;
     }
@@ -170,7 +169,7 @@ export async function updateInvoiceTemplate(
 ): Promise<void> {
   try {
     // For static templates, only allow setting as default
-    if (STATIC_INVOICE_TEMPLATE_IDS.includes(templateId)) {
+    if ((STATIC_INVOICE_TEMPLATE_IDS as readonly string[]).includes(templateId)) {
       // Only allow isDefault updates for static templates
       if (
         Object.keys(updates).length === 1 &&
@@ -207,7 +206,7 @@ export async function updateInvoiceTemplate(
 export async function deleteInvoiceTemplate(templateId: string): Promise<void> {
   try {
     // Skip delete for static templates
-    if (STATIC_INVOICE_TEMPLATE_IDS.includes(templateId)) {
+    if ((STATIC_INVOICE_TEMPLATE_IDS as readonly string[]).includes(templateId)) {
       console.log(`Skipping delete for static template: ${templateId}`);
       return;
     }

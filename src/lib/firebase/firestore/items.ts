@@ -122,7 +122,7 @@ export async function createItem(data: Omit<Item, 'id' | 'createdAt' | 'updatedA
 
     // Filter out undefined values to prevent Firebase errors
     const cleanedData = Object.fromEntries(
-      Object.entries(data).filter(([_, value]) => value !== undefined)
+      Object.entries(data).filter(([, value]) => value !== undefined)
     );
 
     const docRef = await addDoc(itemsRef, {
@@ -146,7 +146,7 @@ export async function updateItem(itemId: string, updates: Partial<Omit<Item, 'id
 
     // Filter out undefined values to prevent Firebase errors
     const cleanedUpdates = Object.fromEntries(
-      Object.entries(updates).filter(([_, value]) => value !== undefined)
+      Object.entries(updates).filter(([, value]) => value !== undefined)
     );
 
     await updateDoc(docRef, {

@@ -20,18 +20,15 @@ export function OrderDetail({
 }: OrderDetailProps) {
   const { getPaymentsForOrder } = useOrders();
   const [payments, setPayments] = useState<OrderPayment[]>([]);
-  const [loadingPayments, setLoadingPayments] = useState(true);
 
   useEffect(() => {
     const fetchPayments = async () => {
       try {
         const orderPayments = await getPaymentsForOrder(order.id);
         setPayments(orderPayments);
-      } catch (error) {
-        console.error("Failed to fetch payments:", error);
-      } finally {
-        setLoadingPayments(false);
-      }
+       } catch (error) {
+         console.error("Failed to fetch payments:", error);
+       }
     };
 
     fetchPayments();

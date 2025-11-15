@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/lib/hooks/useAuth";
-import { useOrganization, useOrganizationActions } from "@/lib/hooks/useOrganization";
+import { useOrganizationActions } from "@/lib/hooks/useOrganization";
 import { useInvitationsActions } from "@/lib/hooks/useInvitations";
 import { useAtom } from "jotai";
 import {
@@ -43,7 +43,6 @@ import { toast } from "sonner";
 
 export function OrganizationManager() {
   const { user } = useAuth();
-  const { selectedOrganization } = useOrganization();
 
   const [organizationId, setOrganizationId] = useAtom(
     selectedOrganizationIdAtom,
@@ -190,14 +189,9 @@ export function OrganizationManager() {
     } finally {
       setLoading(false);
     }
-  };
+   };
 
-  const handleSwitchOrganization = async (organizationId: string) => {
-    await selectOrganization(organizationId);
-    router.push("/dashboard");
-  };
-
-  if (!user) {
+   if (!user) {
     return null;
   }
 

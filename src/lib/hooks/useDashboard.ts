@@ -154,7 +154,19 @@ export function useDashboard(): DashboardHook {
         }
         itemSales[item.id].quantity += item.quantity;
         itemSales[item.id].total += item.total;
-      });
+  }, [
+    orders,
+    customers,
+    tables,
+    items,
+    salesInvoices,
+    purchaseInvoices,
+    storeSettings,
+    selectedOrganization,
+    user,
+    userRole,
+    dateFilter,
+  ]);
 
       return Object.values(itemSales)
         .sort((a, b) => b.total - a.total)
@@ -237,9 +249,11 @@ export function useDashboard(): DashboardHook {
     tables,
     items,
     salesInvoices,
+    purchaseInvoices,
     storeSettings,
     selectedOrganization,
     user,
+    userRole,
     dateFilter,
   ]);
 

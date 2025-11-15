@@ -38,14 +38,18 @@ export function useRealtimeCollection<T extends { id: string }>(
   useEffect(() => {
     // More defensive check for organizationId
     if (!organizationId || organizationId === null || organizationId === undefined || organizationId === '') {
-      setData([]);
-      setLoading(false);
-      setError(null);
+      Promise.resolve().then(() => {
+        setData([]);
+        setLoading(false);
+        setError(null);
+      });
       return;
     }
 
-    setLoading(true);
-    setError(null);
+    Promise.resolve().then(() => {
+      setLoading(true);
+      setError(null);
+    });
 
     let isMounted = true; // Track if component is still mounted
 
@@ -123,11 +127,13 @@ export function useRealtimeCollection<T extends { id: string }>(
     } catch (err) {
       console.error(`Error setting up ${collectionName} listener:`, err);
       if (isMounted) {
-        setError(`Failed to set up ${collectionName} listener`);
-        setLoading(false);
+        Promise.resolve().then(() => {
+          setError(`Failed to set up ${collectionName} listener`);
+          setLoading(false);
+        });
       }
     }
-  }, [collectionName, organizationId, orderByField, orderDirection]);
+  }, [collectionName, organizationId, additionalConstraints, orderByField, orderDirection]);
 
   return {
     data,

@@ -15,7 +15,7 @@ export function formatCurrency(
       style: "currency",
       currency: currency,
     }).format(amount);
-  } catch (error) {
+  } catch {
     // Fallback to USD if the locale/currency combination is not supported
     return new Intl.NumberFormat("en-US", {
       style: "currency",

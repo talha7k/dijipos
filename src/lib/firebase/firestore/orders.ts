@@ -75,7 +75,7 @@ export async function createOrder(data: Omit<Order, 'id' | 'createdAt' | 'update
 
     // Filter out undefined values to prevent Firestore errors
     const filteredData = Object.fromEntries(
-      Object.entries(data).filter(([_, value]) => value !== undefined)
+      Object.entries(data).filter(([, value]) => value !== undefined)
     );
 
     const docRef = await addDoc(ordersRef, {
@@ -99,7 +99,7 @@ export async function updateOrder(orderId: string, updates: Partial<Omit<Order, 
     
     // Filter out undefined values to prevent Firestore errors
     const filteredUpdates = Object.fromEntries(
-      Object.entries(updates).filter(([_, value]) => value !== undefined)
+      Object.entries(updates).filter(([, value]) => value !== undefined)
     );
     
     await updateDoc(docRef, {

@@ -275,14 +275,9 @@ export default function SimplifiedPOSPage() {
       setSelectedOrderType(orderType);
     },
     [setSelectedOrderType],
-  );
+   );
 
-  const handleViewOrderDetail = useCallback((order: Order) => {
-    // TODO: Implement order detail view logic
-    console.log("Viewing order:", order.id);
-  }, []);
-
-  const handleOrderReopen = useCallback((order: Order) => {
+   const handleOrderReopen = useCallback((order: Order) => {
     setPendingOrderToReopen(order);
     setShowOrderConfirmationDialog(true);
   }, []);
@@ -659,13 +654,9 @@ export default function SimplifiedPOSPage() {
       setCategoryPath([...categoryPath, categoryId]);
     },
     [setCategoryPath, categoryPath],
-  );
+   );
 
-  const handleNavigateToRoot = useCallback(() => {
-    setCategoryPath([]);
-  }, [setCategoryPath]);
-
-  const handleNavigateToPath = useCallback(
+   const handleNavigateToPath = useCallback(
     (path: string[]) => {
       setCategoryPath(path);
     },

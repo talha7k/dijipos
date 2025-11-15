@@ -1,7 +1,6 @@
 import {
   collection,
   doc,
-  getDoc,
   getDocs,
   addDoc,
   updateDoc,
@@ -30,7 +29,7 @@ export async function createInvitation(
       Math.random().toString(36).substring(2, 15);
 
     const now = Timestamp.now();
-    const docRef = await addDoc(invitationsRef, {
+    await addDoc(invitationsRef, {
       code,
       organizationId,
       role,

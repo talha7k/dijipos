@@ -11,7 +11,6 @@ import {
   CollapsibleTrigger,
 } from "@/components/sidebar/collapsible";
 import { NavigationItem } from "./sidebar-types";
-import { SidebarNavItem } from "./sidebar-nav-item";
 
 interface SidebarNavSectionProps {
   item: NavigationItem;

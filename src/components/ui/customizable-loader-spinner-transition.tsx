@@ -11,8 +11,26 @@ export const Component = () => {
   const [showControls, setShowControls] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
+  const particleStyles = useMemo(() => {
+    const randomValues = Array.from({ length: 15 }, (_, i) => ({
+      left: ((i * 137.5) % 100),
+      top: ((i * 89.7) % 100),
+      duration: 3 + ((i * 73.3) % 4),
+      delay: ((i * 47.9) % 3),
+    }));
+    
+    return randomValues.map(({ left, top, duration, delay }) => ({
+      left: `${left}%`,
+      top: `${top}%`,
+      animation: `glow ${duration}s ease-in-out infinite`,
+      animationDelay: `${delay}s`,
+    }));
+  }, []);
+
   useEffect(() => {
-    setMounted(true);
+    Promise.resolve().then(() => {
+      setMounted(true);
+    });
 
     // Inject animation styles
     const styleId = "nested-squares-styles";
@@ -199,10 +217,7 @@ export const Component = () => {
               height: "2px",
               backgroundColor: "#a855f7",
               borderRadius: "50%",
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animation: `glow ${3 + Math.random() * 4}s ease-in-out infinite`,
-              animationDelay: `${Math.random() * 3}s`,
+              ...particleStyles[i],
             }}
           />
         ))}

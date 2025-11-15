@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Invitation, OrganizationUser } from "@/types";
+import { Invitation } from "@/types";
 import {
   getInvitations,
   createInvitation,

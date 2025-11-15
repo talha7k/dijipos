@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, ReactNode } from "react";
+import React, { useState, useCallback, useMemo, ReactNode } from "react";
 import { Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -47,9 +47,9 @@ interface ReportPrintDialogProps {
   title?: string;
   description?: string;
   onOpenChange?: (open: boolean) => void;
-  allowedPageSizes?: Array<"80mm" | "58mm" | "210mm" | "letter">;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data?: Record<string, any>;
+  allowedPageSizes?: string[];
 }
 
 export function ReportPrintDialog({
@@ -58,9 +58,8 @@ export function ReportPrintDialog({
   children,
   title = "Print Report",
   description,
-  onOpenChange,
-  allowedPageSizes,
-  data,
+   onOpenChange,
+   data,
 }: ReportPrintDialogProps) {
   const [open, setOpen] = useState(false);
   
@@ -75,12 +74,15 @@ export function ReportPrintDialog({
     const isValidDefault = defaultTemplateId && reportTemplates.some((t) => t.id === defaultTemplateId);
     return isValidDefault ? defaultTemplateId : reportTemplates[0]?.id || "";
   });
-  const [renderedHtml, setRenderedHtml] = useState("");
   const [pageSize, setPageSize] = useState(() => {
     const settings = printerSettings?.receipts;
     return settings?.paperWidth ? `${settings.paperWidth}mm` : "80mm";
   });
-  const [direction, setDirection] = useState<"ltr" | "rtl">("ltr");
+  // Derive direction from template
+  const direction = useMemo(() => {
+    const template = reportTemplates.find((t) => t.id === selectedTemplate);
+    return template?.type?.includes("arabic") ? "rtl" : "ltr";
+  }, [selectedTemplate, reportTemplates]);
 
   const [margins, setMargins] = useState(() => {
     // No margins for thermal receipts/reports
@@ -101,96 +103,29 @@ export function ReportPrintDialog({
     };
   });
 
-  // Effect to update settings when props change
-  useEffect(() => {
-    const settings = printerSettings?.receipts;
 
-    // 1. Set default template
-    const defaultTemplateId = settings?.defaultTemplateId;
-    const isValidDefault =
-      defaultTemplateId &&
-      reportTemplates.some((t) => t.id === defaultTemplateId);
-    const newSelectedTemplate = isValidDefault ? defaultTemplateId : reportTemplates[0]?.id || "";
-    setSelectedTemplate(newSelectedTemplate);
 
-    // 2. Set paper size
-    const newPageSize = settings?.paperWidth ? `${settings.paperWidth}mm` : "80mm";
-    setPageSize(newPageSize);
 
-    // 3. Set margins and paddings
-    // No margins for thermal receipts/reports
-    const newMargins = {
-      top: 0,
-      right: 0,
-      bottom: 0,
-      left: 0,
-    };
-    const newPaddings = {
-      top: settings?.paddingTop ?? 3,
-      right: settings?.paddingRight ?? 3,
-      bottom: settings?.paddingBottom ?? 3,
-      left: settings?.paddingLeft ?? 3,
-    };
 
-    setMargins(newMargins);
-    setPaddings(newPaddings);
-  }, [printerSettings, reportTemplates]);
-
-  // Effect to clear preview when dialog closes
-  useEffect(() => {
-    if (!open) {
-      setRenderedHtml(""); // Clear preview on close
-    }
-  }, [open]);
-
-  
-
-  // Effect to render the preview when settings change
-  useEffect(() => {
-    if (!open || !selectedTemplate) {
-      return;
-    }
-
+  // Clear preview when dialog closes - use derived value
+  const renderedHtmlContent = useMemo(() => {
+    if (!open) return "";
+    
+    if (!selectedTemplate) return "";
+    
     const template = reportTemplates.find((t) => t.id === selectedTemplate);
-    if (!template) {
-      return;
+    if (!template || !data) return "";
+    
+    try {
+      const templateContent = template.content;
+      return renderTemplate(templateContent, data as TemplateData);
+    } catch (error) {
+      console.error("Failed to render report preview:", error);
+      return "<p style='color: red;'>Error rendering preview.</p>";
     }
-
-    // Set direction based on template type
-    setDirection(template.type?.includes("arabic") ? "rtl" : "ltr");
-
-    const renderPreview = async () => {
-      try {
-        const templateContent = template.content;
-        if (data) {
-          const content = renderTemplate(templateContent, data as TemplateData);
-          setRenderedHtml(content);
-        }
-      } catch (error) {
-        console.error("Failed to render report preview:", error);
-        setRenderedHtml("<p style='color: red;'>Error rendering preview.</p>");
-      }
-    };
-
-    renderPreview();
   }, [open, selectedTemplate, data, reportTemplates]);
 
-   
-  useEffect(() => {
-    if (!selectedTemplate) return;
-    const template = reportTemplates.find((t) => t.id === selectedTemplate);
-    if (template) {
-      if (template.defaultPaperSize && pageSize !== template.defaultPaperSize) {
-        setPageSize(template.defaultPaperSize);
-      }
-      if (template.defaultMargins) {
-        setMargins(template.defaultMargins);
-      }
-      if (template.defaultPaddings) {
-        setPaddings(template.defaultPaddings);
-      }
-    }
-  }, [selectedTemplate, reportTemplates]);
+
 
   const handlePrint = () => {
     const printWindow = window.open('', '_blank');
@@ -215,7 +150,7 @@ export function ReportPrintDialog({
             </style>
           </head>
           <body>
-            <div dir="${direction}">${renderedHtml}</div>
+            <div dir="${direction}">${renderedHtmlContent}</div>
           </body>
         </html>
       `);
@@ -307,7 +242,7 @@ export function ReportPrintDialog({
           >
             <div
               dir={direction}
-              dangerouslySetInnerHTML={{ __html: renderedHtml }}
+              dangerouslySetInnerHTML={{ __html: renderedHtmlContent }}
             />
           </div>
         </div>

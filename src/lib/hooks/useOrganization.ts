@@ -112,7 +112,7 @@ export function useOrganizationManager() {
               role: userAssociation.role,
               isActive: userAssociation.isActive
             });
-            
+
             // If this is the currently selected organization, set the user role
             if (org.id === selectedOrgId) {
               setOrganizationUserRole(userAssociation);
@@ -146,7 +146,7 @@ export function useOrganizationManager() {
     };
 
     fetchUserOrgs();
-  }, [user?.uid, setUserOrganizations, setSelectedOrgId, setError, setOrganizationsLoading, setUserOrganizationAssociations]);
+  }, [user?.uid, setUserOrganizations, setSelectedOrgId, setError, setOrganizationsLoading, setUserOrganizationAssociations, previousUserId, selectedOrgId, setOrganizationUserRole]);
 
   // Effect to fetch the full details of the selected organization when the ID changes
   useEffect(() => {
@@ -217,7 +217,7 @@ export function useOrganizationManager() {
  */
 function useRealtimeUsersSyncer(organizationId: string | null) {
     const [, setOrganizationUsers] = useAtom(organizationUsersAtom);
-    const { data: users, loading, error } = useRealtimeCollection<OrganizationUser>(
+    const { data: users } = useRealtimeCollection<OrganizationUser>(
         'organizationUsers',
         organizationId,
         [],

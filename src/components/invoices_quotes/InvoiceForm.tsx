@@ -176,7 +176,7 @@ export default function InvoiceForm({
          return date.toISOString().split("T")[0];
        });
     }
-  }, [invoice, storeSettings?.vatSettings?.rate]);
+   }, [invoice, storeSettings?.vatSettings?.rate, customers, suppliers]);
 
   // Update VAT when selected customer changes
   React.useEffect(() => {

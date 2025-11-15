@@ -13,6 +13,15 @@ import { OrderAlreadyPaid } from "../OrderAlreadyPaid";
 import { useOrders } from "@/lib/hooks/useOrders";
 import { useCurrency } from "@/lib/hooks/useCurrency";
 
+// Custom hook to track previous values
+function usePrevious<T>(value: T): T | undefined {
+  const [previousValue, setPreviousValue] = useState<T | undefined>(undefined);
+  useEffect(() => {
+    setPreviousValue(value);
+  }, [value]);
+  return previousValue;
+}
+
 interface POSPaymentGridProps {
   order: Order;
   paymentTypes: PaymentType[];
@@ -59,11 +68,18 @@ export function POSPaymentGrid({
   }, [order.id, getPaymentsForOrder, paymentRefreshTrigger]);
 
   // Auto-fill amount with remaining amount when payment method is selected
+  const prevAmount = usePrevious(amount);
+  const prevPaymentMethod = usePrevious(paymentMethod);
+  const prevRemainingAmount = usePrevious(remainingAmount);
+
   useEffect(() => {
-    if (paymentMethod && remainingAmount > 0 && !amount) {
-      setAmount(remainingAmount.toFixed(2));
+    if (paymentMethod && remainingAmount > 0 && !amount &&
+        (prevPaymentMethod !== paymentMethod || prevRemainingAmount !== remainingAmount)) {
+      Promise.resolve().then(() => {
+        setAmount(remainingAmount.toFixed(2));
+      });
     }
-  }, [paymentMethod, remainingAmount, amount]);
+  }, [paymentMethod, prevPaymentMethod, remainingAmount, prevRemainingAmount, amount, prevAmount]);
 
   // Prevent payment processing for already paid orders
   const paymentStatus = order.paymentStatus || PaymentStatus.UNPAID;

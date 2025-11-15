@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useAtomValue } from "jotai";
 import { organizationUserRoleAtom } from "@/atoms";
@@ -24,20 +24,18 @@ export function RoleGuard({
 }: RoleGuardProps) {
   const router = useRouter();
   const userRole = useAtomValue(organizationUserRoleAtom);
-  const [isAuthorized, setIsAuthorized] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
+  // Derive authorization state
+  const isAuthorized = useMemo(() => {
     if (userRole) {
-      const hasAccess = allowedRoles.includes(userRole.role);
-      setIsAuthorized(hasAccess);
-      setIsLoading(false);
+      return allowedRoles.includes(userRole.role);
     } else if (userRole === null) {
       // User role is loaded but null (user not in organization)
-      setIsAuthorized(false);
-      setIsLoading(false);
+      return false;
     }
+    return false; // Default to not authorized while loading
   }, [userRole, allowedRoles]);
+
+  const isLoading = userRole === undefined; // Loading while role is undefined
 
   if (isLoading) {
     return (

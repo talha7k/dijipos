@@ -85,11 +85,9 @@ export function PaymentEntryForm({
     if (paymentMethod && remainingAmount > 0 && !amount) {
       if (onAmountChange) {
         onAmountChange(remainingAmount.toFixed(2));
-      } else {
-        setInternalAmount(remainingAmount.toFixed(2));
       }
     }
-  }, [paymentMethod, remainingAmount, amount, onAmountChange]);
+  }, [paymentMethod, remainingAmount, amount, onAmountChange, setInternalAmount]);
 
   const handleAddPayment = () => {
     if (!amount || !paymentMethod) return;

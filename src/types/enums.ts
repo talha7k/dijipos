@@ -4,18 +4,7 @@ export enum TableStatus {
   RESERVED = "reserved",
   MAINTENANCE = "maintenance",
 }
-// Static template IDs that cannot be modified
-export const STATIC_RECEIPT_TEMPLATE_IDS = [
-  "english-thermal",
-  "arabic-thermal",
-  "english-a4",
-  "arabic-a4",
-];
 
-export const STATIC_INVOICE_TEMPLATE_IDS = [
-  "english-invoice",
-  "arabic-invoice",
-];
 
 
 
@@ -58,6 +47,21 @@ export enum InvoiceStatus {
   OVERDUE = "overdue",
   CANCELLED = "cancelled",
 }
+
+// Static template IDs for built-in templates
+export const STATIC_INVOICE_TEMPLATE_IDS = [
+  "invoice-simple-en",
+  "invoice-detailed-en", 
+  "invoice-simple-ar",
+  "invoice-detailed-ar"
+] as const;
+
+export const STATIC_RECEIPT_TEMPLATE_IDS = [
+  "receipt-simple-en",
+  "receipt-detailed-en",
+  "receipt-simple-ar", 
+  "receipt-detailed-ar"
+] as const;
 
 export enum PurchaseInvoiceStatus {
   DRAFT = "draft",

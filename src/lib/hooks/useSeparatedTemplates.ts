@@ -8,11 +8,6 @@ import {
 import { useRealtimeCollection } from "./useRealtimeCollection";
 import { useOrganization } from "./useOrganization";
 import { useStoreSettings } from "./useStoreSettings";
-import {
-  STATIC_INVOICE_TEMPLATE_IDS,
-  STATIC_RECEIPT_TEMPLATE_IDS,
-} from "@/types";
-
 import { salesInvoiceEnglish } from "@/components/templates/invoice/sales-invoice-english";
 import { purchaseInvoiceEnglish } from "@/components/templates/invoice/purchase-invoice-english";
 import { salesInvoiceArabic } from "@/components/templates/invoice/sales-invoice-arabic";

@@ -36,8 +36,8 @@ interface POSHeaderProps {
   onOrderToggle?: () => void;
   onClearSelectedOrder: () => void;
   onDateChange: (date: Date) => void;
-  isOnPOSPage?: boolean;
   currentView?: string;
+  isOnPOSPage?: boolean;
 }
 
 export function POSHeader({
@@ -57,9 +57,8 @@ export function POSHeader({
   onOrderTypeDeselect,
   onOrderToggle,
   onClearSelectedOrder,
-  onDateChange,
-  isOnPOSPage = false,
-  currentView = 'items',
+   onDateChange,
+   currentView = 'items',
 }: POSHeaderProps) {
   const isOnline = useOnlineStatus();
 

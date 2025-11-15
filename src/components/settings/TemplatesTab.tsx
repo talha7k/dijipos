@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAtomValue } from "jotai";
-import { selectedOrganizationAtom, selectedOrganizationIdAtom } from "@/atoms";
+import { selectedOrganizationIdAtom } from "@/atoms";
 import { FontSize } from "@/types/enums";
 import {
   ReceiptTemplate,
@@ -61,7 +61,6 @@ interface TemplatesTabProps {
 }
 
 export function TemplatesTab({}: TemplatesTabProps) {
-  const selectedOrganization = useAtomValue(selectedOrganizationAtom);
   const organizationId = useAtomValue(selectedOrganizationIdAtom);
 
   const [templateDialogOpen, setTemplateDialogOpen] = useState(false);

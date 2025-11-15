@@ -3,7 +3,7 @@
 import { Badge } from '@/components/ui/badge';
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { SalesInvoice, PurchaseInvoice, Customer, Supplier, Payment, Organization, InvoiceTemplate, DocumentPrintSettings, PaymentType } from '@/types';
+import { SalesInvoice, PurchaseInvoice, Customer, Supplier, Payment, Organization, InvoiceTemplate, DocumentPrintSettings } from '@/types';
 import { Receipt } from 'lucide-react';
 
 import { InvoiceActions } from './InvoiceActions';

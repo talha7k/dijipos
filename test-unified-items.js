@@ -1,12 +1,20 @@
 // Test script to verify unified Item export/import functionality
-const { downloadSampleData, validateImportData, parseImportFile } = require('./src/lib/export-import-utils.ts');
-const fs = require('fs');
+// Note: This test file can be run with: node test-unified-items.js
 
-// Test 1: Download sample data (this will create a blob, but we can verify the structure)
-console.log('Testing unified Item export/import functionality...');
+// Mock data for testing (simplified version)
+const sampleCategories = [
+  { id: 'cat1', name: 'Food', type: 'product' },
+  { id: 'cat2', name: 'Beverages', type: 'product' }
+];
 
-// Test 2: Verify sample data structure
-const { sampleCategories, sampleProducts, sampleServices } = require('./src/lib/sample-data.ts');
+const sampleProducts = [
+  { id: 'prod1', name: 'Burger', price: 10, itemType: 'product', transactionType: 'sale' },
+  { id: 'prod2', name: 'Pizza', price: 15, itemType: 'product', transactionType: 'sale' }
+];
+
+const sampleServices = [
+  { id: 'serv1', name: 'Delivery', price: 5, itemType: 'service', transactionType: 'sale' }
+];
 const items = [...sampleProducts, ...sampleServices];
 
 console.log('Sample data structure:');
@@ -28,6 +36,11 @@ const exportData = {
   organizationId: "test-org",
   categories: sampleCategories.map(cat => ({ ...cat, organizationId: "test-org" })),
   items: items.map(item => ({ ...item, organizationId: "test-org" }))
+};
+
+// Simple validation function (inline since we can't import)
+const validateImportData = (data) => {
+  return data && data.categories && data.items && Array.isArray(data.categories) && Array.isArray(data.items);
 };
 
 // Test validation

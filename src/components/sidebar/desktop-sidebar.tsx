@@ -10,7 +10,7 @@ import { SidebarProps, NavigationItem } from "./sidebar-types";
 
 
 import { useAtom } from "jotai";
-import { selectedOrganizationIdAtom, organizationUserRoleAtom } from "@/atoms";
+import { organizationUserRoleAtom } from "@/atoms";
 import {
   BarChart3,
   Building2,

@@ -79,18 +79,7 @@ export function EditableSetting<T extends string | number | boolean>({
     }
   };
 
-  const handleSaveWithValue = async (valueToSave: T) => {
-    setIsSaving(true);
-    try {
-      await onSave(valueToSave);
-      setIsEditing(false);
-    } catch (error) {
-      console.error("Failed to save setting:", error);
-      // Don't exit edit mode on error so user can try again
-    } finally {
-      setIsSaving(false);
-    }
-  };
+
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {

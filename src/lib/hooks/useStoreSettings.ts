@@ -10,11 +10,9 @@ import {
   deleteOrderType,
   createPaymentType,
   updatePaymentType,
-  deletePaymentType,
-  updatePrinterSettings
+  deletePaymentType
 } from '../firebase/firestore/settings/storeSettings';
 import { useRealtimeCollection } from './useRealtimeCollection';
-import { useOrganization } from './useOrganization';
 import { onSnapshot, doc } from 'firebase/firestore';
 import { db } from '../firebase/config';
 
@@ -51,7 +49,6 @@ interface StoreSettingsActions {
  * Hook that fetches the main StoreSettings and all related settings for the active organization
  */
 export function useStoreSettings(): StoreSettingsState & StoreSettingsActions {
-  const { selectedOrganization } = useOrganization();
   const selectedOrganizationId = useAtomValue(selectedOrganizationIdAtom);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

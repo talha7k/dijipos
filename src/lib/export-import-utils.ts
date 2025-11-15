@@ -180,7 +180,7 @@ export async function parseImportFile(file: File): Promise<ImportData> {
         }
 
         resolve(data);
-      } catch (error) {
+      } catch {
         reject(
           new Error("Failed to parse JSON file. Please check the file format."),
         );
@@ -324,7 +324,7 @@ export async function importProductsAndCategories(
           : undefined;
 
         // Create the item with all required fields
-        const newItemId = await createItem({
+        await createItem({
           name: item.name,
           description: item.description,
           price: item.price,

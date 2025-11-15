@@ -100,7 +100,7 @@ export function AddCustomerDialog({ open, onOpenChange, onCustomerAdded, editing
 
       onOpenChange(false);
       onCustomerAdded?.();
-    } catch (error) {
+    } catch {
       toast.error(`Failed to ${editingCustomer ? 'update' : 'add'} customer`);
     } finally {
       setLoading(false);

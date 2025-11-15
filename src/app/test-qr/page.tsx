@@ -1,39 +1,50 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useMemo } from 'react';
 import QRCode from 'qrcode';
 import { createReceiptQRData, generateZatcaQRString, testQRCodeGeneration, ZatcaQRData } from '@/lib/zatca-qr';
 
 export default function TestQRPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [qrData, setQrData] = useState<ZatcaQRData | null>(null);
-  const [tlvString, setTlvString] = useState<string>('');
+
+  // Wrap the test objects in useMemo to prevent re-creation on each render
+  const testOrder = useMemo(() => ({
+    createdAt: new Date(),
+    total: 100.50,
+    taxAmount: 15.08,
+    orderNumber: 'TEST-001',
+    customerName: 'Test Customer'
+  }), []);
+
+  const testOrganization = useMemo(() => ({
+    name: 'Test Company LLC',
+    vatNumber: '123456789012343'
+  }), []);
+
+  const qrData = useMemo<ZatcaQRData | null>(() => {
+    try {
+      return createReceiptQRData(testOrder, testOrganization);
+    } catch (error) {
+      console.error('Error creating QR data:', error);
+      return null;
+    }
+  }, [testOrder, testOrganization]);
+
+  const tlvString = useMemo<string>(() => {
+    try {
+      const data = createReceiptQRData(testOrder, testOrganization);
+      return generateZatcaQRString(data);
+    } catch (error) {
+      console.error('Error generating TLV string:', error);
+      return '';
+    }
+  }, [testOrder, testOrganization]);
 
   useEffect(() => {
-    // Run the QR code test when the page loads
+    // Run QR code test when the page loads
     testQRCodeGeneration();
 
-    // Generate test QR data and display it
-    const testOrder = {
-      createdAt: new Date(),
-      total: 100.50,
-      taxAmount: 15.08,
-      orderNumber: 'TEST-001',
-      customerName: 'Test Customer'
-    };
-
-    const testOrganization = {
-      name: 'Test Company LLC',
-      vatNumber: '123456789012343'
-    };
-
     try {
-      const qrData = createReceiptQRData(testOrder, testOrganization);
-      const tlvString = generateZatcaQRString(qrData);
-      
-      setQrData(qrData);
-      setTlvString(tlvString);
-
       // Generate QR code on canvas
       if (canvasRef.current) {
         QRCode.toCanvas(canvasRef.current, tlvString, {
@@ -45,7 +56,7 @@ export default function TestQRPage() {
     } catch (error) {
       console.error('QR Code generation failed:', error);
     }
-  }, []);
+  }, [tlvString]);
 
   return (
     <div className="container mx-auto p-8">

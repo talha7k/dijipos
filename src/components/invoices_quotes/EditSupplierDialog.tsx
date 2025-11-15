@@ -56,37 +56,31 @@ export function EditSupplierDialog({
 
   useEffect(() => {
     if (invoice && open) {
-      // Reset fields first to ensure clean state
-      setSupplierName('');
-      setSupplierNameAr('');
-      setSupplierEmail('');
-      setSupplierAddress('');
-      setSupplierPhone('');
-      setSupplierVAT('');
-      setSupplierContactPerson('');
-      setSupplierLogoUrl('');
-
       // Find the supplier record
       const supplier = suppliers.find(s => s.name === invoice.supplierName);
       if (supplier) {
-        setSupplierName(supplier.name || '');
-        setSupplierNameAr(supplier.nameAr || '');
-        setSupplierEmail(supplier.email || '');
-        setSupplierAddress(supplier.address || '');
-        setSupplierPhone(supplier.phone || '');
-        setSupplierVAT(supplier.vatNumber || '');
-        setSupplierContactPerson(supplier.contactPerson || '');
-        setSupplierLogoUrl(supplier.logoUrl || '');
+        Promise.resolve().then(() => {
+          setSupplierName(supplier.name || '');
+          setSupplierNameAr(supplier.nameAr || '');
+          setSupplierEmail(supplier.email || '');
+          setSupplierAddress(supplier.address || '');
+          setSupplierPhone(supplier.phone || '');
+          setSupplierVAT(supplier.vatNumber || '');
+          setSupplierContactPerson(supplier.contactPerson || '');
+          setSupplierLogoUrl(supplier.logoUrl || '');
+        });
       } else {
         // Fallback to invoice data if supplier not found
-        setSupplierName(invoice.supplierName || '');
-        setSupplierEmail(invoice.supplierEmail || '');
-        setSupplierAddress(invoice.supplierAddress || '');
-        setSupplierVAT(invoice.supplierVAT || '');
-        setSupplierNameAr('');
-        setSupplierPhone('');
-        setSupplierContactPerson('');
-        setSupplierLogoUrl('');
+        Promise.resolve().then(() => {
+          setSupplierName(invoice.supplierName || '');
+          setSupplierEmail(invoice.supplierEmail || '');
+          setSupplierAddress(invoice.supplierAddress || '');
+          setSupplierVAT(invoice.supplierVAT || '');
+          setSupplierNameAr('');
+          setSupplierPhone('');
+          setSupplierContactPerson('');
+          setSupplierLogoUrl('');
+        });
       }
     }
   }, [invoice, open, suppliers]);

@@ -8,6 +8,7 @@ import { POSCartItem } from "./POSCartItem";
 import { ReceiptPrintDialog } from "@/components/ReceiptPrintDialog";
 import { OrderStatus, PaymentStatus, ItemType } from "@/types";
 import { useAtomValue } from "jotai";
+import { useCallback } from "react";
 import { selectedOrganizationAtom } from "@/atoms";
 import {
   selectedTableAtom,
@@ -73,7 +74,7 @@ export function POSCartSidebar({
 
   const total = cartTotal;
 
-  const createTempOrderForPayment = () => {
+  const createTempOrderForPayment = useCallback(() => {
     if (cartItems.length === 0) {
       // Return a default empty order when cart is empty
       return {
@@ -100,22 +101,22 @@ export function POSCartSidebar({
     const taxRate = vatSettings?.rate || 15;
     const isVatEnabled = vatSettings?.isEnabled || false;
     const isVatInclusive = vatSettings?.isVatInclusive || false;
-    
+
     let subtotal, taxAmount, total;
-    
+
     if (isVatEnabled) {
       // VAT is enabled, use proper calculation
       const itemsForCalculation = cartItems.map(item => ({
         price: item.total / item.quantity, // Get unit price
         quantity: item.quantity
       }));
-      
+
       const result = calculateCartTotals(
         itemsForCalculation,
         taxRate,
         isVatInclusive
       );
-      
+
       subtotal = result.subtotal;
       taxAmount = result.vatAmount;
       total = result.total;
@@ -126,14 +127,15 @@ export function POSCartSidebar({
       total = subtotal;
     }
 
-    // Use current queue number for preview
-    const queueNumber = currentQueueNumber || 1;
+  // Use current queue number for preview
+  const queueNumber = currentQueueNumber || 1;
+  const timestamp = Date.now();
 
-    return {
-      id: "temp-checkout",
-      organizationId: organizationId || "",
-      orderNumber: `TEMP-${Date.now()}`,
-      queueNumber: queueNumber.toString(),
+  return {
+    id: "temp-checkout",
+    organizationId: organizationId || "",
+    orderNumber: `TEMP-${timestamp}`,
+    queueNumber: queueNumber.toString(),
       items: cartItems.map((item) => ({
         id: `${item.type}-${item.id}`,
         type: item.type === "product" ? ItemType.PRODUCT : ItemType.SERVICE,
@@ -168,7 +170,8 @@ export function POSCartSidebar({
       createdAt: new Date(),
       updatedAt: new Date(),
     };
-  };
+  }, [cartItems, organizationId, currentQueueNumber, vatSettings, userName, cartTotal, selectedCustomer, selectedOrderType?.name, selectedTable]);
+
   return (
     <div className="w-80 bg-card border-l flex flex-col h-full flex-shrink-0">
       <div className="flex-1 overflow-auto px-3 py-3">
