@@ -159,14 +159,14 @@ export function TemplatesTab({}: TemplatesTabProps) {
     if (templateView === "default") {
       return templates.filter((template) =>
         selectedCategory === TemplateCategory.RECEIPT
-          ? STATIC_RECEIPT_TEMPLATE_IDS.includes(template.id)
-          : STATIC_INVOICE_TEMPLATE_IDS.includes(template.id),
+          ? (STATIC_RECEIPT_TEMPLATE_IDS as readonly string[]).includes(template.id)
+          : (STATIC_INVOICE_TEMPLATE_IDS as readonly string[]).includes(template.id),
       );
     } else if (templateView === "custom") {
       return templates.filter((template) =>
         selectedCategory === TemplateCategory.RECEIPT
-          ? !STATIC_RECEIPT_TEMPLATE_IDS.includes(template.id)
-          : !STATIC_INVOICE_TEMPLATE_IDS.includes(template.id),
+          ? !(STATIC_RECEIPT_TEMPLATE_IDS as readonly string[]).includes(template.id)
+          : !(STATIC_INVOICE_TEMPLATE_IDS as readonly string[]).includes(template.id),
       );
     }
 
@@ -298,9 +298,9 @@ export function TemplatesTab({}: TemplatesTabProps) {
       // Check if this is a static template
       const isStaticTemplate =
         (selectedCategory === TemplateCategory.RECEIPT &&
-          STATIC_RECEIPT_TEMPLATE_IDS.includes(templateId)) ||
+          (STATIC_RECEIPT_TEMPLATE_IDS as readonly string[]).includes(templateId)) ||
         (selectedCategory === TemplateCategory.INVOICE &&
-          STATIC_INVOICE_TEMPLATE_IDS.includes(templateId));
+          (STATIC_INVOICE_TEMPLATE_IDS as readonly string[]).includes(templateId));
 
       console.log(
         `[TemplatesTab] Setting default template: ${templateId}, isStatic: ${isStaticTemplate}`,
@@ -380,11 +380,11 @@ export function TemplatesTab({}: TemplatesTabProps) {
     switch (selectedCategory) {
       case TemplateCategory.RECEIPT:
         isStaticTemplate =
-          STATIC_RECEIPT_TEMPLATE_IDS.includes(deleteTemplateId);
+          (STATIC_RECEIPT_TEMPLATE_IDS as readonly string[]).includes(deleteTemplateId);
         break;
       case TemplateCategory.INVOICE:
         isStaticTemplate =
-          STATIC_INVOICE_TEMPLATE_IDS.includes(deleteTemplateId);
+          (STATIC_INVOICE_TEMPLATE_IDS as readonly string[]).includes(deleteTemplateId);
         break;
     }
 
@@ -667,11 +667,11 @@ export function TemplatesTab({}: TemplatesTabProps) {
                         onClick={() => handleDeleteTemplate(template.id)}
                         disabled={
                           (selectedCategory === TemplateCategory.RECEIPT &&
-                            STATIC_RECEIPT_TEMPLATE_IDS.includes(
+                            (STATIC_RECEIPT_TEMPLATE_IDS as readonly string[]).includes(
                               template.id,
                             )) ||
                           (selectedCategory === TemplateCategory.INVOICE &&
-                            STATIC_INVOICE_TEMPLATE_IDS.includes(
+                            (STATIC_INVOICE_TEMPLATE_IDS as readonly string[]).includes(
                               template.id,
                             ))
                         }
