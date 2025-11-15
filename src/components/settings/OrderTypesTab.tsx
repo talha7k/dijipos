@@ -136,9 +136,11 @@ export function OrderTypesTab() {
       <CardContent>
         {(storeSettings?.orderTypes || []).length === 0 ? (
           <p className="text-muted-foreground">No order types added yet.</p>
-        ) : (
-           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {(storeSettings?.orderTypes || []).map((type) => (
+         ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+             {(storeSettings?.orderTypes || [])
+               .filter((type, index, self) => self.findIndex(t => t.id === type.id) === index)
+               .map((type) => (
               <Card key={type.id} className="group hover:shadow-lg transition-all duration-200 hover:scale-105 border-2 hover:border-primary/20 relative">
                 <CardHeader className="pb-2">
                   {/* Delete Button */}

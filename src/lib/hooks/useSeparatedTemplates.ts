@@ -217,7 +217,7 @@ export function useSeparatedTemplates(): SeparatedTemplatesState {
 
   // Combine static and custom templates, marking defaults
   const allReceiptTemplates = useMemo(() => {
-    const defaultId = printerSettings?.receipts?.defaultTemplateId;
+    const defaultId = storeSettings?.printerSettings?.receipts?.defaultTemplateId;
     console.log(
       "[useSeparatedTemplates] Computing allReceiptTemplates with defaultId:",
       defaultId,
@@ -237,11 +237,11 @@ export function useSeparatedTemplates(): SeparatedTemplatesState {
   }, [
     staticReceiptTemplates,
     customReceiptTemplates,
-    printerSettings?.receipts?.defaultTemplateId,
+    storeSettings?.printerSettings?.receipts?.defaultTemplateId,
   ]);
 
   const allInvoiceTemplates = useMemo(() => {
-    const defaultId = printerSettings?.invoices?.defaultSalesTemplateId;
+    const defaultId = storeSettings?.printerSettings?.invoices?.defaultSalesTemplateId;
     console.log(
       "[useSeparatedTemplates] Computing allInvoiceTemplates with defaultId:",
       defaultId,
@@ -261,7 +261,7 @@ export function useSeparatedTemplates(): SeparatedTemplatesState {
   }, [
     staticInvoiceTemplates,
     customInvoiceTemplates,
-    printerSettings?.invoices?.defaultSalesTemplateId,
+    storeSettings?.printerSettings?.invoices?.defaultSalesTemplateId,
   ]);
 
 

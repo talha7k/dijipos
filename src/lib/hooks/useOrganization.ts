@@ -4,16 +4,13 @@ import {
   selectedOrganizationIdAtom,
   selectedOrganizationAtom,
   userOrganizationsAtom,
-  userOrganizationAssociationsAtom,
   organizationUserRoleAtom,
   organizationErrorAtom,
   organizationLoadingAtom
 } from '@/atoms';
-import { organizationsLoadingAtom, organizationDetailsLoadingAtom } from '@/atoms';
-import { getOrganizationsForUser, getOrganizationUsers, getOrganization } from '../firebase/firestore/organizations';
+import { getOrganizationsForUser, getOrganizationUsers } from '../firebase/firestore/organizations';
 import { useAuth } from './useAuth';
-import { useRealtimeCollection } from './useRealtimeCollection';
-import { OrganizationUser, Organization } from '@/types';
+import { Organization } from '@/types';
 
 /**
  * Helper function to add timeout to promises
@@ -33,17 +30,16 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
  */
 export function useOrganizationManager() {
   const { user } = useAuth();
-  const [selectedOrgId, setSelectedOrgId] = useAtom(selectedOrganizationIdAtom);
+  const [, setSelectedOrgId] = useAtom(selectedOrganizationIdAtom);
   const [, setSelectedOrganization] = useAtom(selectedOrganizationAtom);
   const [, setUserOrganizations] = useAtom(userOrganizationsAtom);
-  const [, setUserOrganizationAssociations] = useAtom(userOrganizationAssociationsAtom);
   const [, setOrganizationUserRole] = useAtom(organizationUserRoleAtom);
   const [, setLoading] = useAtom(organizationLoadingAtom);
   const [, setError] = useAtom(organizationErrorAtom);
 
   // Main effect to handle user authentication and organization loading
   useEffect(() => {
-    console.log('useOrganizationManager: User:', user?.email || 'null', 'selectedOrgId:', selectedOrgId);
+    console.log('useOrganizationManager: User:', user?.email || 'null');
     
     if (!user?.uid) {
       console.log('useOrganizationManager: No user, clearing organization state');
@@ -86,18 +82,31 @@ export function useOrganizationManager() {
     };
 
     fetchUserOrganizations();
-  }, [user?.uid]);
+  }, [user?.uid, user?.email, setSelectedOrganization, setUserOrganizations, setOrganizationUserRole, setSelectedOrgId, setLoading, setError]);
 
   // TODO: Implement organization list fetching and selection logic
   // For now, this handles the basic case where org is already selected
 }
 
-// Temporary stub to prevent build errors
+import { createOrganization as createOrg, updateOrganization as updateOrg, deleteOrganization as deleteOrg } from '../firebase/firestore/organizations';
+import { SubscriptionStatus } from '@/types';
+
+// Organization actions hook
 export function useOrganizationActions() {
   return {
-    createOrganization: async () => {},
-    updateOrganization: async () => {},
-    deleteOrganization: async () => {},
+    createOrganization: async (name: string, email: string) => {
+      return await createOrg({
+        name,
+        email,
+        subscriptionStatus: SubscriptionStatus.TRIAL, // Default to trial
+      });
+    },
+    updateOrganization: async (id: string, updates: Partial<Omit<Organization, 'id' | 'createdAt' | 'updatedAt'>>) => {
+      return await updateOrg(id, updates);
+    },
+    deleteOrganization: async (id: string) => {
+      return await deleteOrg(id);
+    },
   };
 }
 
