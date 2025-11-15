@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { useAtomValue } from 'jotai';
 import { StoreSettings, OrderType, PaymentType } from '@/types';
 import { selectedOrganizationIdAtom } from '@/atoms';
@@ -55,6 +56,8 @@ export function useStoreSettings(): StoreSettingsState & StoreSettingsActions {
   const [storeSettings, setStoreSettings] = useState<StoreSettings | null>(null);
 
   // Real-time store settings (base document with reference IDs)
+  const additionalConstraints = useMemo(() => [], []);
+
   const {
     data: storeSettingsList,
     loading: realtimeLoading,
@@ -62,7 +65,7 @@ export function useStoreSettings(): StoreSettingsState & StoreSettingsActions {
   } = useRealtimeCollection<RawStoreSettings>(
     'storeSettings',
     selectedOrganizationId || null,
-    [],
+    additionalConstraints,
     null // Disable orderBy to prevent index errors
   );
 

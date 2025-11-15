@@ -36,9 +36,10 @@ interface SeparatedTemplatesState {
 export function useSeparatedTemplates(): SeparatedTemplatesState {
   const { selectedOrganization } = useOrganization();
   const { storeSettings } = useStoreSettings();
-  const printerSettings = storeSettings?.printerSettings;
 
   const organizationId = selectedOrganization?.id || null;
+
+  const additionalConstraints = useMemo(() => [], []);
 
   // Get custom templates from Firestore
   const {
@@ -48,7 +49,7 @@ export function useSeparatedTemplates(): SeparatedTemplatesState {
   } = useRealtimeCollection<ReceiptTemplate>(
     "receiptTemplates",
     organizationId,
-    [],
+    additionalConstraints,
     null,
   );
 
@@ -59,7 +60,7 @@ export function useSeparatedTemplates(): SeparatedTemplatesState {
   } = useRealtimeCollection<InvoiceTemplate>(
     "invoiceTemplates",
     organizationId,
-    [],
+    additionalConstraints,
     null,
   );
 

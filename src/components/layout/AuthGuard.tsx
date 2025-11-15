@@ -29,7 +29,13 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   }, [shouldRedirect, router]);
 
   // 1. Show a loader during initial auth check or while redirecting
-  if (authLoading || shouldRedirect) {
+  if (authLoading) {
+    return <FullPageLoader />;
+  }
+
+  // 2. If should redirect, show loader while redirect happens
+  if (shouldRedirect) {
+    console.log('AuthGuard: Redirecting to /login');
     return <FullPageLoader />;
   }
 

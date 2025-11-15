@@ -3,7 +3,7 @@
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { Organization, OrganizationUser, UserRole } from "@/types";
-import { indexedDBStorage } from "@/lib/storage";
+import { cookieStorage } from "@/lib/cookie-storage";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase/config";
 
@@ -18,22 +18,11 @@ export * from "./uiAtoms";
 // --- CORE STATE ---
 
 // This is the SINGLE SOURCE OF TRUTH for which organization is active.
-// It is persisted to IndexedDB to remember the user's choice across sessions.
+// It is persisted to cookies to remember the user's choice across sessions.
 export const selectedOrganizationIdAtom = atomWithStorage<string | null>(
   "selectedOrgId",
   null,
-  {
-    ...indexedDBStorage,
-    getItem: async (key: string) => {
-      const value = await indexedDBStorage.getItem(key);
-      console.log(`selectedOrganizationIdAtom getItem: ${key} =`, value);
-      return value;
-    },
-    setItem: async (key: string, value: unknown) => {
-      console.log(`selectedOrganizationIdAtom setItem: ${key} =`, value);
-      await indexedDBStorage.setItem(key, value);
-    },
-  },
+  cookieStorage,
 );
 
 // This atom holds the full object for the selected organization.

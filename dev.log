@@ -1,0 +1,21 @@
+$ next dev --turbopack
+Happy development session ;)
+   ▲ Next.js 16.0.3 (Turbopack)
+   - Local:         http://localhost:3000
+   - Network:       http://192.168.100.96:3000
+   - Environments: .env.local, .env
+
+ ✓ Starting...
+ ✓ Ready in 634ms
+Happy development session ;)
+ GET /login 200 in 3.0s (compile: 2.9s, render: 148ms)
+ GET /select-organization 200 in 3.1s (compile: 2.5s, render: 520ms)
+ GET / 200 in 604ms (compile: 566ms, render: 38ms)
+ GET /dashboard 200 in 688ms (compile: 626ms, render: 62ms)
+ GET /login 200 in 89ms (compile: 7ms, render: 82ms)
+ GET /login 200 in 74ms (compile: 7ms, render: 68ms)
+ ✓ Compiled in 567ms
+ ✓ Compiled in 1950ms
+ ✓ Compiled in 309ms
+Happy development session ;)
+[?25h

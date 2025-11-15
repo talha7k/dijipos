@@ -29,9 +29,20 @@ export function OrganizationGuard({ children }: { children: React.ReactNode }) {
     pathname && pathname.startsWith("/auth") ? [pathname] : []
   );
 
-   // Derive redirect state
+   // Derive redirect state - only redirect if no organization ID is selected
+   // The selectedOrganization atom might be loading but ID is sufficient for navigation
    const shouldRedirect = user && !orgLoading && !organizationOptionalRoutes.includes(pathname || "") &&
-     (!selectedOrgId || (selectedOrgId && !selectedOrganization));
+      !selectedOrgId;
+   
+   console.log('OrganizationGuard: Debug:', {
+     user: !!user,
+     orgLoading,
+     pathname,
+     isOptionalRoute: organizationOptionalRoutes.includes(pathname || ""),
+     selectedOrgId,
+     selectedOrgIdType: typeof selectedOrgId,
+     shouldRedirect
+   });
 
    // Handle redirects in useEffect to avoid setState during render
    useEffect(() => {

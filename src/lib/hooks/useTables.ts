@@ -1,4 +1,5 @@
 import { Table } from '@/types';
+import { useMemo } from 'react';
 import { useRealtimeCollection } from './useRealtimeCollection';
 import { useOrganization } from './useOrganization';
 import { createTable as firestoreCreateTable, updateTable as firestoreUpdateTable, deleteTable as firestoreDeleteTable } from '@/lib/firebase/firestore/tables';
@@ -24,10 +25,12 @@ export function useTables(): TablesState & TableActions {
   const { selectedOrganization } = useOrganization();
   const organizationId = selectedOrganization?.id;
 
+  const additionalConstraints = useMemo(() => [], []);
+
   const { data: tables, loading, error } = useRealtimeCollection<Table>(
     organizationId ? `organizations/${organizationId}/tables` : 'tables',
     organizationId || null,
-    [],
+    additionalConstraints,
     null // Disable orderBy to prevent index errors
   );
 

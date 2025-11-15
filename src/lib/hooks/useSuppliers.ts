@@ -1,4 +1,5 @@
 import { Supplier } from '@/types';
+import { useMemo } from 'react';
 import { useRealtimeCollection } from './useRealtimeCollection';
 import { useOrganization } from './useOrganization';
 import { createSupplier as firestoreCreateSupplier, updateSupplier as firestoreUpdateSupplier, deleteSupplier as firestoreDeleteSupplier } from '@/lib/firebase/firestore/suppliers';
@@ -22,10 +23,12 @@ interface SuppliersActions {
 export function useSuppliers(): SuppliersState & SuppliersActions {
   const { selectedOrganization } = useOrganization();
 
+  const additionalConstraints = useMemo(() => [], []);
+
   const { data: suppliers, loading, error } = useRealtimeCollection<Supplier>(
     'suppliers',
     selectedOrganization?.id || null,
-    [],
+    additionalConstraints,
     null // Disable orderBy to prevent index errors
   );
 

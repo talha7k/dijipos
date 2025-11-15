@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { Order, OrderPayment } from '@/types';
 import { OrderStatus, TableStatus } from '@/types/enums';
 import {
@@ -39,10 +39,12 @@ export function useOrders(): OrdersState & OrdersActions {
   const { selectedOrganization } = useOrganization();
   const { updateTable } = useTables();
 
+  const additionalConstraints = useMemo(() => [], []);
+
   const { data: orders, loading, error } = useRealtimeCollection<Order>(
     'orders',
     selectedOrganization?.id || null,
-    [], // additional constraints remove this line later for indexes to be used.
+    additionalConstraints, // additional constraints remove this line later for indexes to be used.
     null // disable orderBy to prevent index issues remove this line later for indexes to be used.
   );
 

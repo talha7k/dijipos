@@ -154,7 +154,7 @@ export function OrganizationManager() {
         "OrganizationManager: Switching to organization:",
         result.organizationId,
       );
-      await selectOrganization(result.organizationId!);
+      selectOrganization(result.organizationId!);
 
       console.log("OrganizationManager: Successfully joined organization!");
       setShowJoinForm(false);

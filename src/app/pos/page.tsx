@@ -71,14 +71,17 @@ import { useDateExpiryTimer } from "@/lib/utils/dateTimer";
 import { Loader } from "@/components/ui/loader";
 
 export default function SimplifiedPOSPage() {
+  console.log("[POS] SimplifiedPOSPage rendering...");
   const pathname = usePathname();
   const [selectedOrganization] = useAtom(selectedOrganizationAtom);
   const organizationId = selectedOrganization?.id;
+  console.log("[POS] Organization:", { organizationId, selectedOrganization });
 
   // Mobile sidebar state
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   // Data hooks
+  console.log("[POS] Initializing data hooks...");
   const { items, loading: itemsLoading } = useItems();
   const { categories, loading: categoriesLoading } = useCategories();
   const { tables, loading: tablesLoading } = useTables();
@@ -91,6 +94,14 @@ export default function SimplifiedPOSPage() {
     addPaymentToOrder,
   } = useOrders();
   const { storeSettings, loading: storeSettingsLoading } = useStoreSettings();
+  console.log("[POS] Hook loading states:", {
+    itemsLoading,
+    categoriesLoading,
+    tablesLoading,
+    customersLoading,
+    ordersLoading,
+    storeSettingsLoading
+  });
   const orderTypes = useMemo(
     () => storeSettings?.orderTypes || [],
     [storeSettings?.orderTypes],
@@ -850,11 +861,23 @@ export default function SimplifiedPOSPage() {
     customersLoading ||
     (currentView !== "orders" ? ordersLoading : false) ||
     storeSettingsLoading;
+  console.log("[POS] Loading calculation:", {
+    loading,
+    itemsLoading,
+    categoriesLoading,
+    tablesLoading,
+    customersLoading,
+    ordersLoading,
+    storeSettingsLoading,
+    currentView,
+    excludeOrders: currentView !== "orders"
+  });
 
   const salesItems = items.filter(item => item.transactionType === "sales");
   const salesCategories = categories.filter(category => category.transactionType === "sales");
 
   if (loading) {
+    console.log("[POS] Still loading, showing loader...");
     return (
       <div className="h-screen flex flex-col items-center justify-center space-y-4">
         <Loader size="lg" />

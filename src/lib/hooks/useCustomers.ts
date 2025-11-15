@@ -1,4 +1,5 @@
 import { Customer } from '@/types';
+import { useMemo } from 'react';
 import { useRealtimeCollection } from './useRealtimeCollection';
 import { useOrganization } from './useOrganization';
 import { createCustomer as firestoreCreateCustomer, updateCustomer as firestoreUpdateCustomer, deleteCustomer as firestoreDeleteCustomer } from '@/lib/firebase/firestore/customers';
@@ -22,10 +23,12 @@ interface CustomersActions {
 export function useCustomers(): CustomersState & CustomersActions {
   const { selectedOrganization } = useOrganization();
 
+  const additionalConstraints = useMemo(() => [], []);
+
   const { data: customers, loading, error } = useRealtimeCollection<Customer>(
     'customers',
     selectedOrganization?.id || null,
-    [],
+    additionalConstraints,
     null // Disable orderBy to prevent index errors
   );
 

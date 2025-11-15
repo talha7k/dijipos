@@ -49,7 +49,9 @@ import {
 import Link from "next/link";
 
 function DashboardContent() {
+  console.log("[Dashboard] DashboardContent rendering...");
   const { data, loading, dateFilter, setDateFilter } = useDashboard();
+  console.log("[Dashboard] useDashboard result:", { loading, dataKeys: Object.keys(data) });
   const {
     openOrdersCount,
     completedOrdersCount,
@@ -83,6 +85,7 @@ function DashboardContent() {
     dateFilter === "today" ? salesByOrderTypeToday : salesByOrderTypeYesterday;
 
   if (loading) {
+    console.log("[Dashboard] Still loading, showing loader...");
     return (
       <div className="container mx-auto p-6">
         <div className="flex flex-col items-center justify-center h-64 space-y-4">
