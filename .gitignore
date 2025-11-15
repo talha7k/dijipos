@@ -48,3 +48,5 @@ tsconfig.tsbuildinfo
 
 # OS
 Thumbs.db
+
+*.log
