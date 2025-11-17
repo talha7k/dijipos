@@ -274,17 +274,30 @@ export default function InvoiceForm({
     }
   };
 
-  const subtotal = invoiceItems.reduce((sum, item) => sum + item.total, 0);
   const isVatInclusive = storeSettings?.vatSettings?.isVatInclusive ?? false;
   const isVatEnabled = storeSettings?.vatSettings?.isEnabled ?? true;
 
-  // Calculate VAT based on settings
+  // Calculate totals based on VAT mode
   const vatCalculation = isVatEnabled
     ? (isVatInclusive
-        ? calculateVATInclusive(subtotal, taxRate)
-        : calculateVATExclusive(subtotal, taxRate))
-    : { subtotal, vatAmount: 0, total: subtotal };
+        ? // For VAT-inclusive prices, sum item totals and extract VAT
+          calculateVATInclusive(
+            invoiceItems.reduce((sum, item) => sum + item.total, 0), 
+            taxRate
+          )
+        : // For VAT-exclusive prices, sum item totals and add VAT
+          calculateVATExclusive(
+            invoiceItems.reduce((sum, item) => sum + item.total, 0), 
+            taxRate
+          )
+      )
+    : { 
+        subtotal: invoiceItems.reduce((sum, item) => sum + item.total, 0), 
+        vatAmount: 0, 
+        total: invoiceItems.reduce((sum, item) => sum + item.total, 0) 
+      };
 
+  const subtotal = vatCalculation.subtotal;
   const taxAmount = vatCalculation.vatAmount;
   const total = vatCalculation.total;
 
