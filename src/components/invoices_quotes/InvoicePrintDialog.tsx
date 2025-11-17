@@ -252,7 +252,7 @@ export function InvoicePrintDialog({
     if (open && selectedTemplate) {
       const template = filteredTemplates?.find((t) => t.id === selectedTemplate);
       if (template) {
-        setDirection(template.type?.includes("arabic") ? "rtl" : "ltr");
+        setDirection("ltr"); // Always use LTR to preserve template layout
         // Clear cached HTML to force fresh render
         setRenderedHtml("");
         renderPreview(template);
@@ -275,7 +275,7 @@ export function InvoicePrintDialog({
          return;
        }
 
-       const direction = template?.type?.includes("arabic") ? "rtl" : "ltr";
+        const direction = "ltr"; // Always use LTR to preserve template layout
 
         // Fresh render for print to ensure correct calculations
         const freshRenderedHtml = await renderInvoice(
@@ -291,7 +291,7 @@ export function InvoicePrintDialog({
       // Calculate the actual printable area dimensions
       const pageWidth = pageSize === "210mm" ? "210mm" : pageSize === "80mm" ? "80mm" : "58mm";
       const pageHeight = pageSize === "210mm" ? "297mm" : "297mm";
-      const isArabic = direction === "rtl";
+       const isArabic = template?.type?.includes("arabic");
       
       // Create the print HTML with proper styling for Arabic
       const printHtml = `
@@ -313,12 +313,12 @@ export function InvoicePrintDialog({
             body {
               margin: 0;
               padding: 0;
-              font-family: ${isArabic ? '"Arial", "Tahoma", sans-serif' : 'Arial, sans-serif'};
+              font-family: Arial, sans-serif;
               line-height: ${lineSpacing};
               width: ${pageWidth};
               min-height: ${pageHeight};
-              direction: ${direction};
-              text-align: ${isArabic ? 'right' : 'left'};
+              direction: ltr;
+              text-align: left;
             }
             
             .print-container {
@@ -327,8 +327,8 @@ export function InvoicePrintDialog({
               padding: ${paddings.top}mm ${paddings.right}mm ${paddings.bottom}mm ${paddings.left}mm;
               background: white;
               overflow: visible;
-              direction: ${direction};
-              text-align: ${isArabic ? 'right' : 'left'};
+              direction: ltr;
+              text-align: left;
             }
             
             .no-print {
@@ -340,13 +340,13 @@ export function InvoicePrintDialog({
               width: 100%;
               border-collapse: collapse;
               page-break-inside: auto;
-              direction: ${direction};
-              text-align: ${isArabic ? 'right' : 'left'};
+              direction: ltr;
+              text-align: left;
             }
             
             th, td {
-              text-align: ${isArabic ? 'right' : 'left'};
-              direction: ${direction};
+              text-align: left;
+              direction: ltr;
             }
             
             tr {
@@ -356,8 +356,8 @@ export function InvoicePrintDialog({
             
             /* Ensure Arabic text flows properly */
             p, div, span {
-              direction: ${direction};
-              text-align: ${isArabic ? 'right' : 'left'};
+              direction: ltr;
+              text-align: left;
             }
             
             @media screen {
@@ -557,7 +557,7 @@ export function InvoicePrintDialog({
             }}
           >
             <div
-              dir={direction}
+              dir="ltr"
               style={{ lineHeight: lineSpacing }}
               dangerouslySetInnerHTML={{ __html: renderedHtml }}
             />

@@ -42,7 +42,7 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
       .totals div { width: 288px; }
      .total-line { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; }
     .total-bold { font-weight: bold; font-size: 1.125rem; border-top: 1px solid #d1d5db; padding-top: 6px; }
-      .stamp { flex: 0 0 auto; margin-right: 30px; display: flex; justify-content: center; align-items: flex-start; }
+      .stamp { flex: 0 0 auto; margin-right: 30px; margin-left: 20px; display: flex; justify-content: center; align-items: flex-start; }
      .stamp div { text-align: center; }
       .stamp img { width: 150px; height: 150px; object-fit: contain; }
        .notes { margin-bottom: 8px; text-align: left; }
