@@ -50,3 +50,4 @@ tsconfig.tsbuildinfo
 Thumbs.db
 
 *.log
+firebase-debug.log
