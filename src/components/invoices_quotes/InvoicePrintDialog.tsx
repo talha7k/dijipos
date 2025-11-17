@@ -64,13 +64,12 @@ async function renderInvoice(
     includeQR: true,
     qrCodeUrl: qrCodeBase64,
      items: (invoice.items || []).map((item) => {
-      const calculatedTotal = item.quantity * item.unitPrice;
       return {
         name: item.name,
         description: item.description || "",
         quantity: item.quantity,
         unitPrice: item.unitPrice.toFixed(2),
-        itemTotal: calculatedTotal.toFixed(2),
+        itemTotal: item.total.toFixed(2),
       };
     }),
     marginBottom: 10,
