@@ -171,8 +171,8 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
              </div>
            </td>
             <td>{{quantity}}</td>
-            <td>{{unitPrice}} ريال</td>
-             <td>{{itemTotal}} ريال</td>
+             <td>{{unitPrice}}</td>
+              <td>{{itemTotal}}</td>
          </tr>
          {{/each}}
        </tbody>
@@ -192,11 +192,11 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
          <div>
              <div class="total-line">
                 <span>Subtotal (المجموع الفرعي):</span>
-                <span>{{subtotal}} ريال</span>
+                <span>{{subtotal}}</span>
               </div>
               <div class="total-line">
                 <span>Tax (الضريبة) ({{taxRate}}%):</span>
-                <span>{{taxAmount}} ريال</span>
+                <span>{{taxAmount}}</span>
               </div>
                <div class="total-line total-bold">
                  <span>TOTAL<br/> المجموع الكلي</span>
