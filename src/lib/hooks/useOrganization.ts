@@ -88,18 +88,30 @@ export function useOrganizationManager() {
   // For now, this handles the basic case where org is already selected
 }
 
-import { createOrganization as createOrg, updateOrganization as updateOrg, deleteOrganization as deleteOrg } from '../firebase/firestore/organizations';
-import { SubscriptionStatus } from '@/types';
+import { createOrganization as createOrg, updateOrganization as updateOrg, deleteOrganization as deleteOrg, addUserToOrganization } from '../firebase/firestore/organizations';
+import { SubscriptionStatus, UserRole } from '@/types';
 
 // Organization actions hook
 export function useOrganizationActions() {
+  const { user } = useAuth();
+  
   return {
     createOrganization: async (name: string, email: string) => {
-      return await createOrg({
+      if (!user?.uid) {
+        throw new Error('User must be authenticated to create an organization');
+      }
+      
+      // Create the organization
+      const orgId = await createOrg({
         name,
         email,
         subscriptionStatus: SubscriptionStatus.TRIAL, // Default to trial
       });
+      
+      // Add the user as admin of the organization
+      await addUserToOrganization(orgId, user.uid, UserRole.ADMIN);
+      
+      return orgId;
     },
     updateOrganization: async (id: string, updates: Partial<Omit<Organization, 'id' | 'createdAt' | 'updatedAt'>>) => {
       return await updateOrg(id, updates);

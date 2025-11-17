@@ -6,84 +6,9 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Organizations collection - authenticated users can read organizations
-    match /organizations/{organizationId} {
-      allow read: if isAuthenticated();
-      allow write: if false; // Organizations should be created/managed by admin only
-      
-      // Special rule for super admins to delete organizations
-      allow delete: if exists(/databases/$(database)/documents/super-admins/$(request.auth.uid));
-    }
-
-    // Organization users collection - users can read/write their own associations and read users in organizations
-    match /organizationUsers/{documentId} {
-      // Allow users to create their own organization associations
-      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.userId;
-      
-      // Allow users to update their own organization associations
-      allow write: if isAuthenticated() && request.auth.uid == resource.data.userId;
-
-      // Allow authenticated users to read individual organizationUsers documents
-      allow get: if isAuthenticated();
-      
-      // Allow authenticated users to list organizationUsers (for queries)
-      allow list: if isAuthenticated();
-    }
-
-    // Users collection - authenticated users can read/write their own data
-    match /users/{userId} {
-      allow read, write: if isAuthenticated() && request.auth.uid == userId;
-    }
-
-    // Super-admins collection - authenticated users can read and create
-    match /super-admins/{userId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && request.auth.uid == userId;
-    }
-
-    // Invitations collection - authenticated users can read/write
-    match /invitations/{document=**} {
-      allow read, write: if isAuthenticated();
-    }
-
-    // Used invitation codes collection - authenticated users can read/write
-    match /usedInvitations/{document=**} {
-      allow read, write: if isAuthenticated();
-    }
-
-
-    // Business data collections - authenticated users can access organization-scoped data
-    match /{collectionName}/{document=**} {
-      allow read, write: if isAuthenticated() &&
-        collectionName in [
-          'categories', 'products', 'services', 'items', 'customers', 'suppliers',
-          'orders', 'invoices', 'quotes', 'payments',
-          'salesInvoices', 'purchaseInvoices', 'orderPayments',
-          'purchaseProducts', 'purchaseServices',
-          'storeSettings', 'vatSettings', 'currencySettings',
-          'orderTypes', 'paymentTypes', 'printerSettings',
-          'receiptTemplates', 'invoiceTemplates', 'quoteTemplates',
-          'tables', 'templates'
-        ];
-      
-      // Super admin rule for all business data collections
-      allow read, write, delete: if 
-        exists(/databases/$(database)/documents/super-admins/$(request.auth.uid)) &&
-        collectionName in [
-          'categories', 'products', 'services', 'items', 'customers', 'suppliers',
-          'orders', 'invoices', 'quotes', 'payments',
-          'salesInvoices', 'purchaseInvoices', 'orderPayments',
-          'purchaseProducts', 'purchaseServices',
-          'storeSettings', 'vatSettings', 'currencySettings',
-          'orderTypes', 'paymentTypes', 'printerSettings',
-          'receiptTemplates', 'invoiceTemplates', 'quoteTemplates',
-          'tables', 'templates', 'organizationUsers', 'invitations'
-        ];
-    }
-
-    // Subcollections under organizations - authenticated users can access
-    match /organizations/{organizationId}/{collection=**} {
-      allow read, write: if isAuthenticated();
+    // Allow authenticated users to do anything
+    match /{document=**} {
+      allow read, write, delete: if isAuthenticated();
     }
   }
 }

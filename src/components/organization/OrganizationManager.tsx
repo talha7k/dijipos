@@ -182,10 +182,13 @@ export function OrganizationManager() {
       setShowCreateForm(false);
       setNewOrganizationName("");
       setNewOrganizationEmail("");
+      toast.success("Organization created successfully!");
+
+      // Navigate to dashboard - the organization manager will auto-select the new org
       router.push("/dashboard");
     } catch (error) {
       console.error("Error creating organization:", error);
-      toast("Failed to create organization. Please try again.");
+      toast.error("Failed to create organization. Please try again.");
     } finally {
       setLoading(false);
     }
