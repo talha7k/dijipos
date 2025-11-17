@@ -119,6 +119,7 @@ export function useStaticTemplates() {
       organizationId: 'static',
       createdAt: new Date(),
       updatedAt: new Date(),
+      isDefault: false, // Add isDefault property for compatibility
     })) as InvoiceTemplate[];
   }, []);
 
@@ -128,6 +129,7 @@ export function useStaticTemplates() {
       organizationId: 'static',
       createdAt: new Date(),
       updatedAt: new Date(),
+      isDefault: false, // Add isDefault property for compatibility
     })) as ReceiptTemplate[];
   }, []);
 

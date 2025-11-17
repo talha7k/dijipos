@@ -288,48 +288,86 @@ export function InvoicePrintDialog({
           lineSpacing,
         );
 
-      // Create the print HTML with proper styling
+      // Calculate the actual printable area dimensions
+      const pageWidth = pageSize === "210mm" ? "210mm" : pageSize === "80mm" ? "80mm" : "58mm";
+      const pageHeight = pageSize === "210mm" ? "297mm" : "297mm";
+      const isArabic = direction === "rtl";
+      
+      // Create the print HTML with proper styling for Arabic
       const printHtml = `
         <!DOCTYPE html>
-        <html dir="${direction}">
+        <html>
         <head>
           <meta charset="utf-8">
           <title>Invoice ${invoice.id}</title>
           <style>
-            @media print {
-              @page {
-                size: ${pageSize === "210mm" ? "A4" : pageSize === "80mm" ? "80mm 297mm" : "58mm 297mm"};
-                margin: ${margins.top}mm ${margins.right}mm ${margins.bottom}mm ${margins.left}mm;
-              }
-              body {
-                margin: 0;
-                padding: 0;
-                font-family: Arial, sans-serif;
-                line-height: ${lineSpacing};
-              }
-              .print-container {
-                width: 100%;
-                padding: ${paddings.top}mm ${paddings.right}mm ${paddings.bottom}mm ${paddings.left}mm;
-                box-sizing: border-box;
-              }
-              .no-print {
-                display: none !important;
-              }
+            @page {
+              size: ${pageSize === "210mm" ? "A4" : pageSize === "80mm" ? "80mm 297mm" : "58mm 297mm"};
+              margin: 0;
             }
+            
+            * {
+              box-sizing: border-box;
+            }
+            
+            body {
+              margin: 0;
+              padding: 0;
+              font-family: ${isArabic ? '"Arial", "Tahoma", sans-serif' : 'Arial, sans-serif'};
+              line-height: ${lineSpacing};
+              width: ${pageWidth};
+              min-height: ${pageHeight};
+              direction: ${direction};
+              text-align: ${isArabic ? 'right' : 'left'};
+            }
+            
+            .print-container {
+              width: 100%;
+              min-height: ${pageHeight};
+              padding: ${paddings.top}mm ${paddings.right}mm ${paddings.bottom}mm ${paddings.left}mm;
+              background: white;
+              overflow: visible;
+              direction: ${direction};
+              text-align: ${isArabic ? 'right' : 'left'};
+            }
+            
+            .no-print {
+              display: none !important;
+            }
+            
+            /* Table styling for Arabic */
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              page-break-inside: auto;
+              direction: ${direction};
+              text-align: ${isArabic ? 'right' : 'left'};
+            }
+            
+            th, td {
+              text-align: ${isArabic ? 'right' : 'left'};
+              direction: ${direction};
+            }
+            
+            tr {
+              page-break-inside: avoid;
+              page-break-after: auto;
+            }
+            
+            /* Ensure Arabic text flows properly */
+            p, div, span {
+              direction: ${direction};
+              text-align: ${isArabic ? 'right' : 'left'};
+            }
+            
             @media screen {
               body {
-                margin: 20px;
-                font-family: Arial, sans-serif;
+                margin: 20px auto;
                 background: #f5f5f5;
-                line-height: ${lineSpacing};
+                max-width: ${pageWidth};
               }
               .print-container {
-                max-width: ${pageSize};
-                margin: 0 auto;
-                background: white;
-                padding: ${paddings.top}mm ${paddings.right}mm ${paddings.bottom}mm ${paddings.left}mm;
                 box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-                box-sizing: border-box;
               }
             }
           </style>
@@ -497,13 +535,7 @@ export function InvoicePrintDialog({
                   <option value="58mm">58mm Thermal</option>
                 </select>
               </div>
-              <SettingsInputGroup
-                label="Margins (mm)"
-                values={margins}
-                onChange={(key, value) =>
-                  setMargins((m) => ({ ...m, [key]: Number(value) }))
-                }
-              />
+
               <SettingsInputGroup
                 label="Paddings (mm)"
                 values={paddings}
@@ -520,7 +552,6 @@ export function InvoicePrintDialog({
             style={{
               width: pageSize,
               minHeight: pageSize === "210mm" ? "297mm" : "auto",
-              margin: `${margins.top}mm ${margins.right}mm ${margins.bottom}mm ${margins.left}mm`,
               padding: `${paddings.top}mm ${paddings.right}mm ${paddings.bottom}mm ${paddings.left}mm`,
               boxSizing: "border-box",
             }}
