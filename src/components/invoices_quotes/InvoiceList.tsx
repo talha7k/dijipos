@@ -3,7 +3,7 @@
 import { Badge } from '@/components/ui/badge';
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { SalesInvoice, PurchaseInvoice, Customer, Supplier, Payment, Organization, InvoiceTemplate, DocumentPrintSettings } from '@/types';
+import { SalesInvoice, PurchaseInvoice, Customer, Supplier, Payment, Organization, InvoiceTemplate, DocumentPrintSettings, StoreSettings } from '@/types';
 import { Receipt } from 'lucide-react';
 
 import { InvoiceActions } from './InvoiceActions';
@@ -25,8 +25,9 @@ interface InvoiceListProps {
     organization: Organization | null;
     invoiceTemplates: InvoiceTemplate[];
    settings?: DocumentPrintSettings | null;
+   storeSettings?: StoreSettings | null;
    transactionType: "sales" | "purchase" | "all";
-}
+ }
 
 export function InvoiceList({
    invoices,
@@ -40,6 +41,7 @@ export function InvoiceList({
    organization,
    invoiceTemplates,
    settings,
+   storeSettings,
    transactionType,
   }: InvoiceListProps) {
   return (
@@ -110,6 +112,7 @@ export function InvoiceList({
                       customers={customers}
                       suppliers={suppliers}
                       settings={settings}
+                      storeSettings={storeSettings}
                     />
                 </div>
               </TableCell>

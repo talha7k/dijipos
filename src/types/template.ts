@@ -180,6 +180,7 @@ export interface InvoiceTemplateData {
   taxRate: string;
   taxAmount: string;
   total: string;
+  isVatInclusive: boolean;
   notes: string;
   includeQR: boolean;
   qrCodeUrl?: string;

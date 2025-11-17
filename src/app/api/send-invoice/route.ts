@@ -187,7 +187,8 @@ function getLocalTemplate(templateId: string, invoiceType: string): string | nul
 async function renderInvoiceWithTemplate(
   templateContent: string,
   invoice: InvoiceData,
-  organization: { name?: string; nameAr?: string; address?: string; email?: string; phone?: string; vatNumber?: string; logoUrl?: string; stampUrl?: string }
+  organization: { name?: string; nameAr?: string; address?: string; email?: string; phone?: string; vatNumber?: string; logoUrl?: string; stampUrl?: string },
+  isVatInclusive?: boolean
 ): Promise<string> {
   const qrCodeBase64 = await generateZatcaQRCode(
     createInvoiceQRData(invoice as InvoiceData & { clientName?: string; supplierName?: string; clientEmail?: string; supplierEmail?: string; clientVAT?: string; supplierVAT?: string }, organization),
@@ -223,6 +224,7 @@ async function renderInvoiceWithTemplate(
     taxRate: (invoice.taxRate || 0).toString(),
     taxAmount: (invoice.taxAmount || 0).toFixed(2),
     total: (invoice.total || 0).toFixed(2),
+    isVatInclusive: isVatInclusive || false,
     notes: invoice.notes || "",
      items: (invoice.items as Array<{ name?: string; description?: string; quantity?: number; unitPrice?: number; total?: number }> || []).map((item) => ({
        name: item.name || "",
@@ -576,6 +578,18 @@ export async function POST(request: NextRequest) {
     const orgDoc = await adminDb.collection('organizations').doc(organizationId).get();
     const organization = orgDoc.data() || {};
 
+    // Get store settings for VAT inclusive setting
+    let isVatInclusive = false;
+    try {
+      const storeSettingsDoc = await adminDb.collection('storeSettings').where('organizationId', '==', organizationId).limit(1).get();
+      if (!storeSettingsDoc.empty) {
+        const storeSettings = storeSettingsDoc.docs[0].data();
+        isVatInclusive = storeSettings.vatSettings?.isVatInclusive ?? false;
+      }
+    } catch (error) {
+      console.warn('Failed to fetch store settings for VAT inclusive flag:', error);
+    }
+
     // Generate invoice attachment
     let invoiceContent;
     if (templateId) {
@@ -601,7 +615,7 @@ export async function POST(request: NextRequest) {
 
         let htmlContent;
         try {
-          htmlContent = await renderInvoiceWithTemplate(templateContent, invoice, organization);
+          htmlContent = await renderInvoiceWithTemplate(templateContent, invoice, organization, isVatInclusive);
         } catch (renderError) {
           console.error('Error rendering invoice template:', renderError);
           return NextResponse.json(

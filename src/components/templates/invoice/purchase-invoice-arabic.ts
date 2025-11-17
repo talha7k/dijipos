@@ -190,7 +190,7 @@ export const purchaseInvoiceArabic = `<!DOCTYPE html>
              <span>{{subtotal}} ريال</span>
            </div>
            <div class="total-line">
-             <span>Tax (الضريبة) ({{taxRate}}%):</span>
+              <span>Tax (الضريبة) ({{taxRate}}%) {{#isVatInclusive}}(شامل){{/isVatInclusive}}{{^isVatInclusive}}(غير شامل){{/isVatInclusive}}:</span>
              <span>{{taxAmount}} ريال</span>
            </div>
             <div class="total-line total-bold">

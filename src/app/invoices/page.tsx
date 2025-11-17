@@ -359,6 +359,7 @@ const [filters, setFilters] = useState({});
           organization={selectedOrganization}
           invoiceTemplates={invoiceTemplates}
           settings={storeSettings?.printerSettings?.invoices}
+          storeSettings={storeSettings}
           transactionType={transactionTypeFilter}
         />
 

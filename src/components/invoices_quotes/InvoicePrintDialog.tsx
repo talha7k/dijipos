@@ -6,7 +6,7 @@ import { Organization } from "@/types/organization-user";
 import { InvoiceTemplate, InvoiceTemplateData } from "@/types/template";
 import { Customer, Supplier } from "@/types/customer-supplier";
 import { createInvoiceQRData, generateZatcaQRCode } from "@/lib/zatca-qr";
-import { DocumentPrintSettings } from "@/types"; // Assuming types are in @/types
+import { DocumentPrintSettings, StoreSettings } from "@/types"; // Assuming types are in @/types
 import { DialogWithActions } from "@/components/ui/DialogWithActions";
 import { Button } from "@/components/ui/button";
 import { Printer, Mail } from "lucide-react";
@@ -25,6 +25,7 @@ async function renderInvoice(
   supplier?: Supplier,
   settings?: DocumentPrintSettings | null,
   lineSpacing?: number,
+  isVatInclusive?: boolean,
 ): Promise<string> {
   const qrCodeBase64 = await generateZatcaQRCode(
     createInvoiceQRData(invoice, organization),
@@ -59,6 +60,7 @@ async function renderInvoice(
     taxRate: invoice.taxRate?.toString() || "0",
     taxAmount: (invoice.taxAmount || 0).toFixed(2),
     total: (invoice.total || 0).toFixed(2),
+    isVatInclusive: isVatInclusive || false,
     notes: invoice.notes || "",
     lineSpacing: lineSpacing ?? 1.1,
     includeQR: true,
@@ -130,6 +132,7 @@ interface InvoicePrintDialogProps {
   supplier?: Supplier;
   children: React.ReactNode;
   settings?: DocumentPrintSettings | null; // Use the new settings type
+  storeSettings?: StoreSettings | null; // Store settings including VAT settings
   previewMode?: boolean;
   onEmail?: (invoice: SalesInvoice | PurchaseInvoice, templateId: string) => void;
 }
@@ -142,6 +145,7 @@ export function InvoicePrintDialog({
   supplier,
   children,
   settings,
+  storeSettings,
   previewMode = false,
   onEmail,
 }: InvoicePrintDialogProps) {
@@ -235,9 +239,10 @@ export function InvoicePrintDialog({
       supplier,
       settings,
       lineSpacing,
+      storeSettings?.vatSettings?.isVatInclusive ?? false,
     );
     setRenderedHtml(content);
-  }, [invoice, organization, customer, supplier, settings, lineSpacing]);
+  }, [invoice, organization, customer, supplier, settings, lineSpacing, storeSettings]);
 
   // Effect to clear preview when dialog closes
   useEffect(() => {
@@ -285,6 +290,7 @@ export function InvoicePrintDialog({
           supplier,
           settings,
           lineSpacing,
+          storeSettings?.vatSettings?.isVatInclusive ?? false,
         );
 
       // Calculate the actual printable area dimensions
@@ -428,7 +434,7 @@ export function InvoicePrintDialog({
     } finally {
       setIsGenerating(false);
     }
-   }, [selectedTemplate, filteredTemplates, pageSize, margins, paddings, lineSpacing, invoice, customer, organization, settings, supplier]);
+   }, [selectedTemplate, filteredTemplates, pageSize, margins, paddings, lineSpacing, invoice, customer, organization, settings, supplier, storeSettings]);
 
   // Effect to handle keyboard shortcuts
   useEffect(() => {

@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Organization, InvoiceTemplate, Customer, Supplier, DocumentPrintSettings, SalesInvoice, PurchaseInvoice, InvoiceType, Payment } from '@/types';
+import { Organization, InvoiceTemplate, Customer, Supplier, DocumentPrintSettings, StoreSettings, SalesInvoice, PurchaseInvoice, InvoiceType, Payment } from '@/types';
 import { Printer, Eye, Trash2, Mail } from 'lucide-react';
 
 import { InvoicePrintDialog } from './InvoicePrintDialog';
@@ -17,6 +17,7 @@ interface InvoiceActionsProps {
     customers: Customer[];
     suppliers: Supplier[];
     settings?: DocumentPrintSettings | null;
+    storeSettings?: StoreSettings | null;
   }
 
 export function InvoiceActions({
@@ -29,6 +30,7 @@ export function InvoiceActions({
      customers,
      suppliers,
      settings,
+     storeSettings,
     }: InvoiceActionsProps) {
   const handleViewDetails = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -55,16 +57,17 @@ export function InvoiceActions({
            <Eye className="h-4 w-4" />
          </Button>
 
-         <InvoicePrintDialog
-           invoice={invoice}
-           organization={organization}
-           invoiceTemplates={invoiceTemplates}
-           customer={customer}
-           supplier={supplier}
-           settings={settings}
-           previewMode={true}
-           onEmail={onEmail}
-         >
+          <InvoicePrintDialog
+            invoice={invoice}
+            organization={organization}
+            invoiceTemplates={invoiceTemplates}
+            customer={customer}
+            supplier={supplier}
+            settings={settings}
+            storeSettings={storeSettings}
+            previewMode={true}
+            onEmail={onEmail}
+          >
             <Button
               variant="ghost"
               size="sm"
@@ -75,14 +78,15 @@ export function InvoiceActions({
             </Button>
          </InvoicePrintDialog>
 
-         <InvoicePrintDialog
-           invoice={invoice}
-           organization={organization}
-           invoiceTemplates={invoiceTemplates}
-           customer={customer}
-           supplier={supplier}
-           settings={settings}
-         >
+          <InvoicePrintDialog
+            invoice={invoice}
+            organization={organization}
+            invoiceTemplates={invoiceTemplates}
+            customer={customer}
+            supplier={supplier}
+            settings={settings}
+            storeSettings={storeSettings}
+          >
            <Button
              variant="ghost"
              size="sm"

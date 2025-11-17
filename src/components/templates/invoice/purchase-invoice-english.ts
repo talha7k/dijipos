@@ -160,7 +160,7 @@ export const purchaseInvoiceEnglish = `<!DOCTYPE html>
           <span>{{subtotal}}</span>
         </div>
         <div class="total-line">
-          <span>Tax ({{taxRate}}%):</span>
+          <span>Tax ({{taxRate}}%) {{#isVatInclusive}}(Inclusive){{/isVatInclusive}}{{^isVatInclusive}}(Exclusive){{/isVatInclusive}}:</span>
           <span>{{taxAmount}}</span>
         </div>
         <div class="total-line total-bold">
