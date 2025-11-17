@@ -38,8 +38,8 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
           .table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 12px 8px; text-align: center; font-family: 'Tahoma', 'Arial Unicode MS', 'DejaVu Sans', 'Arial', var(--heading-font), 'sans-serif'; font-size: 11px; line-height: var(--line-spacing); vertical-align: middle; min-height: 1.1em; }
         .table td { border: 1px solid #d1d5db; padding: 2px 8px; text-align: center; line-height: var(--line-spacing); vertical-align: middle; min-height: 1.1em; }
       .totals-stamp-container { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-    .totals { flex: 1; }
-      .totals div { width: 288px; }
+     .totals { flex: 1; display: flex; justify-content: flex-end; }
+       .totals div { width: 288px; text-align: right; }
      .total-line { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; }
     .total-bold { font-weight: bold; font-size: 1.125rem; border-top: 1px solid #d1d5db; padding-top: 6px; }
       .stamp { flex: 0 0 auto; margin-right: 30px; margin-left: 20px; display: flex; justify-content: center; align-items: flex-start; }
