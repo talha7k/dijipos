@@ -42,7 +42,7 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
       .totals div { width: 288px; }
      .total-line { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; }
     .total-bold { font-weight: bold; font-size: 1.125rem; border-top: 1px solid #d1d5db; padding-top: 6px; }
-      .stamp { flex: 0 0 auto; margin-right: 30px; display: flex; justify-content: center; align-items: center; }
+      .stamp { flex: 0 0 auto; margin-right: 30px; display: flex; justify-content: center; align-items: flex-start; }
      .stamp div { text-align: center; }
       .stamp img { width: 150px; height: 150px; object-fit: contain; }
        .notes { margin-bottom: 8px; text-align: left; }
@@ -109,42 +109,42 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
          {{/includeQR}}
        </div>
  <div class="header-row-2">
-             <div>
-                <h3 style="font-weight: 600; color: #6b7280; margin-bottom: 4px;">Billed To (إلى):</h3>
-               <div class="bill-to">
-                 {{#customerLogo}}
-                  <div style="margin-bottom: 4px;">
-                    <img src="{{customerLogo}}" alt="شعار العميل" style="width: 128px; height: 64px; object-fit: contain;" />
-                  </div>
-                 {{/customerLogo}}
-                 <p style="font-weight: 500;">{{clientName}}</p>
-                {{#customerNameAr}}
-                <p style="font-size: 1rem;">{{customerNameAr}}</p>
-                {{/customerNameAr}}
-                 <p>📍 {{clientAddress}}</p>
-                 <p>📧 {{clientEmail}}</p>
-                 {{#clientVat}}<p>🏢 VAT (الرقم الضريبي) <br/> {{clientVat}}</p>{{/clientVat}}
-               </div>
-             </div>
-             <div>
-                <h3 style="font-weight: 600; color: #6b7280; margin-bottom: 4px;">Billed From (من):</h3>
-               <div class="billed-from">
-                 {{#companyLogo}}
-                  <div style="margin-bottom: 4px;">
-                    <img src="{{companyLogo}}" alt="شعار الشركة" style="width: 128px; height: 64px; object-fit: contain;" />
-                  </div>
-                 {{/companyLogo}}
-                 <h2 style="font-size: 1.25rem; font-weight: 600;">{{companyName}}</h2>
-                {{#companyNameAr}}
-                <p style="font-size: 1.125rem;">{{companyNameAr}}</p>
-                {{/companyNameAr}}
-                <p>📍 {{companyAddress}}</p>
-                <p>📧 {{companyEmail}}</p>
-                {{#companyPhone}}<p>📞 {{companyPhone}}</p>{{/companyPhone}}
-                 {{#companyVat}}<p>🏢 VAT (الرقم الضريبي) <br/> {{companyVat}}</p>{{/companyVat}}
-               </div>
-             </div>
-          </div>
+              <div>
+                 <h3 style="font-weight: 600; color: #6b7280; margin-bottom: 4px;">Billed From (من):</h3>
+                <div class="billed-from">
+                  {{#companyLogo}}
+                   <div style="margin-bottom: 4px;">
+                     <img src="{{companyLogo}}" alt="شعار الشركة" style="width: 128px; height: 64px; object-fit: contain;" />
+                   </div>
+                  {{/companyLogo}}
+                  <h2 style="font-size: 1.25rem; font-weight: 600;">{{companyName}}</h2>
+                 {{#companyNameAr}}
+                 <p style="font-size: 1.125rem;">{{companyNameAr}}</p>
+                 {{/companyNameAr}}
+                 <p>📍 {{companyAddress}}</p>
+                 <p>📧 {{companyEmail}}</p>
+                 {{#companyPhone}}<p>📞 {{companyPhone}}</p>{{/companyPhone}}
+                  {{#companyVat}}<p>🏢 VAT (الرقم الضريبي) <br/> {{companyVat}}</p>{{/companyVat}}
+                </div>
+              </div>
+              <div>
+                 <h3 style="font-weight: 600; color: #6b7280; margin-bottom: 4px;">Billed To (إلى):</h3>
+                <div class="bill-to">
+                  {{#customerLogo}}
+                   <div style="margin-bottom: 4px;">
+                     <img src="{{customerLogo}}" alt="شعار العميل" style="width: 128px; height: 64px; object-fit: contain;" />
+                   </div>
+                  {{/customerLogo}}
+                  <p style="font-weight: 500;">{{clientName}}</p>
+                 {{#customerNameAr}}
+                 <p style="font-size: 1rem;">{{customerNameAr}}</p>
+                 {{/customerNameAr}}
+                  <p>📍 {{clientAddress}}</p>
+                  <p>📧 {{clientEmail}}</p>
+                  {{#clientVat}}<p>🏢 VAT (الرقم الضريبي) <br/> {{clientVat}}</p>{{/clientVat}}
+                </div>
+              </div>
+           </div>
      </div>
 
 
@@ -178,34 +178,33 @@ export const salesInvoiceArabic = `<!DOCTYPE html>
        </tbody>
     </table>
 
-    <!-- Totals and Stamp -->
-    <div class="totals-stamp-container">
-      <div class="totals">
-        <div>
-            <div class="total-line">
-               <span>Subtotal (المجموع الفرعي):</span>
-               <span>{{subtotal}} ريال</span>
-             </div>
-             <div class="total-line">
-               <span>Tax (الضريبة) ({{taxRate}}%):</span>
-               <span>{{taxAmount}} ريال</span>
-             </div>
-              <div class="total-line total-bold">
-                <span>TOTAL<br/> المجموع الكلي</span>
-                <span>{{total}} ريال</span>
-             </div>
+     <!-- Totals and Stamp -->
+     <div class="totals-stamp-container">
+        <!-- Company Stamp -->
+        {{#companyStamp}}
+        <div class="stamp">
+          <div>
+            <img src="{{companyStamp}}" alt="ختم الشركة" />
+          </div>
         </div>
-      </div>
-
-       <!-- Company Stamp -->
-       {{#companyStamp}}
-       <div class="stamp">
+        {{/companyStamp}}
+       <div class="totals">
          <div>
-           <img src="{{companyStamp}}" alt="ختم الشركة" />
+             <div class="total-line">
+                <span>Subtotal (المجموع الفرعي):</span>
+                <span>{{subtotal}} ريال</span>
+              </div>
+              <div class="total-line">
+                <span>Tax (الضريبة) ({{taxRate}}%):</span>
+                <span>{{taxAmount}} ريال</span>
+              </div>
+               <div class="total-line total-bold">
+                 <span>TOTAL<br/> المجموع الكلي</span>
+                 <span>{{total}} ريال</span>
+              </div>
          </div>
        </div>
-       {{/companyStamp}}
-    </div>
+     </div>
 
     <!-- Notes -->
     {{#notes}}
