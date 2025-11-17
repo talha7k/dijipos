@@ -63,12 +63,17 @@ export default function InvoiceForm({
   const { categories, createCategory } = useCategories();
   const { storeSettings } = useStoreSettings();
 
+  // VAT settings moved up for broader scope
+  const isVatInclusive = storeSettings?.vatSettings?.isVatInclusive ?? false;
+  const isVatEnabled = storeSettings?.vatSettings?.isEnabled ?? true;
+
   // Dialog states
   const [showAddProductDialog, setShowAddProductDialog] = useState(false);
   const [showAddServiceDialog, setShowAddServiceDialog] = useState(false);
   const [showAddCustomerDialog, setShowAddCustomerDialog] = useState(false);
   const [showAddSupplierDialog, setShowAddSupplierDialog] = useState(false);
   const [editingItemIndex, setEditingItemIndex] = useState<number | null>(null);
+  const [itemCounter, setItemCounter] = useState(0);
 
   // Client fields (for sales invoices)
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>("");
@@ -217,17 +222,23 @@ export default function InvoiceForm({
   const addItemFromCatalog = (itemId: string) => {
     const catalogItem = items.find((item) => item.id === itemId);
     if (catalogItem) {
+      // Get correct price (exclusive or inclusive)
+      const adjustedPrice = getAdjustedPrice(catalogItem.price);
+
+      setItemCounter(prev => prev + 1);
+      const uniqueId = `${itemId}_${itemCounter + 1}`;
+
       setInvoiceItems([
         ...invoiceItems,
         {
-          id: Date.now().toString(),
+          id: uniqueId,
           itemType: catalogItem.itemType,
           itemId: catalogItem.id,
           name: catalogItem.name,
           description: catalogItem.description || "",
           quantity: 1,
-          unitPrice: catalogItem.price,
-          total: catalogItem.price,
+          unitPrice: adjustedPrice, // Use adjusted price
+          total: adjustedPrice,     // Use adjusted price (for Qty 1)
         },
       ]);
     }
@@ -274,30 +285,40 @@ export default function InvoiceForm({
     }
   };
 
-  const isVatInclusive = storeSettings?.vatSettings?.isVatInclusive ?? false;
-  const isVatEnabled = storeSettings?.vatSettings?.isEnabled ?? true;
+  /**
+   * Helper function to get the correct price based on VAT settings.
+   * Assumes input basePrice is *always* tax-exclusive.
+   */
+  const getAdjustedPrice = (basePrice: number) => {
+    // Only adjust price if VAT is inclusive, enabled, and a tax rate is set
+    if (isVatInclusive && isVatEnabled && taxRate > 0) {
+      const inclusivePrice = basePrice * (1 + taxRate / 100);
+      // Round to 2 decimal places to avoid floating point issues
+      return Math.round(inclusivePrice * 100) / 100;
+    }
+    // Otherwise, return tax-exclusive base price
+    return basePrice;
+  };
 
   // Calculate totals based on VAT mode
+  const itemsTotal = invoiceItems.reduce((sum, item) => sum + item.total, 0);
   const vatCalculation = isVatEnabled
     ? (isVatInclusive
         ? // For VAT-inclusive prices, sum item totals and extract VAT
-          calculateVATInclusive(
-            invoiceItems.reduce((sum, item) => sum + item.total, 0), 
-            taxRate
-          )
+          calculateVATInclusive(itemsTotal, taxRate)
         : // For VAT-exclusive prices, sum item totals and add VAT
-          calculateVATExclusive(
-            invoiceItems.reduce((sum, item) => sum + item.total, 0), 
-            taxRate
-          )
+          calculateVATExclusive(itemsTotal, taxRate)
       )
     : { 
-        subtotal: invoiceItems.reduce((sum, item) => sum + item.total, 0), 
+        subtotal: itemsTotal, 
         vatAmount: 0, 
-        total: invoiceItems.reduce((sum, item) => sum + item.total, 0) 
+        total: itemsTotal 
       };
 
   const subtotal = vatCalculation.subtotal;
+  
+  // Debug logging
+  console.log('Debug - VAT Calculation:', vatCalculation);
   const taxAmount = vatCalculation.vatAmount;
   const total = vatCalculation.total;
 
@@ -596,6 +617,10 @@ export default function InvoiceForm({
         }}
         onAddProduct={async (productData) => {
           try {
+            // Get correct price (exclusive or inclusive)
+            // We assume productData.price from dialog is a base, tax-exclusive price
+            const adjustedPrice = getAdjustedPrice(productData.price);
+
             if (editingItemIndex !== null) {
               // Update existing item
               const updatedItems = [...invoiceItems];
@@ -603,8 +628,8 @@ export default function InvoiceForm({
                 ...updatedItems[editingItemIndex],
                 name: productData.name,
                 description: productData.description || '',
-                unitPrice: productData.price,
-                total: updatedItems[editingItemIndex].quantity * productData.price,
+                unitPrice: adjustedPrice, // Use adjusted price
+                total: updatedItems[editingItemIndex].quantity * adjustedPrice, // Use adjusted price
               };
               setInvoiceItems(updatedItems);
             } else {
@@ -645,6 +670,10 @@ export default function InvoiceForm({
         }}
         onAddService={async (serviceData) => {
           try {
+            // Get correct price (exclusive or inclusive)
+            // We assume serviceData.price from dialog is a base, tax-exclusive price
+            const adjustedPrice = getAdjustedPrice(serviceData.price);
+
             if (editingItemIndex !== null) {
               // Update existing item
               const updatedItems = [...invoiceItems];
@@ -652,8 +681,8 @@ export default function InvoiceForm({
                 ...updatedItems[editingItemIndex],
                 name: serviceData.name,
                 description: serviceData.description || '',
-                unitPrice: serviceData.price,
-                total: updatedItems[editingItemIndex].quantity * serviceData.price,
+                unitPrice: adjustedPrice, // Use adjusted price
+                total: updatedItems[editingItemIndex].quantity * adjustedPrice, // Use adjusted price
               };
               setInvoiceItems(updatedItems);
             } else {
