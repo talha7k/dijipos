@@ -190,7 +190,7 @@ function OrdersContent() {
     setOrderToDelete(null);
   };
 
-  const isAdmin = organizationUserRole?.role === "admin";
+  const isAdmin = organizationUserRole?.role === "owner";
 
   if (ordersLoading || paymentsLoading)
     return (

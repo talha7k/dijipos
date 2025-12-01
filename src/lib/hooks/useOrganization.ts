@@ -109,7 +109,7 @@ export function useOrganizationActions() {
       });
       
       // Add the user as admin of the organization
-      await addUserToOrganization(orgId, user.uid, UserRole.ADMIN);
+      await addUserToOrganization(orgId, user.uid, UserRole.OWNER);
       
       return orgId;
     },

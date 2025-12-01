@@ -237,8 +237,8 @@ function CompanyContent() {
     try {
       await updateOrganizationUser(editingUser.id, {
         role:
-          formData.role === "admin"
-            ? UserRole.ADMIN
+          formData.role === "owner"
+            ? UserRole.OWNER
             : formData.role === "manager"
               ? UserRole.MANAGER
               : formData.role === "waiter"

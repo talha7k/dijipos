@@ -112,7 +112,7 @@ export function TeamTab({
 
   const getRoleBadgeColor = (role: OrganizationUser["role"]) => {
     switch (role) {
-      case "admin":
+      case "owner":
         return "default";
       case "manager":
         return "secondary";
@@ -127,7 +127,7 @@ export function TeamTab({
 
   const getRoleIcon = (role: OrganizationUser["role"]) => {
     switch (role) {
-      case "admin":
+      case "owner":
         return "Shield";
       case "manager":
         return "Settings";
@@ -386,7 +386,7 @@ export function TeamTab({
                            onClick={() => openEditDialog(organizationUser)}
                            disabled={
                              currentUser?.uid === organizationUser.userId &&
-                             organizationUser.role === UserRole.ADMIN
+                             organizationUser.role === UserRole.OWNER
                            }
                          >
                            <Edit className="h-4 w-4" />

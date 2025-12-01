@@ -406,7 +406,7 @@ export function OrganizationManager() {
                                       isSelected ? "default" : "secondary"
                                     }
                                     className={`capitalize text-xs ml-2 flex items-center gap-1 ${
-                                      organizationUser.role === UserRole.ADMIN
+                                      organizationUser.role === UserRole.OWNER
                                         ? isDark
                                           ? "bg-slate-800 text-yellow-400 border-yellow-500 border-2"
                                           : "bg-white text-yellow-600 border-yellow-500 border-2"
@@ -422,7 +422,7 @@ export function OrganizationManager() {
                                     }`}
                                   >
                                     {organizationUser.role ===
-                                      UserRole.ADMIN && (
+                                      UserRole.OWNER && (
                                       <Crown className="h-3 w-3" />
                                     )}
                                     {organizationUser.role}

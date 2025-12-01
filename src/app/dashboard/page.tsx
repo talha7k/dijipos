@@ -78,7 +78,7 @@ function DashboardContent() {
   } = data;
 
   const isManagerOrAdmin =
-    userRole === UserRole.MANAGER || userRole === UserRole.ADMIN;
+    userRole === UserRole.MANAGER || userRole === UserRole.OWNER;
   const currentTopSellingItems =
     dateFilter === "today" ? topSellingItemsToday : topSellingItemsYesterday;
   const currentSalesByOrderType =

@@ -177,7 +177,7 @@ function UsersContent() {
 
   const getRoleBadgeColor = (role: OrganizationUser["role"]) => {
     switch (role) {
-      case "admin":
+      case "owner":
         return "default";
       case "manager":
         return "secondary";
@@ -192,7 +192,7 @@ function UsersContent() {
 
   const getRoleIcon = (role: OrganizationUser["role"]) => {
     switch (role) {
-      case "admin":
+      case "owner":
         return Shield;
       case "manager":
         return Settings;
@@ -249,7 +249,7 @@ function UsersContent() {
                       <SelectValue placeholder="Select role" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value={UserRole.ADMIN}>Admin</SelectItem>
+                      <SelectItem value={UserRole.OWNER}>Owner</SelectItem>
                       <SelectItem value={UserRole.MANAGER}>Manager</SelectItem>
                       <SelectItem value={UserRole.WAITER}>Waiter</SelectItem>
                       <SelectItem value={UserRole.CASHIER}>Cashier</SelectItem>
@@ -516,7 +516,7 @@ function UsersContent() {
                   <SelectValue placeholder="Select role" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={UserRole.ADMIN}>Admin</SelectItem>
+                  <SelectItem value={UserRole.OWNER}>Owner</SelectItem>
                   <SelectItem value={UserRole.MANAGER}>Manager</SelectItem>
                   <SelectItem value={UserRole.WAITER}>Waiter</SelectItem>
                   <SelectItem value={UserRole.CASHIER}>Cashier</SelectItem>

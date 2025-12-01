@@ -96,7 +96,7 @@ export function AdminOnlyGuard({
 }: Omit<RoleGuardProps, "allowedRoles">) {
   return (
     <RoleGuard
-      allowedRoles={[UserRole.ADMIN]}
+      allowedRoles={[UserRole.OWNER]}
       fallbackMessage="This page is restricted to administrators only."
       showUpgrade={true}
       {...props}
@@ -112,7 +112,7 @@ export function AdminManagerGuard({
 }: Omit<RoleGuardProps, "allowedRoles">) {
   return (
     <RoleGuard
-      allowedRoles={[UserRole.ADMIN, UserRole.MANAGER]}
+      allowedRoles={[UserRole.OWNER, UserRole.MANAGER]}
       fallbackMessage="This page requires administrator or manager access."
       showUpgrade={true}
       {...props}
