@@ -32,7 +32,7 @@ interface DashboardData {
   totalProducts: number;
   totalServices: number;
   
-  // Financial data (for managers/admins)
+  // Financial data (for managers/owners)
   totalSalesToday: number;
   totalSalesYesterday: number;
   vatAmountToday: number;

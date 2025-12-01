@@ -99,7 +99,7 @@ const getNavigationItems = (role: string): NavigationItem[] => {
     },
   ];
 
-  const adminItems: NavigationItem[] = [
+  const ownerItems: NavigationItem[] = [
     {
       title: "Reports",
       href: "/reports",
@@ -126,8 +126,8 @@ const getNavigationItems = (role: string): NavigationItem[] => {
   ];
 
   switch (role) {
-    case "admin":
-      return [...baseItems, ...salesItems, ...inventoryItems, ...invoicesItems, ...contactsItems, ...adminItems];
+    case "owner":
+      return [...baseItems, ...salesItems, ...inventoryItems, ...invoicesItems, ...contactsItems, ...ownerItems];
     case "manager":
       return [...baseItems, ...salesItems, ...inventoryItems, ...invoicesItems, ...contactsItems, ...managerItems];
     case "cashier":

@@ -60,7 +60,7 @@ export function RoleGuard({
             {showUpgrade && (
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">
-                  Contact your administrator to upgrade your role.
+                  Contact your owner to upgrade your role.
                 </p>
                 <Button
                   variant="outline"
@@ -90,14 +90,14 @@ export function RoleGuard({
 }
 
 // Convenience components for common role combinations
-export function AdminOnlyGuard({
+export function OwnerOnlyGuard({
   children,
   ...props
 }: Omit<RoleGuardProps, "allowedRoles">) {
   return (
     <RoleGuard
       allowedRoles={[UserRole.OWNER]}
-      fallbackMessage="This page is restricted to administrators only."
+      fallbackMessage="This page is restricted to owners only."
       showUpgrade={true}
       {...props}
     >
@@ -106,14 +106,14 @@ export function AdminOnlyGuard({
   );
 }
 
-export function AdminManagerGuard({
+export function OwnerManagerGuard({
   children,
   ...props
 }: Omit<RoleGuardProps, "allowedRoles">) {
   return (
     <RoleGuard
       allowedRoles={[UserRole.OWNER, UserRole.MANAGER]}
-      fallbackMessage="This page requires administrator or manager access."
+      fallbackMessage="This page requires owner or manager access."
       showUpgrade={true}
       {...props}
     >

@@ -108,7 +108,7 @@ export function useOrganizationActions() {
         subscriptionStatus: SubscriptionStatus.TRIAL, // Default to trial
       });
       
-      // Add the user as admin of the organization
+      // Add the user as owner of the organization
       await addUserToOrganization(orgId, user.uid, UserRole.OWNER);
       
       return orgId;
