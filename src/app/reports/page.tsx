@@ -1,6 +1,6 @@
 "use client";
 
-import { AdminManagerGuard } from "@/components/layout/RoleGuard";
+import { OwnerManagerGuard } from "@/components/layout/RoleGuard";
 import { ReportsHeader } from "@/components/reports/ReportsHeader";
 import { ReportsTabs } from "@/components/reports/ReportsTabs";
 
@@ -15,8 +15,8 @@ function ReportsPage() {
 
 export default function ReportsPageWithGuard() {
   return (
-    <AdminManagerGuard>
+    <OwnerManagerGuard>
       <ReportsPage />
-    </AdminManagerGuard>
+    </OwnerManagerGuard>
   );
 }

@@ -44,7 +44,7 @@ import { CompanyInfoTab } from "@/components/company/CompanyInfoTab";
 import { BrandingTab } from "@/components/company/BrandingTab";
 import { TeamTab } from "@/components/company/TeamTab";
 
-import { AdminOnlyGuard } from "@/components/layout/RoleGuard";
+import { OwnerOnlyGuard } from "@/components/layout/RoleGuard";
 
 function CompanyContent() {
   const { user } = useAuth();
@@ -423,8 +423,8 @@ function CompanyContent() {
 
 export default function CompanyPage() {
   return (
-    <AdminOnlyGuard>
+    <OwnerOnlyGuard>
       <CompanyContent />
-    </AdminOnlyGuard>
+    </OwnerOnlyGuard>
   );
 }
