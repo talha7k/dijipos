@@ -1,17 +1,97 @@
 'use client';
 
 import { useState } from 'react';
-import { signInWithPopup } from 'firebase/auth';
+import { signInWithPopup, createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth, googleProvider } from '@/lib/firebase/config';
 import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Input } from '@/components/ui/input';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel as ShadcnFormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+
+const registerSchema = z
+  .object({
+    email: z
+      .string()
+      .min(1, 'Email is required')
+      .email('Invalid email address'),
+    password: z
+      .string()
+      .min(6, 'Password must be at least 6 characters'),
+    confirmPassword: z
+      .string()
+      .min(1, 'Please confirm your password'),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ['confirmPassword'],
+  });
+
+type RegisterFormValues = z.infer<typeof registerSchema>;
 
 function RegisterContent() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+
+  const form = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+      confirmPassword: '',
+    },
+  });
+
+  const onSubmitEmail = async (data: RegisterFormValues) => {
+    setError('');
+    setIsLoading(true);
+    try {
+      await createUserWithEmailAndPassword(auth, data.email, data.password);
+      router.push('/select-organization');
+    } catch (err: unknown) {
+      console.error('Email registration error:', err);
+      
+      // Check if it's a Firebase Auth error
+      if (err && typeof err === 'object' && 'code' in err) {
+        const firebaseError = err as { code: string; message: string };
+        
+        switch (firebaseError.code) {
+          case 'auth/email-already-in-use':
+            setError('An account with this email already exists. Please sign in or use a different email.');
+            break;
+          case 'auth/weak-password':
+            setError('Password is too weak. Please use a stronger password with at least 6 characters.');
+            break;
+          case 'auth/invalid-email':
+            setError('Invalid email address. Please check and try again.');
+            break;
+          case 'auth/operation-not-allowed':
+            setError('Email/password registration is not enabled. Please contact support.');
+            break;
+          default:
+            setError('Registration failed: ' + firebaseError.message);
+        }
+      } else if (err instanceof Error) {
+        // Fallback for other error types
+        setError('Registration failed: ' + err.message);
+      } else {
+        setError('Registration failed. Please try again.');
+      }
+    }
+    setIsLoading(false);
+  };
 
   const handleGoogleSignIn = async () => {
     setError('');
@@ -57,14 +137,97 @@ function RegisterContent() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Sign Up</CardTitle>
-          <CardDescription>Create your account with Google</CardDescription>
+          <CardDescription>Create your account with email or Google</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
           {error && (
             <Alert variant="destructive">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
+          
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmitEmail)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <ShadcnFormLabel htmlFor={field.name}>Email</ShadcnFormLabel>
+                    <FormControl>
+                      <Input
+                        id={field.name}
+                        type="email"
+                        placeholder="you@example.com"
+                        disabled={isLoading}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <ShadcnFormLabel htmlFor={field.name}>Password</ShadcnFormLabel>
+                    <FormControl>
+                      <Input
+                        id={field.name}
+                        type="password"
+                        placeholder="••••••••"
+                        disabled={isLoading}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <ShadcnFormLabel htmlFor={field.name}>Confirm Password</ShadcnFormLabel>
+                    <FormControl>
+                      <Input
+                        id={field.name}
+                        type="password"
+                        placeholder="••••••••"
+                        disabled={isLoading}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <Button
+                type="submit"
+                className="w-full"
+                loading={isLoading}
+              >
+                Create Account
+              </Button>
+            </form>
+          </Form>
+          
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">
+                Or continue with
+              </span>
+            </div>
+          </div>
           
           <Button
             type="button"

@@ -1,22 +1,78 @@
 'use client';
 
 import { useState, Suspense } from 'react';
-import { signInWithPopup } from 'firebase/auth';
+import { signInWithPopup, signInWithEmailAndPassword } from 'firebase/auth';
 import { auth, googleProvider } from '@/lib/firebase/config';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Loader } from '@/components/ui/loader';
 
 function LoginContent() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const router = useRouter();
   const searchParams = useSearchParams();
   const showVerificationMessage = searchParams?.get('verification') === 'true';
   const verificationSuccess = searchParams?.get('verification') === 'success';
   const verificationError = searchParams?.get('verification') === 'error';
+
+  const handleEmailSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
+    
+    if (!email || !password) {
+      setError('Please enter both email and password.');
+      setIsLoading(false);
+      return;
+    }
+    
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      router.push('/select-organization');
+    } catch (err: unknown) {
+      console.error('Email/password sign-in error:', err);
+      
+      // Check if it's a Firebase Auth error
+      if (err && typeof err === 'object' && 'code' in err) {
+        const firebaseError = err as { code: string; message: string };
+        
+        switch (firebaseError.code) {
+          case 'auth/user-not-found':
+            setError('No account found with this email address. Please sign up first.');
+            break;
+          case 'auth/wrong-password':
+            setError('Incorrect password. Please try again.');
+            break;
+          case 'auth/invalid-email':
+            setError('Invalid email address format.');
+            break;
+          case 'auth/user-disabled':
+            setError('This account has been disabled. Please contact support.');
+            break;
+          case 'auth/too-many-requests':
+            setError('Too many failed login attempts. Please try again later.');
+            break;
+          case 'auth/invalid-credential':
+            setError('Invalid email or password. Please check your credentials and try again.');
+            break;
+          default:
+            setError('Sign in failed: ' + firebaseError.message);
+        }
+      } else if (err instanceof Error) {
+        setError('Sign in failed: ' + err.message);
+      } else {
+        setError('Sign in failed. Please try again.');
+      }
+    }
+    setIsLoading(false);
+  };
 
   const handleGoogleSignIn = async () => {
     setError('');
@@ -62,7 +118,7 @@ function LoginContent() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Sign In</CardTitle>
-          <CardDescription>Sign in to your account with Google</CardDescription>
+          <CardDescription>Sign in to your account to continue</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {showVerificationMessage && (
@@ -95,12 +151,68 @@ function LoginContent() {
             </Alert>
           )}
           
+          <form onSubmit={handleEmailSignIn} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="name@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
+                required
+                autoComplete="email"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoading}
+                required
+                autoComplete="current-password"
+              />
+            </div>
+            
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader size="sm" className="mr-2" />
+                  Signing in...
+                </>
+              ) : (
+                'Sign in with Email'
+              )}
+            </Button>
+          </form>
+          
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">
+                Or continue with
+              </span>
+            </div>
+          </div>
+          
           <Button
             type="button"
             variant="outline"
             className="w-full"
             onClick={handleGoogleSignIn}
-            loading={isLoading}
+            disabled={isLoading}
           >
             <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
               <path

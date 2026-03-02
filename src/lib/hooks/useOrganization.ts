@@ -30,7 +30,7 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
  */
 export function useOrganizationManager() {
   const { user } = useAuth();
-  const [, setSelectedOrgId] = useAtom(selectedOrganizationIdAtom);
+  const [currentSelectedOrgId, setSelectedOrgId] = useAtom(selectedOrganizationIdAtom);
   const [, setSelectedOrganization] = useAtom(selectedOrganizationAtom);
   const [, setUserOrganizations] = useAtom(userOrganizationsAtom);
   const [, setOrganizationUserRole] = useAtom(organizationUserRoleAtom);
@@ -61,14 +61,30 @@ export function useOrganizationManager() {
         setUserOrganizations(orgs);
         
         if (orgs.length > 0) {
-          console.log('useOrganizationManager: Found organizations, selecting first one:', orgs[0].id);
-          setSelectedOrgId(orgs[0].id);
-          setSelectedOrganization(orgs[0]);
-          
-          // Set user role for first organization
-          const users = await withTimeout(getOrganizationUsers(orgs[0].id), 5000);
-          const userAssociation = users.find(u => u.userId === user.uid);
-          setOrganizationUserRole(userAssociation || null);
+          // Only set organization if user has previously selected one AND it's still valid
+          // NO auto-selection - user must explicitly choose an organization
+          if (currentSelectedOrgId) {
+            const selectedOrg = orgs.find(org => org.id === currentSelectedOrgId);
+            
+            if (selectedOrg) {
+              console.log('useOrganizationManager: Restoring user selection:', selectedOrg.id);
+              setSelectedOrganization(selectedOrg);
+              
+              // Set user role for selected organization
+              const users = await withTimeout(getOrganizationUsers(selectedOrg.id), 5000);
+              const userAssociation = users.find(u => u.userId === user.uid);
+              setOrganizationUserRole(userAssociation || null);
+            } else {
+              // Previously selected org is no longer valid (user was removed, etc.)
+              // Clear the invalid selection - user must re-select
+              console.log('useOrganizationManager: Previously selected org no longer valid, clearing selection');
+              setSelectedOrgId(null);
+              setSelectedOrganization(null);
+              setOrganizationUserRole(null);
+            }
+          } else {
+            console.log('useOrganizationManager: No organization selected, user must choose one');
+          }
         } else {
           console.log('useOrganizationManager: No organizations found for user');
         }
@@ -82,7 +98,7 @@ export function useOrganizationManager() {
     };
 
     fetchUserOrganizations();
-  }, [user?.uid, user?.email, setSelectedOrganization, setUserOrganizations, setOrganizationUserRole, setSelectedOrgId, setLoading, setError]);
+  }, [user?.uid, user?.email, currentSelectedOrgId, setSelectedOrganization, setUserOrganizations, setOrganizationUserRole, setSelectedOrgId, setLoading, setError]);
 
   // TODO: Implement organization list fetching and selection logic
   // For now, this handles the basic case where org is already selected
