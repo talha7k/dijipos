@@ -151,7 +151,6 @@ export function InvoicePrintDialog({
 }: InvoicePrintDialogProps) {
   const [open, setOpen] = useState(false);
   const [renderedHtml, setRenderedHtml] = useState("");
-  const [direction, setDirection] = useState<"ltr" | "rtl">("ltr");
   const [isGenerating, setIsGenerating] = useState(false);
 
   // Filter templates based on invoice type
@@ -256,7 +255,6 @@ export function InvoicePrintDialog({
     if (open && selectedTemplate) {
       const template = filteredTemplates?.find((t) => t.id === selectedTemplate);
       if (template) {
-        setDirection("ltr"); // Always use LTR to preserve template layout
         // Clear cached HTML to force fresh render
         setRenderedHtml("");
         renderPreview(template);
@@ -273,30 +271,27 @@ export function InvoicePrintDialog({
        }
 
        // Get the selected template
-       const template = filteredTemplates?.find((t) => t.id === selectedTemplate);
-       if (!template) {
-         toast.error("Template not found");
-         return;
-       }
+ const template = filteredTemplates?.find((t) => t.id === selectedTemplate);
+         if (!template) {
+           toast.error("Template not found");
+           return;
+         }
 
-        const direction = "ltr"; // Always use LTR to preserve template layout
+         // Fresh render for print to ensure correct calculations
+         const freshRenderedHtml = await renderInvoice(
+           template,
+           invoice,
+           organization,
+           customer,
+           supplier,
+           settings,
+           lineSpacing,
+           storeSettings?.vatSettings?.isVatInclusive ?? false,
+         );
 
-        // Fresh render for print to ensure correct calculations
-        const freshRenderedHtml = await renderInvoice(
-          template,
-          invoice,
-          organization,
-          customer,
-          supplier,
-          settings,
-          lineSpacing,
-          storeSettings?.vatSettings?.isVatInclusive ?? false,
-        );
-
-      // Calculate the actual printable area dimensions
-      const pageWidth = pageSize === "210mm" ? "210mm" : pageSize === "80mm" ? "80mm" : "58mm";
-      const pageHeight = pageSize === "210mm" ? "297mm" : "297mm";
-       const isArabic = template?.type?.includes("arabic");
+         // Calculate the actual printable area dimensions
+         const pageWidth = pageSize === "210mm" ? "210mm" : pageSize === "80mm" ? "80mm" : "58mm";
+         const pageHeight = pageSize === "210mm" ? "297mm" : "297mm";
       
       // Create the print HTML with proper styling for Arabic
       const printHtml = `
@@ -434,7 +429,7 @@ export function InvoicePrintDialog({
     } finally {
       setIsGenerating(false);
     }
-   }, [selectedTemplate, filteredTemplates, pageSize, margins, paddings, lineSpacing, invoice, customer, organization, settings, supplier, storeSettings]);
+   }, [selectedTemplate, filteredTemplates, pageSize, paddings, lineSpacing, invoice, customer, organization, settings, supplier, storeSettings]);
 
   // Effect to handle keyboard shortcuts
   useEffect(() => {
